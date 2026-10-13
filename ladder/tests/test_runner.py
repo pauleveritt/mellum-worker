@@ -614,7 +614,7 @@ def test_run_once_wires_the_switches_into_the_child_env_and_the_workspace(
     assert len(child_envs) == 1
     assert child_envs[0].get("MELLUM_MODE_FACTS") == expect_env
     assert prepared == [
-        {"strip_facts_section": strip, "facts_section": "fixture", "roadmap": "phase-files"}
+        {"strip_facts_section": strip, "facts_section": "fixture", "roadmap": "phase-files", "given_test": False}
     ]
 
 
@@ -800,3 +800,70 @@ def test_run_record_names_the_variants_and_uses_the_roadmap_sentence(monkeypatch
     assert record["facts_section"] == "light" and record["roadmap"] == "one-file"
     assert record["sentence"] == "Implement Phase 2 of specs/roadmap.md"
     assert seen["facts_section"] == "light" and seen["roadmap"] == "one-file"
+
+
+def test_given_test_appends_the_test_file_to_the_sentence_after_the_roadmap_variant():
+    from ladder.run_ladder import variant_rung
+    from ladder.rungs import RUNGS
+
+    rung = variant_rung(RUNGS[9], "one-file", given_test=True)
+    assert rung.sentence == "Implement Phase 4 of specs/roadmap.md; make tests/test_phase4.py pass"
+    assert variant_rung(RUNGS[9], "phase-files", given_test=True).sentence.endswith(
+        "; make tests/test_phase4.py pass"
+    )
+    assert variant_rung(RUNGS[9], "one-file", given_test=False).sentence == "Implement Phase 4 of specs/roadmap.md"
+
+
+def test_prepare_workspace_copies_the_given_test_into_the_baseline(tmp_path):
+    from ladder.run_ladder import GIVEN_TESTS, git, prepare_workspace
+    from ladder.rungs import RUNGS
+
+    ws = prepare_workspace(RUNGS[9], tmp_path, roadmap="one-file", given_test=True)
+    copied = ws / "tests" / "test_phase4.py"
+    assert copied.read_text() == (GIVEN_TESTS / "test_phase4.py").read_text()
+    assert "tests/test_phase4.py" in git(ws, "ls-files").split()
+
+
+def test_given_test_without_a_file_for_the_phase_is_an_error(tmp_path):
+    from ladder.run_ladder import prepare_workspace
+    from ladder.rungs import RUNGS
+
+    with pytest.raises(FileNotFoundError):
+        prepare_workspace(RUNGS[6], tmp_path, given_test=True)
+
+
+def test_parser_given_test_flag_and_refusal_outside_agentclinic():
+    from ladder.run_ladder import build_parser, main
+
+    base = ["--profile", "baseline", "--rung", "9", "--out", "x"]
+    assert build_parser().parse_args(base).given_test is False
+    assert build_parser().parse_args([*base, "--given-test"]).given_test is True
+    with pytest.raises(SystemExit):
+        main(["--profile", "baseline", "--rung", "2", "--out", "x", "--given-test"])
+
+
+def test_run_record_names_the_given_test(monkeypatch, tmp_path):
+    import dataclasses
+    import json
+
+    from ladder import run_ladder
+    from ladder.rungs import RUNGS, CheckResult
+
+    seen = {}
+    _real_run_for_git(monkeypatch, run_ladder)
+    monkeypatch.setattr(
+        run_ladder, "prepare_workspace", lambda rung, scratch, **kw: seen.update(kw) or scratch
+    )
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    monkeypatch.setattr(run_ladder, "mirror_agent_dir", lambda *a, **k: tmp_path / "agent")
+    rung = dataclasses.replace(RUNGS[9], check=lambda ws, base: CheckResult(True, True))
+    run_ladder.run_once(
+        rung, "mode", "baseline", 1, tmp_path / "out", 5, {}, False,
+        roadmap="one-file", given_test=True,
+    )
+    record = json.loads(next((tmp_path / "out").glob("*/run.json")).read_text())
+    assert record["given_test"] == "tests/test_phase4.py"
+    assert record["sentence"] == "Implement Phase 4 of specs/roadmap.md; make tests/test_phase4.py pass"
+    assert seen["given_test"] is True
+    bare = json.loads(next((tmp_path / "out").glob("*/run.json")).read_text())
+    assert "given_test" in bare

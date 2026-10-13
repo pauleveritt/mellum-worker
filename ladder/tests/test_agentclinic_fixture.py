@@ -43,3 +43,20 @@ def test_start_fails_hidden_tests(n, tmp_path):
     assert run_pytest(ws, f"_hidden_p{n}.py").returncode != 0
 
 
+
+GIVEN = FIXTURES / "agentclinic-given"
+
+
+@pytest.mark.slow
+def test_given_phase4_test_is_red_on_the_start_state_and_green_on_done(tmp_path):
+    """The M.11 screen's hand-written Phase 4 test: a developer's test from the bullets,
+    failing before the phase is built and passing on the finished project."""
+    start = copy_fixture("agentclinic-p4", tmp_path / "start")
+    sync(start)
+    shutil.copy(GIVEN / "test_phase4.py", start / "tests" / "test_phase4.py")
+    assert run_pytest(start, "tests/test_phase4.py").returncode != 0
+    done = copy_fixture("agentclinic-done", tmp_path / "done")
+    sync(done)
+    shutil.copy(GIVEN / "test_phase4.py", done / "tests" / "test_phase4.py")
+    result = run_pytest(done, "tests")
+    assert result.returncode == 0, result.stdout + result.stderr

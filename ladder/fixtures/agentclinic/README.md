@@ -14,6 +14,7 @@ workspace of its own; it only documents the others.
 | `agentclinic-p4/` | start of phase 4: phases 1-3 solved plus `specs/phase-4-resolve-reopen.md` |
 | `agentclinic-done/` | all four phases solved (the reference end state) |
 | `agentclinic-hidden/` | `_hidden_p1.py` ... `_hidden_p4.py`, the behaviour tests a rung is scored on |
+| `agentclinic-given/` | `test_phase4.py`: a developer's Phase 4 test written from the bullets; `--given-test` copies it into `tests/` before the baseline and appends `; make tests/test_phase4.py pass` to the task (the M.11 screen) |
 
 `pyproject.toml` and `uv.lock` are copied from ac-demo HEAD unchanged
 (`fastapi[standard]==0.115.10`, pinned). Every `AGENTS.md` carries only the

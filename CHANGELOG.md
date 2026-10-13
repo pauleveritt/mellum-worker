@@ -10,6 +10,12 @@ Versions match git tags; pin one in both install lines.
   AgentClinic phase 4 id miss follows the one-file roadmap (5 of 6 runs,
   against 1 of 6 with one spec file per phase). Exploratory, n = 3 per arm.
 
+- The ladder's AgentClinic rungs take `--given-test`: a developer's test for
+  the phase, `ladder/fixtures/agentclinic-given/test_phase<N>.py`, is copied
+  into `tests/` before the baseline commit and the task ends with `; make
+  tests/test_phase<N>.py pass`. Only phase 4 has a file so far; `run.json`
+  records `given_test`. This is the M.11 screen's arm.
+
 ### Changed
 
 - The README now opens with the idea the package serves, domain engineering

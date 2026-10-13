@@ -326,6 +326,8 @@ LIGHT_SECTION = (
     " pytest.ini or setup.cfg files; weaken tests\n"
 )
 AGENTCLINIC_FIXTURES = ("agentclinic-p1", "agentclinic-p2", "agentclinic-p3", "agentclinic-p4")
+# M.11: a developer's test per phase, handed to Mellum as the done criterion (only phase 4 so far).
+GIVEN_TESTS = FIXTURES / "agentclinic-given"
 
 
 def light_mellum_section(text: str, bullets: str = LIGHT_SECTION) -> str:
@@ -355,11 +357,19 @@ def one_file_roadmap() -> str:
     return "".join(parts)
 
 
-def variant_rung(rung: Rung, roadmap: str) -> Rung:
-    """With the one-file roadmap, an AgentClinic rung asks for its phase of specs/roadmap.md."""
-    if roadmap != "one-file":
-        return rung
-    return replace(rung, sentence=f"Implement Phase {rung.number - 5} of specs/roadmap.md")
+def given_test_name(rung: Rung) -> str:
+    """The given test's path inside the workspace, by phase."""
+    return f"tests/test_phase{rung.number - 5}.py"
+
+
+def variant_rung(rung: Rung, roadmap: str, given_test: bool = False) -> Rung:
+    """With the one-file roadmap, an AgentClinic rung asks for its phase of specs/roadmap.md;
+    with a given test, the sentence also names the test file to make pass (M.11)."""
+    if roadmap == "one-file":
+        rung = replace(rung, sentence=f"Implement Phase {rung.number - 5} of specs/roadmap.md")
+    if given_test:
+        rung = replace(rung, sentence=f"{rung.sentence}; make {given_test_name(rung)} pass")
+    return rung
 
 
 def prepare_workspace(
@@ -368,6 +378,7 @@ def prepare_workspace(
     strip_facts_section: bool = False,
     facts_section: str = "fixture",
     roadmap: str = "phase-files",
+    given_test: bool = False,
 ) -> Path:
     ws = copy_fixture(rung.fixture, scratch / f"rung{rung.number}")
     agents = ws / "AGENTS.md"
@@ -380,6 +391,12 @@ def prepare_workspace(
         for spec in (ws / "specs").glob("phase-*.md"):
             spec.unlink()
         (ws / "specs" / "roadmap.md").write_text(one_file_roadmap())
+    if given_test:
+        source = GIVEN_TESTS / Path(given_test_name(rung)).name
+        if not source.exists():
+            raise FileNotFoundError(f"no given test for rung {rung.number}: {source}")
+        (ws / "tests").mkdir(exist_ok=True)
+        shutil.copy(source, ws / given_test_name(rung))
     git(ws, "init", "-q")
     git(ws, "add", "-A")
     git(
@@ -438,8 +455,9 @@ def run_once(
     pi_executable: str = "pi",
     facts_section: str = "fixture",
     roadmap: str = "phase-files",
+    given_test: bool = False,
 ) -> dict:
-    rung = variant_rung(rung, roadmap)
+    rung = variant_rung(rung, roadmap, given_test)
     scratch = Path(tempfile.mkdtemp(prefix="ladder-"))
     ws = prepare_workspace(
         rung,
@@ -447,6 +465,7 @@ def run_once(
         strip_facts_section=strip_facts_section,
         facts_section=facts_section,
         roadmap=roadmap,
+        given_test=given_test,
     )
     paths, lines = baseline_index(ws)
     trace = scratch / "trace.jsonl"
@@ -555,6 +574,7 @@ def run_once(
         "strip_facts_section": strip_facts_section,
         "facts_section": facts_section,
         "roadmap": roadmap,
+        "given_test": given_test_name(rung) if given_test else None,
         "leftover_processes": leftovers,
         "guards_env": json.loads(os.environ["MELLUM_GUARDS"])
         if os.environ.get("MELLUM_GUARDS")
@@ -720,6 +740,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="phase-files",
         help="AgentClinic rungs: one-file joins the phase specs into specs/roadmap.md and asks for Phase N of it",
     )
+    parser.add_argument(
+        "--given-test",
+        action="store_true",
+        help="AgentClinic rungs: copy fixtures/agentclinic-given/test_phase<N>.py into tests/ before the baseline and append '; make tests/test_phase<N>.py pass' to the task (M.11)",
+    )
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--omlx", default="http://127.0.0.1:8001")
     return parser
@@ -728,10 +753,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if (args.facts_section != "fixture" or args.roadmap != "phase-files") and any(
-        RUNGS[n].fixture not in AGENTCLINIC_FIXTURES for n in args.rung
-    ):
-        parser.error("--facts-section and --roadmap apply only to the AgentClinic rungs 6-9")
+    if (
+        args.facts_section != "fixture" or args.roadmap != "phase-files" or args.given_test
+    ) and any(RUNGS[n].fixture not in AGENTCLINIC_FIXTURES for n in args.rung):
+        parser.error("--facts-section, --roadmap and --given-test apply only to the AgentClinic rungs 6-9")
     # Absolute, so the record's prompt_file is relative to REPO_ROOT; run from ladder/,
     # `prompts/ablation/v4a-no-procedure.md` is ladder/prompts/ablation/....
     args.prompt = args.prompt.resolve()
@@ -780,6 +805,7 @@ def main(argv: list[str] | None = None) -> None:
                     pi_executable=selected_pi["executable"],
                     facts_section=args.facts_section,
                     roadmap=args.roadmap,
+                    given_test=args.given_test,
                 )
                 row = table_row(record)
                 with table.open("a") as stream:
