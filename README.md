@@ -310,6 +310,47 @@ Pi was not run on these rungs.
 - [Where the cost goes](docs/superpowers/research/2026-10-09-worker-cost-options.md): Mode versus Worker.
 - [Recovery report](docs/superpowers/research/2026-10-07-mellum-recovery/report.md): why Mellum cannot be the primary agent.
 
+## This session — 2026-10-18
+
+Harness work toward M.11 (the mediated test). Everything here is a ladder
+capability and a set of screens, **not** a shipped claim — the runs were on a
+plain `mlx_lm.server`, not the measured oMLX backend, so the deciding comparison
+is still owed (see the
+[preregistration](docs/superpowers/research/2026-10-18-mediated-rungs-6-9-preregistration.md)).
+
+Built in the ladder, test-first:
+
+- **mlx-lm backend** — `--backend mlx-lm --base-url …`, `--model-id`, and
+  `--temperature`/`--top-p` run the ladder against any OpenAI-compatible MLX
+  server and sweep sampling ([docs/backends/mlx-lm.md](docs/backends/mlx-lm.md)).
+- **Mediated-test exit gate** — `--acceptance-test` places and freezes an
+  external, complete test; `--redispatch N` re-runs it and hands the failure to a
+  fresh worker, including on a timed-out attempt. Retries grow the temperature
+  (capped, since high temperature corrupts the worker's JSON tool calls) and move
+  the seed; the retry message now carries the real test failure (warnings
+  suppressed, short traceback) instead of a blind tail.
+- **Effort ramp** — `--effort-ramp` starts quick (Pi thinking off, small token
+  budget — sub-second on an easy fix) and escalates thinking and budget only as
+  the frozen test keeps failing. "Small deadline slicing": a relay of short,
+  fresh-context slices on one cumulative workspace, compute spent in proportion
+  to measured difficulty.
+- **Dev discipline** — a `mellum-dev` skill and CI that runs the node and ladder
+  suites on every PR.
+
+Findings (n = 1 screens, `mlx_lm.server`):
+
+- Freezing the oracle cracked rung 9's long-standing wall: the Phase 4
+  auto-`id` requirement that failed every prior run (A21 at 0/3) now passes,
+  because an external frozen test forces what a self-authored test let slip.
+- A remaining rung-9 failure was a worker framework-confusion bug (Flask route
+  syntax in a FastAPI app), not a missed requirement — the tests check behavior,
+  not framework.
+- Mellum fixes that bug unaided *when it can think*; thinking-off is ~150×
+  faster but too shallow for it, which is the whole point of the effort ramp.
+- `preserve_thinking` is load-bearing for Qwen-family tool calls (stripping it
+  degrades them to empty arguments), so prior reasoning stays; slicing, not
+  stripping, is what bounds context.
+
 ## Requirements
 
 - Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or newer, 9.9 GB for the weights
@@ -332,6 +373,28 @@ Nothing registers at load time. Pi loads Mode, dormant until `/mellum`;
 OpenCode loads a one-hook plugin for the skill. The skill writes provider,
 agent and rules into your config from [templates/](templates/). OpenCode
 has no Mode or guards: Worker only, step-capped, unmeasured.
+
+## Working on it — the 🍓 skill
+
+Development here runs through the **`mellum-dev` skill**
+([`.claude/skills/mellum-dev/SKILL.md`](.claude/skills/mellum-dev/SKILL.md)),
+which operationalizes `AGENTS.md` and [`docs/sdd.md`](docs/sdd.md): spec-driven
+development, test-first, fail-fast **and** fail-loud, frozen-oracle runs,
+recording every run, running them where you can watch, and one small PR per win
+or loss.
+
+**Activate it.** In **Claude Code** it loads on its own — `CLAUDE.md` says to
+always load and follow it when developing here, so any session in this repo
+picks it up. You know it is active because replies open with the **🍓** marker
+(and **💥 Bazinga!** on an *earned*, verified win). With **other agents**, point
+them at the skill file and have them follow it; its authoritative sources are
+`AGENTS.md` and `docs/sdd.md`.
+
+**Why.** The measured claims here only hold if the process holds — tests shown
+to fail first, settings frozen without evidence, every run recorded, failures
+surfaced loudly instead of swallowed. The skill makes that the default rather
+than something to remember, and the 🍓 marker is a visible promise that it is in
+force.
 
 ## Layout
 

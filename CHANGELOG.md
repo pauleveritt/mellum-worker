@@ -6,11 +6,141 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- `docs/ladder/2026-10-20-mediated-6-9-v7/` records the measured pass: Mellum on
+  AgentClinic rungs 6–9, n=3, mediated (frozen phase tests) with the v7 prompt +
+  focused command + trimmed tools + fail-fast ramp — **12/12**, rung 9 (the
+  phase-4 wall, best-ever 2/3) now **3/3**, clearing the historical 9/12 ceiling.
+  Note:
+  [`research/2026-10-20-mediated-6-9-v7.md`](docs/superpowers/research/2026-10-20-mediated-6-9-v7.md).
+
+- `README.md` gains a "Working on it — the 🍓 skill" section: how to activate
+  the `mellum-dev` skill (auto-loaded by `CLAUDE.md` in Claude Code; the 🍓
+  marker shows it is active) and why — the measured claims hold only if the
+  process does.
+
+- `README.md` gains a "This session — 2026-10-18" summary of the M.11 harness
+  work and its screens, flagged as ladder capability and findings (on
+  `mlx_lm.server`), not a measured claim.
+
 - Ladder records for a rung 9 screen that ran A21's two changes alone: the
   AgentClinic phase 4 id miss follows the one-file roadmap (5 of 6 runs,
   against 1 of 6 with one spec file per phase). Exploratory, n = 3 per arm.
 
+- The ladder can point a direct-mode run at a second backend and sweep
+  sampling for screens: `--backend mlx-lm --base-url <url>` targets a plain
+  OpenAI-compatible MLX server (no oMLX admin API, so the server's own launch
+  flags, not the ladder, set the server-only values), and `--temperature` /
+  `--top-p` override the greedy request defaults. `--backend omlx` stays the
+  default and applies/restores the server profile as before, so existing
+  records stand; the run record and `versions` now name the backend, base URL
+  and any sampling overrides. `--model-id` (direct mode) sets the id the request
+  carries so it matches what a plain mlx_lm.server serves (often the weights'
+  absolute path); it defaults to the Mellum id, so oMLX runs are unchanged.
+  `docs/backends/mlx-lm.md` documents the recipe and the issues hit proving it.
+
+- `run_ladder --acceptance-test <file>` (direct mode): places a hand-written
+  failing test (named `test_*.py` so pytest collects it) in the workspace's
+  `tests/` before the baseline and makes the task "make tests/<name> pass". Because the test is in the baseline, the
+  existing-tests scorer freezes it (the worker cannot weaken it) — the
+  mediated-test screen for M.11, run on real Pi and scored by the hidden tests.
+  `--redispatch N` adds the verify-and-re-hand loop: after a run it re-runs the
+  frozen test and, on failure, hands the failure to a fresh worker on the same
+  workspace, up to N times (needs `--acceptance-test`; the run record names the
+  number of re-dispatches).
+
+- `EXAMPLE.md`: a worked, example-driven guide to using Mellum — one-shot
+  `/mellum`, multi-task spans, handing it a failing test (the reliable pattern),
+  project facts, `/mellum check`/`last`, and measuring via the ladder's mlx-lm
+  backend.
+
+- `run_ladder --model-spec <spec>` and `--pi-extension <path>` (direct mode,
+  `--pi-extension` repeatable): drive a small OpenAI-compatible model as the
+  worker for fast iteration. `--model-spec` overrides Pi's `--model` (e.g.
+  `content-assist/<id>`) in place of the default `omlx/<id>`, and
+  `--pi-extension` loads an extra Pi extension with `-e` alongside
+  `--no-extensions` — together they let a content-tool-call-assist plugin turn a
+  small model's content tool-calls into real ones. Defaults unchanged; tests
+  cover the arg builder and the parser.
+
+- `LESSONS.md`: 100 lessons from the small-model-as-worker effort (plus a dated
+  addendum), and
+  `docs/superpowers/research/2026-10-19-small-model-tool-presentation.md`
+  recording a negative result — stripping a model's native tool field regresses
+  tool-calling (fix the chat template's line feeds instead).
+
+- The `mellum-dev` skill gains §10: land each verified win or learning as its
+  own small PR, with a changelog entry or a dated research note and the evidence
+  inline.
+
+- `extensions/content-tool-call-assist/` vendors the Pi extension that lets a
+  small model drive the loop from content tool-calls (JSON `{"tool","args"}` /
+  `{"name","arguments"}` or Hermes-XML), gated on the real tool names so model
+  data is not mistaken for a call. `scripts/patch-pi.sh [PI_DIR]` installs it
+  into a Pi checkout (its imports resolve only there); the ladder's
+  `--pi-extension` then loads it for small-model runs. Also mirrored to our Pi
+  fork.
+
+### Fixed
+
+- `--effort-ramp` no longer crashes with `ProfileMismatch`. The guard that
+  checks effective params against the server profile fired when the ramp
+  escalated `max_tokens` past the profile's fixed value; it now skips that
+  check while `--effort-ramp` is set (the ramp owns the budget by design). The
+  crash was caught by the run's own fail-loud path.
+
+- The re-dispatch retry message now carries the real test failure. It ran
+  `pytest -q` (whose output is dominated by deprecation warnings) and sent the
+  last 1200 chars — which were all warnings plus the terse summary, omitting the
+  assertion. Re-dispatches now run `pytest -q -p no:warnings --tb=short` and the
+  message carries the FAILURES section, so the worker sees what actually failed
+  instead of retrying blind.
+
 ### Changed
+
+- Worker prompt **v7** specializes to the "make one failing test pass" shape:
+  read the named test *and* any spec it references, create the module the test
+  imports if missing, run *only* the named test, never edit that test or add
+  other test files. This is Mellum's best-measured usage (see the 2026-10-20
+  record) — narrower than v6's general guidance, and the shipped templates
+  regenerate to it. The v6 keep-every-test guardrail folds in.
+
+- Mediated ladder runs verify with a **focused** command,
+  `pytest tests/<the-test>`, instead of the whole `tests/` directory, and the
+  worker's **tools are trimmed** to `read, ls, bash, edit, write` (`grep`/`find`
+  shell out to `fd`/`rg`, which are unavailable offline and wasted turns). Under
+  v6 the whole-dir command sent the worker chasing unrelated tests — a 93-turn
+  spin on rung 6; the focused command plus trimmed tools removed it.
+
+- `--effort-ramp` (with `--redispatch`): an effort ladder across attempts. The
+  initial try and early re-dispatches run **quick** — Pi thinking `off` and a
+  small `max_tokens` (2k), which on an easy fix is sub-second — then escalate to
+  `medium`/8k and finally `high`/16k only as the frozen test keeps failing. The
+  frozen test gates it, so compute is spent in proportion to measured difficulty
+  (a quick slice that passes stops the ladder). `qwen-chat-template` maps Pi's
+  thinking level into `chat_template_kwargs.enable_thinking`, and `max_tokens`
+  is now an overridable request param; the run record names the per-attempt
+  thinking level and budget. Default off — existing runs are unchanged.
+
+- Worker prompt v6 adds a keep-every-existing-test guardrail (add new tests
+  alongside the existing ones; change only what the task requires). It is
+  spec-aligned guidance; on a 2B model it showed no measured lift (the model
+  ignores it) and no regression — see the 2026-10-19 research note — so it is
+  kept as guidance for more capable workers, not as a measured improvement.
+
+- `--redispatch` now varies the sampling on each retry instead of re-running
+  the same greedy decode: the request temperature grows by
+  `--redispatch-temperature-step` (default 0.25) per attempt up to
+  `--redispatch-temperature-cap` (default 0.5), and the seed moves with the
+  attempt number. Past the cap the temperature holds and only the seed keeps
+  moving, so retries keep diverging (reproducibly) without going hot — high
+  temperature corrupts the worker's JSON tool calls (observed: a 0→1.0 ramp ran
+  44 tool errors in 121 requests and thrashed a working app into a broken one).
+  Set the step to 0 to keep every retry greedy. The run record names the step,
+  the cap and the per-attempt temperature/seed schedule. `seed` is now an
+  overridable request param. A re-dispatch now also fires when an attempt hits
+  the deadline (a timeout is still a failing frozen test), so a fresh worker
+  continues on the same workspace instead of the loop giving up — keep the
+  per-attempt `--deadline` small to bound the total.
 
 - The README now opens with the idea the package serves, domain engineering
   (you write specs and tests, Mellum makes the test command exit 0), names

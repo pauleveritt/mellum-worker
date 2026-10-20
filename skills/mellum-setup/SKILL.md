@@ -51,5 +51,13 @@ checks pass, tell the user:
 - OpenCode: "Mellum Worker is the `mellum-worker` subagent. Ask your main
   agent to delegate a bounded task to it."
 
+Using the worker well: do not rely on its own "done". Give it a *named
+failing test* and re-run that test yourself afterwards — the worker's best
+measured shape is a named failing test (rung 4: three files, 3/3 in every
+arm), and a run can otherwise exit on an incomplete test it wrote itself.
+Writing the test from the full spec first — the mediated test — is the
+recommended practice and the subject of M.11; it is unmeasured today. This is
+guidance, not a measured setting.
+
 Do not invent settings. Every number in this skill was measured; if a
 reference file does not cover the user's situation, say so and stop.

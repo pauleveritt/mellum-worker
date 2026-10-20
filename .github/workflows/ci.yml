@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    name: node package suite (incl. docs-caps)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      # The package has no dependencies and `npm test` uses node --test, so
+      # there is nothing to install (and no install script may be added).
+      - run: npm test
+
+  ladder:
+    name: ladder suite (python, fast)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ladder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.14"
+      # Fast subset only: the `slow` tests sync and run whole fixture
+      # workspaces (node + per-fixture uv installs) and the ladder runs their
+      # test command with `uv run --offline`, which needs those envs warmed —
+      # run them locally. The fast subset covers the scoring/runner logic.
+      - run: uv run python -m pytest -m "not slow" -q
