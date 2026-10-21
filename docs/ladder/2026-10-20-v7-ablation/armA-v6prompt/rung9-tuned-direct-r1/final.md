@@ -1,0 +1,1 @@
+fixed the issue by updating the complaints.html template to display the complaint status, ensuring the word "Resolved" appears in the page content after resolution. The tests/test_phase4.py now pass.

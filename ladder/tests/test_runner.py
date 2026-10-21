@@ -40,7 +40,7 @@ def test_direct_args_are_the_clean_profile():
         "--no-session",
     ):
         assert flag in args
-    assert args[args.index("--tools") + 1] == "read,grep,find,ls,bash,edit,write"
+    assert args[args.index("--tools") + 1] == "read,ls,bash,edit,write"
     assert args[args.index("--append-system-prompt") + 1] == str(PROMPT_FILE)
     assert args[-1] == "fix it"
 
@@ -614,8 +614,589 @@ def test_run_once_wires_the_switches_into_the_child_env_and_the_workspace(
     assert len(child_envs) == 1
     assert child_envs[0].get("MELLUM_MODE_FACTS") == expect_env
     assert prepared == [
-        {"strip_facts_section": strip, "facts_section": "fixture", "roadmap": "phase-files"}
+        {
+            "strip_facts_section": strip,
+            "facts_section": "fixture",
+            "roadmap": "phase-files",
+            "acceptance_test": None,
+        }
     ]
+
+
+# ---- backend / base-url / sampling overrides (the scriptable-MLX-server benchmark) ----
+
+
+def test_redispatch_message_names_the_test_and_includes_the_failure():
+    from ladder.run_ladder import redispatch_message
+
+    msg = redispatch_message("tests/acc.py", "E   assert 1 == 2")
+    assert "tests/acc.py" in msg and "assert 1 == 2" in msg and "fail" in msg.lower()
+
+
+def test_run_acceptance_suppresses_warnings_and_keeps_the_traceback(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+
+    captured = {}
+
+    def fake(argv, **k):
+        captured["argv"] = argv
+        return sp.CompletedProcess(argv, 1, stdout="", stderr="")
+
+    monkeypatch.setattr(run_ladder.subprocess, "run", fake)
+    run_ladder.run_acceptance(tmp_path, "tests/acc.py")
+    # warnings off (they drowned the signal) and a short traceback (keeps the assertion)
+    assert "no:warnings" in captured["argv"]
+    assert "--tb=short" in captured["argv"]
+
+
+def test_redispatch_message_sends_the_failure_not_the_warning_noise():
+    from ladder.run_ladder import redispatch_message
+
+    # pytest output: failures first (the assertion), then the summary — no warnings
+    # because run_acceptance disables them. The message must carry the assertion.
+    out = (
+        "FF\n"
+        "=================================== FAILURES ===================================\n"
+        "tests/t.py:24: in test_resolve\n"
+        "    assert r.status_code == 303\n"
+        "E   assert 404 == 303\n"
+        "=========================== short test summary info ===========================\n"
+        "FAILED tests/t.py::test_resolve\n2 failed in 0.7s"
+    )
+    msg = redispatch_message("tests/t.py", out)
+    assert "assert 404 == 303" in msg  # the real failure reaches the worker
+    assert "FAILURES" in msg
+
+
+def test_parser_redispatch_default_and_set():
+    from ladder.run_ladder import build_parser
+
+    base = ["--profile", "baseline", "--rung", "9", "--out", "x", "--acceptance-test", "/tmp/t.py"]
+    assert build_parser().parse_args(base).redispatch == 0
+    assert build_parser().parse_args([*base, "--redispatch", "3"]).redispatch == 3
+    # the temperature ramp per retry defaults to a 0.25 step capped at 0.5
+    assert build_parser().parse_args(base).redispatch_temperature_step == 0.25
+    assert build_parser().parse_args(base).redispatch_temperature_cap == 0.5
+    assert (
+        build_parser()
+        .parse_args([*base, "--redispatch-temperature-step", "0.3"])
+        .redispatch_temperature_step
+        == 0.3
+    )
+    assert (
+        build_parser()
+        .parse_args([*base, "--redispatch-temperature-cap", "0.7"])
+        .redispatch_temperature_cap
+        == 0.7
+    )
+
+
+def test_main_refuses_redispatch_without_acceptance_test(tmp_path):
+    from ladder.run_ladder import main
+
+    with pytest.raises(SystemExit):
+        main(["--profile", "baseline", "--rung", "9", "--out", str(tmp_path / "o"),
+              "--mode", "direct", "--redispatch", "2"])
+
+
+def test_run_once_redispatches_until_acceptance_passes(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    launches = []
+
+    def fake_run(argv, **k):
+        launches.append(argv)
+        return sp.CompletedProcess(argv, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(run_ladder.subprocess, "run", fake_run)
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    seq = iter([(1, "boom"), (0, "ok")])  # acceptance: fail once, then pass
+    monkeypatch.setattr(run_ladder, "run_acceptance", lambda ws, name: next(seq))
+    acc = tmp_path / "test_acc.py"
+    acc.write_text("x")
+    rung = Rung(9, "agentclinic-p4", "impl", ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        acceptance_test=acc, redispatch=3,
+    )
+    assert rec["redispatch_attempts"] == 1
+    pi_launches = [a for a in launches if "-p" in a]
+    assert len(pi_launches) == 2  # initial + one re-dispatch
+
+
+def test_redispatch_overrides_grows_temperature_and_moves_the_seed():
+    from ladder.run_ladder import redispatch_overrides
+
+    a1 = redispatch_overrides({}, 1, 0.2)
+    a2 = redispatch_overrides({}, 2, 0.2)
+    assert a1["temperature"] == 0.2 and a1["seed"] == 43
+    assert a2["temperature"] == 0.4 and a2["seed"] == 44
+    # temperature is capped (default ceiling 1.0)
+    assert redispatch_overrides({}, 10, 0.2)["temperature"] == 1.0
+    # a custom base temperature and seed are honoured
+    b = redispatch_overrides({"temperature": 0.5, "seed": 100}, 1, 0.1)
+    assert b["temperature"] == 0.6 and b["seed"] == 101
+
+
+def test_redispatch_overrides_caps_temperature_but_keeps_reseeding():
+    from ladder.run_ladder import redispatch_overrides
+
+    # step 0.25 capped at 0.5: temp holds at the cap past attempt 2, seed moves on
+    s = [redispatch_overrides({}, n, 0.25, temp_cap=0.5) for n in range(1, 5)]
+    assert [r["temperature"] for r in s] == [0.25, 0.5, 0.5, 0.5]
+    assert [r["seed"] for r in s] == [43, 44, 45, 46]
+
+
+def test_run_once_grows_temperature_and_seed_across_redispatches(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    monkeypatch.setattr(
+        run_ladder.subprocess,
+        "run",
+        lambda argv, **k: sp.CompletedProcess(argv, 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    seq = iter([(1, "boom"), (1, "boom"), (0, "ok")])  # fail twice, then pass
+    monkeypatch.setattr(run_ladder, "run_acceptance", lambda ws, name: next(seq))
+    acc = tmp_path / "test_acc.py"
+    acc.write_text("x")
+    rung = Rung(9, "agentclinic-p4", "impl", ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        acceptance_test=acc, redispatch=3, redispatch_temperature_step=0.2,
+    )
+    assert rec["redispatch_attempts"] == 2
+    assert rec["redispatch_schedule"] == [
+        {"attempt": 1, "temperature": 0.2, "seed": 43},
+        {"attempt": 2, "temperature": 0.4, "seed": 44},
+    ]
+
+
+def test_redispatch_effort_ramps_thinking_and_tokens():
+    from ladder.run_ladder import redispatch_effort
+
+    # quick start (initial attempt 0), escalating as the frozen test keeps failing
+    assert redispatch_effort(0, 5) == {"thinking": "off", "max_tokens": 2048}
+    assert redispatch_effort(1, 5) == {"thinking": "off", "max_tokens": 2048}
+    assert redispatch_effort(2, 5) == {"thinking": "medium", "max_tokens": 8192}
+    assert redispatch_effort(5, 5) == {"thinking": "high", "max_tokens": 16384}
+
+
+def test_run_once_effort_ramp_escalates_across_redispatches(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    monkeypatch.setattr(
+        run_ladder.subprocess,
+        "run",
+        lambda argv, **k: sp.CompletedProcess(argv, 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    seq = iter([(1, "boom"), (1, "boom"), (1, "boom"), (0, "ok")])  # fail 3, then pass
+    monkeypatch.setattr(run_ladder, "run_acceptance", lambda ws, name: next(seq))
+    acc = tmp_path / "test_acc.py"
+    acc.write_text("x")
+    rung = Rung(9, "agentclinic-p4", "impl", ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        acceptance_test=acc, redispatch=3, effort_ramp=True,
+    )
+    # with effort_ramp on, each re-dispatch slice carries its escalating effort
+    sched = rec["redispatch_schedule"]
+    assert [(s["thinking"], s["max_tokens"]) for s in sched] == [
+        ("off", 2048), ("medium", 8192), ("high", 16384),
+    ]
+
+
+def test_run_once_redispatches_even_when_attempts_time_out(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    def fake(argv, **k):
+        # the worker (pi -p) always times out; git and other calls succeed
+        if "-p" in argv:
+            raise sp.TimeoutExpired(argv, k.get("timeout", 1), output=b"", stderr=b"")
+        return sp.CompletedProcess(argv, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(run_ladder.subprocess, "run", fake)
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    # the frozen test never passes, so only the retry cap stops the loop
+    monkeypatch.setattr(run_ladder, "run_acceptance", lambda ws, name: (1, "still failing"))
+    acc = tmp_path / "test_acc.py"
+    acc.write_text("x")
+    rung = Rung(9, "agentclinic-p4", "impl", ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        acceptance_test=acc, redispatch=3,
+    )
+    # a timed-out attempt is still a failing frozen test, so every retry fires
+    assert rec["deadline_hit"] is True
+    assert rec["redispatch_attempts"] == 3
+    assert [s["attempt"] for s in rec["redispatch_schedule"]] == [1, 2, 3]
+
+
+def test_build_pi_direct_args_model_spec_and_extra_extensions(tmp_path):
+    from ladder.run_ladder import build_pi_direct_args
+
+    ext = tmp_path / "content-assist"
+    a = build_pi_direct_args("do it", model_spec="content-assist/tiny", extra_extensions=(ext,))
+    # the model override replaces the default omlx/<id> target
+    assert a[a.index("--model") + 1] == "content-assist/tiny"
+    assert not any(x.startswith("omlx/") for x in a)
+    # the extra extension is loaded via -e, alongside the record extension
+    assert str(ext) in a
+    # default behaviour is unchanged
+    b = build_pi_direct_args("do it")
+    assert b[b.index("--model") + 1].startswith("omlx/")
+
+
+def test_parser_model_spec_and_pi_extension(tmp_path):
+    from ladder.run_ladder import build_parser
+
+    base = ["--profile", "baseline", "--rung", "1", "--out", "x"]
+    assert build_parser().parse_args(base).model_spec is None
+    assert build_parser().parse_args(base).pi_extension == []
+    ns = build_parser().parse_args([*base, "--model-spec", "content-assist/tiny", "--pi-extension", "/p/ext"])
+    assert ns.model_spec == "content-assist/tiny"
+    assert ns.pi_extension == ["/p/ext"]
+
+
+def test_parser_acceptance_test_default_and_set():
+    from ladder.run_ladder import build_parser
+
+    base = ["--profile", "baseline", "--rung", "9", "--out", "x"]
+    assert build_parser().parse_args(base).acceptance_test is None
+    a = build_parser().parse_args([*base, "--acceptance-test", "/tmp/t.py"])
+    assert str(a.acceptance_test) == "/tmp/t.py"
+
+
+def test_main_refuses_acceptance_test_outside_direct_mode(tmp_path):
+    from ladder.run_ladder import main
+
+    with pytest.raises(SystemExit):
+        main(["--profile", "baseline", "--rung", "9", "--out", str(tmp_path / "o"),
+              "--mode", "mode", "--acceptance-test", "/tmp/t.py"])
+
+
+def test_main_refuses_acceptance_test_not_collectable_by_pytest(tmp_path):
+    """A test pytest won't collect (not test_*.py) would be placed but never run; fail fast."""
+    from ladder.run_ladder import main
+
+    bad = tmp_path / "acc_p4.py"  # pytest only auto-collects test_*.py
+    bad.write_text("def test_x():\n    assert True\n")
+    with pytest.raises(SystemExit):
+        main(["--profile", "baseline", "--rung", "9", "--out", str(tmp_path / "o"),
+              "--mode", "direct", "--acceptance-test", str(bad)])
+
+
+def test_run_once_places_acceptance_test_and_sets_make_it_pass(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    seen = {}
+
+    def prepare(rung, scratch, **kw):
+        seen.update(kw)
+        scratch.mkdir(parents=True, exist_ok=True)
+        return scratch
+
+    monkeypatch.setattr(run_ladder, "prepare_workspace", prepare)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    monkeypatch.setattr(
+        run_ladder.subprocess, "run",
+        lambda a, **k: sp.CompletedProcess(a, 0, stdout="", stderr=""),
+    )
+    acc = tmp_path / "test_acc.py"
+    acc.write_text("def test_x():\n    assert True\n")
+    rung = Rung(9, "agentclinic-p4", "Implement specs/phase-4-resolve-reopen.md",
+                ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False, acceptance_test=acc
+    )
+    assert seen.get("acceptance_test") == acc
+    sentence = rec["launch"]["argv"][-1]
+    assert sentence.startswith("Make tests/test_acc.py pass.")
+    assert "do not run the app or start servers" in sentence  # blocking-command guard
+    assert "Test command: uv run --offline python -m pytest tests" in sentence
+    assert rec["acceptance_test"] == "test_acc.py"
+
+
+@pytest.mark.slow
+def test_prepare_workspace_places_the_acceptance_test_in_the_baseline(tmp_path):
+    from ladder.run_ladder import git, prepare_workspace
+    from ladder.rungs import RUNGS
+
+    acc = tmp_path / "test_acc.py"
+    acc.write_text("def test_x():\n    assert True\n")
+    ws = prepare_workspace(RUNGS[9], tmp_path, acceptance_test=acc)
+    placed = ws / "tests" / "test_acc.py"
+    assert placed.exists() and placed.read_text() == acc.read_text()
+    assert git(ws, "ls-files", "tests/test_acc.py").strip() == "tests/test_acc.py"
+
+
+def test_parser_backend_base_url_and_sampling_defaults_and_choices():
+    from ladder.run_ladder import build_parser
+
+    base = ["--profile", "baseline", "--rung", "1", "--out", "x"]
+    args = build_parser().parse_args(base)
+    assert args.backend == "omlx" and args.base_url is None
+    assert args.temperature is None and args.top_p is None
+    args = build_parser().parse_args(
+        [
+            *base,
+            "--backend",
+            "mlx-lm",
+            "--base-url",
+            "http://127.0.0.1:8080/v1",
+            "--temperature",
+            "0.7",
+            "--top-p",
+            "0.9",
+        ]
+    )
+    assert args.backend == "mlx-lm" and args.base_url == "http://127.0.0.1:8080/v1"
+    assert args.temperature == 0.7 and args.top_p == 0.9
+
+
+def test_direct_args_use_the_model_id_override():
+    from ladder.run_ladder import build_pi_direct_args
+
+    args = build_pi_direct_args("fix it", model_id="/abs/path/Mellum-x")
+    assert args[args.index("--model") + 1] == "omlx//abs/path/Mellum-x"
+
+
+def test_direct_args_model_defaults_to_mellum():
+    from ladder.run_ladder import MODEL, build_pi_direct_args
+
+    args = build_pi_direct_args("fix it")
+    assert args[args.index("--model") + 1] == MODEL
+
+
+def test_parser_model_id_default_and_set():
+    from ladder.run_ladder import build_parser
+
+    base = ["--profile", "baseline", "--rung", "1", "--out", "x"]
+    assert build_parser().parse_args(base).model_id is None
+    assert build_parser().parse_args([*base, "--model-id", "/abs/Mellum-x"]).model_id == "/abs/Mellum-x"
+
+
+def test_main_refuses_model_id_outside_direct_mode(tmp_path):
+    from ladder.run_ladder import main
+
+    with pytest.raises(SystemExit):
+        main(["--profile", "baseline", "--rung", "1", "--out", str(tmp_path / "o"),
+              "--mode", "mode", "--model-id", "x"])
+
+
+def test_run_once_sends_the_model_id_override(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    monkeypatch.setattr(
+        run_ladder.subprocess, "run",
+        lambda a, **k: sp.CompletedProcess(a, 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    rung = Rung(1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        model_id="/abs/path/Mellum-x", base_url="http://127.0.0.1:8080/v1",
+    )
+    assert "omlx//abs/path/Mellum-x" in rec["launch"]["argv"]
+    assert rec["model_id"] == "/abs/path/Mellum-x"
+
+
+def test_run_once_model_id_defaults_to_mellum(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.run_ladder import MODEL_ID
+    from ladder.rungs import CheckResult, Rung
+
+    monkeypatch.setattr(
+        run_ladder.subprocess, "run",
+        lambda a, **k: sp.CompletedProcess(a, 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    rung = Rung(1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True))
+    rec = run_ladder.run_once(rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False)
+    assert rec["model_id"] == MODEL_ID
+
+
+def test_main_refuses_mlx_lm_backend_without_a_base_url(tmp_path):
+    from ladder.run_ladder import main
+
+    with pytest.raises(SystemExit):
+        main(
+            [
+                "--profile", "baseline", "--rung", "1",
+                "--out", str(tmp_path / "o"), "--backend", "mlx-lm",
+            ]
+        )
+
+
+def test_main_refuses_direct_only_flags_outside_direct_mode(tmp_path):
+    from ladder.run_ladder import main
+
+    for extra in (
+        ["--base-url", "http://h/v1"],
+        ["--temperature", "0.7"],
+        ["--top-p", "0.9"],
+        ["--backend", "mlx-lm", "--base-url", "http://h/v1"],
+    ):
+        with pytest.raises(SystemExit):
+            main(
+                [
+                    "--profile", "baseline", "--rung", "1",
+                    "--out", str(tmp_path / "o"), "--mode", "mode", *extra,
+                ]
+            )
+
+
+def test_run_once_wires_base_url_and_overrides_into_direct(monkeypatch, tmp_path):
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    seen = {}
+
+    def fake_direct(dest, prof, **kw):
+        seen.update(kw)
+        dest.mkdir(parents=True, exist_ok=True)
+        return dest
+
+    monkeypatch.setattr(run_ladder, "direct_agent_dir", fake_direct)
+    monkeypatch.setattr(
+        run_ladder.subprocess,
+        "run",
+        lambda a, **k: sp.CompletedProcess(a, 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(
+        run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch
+    )
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    rung = Rung(
+        1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True)
+    )
+    run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        base_url="http://127.0.0.1:8080/v1",
+        request_overrides={"temperature": 0.7, "top_p": 0.9},
+    )
+    assert seen["base_url"] == "http://127.0.0.1:8080/v1"
+    assert seen["request_overrides"] == {"temperature": 0.7, "top_p": 0.9}
+
+
+def test_run_record_names_backend_base_url_and_overrides(monkeypatch, tmp_path):
+    import json
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    _real_run_for_git(monkeypatch, run_ladder)
+    monkeypatch.setattr(
+        run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch
+    )
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    rung = Rung(
+        1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True)
+    )
+    run_ladder.run_once(
+        rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
+        backend="mlx-lm", base_url="http://127.0.0.1:8080/v1",
+        request_overrides={"temperature": 0.7},
+    )
+    record = json.loads(next((tmp_path / "out").glob("*/run.json")).read_text())
+    assert record["backend"] == "mlx-lm"
+    assert record["base_url"] == "http://127.0.0.1:8080/v1"
+    assert record["request_overrides"] == {"temperature": 0.7}
+
+
+def test_run_record_leaves_backend_fields_empty_in_other_modes(monkeypatch, tmp_path):
+    import json
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    _real_run_for_git(monkeypatch, run_ladder)
+    monkeypatch.setattr(
+        run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch
+    )
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    monkeypatch.setattr(run_ladder, "mirror_agent_dir", lambda s, d, t, **kw: d)
+    rung = Rung(
+        1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True)
+    )
+    run_ladder.run_once(rung, "delegated", "baseline", 1, tmp_path / "out", 5, {}, True)
+    record = json.loads(next((tmp_path / "out").glob("*/run.json")).read_text())
+    assert record["backend"] is None and record["base_url"] is None
+    assert record["request_overrides"] is None
+
+
+def test_main_runs_the_admin_profile_only_for_the_omlx_backend(monkeypatch, tmp_path):
+    """omlx backend applies/restores the server profile; a plain mlx-lm server has no admin API, so it must not."""
+    import contextlib
+
+    from ladder import run_ladder
+
+    calls = []
+
+    class FakeClient:
+        def __init__(self, base):
+            calls.append(("client", base))
+
+    @contextlib.contextmanager
+    def fake_profile(client, model_id, name, path):
+        calls.append(("profile", name))
+        yield {"max_tokens": 1}
+
+    monkeypatch.setattr(run_ladder, "AdminClient", FakeClient)
+    monkeypatch.setattr(run_ladder, "profile", fake_profile)
+    monkeypatch.setattr(run_ladder, "resolve_pi", lambda e: {"executable": e, "version": "t"})
+    monkeypatch.setattr(run_ladder, "tool_version", lambda cmd: "t")
+    monkeypatch.setattr(
+        run_ladder, "run_once", lambda *a, **k: {"score": {"effective_params": None}}
+    )
+    monkeypatch.setattr(run_ladder, "table_row", lambda record: "")
+
+    run_ladder.main(
+        ["--profile", "baseline", "--rung", "1", "--out", str(tmp_path / "o"), "--mode", "direct"]
+    )
+    assert ("client", "http://127.0.0.1:8001") in calls
+    assert any(c[0] == "profile" for c in calls)
+
+    calls.clear()
+    run_ladder.main(
+        [
+            "--profile", "baseline", "--rung", "1", "--out", str(tmp_path / "o2"),
+            "--mode", "direct", "--backend", "mlx-lm",
+            "--base-url", "http://127.0.0.1:8080/v1",
+        ]
+    )
+    assert calls == []
 
 
 @pytest.mark.parametrize("outcome", ["normal", "signal", "deadline"])
@@ -800,3 +1381,53 @@ def test_run_record_names_the_variants_and_uses_the_roadmap_sentence(monkeypatch
     assert record["facts_section"] == "light" and record["roadmap"] == "one-file"
     assert record["sentence"] == "Implement Phase 2 of specs/roadmap.md"
     assert seen["facts_section"] == "light" and seen["roadmap"] == "one-file"
+
+
+_VALIDATE_BASE = ["--profile", "tuned", "--rung", "9", "--out", "/tmp/ladder-validate-test"]
+
+
+def test_acceptance_test_is_allowed_in_mode():
+    """Mellum Mode can be handed the frozen test; the mediation's test half is not direct-only."""
+    from ladder.run_ladder import build_parser, validate_args
+
+    parser = build_parser()
+    args = parser.parse_args([*_VALIDATE_BASE, "--mode", "mode", "--acceptance-test", "test_phase4.py"])
+    validate_args(args, parser)  # must not raise
+
+
+def test_base_url_stays_direct_only_in_mode():
+    import pytest
+
+    from ladder.run_ladder import build_parser, validate_args
+
+    parser = build_parser()
+    args = parser.parse_args([*_VALIDATE_BASE, "--mode", "mode", "--base-url", "http://127.0.0.1:8080/v1"])
+    with pytest.raises(SystemExit):
+        validate_args(args, parser)
+
+
+def test_redispatch_is_rejected_in_mode(capsys):
+    """The verify-and-re-dispatch loop is direct-only; passing it with Mode is a clear error, not a silent no-op."""
+    import pytest
+
+    from ladder.run_ladder import build_parser, validate_args
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [*_VALIDATE_BASE, "--mode", "mode", "--acceptance-test", "test_phase4.py", "--redispatch", "3"]
+    )
+    with pytest.raises(SystemExit):
+        validate_args(args, parser)
+    assert "redispatch" in capsys.readouterr().err.lower()
+
+
+def test_mode_args_load_extra_extensions_and_keep_sentence_last():
+    """Mellum Mode must be able to load an extra extension (e.g. the NCM gate) via --pi-extension."""
+    from pathlib import Path
+
+    from ladder.run_ladder import build_pi_mode_args
+
+    args = build_pi_mode_args("do it", extra_extensions=(Path("/x/mellum-ncm.ts"),))
+    assert args[-1] == "do it"
+    assert "/x/mellum-ncm.ts" in args
+    assert args.index("/x/mellum-ncm.ts") < args.index("do it")

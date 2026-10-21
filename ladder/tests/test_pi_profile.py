@@ -50,6 +50,53 @@ def test_direct_agent_dir_carries_the_profiles_request_params(tmp_path):
     )
 
 
+def test_direct_agent_dir_points_at_a_custom_base_url(tmp_path):
+    """A plain mlx_lm.server lives on a different port; direct mode must be able to target it."""
+    from ladder.pi_profile import direct_agent_dir
+
+    agent = direct_agent_dir(
+        tmp_path / "agent", "tuned", base_url="http://127.0.0.1:8080/v1"
+    )
+    models = json.loads((agent / "models.json").read_text())
+    provider = models["providers"]["omlx"]
+    assert provider["baseUrl"] == "http://127.0.0.1:8080/v1"
+    assert provider["api"] == "openai-completions"
+
+
+def test_direct_agent_dir_model_id_override(tmp_path):
+    """A plain mlx_lm.server serves under its own id (often a path); the entry must use it."""
+    from ladder.pi_profile import direct_agent_dir
+
+    agent = direct_agent_dir(tmp_path / "a", "tuned", model_id="/abs/path/Mellum-x")
+    models = json.loads((agent / "models.json").read_text())
+    assert models["providers"]["omlx"]["models"][0]["id"] == "/abs/path/Mellum-x"
+    settings = json.loads((agent / "settings.json").read_text())
+    assert settings["defaultModel"] == "/abs/path/Mellum-x"
+
+
+def test_direct_agent_dir_model_id_defaults_to_mellum(tmp_path):
+    from ladder.pi_profile import MODEL_ID, direct_agent_dir
+
+    agent = direct_agent_dir(tmp_path / "a", "tuned")
+    models = json.loads((agent / "models.json").read_text())
+    assert models["providers"]["omlx"]["models"][0]["id"] == MODEL_ID
+    assert json.loads((agent / "settings.json").read_text())["defaultModel"] == MODEL_ID
+
+
+def test_direct_agent_dir_applies_sampling_overrides(tmp_path):
+    """--temperature/--top-p must reach the request the client sends, not the greedy default."""
+    from ladder.pi_profile import direct_agent_dir
+
+    agent = direct_agent_dir(
+        tmp_path / "agent", "tuned", request_overrides={"temperature": 0.7, "top_p": 0.9}
+    )
+    sampling = json.loads((agent / "models.json").read_text())["providers"]["omlx"][
+        "models"
+    ][0]["samplingParams"]
+    assert sampling["temperature"] == 0.7 and sampling["top_p"] == 0.9
+    assert sampling["presence_penalty"] == 0.5  # untouched profile value
+
+
 def test_mirror_agent_dir_can_override_the_pi_subagents_config(tmp_path):
     """pi-subagents reads only ~/.pi/agent/extensions/subagent/config.json; the mirror gets its own copy
     so a run can switch the intercom bridge off without touching the operator's file."""

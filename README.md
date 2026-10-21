@@ -310,6 +310,47 @@ Pi was not run on these rungs.
 - [Where the cost goes](docs/superpowers/research/2026-10-09-worker-cost-options.md): Mode versus Worker.
 - [Recovery report](docs/superpowers/research/2026-10-07-mellum-recovery/report.md): why Mellum cannot be the primary agent.
 
+## This session — 2026-10-18
+
+Harness work toward M.11 (the mediated test). Everything here is a ladder
+capability and a set of screens, **not** a shipped claim — the runs were on a
+plain `mlx_lm.server`, not the measured oMLX backend, so the deciding comparison
+is still owed (see the
+[preregistration](docs/superpowers/research/2026-10-18-mediated-rungs-6-9-preregistration.md)).
+
+Built in the ladder, test-first:
+
+- **mlx-lm backend** — `--backend mlx-lm --base-url …`, `--model-id`, and
+  `--temperature`/`--top-p` run the ladder against any OpenAI-compatible MLX
+  server and sweep sampling ([docs/backends/mlx-lm.md](docs/backends/mlx-lm.md)).
+- **Mediated-test exit gate** — `--acceptance-test` places and freezes an
+  external, complete test; `--redispatch N` re-runs it and hands the failure to a
+  fresh worker, including on a timed-out attempt. Retries grow the temperature
+  (capped, since high temperature corrupts the worker's JSON tool calls) and move
+  the seed; the retry message now carries the real test failure (warnings
+  suppressed, short traceback) instead of a blind tail.
+- **Effort ramp** — `--effort-ramp` starts quick (Pi thinking off, small token
+  budget — sub-second on an easy fix) and escalates thinking and budget only as
+  the frozen test keeps failing. "Small deadline slicing": a relay of short,
+  fresh-context slices on one cumulative workspace, compute spent in proportion
+  to measured difficulty.
+- **Dev discipline** — a `mellum-dev` skill and CI that runs the node and ladder
+  suites on every PR.
+
+Findings (n = 1 screens, `mlx_lm.server`):
+
+- Freezing the oracle cracked rung 9's long-standing wall: the Phase 4
+  auto-`id` requirement that failed every prior run (A21 at 0/3) now passes,
+  because an external frozen test forces what a self-authored test let slip.
+- A remaining rung-9 failure was a worker framework-confusion bug (Flask route
+  syntax in a FastAPI app), not a missed requirement — the tests check behavior,
+  not framework.
+- Mellum fixes that bug unaided *when it can think*; thinking-off is ~150×
+  faster but too shallow for it, which is the whole point of the effort ramp.
+- `preserve_thinking` is load-bearing for Qwen-family tool calls (stripping it
+  degrades them to empty arguments), so prior reasoning stays; slicing, not
+  stripping, is what bounds context.
+
 ## Requirements
 
 - Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or newer, 9.9 GB for the weights
@@ -332,6 +373,76 @@ Nothing registers at load time. Pi loads Mode, dormant until `/mellum`;
 OpenCode loads a one-hook plugin for the skill. The skill writes provider,
 agent and rules into your config from [templates/](templates/). OpenCode
 has no Mode or guards: Worker only, step-capped, unmeasured.
+
+## Working on it — the 🍓 skill
+
+Development here runs through the **`mellum-dev` skill**
+([`.claude/skills/mellum-dev/SKILL.md`](.claude/skills/mellum-dev/SKILL.md)),
+which operationalizes `AGENTS.md` and [`docs/sdd.md`](docs/sdd.md): spec-driven
+development, test-first, fail-fast **and** fail-loud, frozen-oracle runs,
+recording every run, running them where you can watch, and one small PR per win
+or loss.
+
+**Activate it.** In **Claude Code** it loads on its own — `CLAUDE.md` says to
+always load and follow it when developing here, so any session in this repo
+picks it up. You know it is active because replies open with the **🍓** marker
+(and **💥 Bazinga!** on an *earned*, verified win). With **other agents**, point
+them at the skill file and have them follow it; its authoritative sources are
+`AGENTS.md` and `docs/sdd.md`.
+
+**Why.** The measured claims here only hold if the process holds — tests shown
+to fail first, settings frozen without evidence, every run recorded, failures
+surfaced loudly instead of swallowed. The skill makes that the default rather
+than something to remember, and the 🍓 marker is a visible promise that it is in
+force.
+
+## Getting started (the next engineer)
+
+Start with **[`LESSONS.md`](LESSONS.md)** — a hundred lessons and a dated
+addendum from building this, gotchas included. Then, to run the ladder
+yourself:
+
+1. **The ladder lives in `ladder/`, on `uv`.** `cd ladder`; `uv run python -m
+   pytest` runs its suite, and `uv run python -m ladder.run_ladder --help` lists
+   every flag.
+
+2. **Serve Mellum on oMLX first.** Follow
+   [`docs/backends/omlx.md`](docs/backends/omlx.md): the model answers at
+   `http://127.0.0.1:8001/v1`, and the server holds the tuned settings the
+   records were measured under. `/mellum check` tells you when it's drifted.
+
+3. **Register the provider before you run Mellum Mode.** `--mode mode` is the
+   shipped worker, and it reads `~/.pi/agent/models.json`; without it Pi refuses
+   with `Model "omlx/Mellum…" not found`. Copy it once:
+   ```bash
+   cp templates/pi/models.omlx.json ~/.pi/agent/models.json
+   ```
+   `--mode direct` wires its own provider, so it runs without this step — which
+   is exactly why a direct run can pass while Mode won't even start. That one
+   cost a day; it's in the addendum.
+
+4. **Run it where you can watch** (skill §9). In one terminal start the
+   follower, then launch the run in another:
+   ```bash
+   python scripts/watch_ladder.py
+   ```
+   It tails the newest per-rung trace and prints each turn — the thinking and
+   the tool calls — as they happen, switching rungs on its own.
+
+5. **Know which worker you're measuring.** `--mode direct` is the isolation
+   rig: the ladder supplies the provider and the mediation (`--acceptance-test`,
+   `--redispatch`, `--effort-ramp`). `--mode mode` is the real product — Mellum
+   Mode with its guards and project facts. They aren't the same run, and a
+   direct number isn't a Mode number.
+
+6. **The frozen acceptance tests are committed**, so a mediated run reproduces:
+   point `--acceptance-test` at
+   [`docs/ladder/2026-10-20-v7-ablation/acceptance/`](docs/ladder/2026-10-20-v7-ablation/acceptance/)
+   (`test_phase1.py`…`test_phase4.py`).
+
+7. **Every run that backs a claim is recorded** under
+   `docs/ladder/<date-topic>/`; compare any two mechanically with `uv run python
+   scripts/compare_runs.py <dirA> <dirB>`.
 
 ## Layout
 

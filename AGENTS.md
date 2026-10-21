@@ -44,12 +44,34 @@ and evidence with dated corrections; never edit archived plans.
   `uv run python -m ladder.run_ladder --help` for runs. Never commit
   `trace.jsonl`, `stdout.txt` or `diff.patch`; raw evidence goes in a
   `research-YYYY-MM-DD` release.
+- **Run standard — use the two scripts, don't hand-assemble flags.**
+  `scripts/screen.sh <rung> <model-id>` is the measurement rig (direct, mediated:
+  `tuned`, repeat 3, redispatch 5, effort-ramp, thinking off, **guards on**, the
+  default prompt and tools). `scripts/product.sh <rung>` is the shipped worker
+  (Mellum Mode, guards + facts on). Both write to `runs/` (git-ignored) and want
+  `watch_ladder.py` alongside; promote a kept run to `docs/ladder/<date-topic>/`
+  with the raw stripped. Per-run `--prompt`/`--tools`/`--thinking` tweaks or
+  source edits are ablations, recorded as such — not how a standard run is made.
 - `node build.mjs` regenerates the agent templates after a prompt change, and
   a test fails on drift. `prompts/mellum-worker.md` is the only prompt source.
 - Never add a `build`, `prepare`, `prepack`, or `install` npm script; OpenCode
   installs from Git through pacote and that breaks the install.
 - A release is a tag that matches `package.json` and both README install
   lines, with a `CHANGELOG.md` section.
+
+## Driving the worker: don't trust its self-exit (a lead under test)
+
+The worker decides when it is done, and a run can exit confident on an
+incomplete, self-authored test — the Phase 4 id miss. The direction being
+measured is to define "done" with an acceptance test that is **external** (the
+worker did not write it), **complete** (the whole spec, not the subset the
+worker chose) and **unweakenable** (the worker cannot edit or delete it), and
+to verify a run by re-running that test and re-dispatching its failure, never
+by the worker's final message. This is M.11 (the mediated test) plus the
+freeze-the-oracle guard; both are unmeasured until M.11's rung-9 screen, so
+treat it as the lead it is, not a settled rule. See the
+[exit-gate note](docs/superpowers/research/2026-10-18-harness-exit-gate.md) and
+the M.11 row in [`ROADMAP.md`](ROADMAP.md).
 
 ## Keep the changelog current
 

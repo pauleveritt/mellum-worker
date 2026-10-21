@@ -15,11 +15,12 @@ import os
 import shutil
 from pathlib import Path
 
-from .omlx_profiles import REQUEST_PARAMS
+from .omlx_profiles import effective_request
 
 LADDER_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = LADDER_ROOT.parent
 MODEL_ID = "Mellum2.1-12B-A2.5B-Thinking-6bit"
+DEFAULT_BASE_URL = "http://127.0.0.1:8001/v1"
 COPIED_FILES = ("settings.json", "models.json", "auth.json", "AGENTS.md")
 LINKED_DIRS = ("git", "npm")
 AGENT_TEMPLATE = REPO_ROOT / "templates" / "pi" / "mellum-worker.agent.md"
@@ -95,17 +96,25 @@ def prepare_pi_workspace(ws: Path, record_ext: Path | None) -> Path:
 
 
 def direct_agent_dir(
-    dest: Path, profile: str, base_url: str = "http://127.0.0.1:8001/v1"
+    dest: Path,
+    profile: str,
+    base_url: str = DEFAULT_BASE_URL,
+    request_overrides: dict | None = None,
+    model_id: str = MODEL_ID,
 ) -> Path:
-    """A minimal Pi agent directory whose omlx model entry sends the profile's request values.
+    """A minimal Pi agent directory whose model entry sends the profile's request values.
 
     Direct mode uses this instead of the operator's profile so that temperature,
-    caps, and penalties are the ladder's, not Pi's defaults.
+    caps, and penalties are the ladder's, not Pi's defaults. ``base_url`` points
+    the OpenAI-completions provider at any server (oMLX by default, or a plain
+    mlx_lm.server); ``request_overrides`` applies sampling overrides for a screen;
+    ``model_id`` is the id the request carries, which must match what the server
+    serves (oMLX uses the default; a plain mlx_lm.server may serve under a path).
     """
-    request = dict(REQUEST_PARAMS[profile])
+    request = effective_request(profile, request_overrides)
     max_tokens = request.pop("max_tokens")
     entry = {
-        "id": MODEL_ID,
+        "id": model_id,
         "name": "Mellum ladder",
         "reasoning": True,
         "input": ["text"],
@@ -140,7 +149,7 @@ def direct_agent_dir(
         json.dumps(
             {
                 "defaultProvider": "omlx",
-                "defaultModel": MODEL_ID,
+                "defaultModel": model_id,
                 "defaultThinkingLevel": "high",
                 "compaction": {"enabled": False},
                 "quietStartup": True,

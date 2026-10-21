@@ -9,3 +9,4 @@ docs/ladder/**/stdout.txt
 docs/ladder/**/diff.patch
 
 .worktrees/
+runs/

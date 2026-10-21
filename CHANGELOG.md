@@ -4,13 +4,282 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Changed
+
+- Worker prompt v7 → v9, two behavioural hardenings against "self-certifying
+  against a subset":
+  - **v8 (run the whole test file):** the "how to check" step now tells the
+    worker to run the whole named test file (e.g. `pytest -v test_export.py`) and
+    pass every test in it, never a single `::test_function`, and not to stop after
+    one test passes. Fixes the self-narrowing that failed rungs 4/5 (bare
+    un-mediated ladder 6/12 → 11/12).
+  - **v9 (implement the whole spec):** the "what to build" step now says the spec
+    is the full contract — implement every requirement, such as automatically
+    assigned unique ids, defaults and status rules, even when no visible test
+    checks it. Fixes rung 9's Phase-4 id miss (the worker passed every visible
+    test but left `id = 0`, which only the hidden oracle caught).
+  - Templates regenerated from the source; the run recorder's prompt-version
+    assertion tracks v9.
+
 ### Added
+
+- Ladder rungs 10–12 (AgentClinic phases 5–7): rung 10 Archive & Audit (with a
+  destructive-archive decoy off the write-list), rung 11 reporting over a
+  pre-filled database (with an archived-but-open trap row), rung 12 summing two
+  columns of a file far larger than the context window (must be streamed). Each
+  is scored by the hidden cumulative oracle plus a committed frozen acceptance
+  test. The 6-bit clears all three 3/3 mediated — recorded in
+  `docs/ladder/2026-10-21-rungs-10-12-6bit/`.
+
+- Start a run from the dashboard: a rung picker (AgentClinic rungs 6–12) that
+  launches the mediated screen for that rung with the configured model, via a
+  new `POST /run` endpoint; a chip shows which rungs are currently running. The
+  dashboard's sweep and drill-down now read `run.json` recursively, so they show
+  `screen.sh`'s one-level run layout (`rungN-profile-rX/run.json`), not only the
+  two-level sweep layout — a run started from the dashboard appears as it lands.
+
+- `extensions/mellum-override.ts` — edit the system prompt the worker is fed,
+  live, from a file (`$MELLUM_PROMPT_OVERRIDE`): `system` replaces it, `append`
+  adds to it, applied at the next turn boundary. The dashboard writes the file,
+  so you can change the prompt while a run is in flight. Self-contained; pure
+  core unit-tested.
+
+- Dashboard upgrades (`dashboard/`): click a rung to drill into its **past runs
+  and summaries** (verdict, the task sentence, the diff, wall time); an
+  **intelligence centre** panel that shows the told-vs-truth contradictions
+  `mellum-rethink` finds; a **system-prompt editor** that saves an override the
+  worker picks up next turn (via `mellum-override`); the prompt panel now shows
+  the **full context** being fed, not a teaser; and the rung grid is
+  data-driven over rungs 1–12, so a rung is shown as idle rather than hidden
+  when it has no result. `serve.py` gains `/rung`, `/override` (GET + POST)
+  endpoints and an `intel` feed, all dependency-free stdlib.
+
+- `extensions/mellum-vision.ts` — let the worker see: describe images and
+  screenshots, or read the text out of them, with a small local vision model
+  (JetBrains ships none — Mellum is code and text only). Default
+  `empero-ai/Qwen3.8-2B-Distill` (~2 B, a Qwen3.5 VLM) served through MLX; the
+  model id is a Hugging Face repo id, so `mlx_vlm` downloads it automatically on
+  first use when missing (set `MELLUM_VISION_MODEL` to a local 4-bit copy for a
+  smaller, faster load). Its partner is `mellum-files`: a
+  scanned/image-only page routes here. Descriptions are indexed into
+  `mellum-context`. Command `/see <image> [question]` and a `describe_image`
+  tool. Config: `MELLUM_VISION_MODEL`, `MELLUM_VISION_PYTHON`. Pure core
+  unit-tested; verified end-to-end against the local model.
+
+- `extensions/mellum-files.ts` — document understanding for PDF, Word (.docx)
+  and Excel (.xlsx), plus plain text. Office files are read with a small
+  pure-Node zip reader (the central directory, so Office's streamed files work)
+  and `node:zlib`; PDF text is pulled best-effort from the page content streams
+  (FlateDecode inflated, text operators read). No npm dependency and no external
+  tool. Extracted text is indexed into the `mellum-context` store so a large
+  document becomes searchable context. A scanned, image-only PDF has no text to
+  pull — that routes to `mellum-vision`. Command `/read-file <path>` and a
+  model-callable `read_document` tool. Self-contained; pure core unit-tested.
+
+- `extensions/mellum-rethink.ts` — a skeptical "stop and pause, rethink" gate.
+  It parses the claims a human makes in the task (the tests already pass, a file
+  was already changed), checks the cheap, checkable ones against ground truth
+  (does the acceptance test actually pass, did the file actually change), and
+  when a claim contradicts reality it pushes the worker back at settle — a note
+  naming the contradiction, asking it to re-examine rather than encode a false
+  premise. Each contradiction is also written to the feed (kind `rethink`) for
+  the dashboard. Config: `RETHINK_TEST`, `RETHINK_PYTEST`. Self-contained
+  (Node + Pi hooks); pure core unit-tested.
+
+- `extensions/mellum-context.ts` — context intelligence over a local SQLite
+  FTS5 index (built-in `node:sqlite`, no npm dep). It chunks files into
+  overlapping line windows, ranks passages by BM25 with a recency boost
+  (temporal ranking), and can return them in chronological order (temporal
+  sequencing) so the worker applies context in the order it happened. Large
+  code and large data are leaned on through the index — the worker searches for
+  the few relevant lines instead of loading the whole file into the prompt.
+  Commands `/index <path>` and `/context <query>`, plus a model-callable
+  `context_search` tool where Pi supports it. Config: `MELLUM_CONTEXT_DB`,
+  `MELLUM_CONTEXT_HALFLIFE_MS`. Self-contained (Node + Pi hooks); pure core unit-tested.
+
+- A live worker observability + control set (agnostic Pi extensions, loaded via
+  `--pi-extension`, each self-contained — Node + Pi hooks, no framework coupling):
+  `extensions/mellum-feed.ts` emits an NDJSON feed of the worker's turns, tool
+  calls and the prompts it was sent; `extensions/mellum-replay.ts` adds a
+  `/replay <adjustment>` that re-sends the last captured prompt to the model
+  with a slight system-prompt tweak; `extensions/mellum-control.ts` holds the
+  worker at the turn boundary while paused and resumes on play. A local
+  `dashboard/` (a dependency-free `serve.py` relay over SSE + a reactive page)
+  shows the rung grid, the prompts fed to the model, and the live feed. Pure
+  cores are unit-tested; the live Pi-driving is verified separately.
+
+- `extensions/mellum-ncm.ts` — a next-concept-modelling verify gate, loaded
+  with `--pi-extension` (not shipped by default). At settle it re-runs the named
+  acceptance test and, while it is red, sends the worker back naming the **unmet
+  concepts** (the failing test functions), up to `NCM_MAX`. It brings the
+  ladder's direct-only verify/re-dispatch into any Pi session — Mellum Mode
+  included — at the concept grain, reusing the `agent_before_settle -> continue`
+  pattern from the empty-final nudge; self-contained (Node + Pi hooks, no
+  Pi-internal imports). Config: `NCM_TEST`, `NCM_MAX` (default 5), `NCM_PYTEST`.
+
+- **The run standard**: `scripts/screen.sh <rung> <model-id>` (the measurement
+  rig — direct, mediated, `tuned`/repeat 3/redispatch 5/effort-ramp/thinking
+  off/**guards on**, default prompt and tools) and `scripts/product.sh <rung>`
+  (the shipped worker — Mellum Mode, guards + facts on). Two fixed shapes so
+  runs compare like-for-like instead of hand-assembled flags; both write to
+  `runs/` (git-ignored) and expect `watch_ladder.py` alongside. See `AGENTS.md`.
+
+- `README.md` gains a "Getting started (the next engineer)" section: read
+  `LESSONS.md` first, then ordered steps to run the ladder — the oMLX server,
+  the one-time `~/.pi/agent/models.json` provider registration that Mellum Mode
+  needs (direct mode wires its own, so a direct run can pass while Mode won't
+  even start), running visibly with `watch_ladder.py`, the direct-vs-Mode
+  distinction, the committed frozen acceptance tests, and `compare_runs.py`.
+
+- `docs/ladder/2026-10-20-mediated-6-9-v7/` records the measured pass: Mellum on
+  AgentClinic rungs 6–9, n=3, mediated (frozen phase tests) with the v7 prompt +
+  focused command + trimmed tools + fail-fast ramp — **12/12**, rung 9 (the
+  phase-4 wall, best-ever 2/3) now **3/3**, clearing the historical 9/12 ceiling.
+  Note:
+  [`research/2026-10-20-mediated-6-9-v7.md`](docs/superpowers/research/2026-10-20-mediated-6-9-v7.md).
+
+- `README.md` gains a "Working on it — the 🍓 skill" section: how to activate
+  the `mellum-dev` skill (auto-loaded by `CLAUDE.md` in Claude Code; the 🍓
+  marker shows it is active) and why — the measured claims hold only if the
+  process does.
+
+- `README.md` gains a "This session — 2026-10-18" summary of the M.11 harness
+  work and its screens, flagged as ladder capability and findings (on
+  `mlx_lm.server`), not a measured claim.
 
 - Ladder records for a rung 9 screen that ran A21's two changes alone: the
   AgentClinic phase 4 id miss follows the one-file roadmap (5 of 6 runs,
   against 1 of 6 with one spec file per phase). Exploratory, n = 3 per arm.
 
+- The ladder can point a direct-mode run at a second backend and sweep
+  sampling for screens: `--backend mlx-lm --base-url <url>` targets a plain
+  OpenAI-compatible MLX server (no oMLX admin API, so the server's own launch
+  flags, not the ladder, set the server-only values), and `--temperature` /
+  `--top-p` override the greedy request defaults. `--backend omlx` stays the
+  default and applies/restores the server profile as before, so existing
+  records stand; the run record and `versions` now name the backend, base URL
+  and any sampling overrides. `--model-id` (direct mode) sets the id the request
+  carries so it matches what a plain mlx_lm.server serves (often the weights'
+  absolute path); it defaults to the Mellum id, so oMLX runs are unchanged.
+  `docs/backends/mlx-lm.md` documents the recipe and the issues hit proving it.
+
+- `run_ladder --acceptance-test <file>` (direct mode): places a hand-written
+  failing test (named `test_*.py` so pytest collects it) in the workspace's
+  `tests/` before the baseline and makes the task "make tests/<name> pass". Because the test is in the baseline, the
+  existing-tests scorer freezes it (the worker cannot weaken it) — the
+  mediated-test screen for M.11, run on real Pi and scored by the hidden tests.
+  `--redispatch N` adds the verify-and-re-hand loop: after a run it re-runs the
+  frozen test and, on failure, hands the failure to a fresh worker on the same
+  workspace, up to N times (needs `--acceptance-test`; the run record names the
+  number of re-dispatches).
+
+- `EXAMPLE.md`: a worked, example-driven guide to using Mellum — one-shot
+  `/mellum`, multi-task spans, handing it a failing test (the reliable pattern),
+  project facts, `/mellum check`/`last`, and measuring via the ladder's mlx-lm
+  backend.
+
+- `run_ladder --model-spec <spec>` and `--pi-extension <path>` (direct mode,
+  `--pi-extension` repeatable): drive a small OpenAI-compatible model as the
+  worker for fast iteration. `--model-spec` overrides Pi's `--model` (e.g.
+  `content-assist/<id>`) in place of the default `omlx/<id>`, and
+  `--pi-extension` loads an extra Pi extension with `-e` alongside
+  `--no-extensions` — together they let a content-tool-call-assist plugin turn a
+  small model's content tool-calls into real ones. Defaults unchanged; tests
+  cover the arg builder and the parser.
+
+- `LESSONS.md`: 100 lessons from the small-model-as-worker effort (plus a dated
+  addendum), and
+  `docs/superpowers/research/2026-10-19-small-model-tool-presentation.md`
+  recording a negative result — stripping a model's native tool field regresses
+  tool-calling (fix the chat template's line feeds instead).
+
+- The `mellum-dev` skill gains §10: land each verified win or learning as its
+  own small PR, with a changelog entry or a dated research note and the evidence
+  inline.
+
+- `extensions/content-tool-call-assist/` vendors the Pi extension that lets a
+  small model drive the loop from content tool-calls (JSON `{"tool","args"}` /
+  `{"name","arguments"}` or Hermes-XML), gated on the real tool names so model
+  data is not mistaken for a call. `scripts/patch-pi.sh [PI_DIR]` installs it
+  into a Pi checkout (its imports resolve only there); the ladder's
+  `--pi-extension` then loads it for small-model runs. Also mirrored to our Pi
+  fork.
+
+### Fixed
+
+- `--effort-ramp` no longer crashes with `ProfileMismatch`. The guard that
+  checks effective params against the server profile fired when the ramp
+  escalated `max_tokens` past the profile's fixed value; it now skips that
+  check while `--effort-ramp` is set (the ramp owns the budget by design). The
+  crash was caught by the run's own fail-loud path.
+
+- The re-dispatch retry message now carries the real test failure. It ran
+  `pytest -q` (whose output is dominated by deprecation warnings) and sent the
+  last 1200 chars — which were all warnings plus the terse summary, omitting the
+  assertion. Re-dispatches now run `pytest -q -p no:warnings --tb=short` and the
+  message carries the FAILURES section, so the worker sees what actually failed
+  instead of retrying blind.
+
 ### Changed
+
+- `run_ladder --pi-extension` now loads in `--mode mode` too (the mode runner
+  forwards extra extensions), so `extensions/mellum-ncm.ts` (the NCM verify
+  gate) can run inside Mellum Mode. With `--acceptance-test` also allowed in
+  Mode, both reach the shipped worker. The lever is **`--acceptance-test`**
+  (it places the frozen test): 6-bit Mode rung 9 goes **0/3 → 3/3**.
+  `mellum-ncm.ts` rode as a non-regressing safety net — it fired **0 times**,
+  the 6-bit passing first-try (`docs/ladder/2026-10-21-mode-ncm-rung9`).
+
+- `run_ladder --acceptance-test` now also works with `--mode mode`, not only
+  `--mode direct`: the frozen test is placed in the Mellum Mode workspace so the
+  shipped worker can be measured against it. The verify-and-re-dispatch loop
+  (`--redispatch`/`--effort-ramp`) stays direct-only and now errors clearly when
+  combined with Mode instead of silently doing nothing.
+
+- Worker prompt **v7** specializes to the "make one failing test pass" shape:
+  read the named test *and* any spec it references, create the module the test
+  imports if missing, run *only* the named test, never edit that test or add
+  other test files. This is Mellum's best-measured usage (see the 2026-10-20
+  record) — narrower than v6's general guidance, and the shipped templates
+  regenerate to it. The v6 keep-every-test guardrail folds in.
+
+- Mediated ladder runs verify with a **focused** command,
+  `pytest tests/<the-test>`, instead of the whole `tests/` directory, and the
+  worker's **tools are trimmed** to `read, ls, bash, edit, write` (`grep`/`find`
+  shell out to `fd`/`rg`, which are unavailable offline and wasted turns). Under
+  v6 the whole-dir command sent the worker chasing unrelated tests — a 93-turn
+  spin on rung 6; the focused command plus trimmed tools removed it.
+
+- `--effort-ramp` (with `--redispatch`): an effort ladder across attempts. The
+  initial try and early re-dispatches run **quick** — Pi thinking `off` and a
+  small `max_tokens` (2k), which on an easy fix is sub-second — then escalate to
+  `medium`/8k and finally `high`/16k only as the frozen test keeps failing. The
+  frozen test gates it, so compute is spent in proportion to measured difficulty
+  (a quick slice that passes stops the ladder). `qwen-chat-template` maps Pi's
+  thinking level into `chat_template_kwargs.enable_thinking`, and `max_tokens`
+  is now an overridable request param; the run record names the per-attempt
+  thinking level and budget. Default off — existing runs are unchanged.
+
+- Worker prompt v6 adds a keep-every-existing-test guardrail (add new tests
+  alongside the existing ones; change only what the task requires). It is
+  spec-aligned guidance; on a 2B model it showed no measured lift (the model
+  ignores it) and no regression — see the 2026-10-19 research note — so it is
+  kept as guidance for more capable workers, not as a measured improvement.
+
+- `--redispatch` now varies the sampling on each retry instead of re-running
+  the same greedy decode: the request temperature grows by
+  `--redispatch-temperature-step` (default 0.25) per attempt up to
+  `--redispatch-temperature-cap` (default 0.5), and the seed moves with the
+  attempt number. Past the cap the temperature holds and only the seed keeps
+  moving, so retries keep diverging (reproducibly) without going hot — high
+  temperature corrupts the worker's JSON tool calls (observed: a 0→1.0 ramp ran
+  44 tool errors in 121 requests and thrashed a working app into a broken one).
+  Set the step to 0 to keep every retry greedy. The run record names the step,
+  the cap and the per-attempt temperature/seed schedule. `seed` is now an
+  overridable request param. A re-dispatch now also fires when an attempt hits
+  the deadline (a timeout is still a failing frozen test), so a fresh worker
+  continues on the same workspace instead of the loop giving up — keep the
+  per-attempt `--deadline` small to bound the total.
 
 - The README now opens with the idea the package serves, domain engineering
   (you write specs and tests, Mellum makes the test command exit 0), names
