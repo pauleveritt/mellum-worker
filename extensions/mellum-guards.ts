@@ -52,7 +52,8 @@ export const ENABLED: {
 	loopBreaker?: boolean;
 	stepBudget?: number;
 	emptyFinalNudge?: number;
-} = { emptyFinalNudge: 3, loopBreaker: true };
+	blockForegroundServer?: boolean;
+} = { emptyFinalNudge: 3, loopBreaker: true, blockForegroundServer: true };
 
 export const NUDGE_TEXT =
 	"[mellum-guard] Your last turn ended with no reply and no tool call. " +
@@ -130,6 +131,58 @@ export const newFileOnlyWrite =
 		};
 	};
 
+function commandOf(input: unknown): string | undefined {
+	if (!input || typeof input !== "object") return undefined;
+	const record = input as Record<string, unknown>;
+	for (const key of ["command", "cmd"]) {
+		if (typeof record[key] === "string") return record[key] as string;
+	}
+	return undefined;
+}
+
+/** Commands that run a long-lived server in the foreground and never return. */
+const SERVER_START =
+	/\b(uvicorn|gunicorn|hypercorn|daphne|waitress-serve)\b|\bflask\s+run\b|\bpython\d?\s+-m\s+(http\.server|flask)\b|\bmanage\.py\s+runserver\b|\bfastapi\s+(dev|run)\b|\brails\s+server\b|\bnpm\s+(start|run\s+dev)\b/;
+
+/** Whether a shell command is already detached (nohup, or a background `&` operator). */
+export function isBackgrounded(command: string): boolean {
+	if (/\bnohup\b/.test(command)) return true;
+	// Ignore redirects that contain '&' (2>&1, &>, >&) before looking for a background '&'.
+	const stripped = command.replace(/\d*>&\d*/g, " ").replace(/&>/g, " ");
+	return /(^|[^&])&(\s|$)/.test(stripped.trim());
+}
+
+/** Read/search commands whose arguments may mention a server but never run one. */
+const READONLY_FIRST = /^\s*(grep|rg|cat|less|more|head|tail|echo|printf|find|ls|awk|sed|sort|uniq|wc|diff|which|type|git)\b/;
+
+/** A blocking server started in the foreground (so it would hang the run). */
+export function isForegroundServer(command: string | undefined): boolean {
+	if (!command) return false;
+	if (READONLY_FIRST.test(command)) return false; // e.g. `grep uvicorn`, `cat app.py`
+	return SERVER_START.test(command) && !isBackgrounded(command);
+}
+
+/** The non-blocking form: detached, logs aside, prints the pid to kill later. */
+export function backgroundForm(command: string): string {
+	return `nohup ${command.trim()} >/tmp/mellum-server.log 2>&1 & echo "server pid $!"`;
+}
+
+/** Block a foreground server start; it blocks forever and burns the time budget. */
+export const serverGuard: Guard = (call) => {
+	if (call.toolName !== "bash") return undefined;
+	const command = commandOf(call.input);
+	if (!isForegroundServer(command)) return undefined;
+	return {
+		block: true,
+		reason:
+			"That starts a server in the foreground; it blocks forever and burns your whole time budget. " +
+			"You do not need a running server here — exercise an endpoint in process the way the tests do: " +
+			'`from starlette.testclient import TestClient; TestClient(app).get("/...")`. ' +
+			"If you truly must run it, start it in the background so it returns at once with a pid you can kill later: " +
+			`\`${backgroundForm(command as string)}\`.`,
+	};
+};
+
 /** Tools after which an earlier call's result may legitimately differ. */
 const MUTATING_TOOLS = new Set(["edit", "write", "bash"]);
 
@@ -189,6 +242,7 @@ export function activeGuards(enabled = ENABLED, cwd = process.cwd()): Guard[] {
 		guards.push(newFileOnlyWrite((p) => existsSync(isAbsolute(p) ? p : resolve(cwd, p))));
 	}
 	if (enabled.loopBreaker) guards.push(createLoopBreaker());
+	if (enabled.blockForegroundServer) guards.push(serverGuard);
 	if (enabled.stepBudget) guards.push(createStepBudget(enabled.stepBudget));
 	return guards;
 }

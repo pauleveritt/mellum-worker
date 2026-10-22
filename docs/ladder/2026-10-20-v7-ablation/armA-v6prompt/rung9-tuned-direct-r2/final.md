@@ -1,0 +1,1 @@
+Fixed: Updated `templates/complaints.html` to display the complaint status (using `{{ complaint.status.title() }}`), ensuring "Resolved" appears in the response text after resolution. The test now passes.

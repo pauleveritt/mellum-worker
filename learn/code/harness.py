@@ -237,29 +237,6 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
     return results
 
 
-def grade(workspace: Path) -> list[tuple[str, bool, str]]:
-    workspace = Path(workspace)
-    (workspace / "pyrefly.toml").write_text(
-        'project-includes = [\n    "**/*.py",\n]\n'
-        'project-excludes = [\n    "tests/**",\n]\n')
-    commands = (
-        ("ruff", ["uvx", "ruff", "check", "--exclude", "tests", "."]),
-        ("pyrefly", ["uvx", "pyrefly", "check", "."]),
-        ("complexipy", ["uvx", "complexipy", "--max-complexity-allowed", "10",
-                        "--exclude", "tests", "."]),
-    )
-    results = []
-    for name, command in commands:
-        result = subprocess.run(
-            command, cwd=workspace, capture_output=True, text=True, check=False,
-            env={**os.environ, "PYTHONPATH": str(workspace)},
-        )
-        output = [line for line in (result.stdout + result.stderr).splitlines()
-                  if line.strip()]
-        results.append((name, result.returncode == 0, output[0] if output else ""))
-    return results
-
-
 def qualify(suite: Suite) -> tuple[bool, dict[str, bool]]:
     if suite.root is None:
         raise SystemExit(f"suite {suite.name} has no root")

@@ -6,6 +6,34 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- A `mellum-surgical` extension (`extensions/mellum-surgical.ts`): block a
+  `write` that would clobber an existing file. On a write onto a file that
+  already exists it measures churn (the fraction of lines changed — the clobber
+  signal) and growth (a duplicated copy) against the current content and blocks
+  a regeneration, steering the worker to `edit` the targeted change; a write to
+  a new file is always allowed. Churn is the detector; growth stays generous so
+  a legitimate addition (a new route or field) is never mistaken for a rewrite.
+  Caps tune with `MELLUM_SURGICAL`; load with `-e extensions/mellum-surgical.ts`.
+  Measured incidence on the current model is low (Pi's `edit` anchors reliably),
+  so this is a cheap safety net, not a hot path.
+
+- A `mellum-plan` extension (`extensions/mellum-plan.ts`): plan before you
+  implement. It blocks the worker's first `edit`/`write` until it has stated a
+  plan (a substantive assistant text turn); reads, greps and shell commands are
+  never gated, and once a plan exists the gate never fires again. The block
+  reason asks for the files to change and a checklist of every spec requirement,
+  including data-model rules no visible test checks (the phase-4 id/status
+  miss). Structural, not a prompt line; load with `-e extensions/mellum-plan.ts`.
+
+- A `mellum-quality` extension (`extensions/mellum-quality.ts`): at
+  `agent_before_settle` it runs `ruff --select F,E9` over the worker's own
+  changes and, when a real error remains — a shadowed redefinition (F811), an
+  undefined name (F821), an unused import (F401) or a syntax error — hands it
+  back with one bounded nudge to fix before finishing. Real-error classes only,
+  never style, so a working solution is never failed on cosmetics; it degrades
+  to silence when ruff cannot run. Load it with `-e extensions/mellum-quality.ts`
+  and tune it with `MELLUM_QUALITY` (JSON, e.g. `{"max":1,"select":"F"}`).
+
 - A `zensical-glossary` build for `learn/glossary.md`: the page now has
   `###` entries for `screen`, `nudge`, `empty-final nudge`, `no-nudge`,
   `Baseline Worker`, `Baseline Pi`, `arm`, `ablation`, the telemetry columns

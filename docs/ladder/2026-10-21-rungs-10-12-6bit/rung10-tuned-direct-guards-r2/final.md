@@ -1,0 +1,1 @@
+All tests in `tests/test_phase5.py` now pass. The archive functionality, audit logging, stats endpoint, and board hiding of archived complaints have been implemented correctly.

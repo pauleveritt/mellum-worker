@@ -312,6 +312,34 @@ def test_grade_ignores_a_copied_tests_dir(tmp_path):
     assert results["ruff"] is True
 
 
+def test_grade_tolerates_style_not_real_errors(tmp_path):
+    # An unused `# noqa` is RUF100 — a style nit, not a real error. The grader
+    # is meant to gate on real errors only (ruff --select F,E9), so it must
+    # tolerate this. The shadowed, stricter grade() (default ruff) reports
+    # RUF100 and wrongly fails a working solution — the exact trap that failed
+    # working lesson solutions (easy was 4/4 on the hidden grader yet FAILED).
+    grades = _grades(
+        tmp_path,
+        "def fizz(x: int) -> str:\n"
+        "    return str(x)  # noqa: D415\n",
+    )
+    assert grades["ruff"] is True
+
+
+def test_harness_has_no_shadowed_top_level_definitions():
+    # A second `def`/`class` of the same name at module scope silently replaces
+    # the first (pyflakes F811) — how the lenient grade() got shadowed by an
+    # older strict copy. Pin the grading harness itself against that bug class.
+    import ast
+    from collections import Counter
+
+    tree = ast.parse(Path(harness.__file__).read_text())
+    defs = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+    names = [node.name for node in tree.body if isinstance(node, defs)]
+    shadowed = sorted(name for name, count in Counter(names).items() if count > 1)
+    assert not shadowed, f"redefined at module scope (later shadows earlier): {shadowed}"
+
+
 @pytest.mark.parametrize("name", ["easy"])
 def test_each_solution_passes_the_graders(tmp_path, name):
     solved = tmp_path / name
