@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- A workspace-confinement guard blocks recursive `find`, `rg`, `grep -r` and
+  `ls -R` calls whose absolute paths leave the worker’s workspace. It targets
+  the machine-wide search that hung a run, and is on by default.
+
 - A `zensical-glossary` build for `learn/glossary.md`: the page now has
   `###` entries for `screen`, `nudge`, `empty-final nudge`, `no-nudge`,
   `Baseline Worker`, `Baseline Pi`, `arm`, `ablation`, the telemetry columns
