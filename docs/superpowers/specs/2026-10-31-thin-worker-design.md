@@ -62,16 +62,18 @@ tests already cover the behavior; the worker's tests shrink to mode + commands.
 
 ### Delegation: a replacement, not a deletion
 
-Handoff-collapse and the compaction refusal are *delegation* behavior, not
-remediation, and nothing else provides them. They move to two new units under a
-`delegate/` family so the baseline worker can run without them and a preset can
-add them back:
+Handoff-collapse is *delegation* — it changes only what the **parent** sees of a
+finished span — and nothing else provides it, so it moves to one new unit:
 
 - `delegate/collapse-handoffs` — the `context`-hook span collapse.
-- `delegate/guard-compaction` — refuse auto-compaction while a span is open.
 
-Whether the baseline includes these or they live only in a preset is the open
-decision below.
+**Refinement during implementation (2026-10-31):** the compaction refusal and
+the pre-marker history drop are **not** delegation. Both are coupled to the
+worker's `active` flag and exist to protect the mode's own on-marker and the
+parent's session, so they are *mode-integrity* and stay in the thin worker. A
+unit cannot see `active`, and splitting them out would break the marker. Only
+handoff-collapse — which reads a complete `[on…off]` span and needs no private
+state — becomes a unit.
 
 ## check → llama-server only
 
