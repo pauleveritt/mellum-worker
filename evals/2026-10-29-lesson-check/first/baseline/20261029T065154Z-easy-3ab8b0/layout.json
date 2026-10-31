@@ -1,0 +1,10 @@
+{
+  "created": [
+    "main.py",
+    "templates/home.html"
+  ],
+  "modified": [],
+  "out_of_layout": [
+    "main.py"
+  ]
+}

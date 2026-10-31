@@ -1,11 +1,13 @@
-# Contributing a lesson
+# Contributing a Lesson
 
 If you have an idea for a lesson, follow this process:
 
 1. **Write it as a digest first.** Put the idea in `docs/superpowers/research/` in the six-step form (Problem → Eval case → Evidence of the problem → Solution → Validation → Interpretation), with a badge on each of steps 1–5.
 2. **Review every claim against its linked record.** Each step must cite a source: a ladder record, a research note, a commit message, or reasoning. No claim goes in without a link.
 3. **Copy the lesson template.** Use [`../lesson-template.md`](../lesson-template.md) as your starting point.
-4. **Write the Interpretation within its weakest badge.** If the weakest badge is `screen`, say so — don't state conclusions as if they were proven.
+4. **Write the Interpretation within its weakest badge.** If the weakest badge is `screen`, say so; don't state conclusions as if they were proven.
+
+![Several hands adding blocks to a growing tower, the small robot placing one on top](../assets/illustrations/contributing.webp){ .illustration }
 
 ## Consent rule
 

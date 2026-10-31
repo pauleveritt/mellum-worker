@@ -1,0 +1,239 @@
+# The Lessons illustrations: one shared style, one subject and seed per image.
+# Regenerate with `uv run scripts/illustrate.py` (only missing images) or
+# `uv run scripts/illustrate.py --force <name>`. The small robot is the model.
+
+style = "flat vector illustration, muted teal and coral palette with soft grey, clean white background, simple rounded shapes, a small friendly teal robot as the main character, plenty of white space, no text, no letters, no numbers"
+negative = "text, letters, words, numbers, watermark, logo, photo, realistic, gradient, clutter"
+width = 1280
+height = 640
+
+[lessons]
+seed = 1011
+subject = "exactly three large wide steps side by side, rising from left to right: a low green step, a middle amber step, and a tall coral step, only three steps and nothing else, the small robot standing on the low green step looking up at the others"
+
+[tier-easy]
+seed = 102
+subject = "the small robot turning a single large dial on a simple control panel while a light bulb next to it switches on"
+
+[tier-medium]
+seed = 103
+subject = "the small robot unrolling a long paper scroll covered in small blocks and lines, studying it with a magnifying glass"
+
+[tier-hard]
+seed = 104
+subject = "the small robot as a conductor with a baton directing three even smaller robots working at separate desks"
+
+[baseline]
+seed = 201
+subject = "the small robot standing at a starting line on three parallel running tracks, a measuring tape laid along the tracks"
+
+[write-only-listed]
+seed = 202
+subject = "the small robot carefully placing paper sheets into a row of labelled folders on a shelf, one folder outside the row left closed and untouched"
+
+[tell-it-how-to-test]
+seed = 203
+subject = "the small robot at a workbench reading a small index card pinned above the bench, a wrench and a test tube on the bench"
+
+[a-short-prompt]
+seed = 204
+subject = "the small robot holding a short folded note, while a very long paper scroll lies coiled unused on the floor beside it"
+
+[thinking-is-working-memory]
+seed = 301
+subject = "the small robot with a large thought bubble full of small gears, next to a tall glass jar being filled with coins"
+
+[nudge-an-empty-turn]
+seed = 302
+subject = "the small robot with an empty speech bubble while a gentle mechanical hand taps its shoulder, a looping arrow on the floor cut in the middle"
+
+[one-spec-per-phase]
+seed = 3031
+subject = "four plain blank paper cards laid face up in a neat row on a long wooden table, the small robot standing at the table holding up only the first card"
+
+[steps-not-one-brief]
+seed = 304
+subject = "the small robot holding a very long letter that spills onto the floor, it has stopped reading after the first page and looks satisfied"
+
+[who-drives]
+seed = 401
+subject = "a large busy robot juggling many tools at once beside the small robot calmly working on one task at a tidy workbench"
+
+[the-handoff]
+seed = 402
+subject = "two robots connected by a paper tape that keeps growing into a big pile between them, versus a single small card passed hand to hand"
+
+[introduction]
+seed = 5021
+subject = "top-down view of a wide calm pond filled with about fifteen round lily pads arranged like a branching tree from left to right, a small green frog sitting on the first lily pad at the far left, dotted hop arrows lead from pad to pad, the path splits into two routes after the first pad and each route splits again further on, ending at several different pads on the right bank, no robot"
+
+[getting-started]
+seed = 601
+subject = "the small robot with a little backpack at the start of a winding path of stepping stones leading up a gentle hill"
+
+[base-pi-on-llamacpp]
+seed = 602
+subject = "the small robot setting up a laptop on a desk, a small llama figurine standing next to the laptop, a cable running to a tiny server box"
+
+[the-ditch]
+seed = 6031
+subject = "the small robot sitting in a little car that has tipped nose-first into a grassy ditch beside a road, the robot grinning and raising one arm, a white speech bubble above the robot containing only the word \"Success!\" in clear bold letters"
+style = "flat vector illustration, muted teal and coral palette with soft grey, clean white background, simple rounded shapes, a small friendly teal robot as the main character, plenty of white space, the only text in the image is the word Success! in the speech bubble"
+negative = "any other text, extra letters, misspelled words, numbers, watermark, logo, photo, realistic, gradient, clutter"
+
+[build-a-harness]
+seed = 604
+subject = "the small robot working inside a clean glass test box on a table, a mechanical arm outside the box holding a clipboard and a stopwatch"
+
+[working-with-pi]
+seed = 351
+subject = "the small robot sitting at a desk typing on a keyboard in front of a large terminal window with a blinking cursor, a few small folder shapes and a little wrench resting beside the keyboard"
+
+[eval-suites]
+seed = 605
+subject = "the small robot standing before three crates of increasing size stacked like steps, a round gauge with a needle mounted on the wall beside them"
+
+[worker-extension]
+seed = 606
+subject = "the small robot clicking a new modular attachment with a small toolbox shape onto its arm, a few spare attachments laid out on a table"
+
+[troubleshoot]
+seed = 607
+subject = "the small robot with a wrench untangling a knotted cable that runs between a laptop and a small server box"
+
+[pathologies]
+seed = 608
+subject = "a doctor robot with a stethoscope gently examining the small robot, a clipboard with simple chart lines and a magnifying glass on a side table"
+
+[home]
+seed = 701
+subject = "the small robot at a sunny workbench beside a laptop, surrounded by a magnifying glass, a clipboard with a simple chart, a wrench and an open notebook, ready to learn"
+
+[glossary]
+seed = 801
+subject = "the small robot leafing through a large open dictionary on a reading stand, a few small blank bookmark tabs sticking out of the pages"
+
+[about]
+seed = 8021
+subject = "two men sitting side by side at a table with the small robot between them: on the left a friendly middle-aged man with short grey-brown hair, clean-shaven, warm smile, wearing a blue plaid button-up shirt, working on a laptop; on the right a calm man with a fully bald head, clean-shaven, wearing a light blue shirt, writing in a notebook; a potted plant in the corner"
+
+[how-to-read]
+seed = 803
+subject = "the small robot following a simple map with a dotted route that passes six round markers in order, a compass beside the map"
+
+[evidence]
+seed = 804
+subject = "a set of four round coloured badges laid out on a table, green, blue, amber and grey, the small robot examining them with a magnifying glass, a simple balance scale nearby"
+
+[contributing]
+seed = 805
+subject = "several hands each placing a building block onto a growing tower, the small robot adding one block at the top"
+
+[project]
+seed = 806
+subject = "the small robot standing in a tidy workshop with a pegboard of hanging tools, a folder rack and a small checklist clipboard"
+
+[toolchain]
+seed = 807
+subject = "a neat row of tools laid out on a workbench, a wrench, a screwdriver, a small gauge and a tape measure, with green check marks drawn as simple shapes beside each, the small robot inspecting them"
+
+[lesson-template]
+seed = 808
+subject = "the small robot filling in an empty page layout pinned to a board, with blank boxes in a fixed order and a pencil in its hand"
+
+[credits]
+seed = 809
+subject = "the small robot clapping beside a small stage where two friendly figures take a bow under a spotlight"
+
+[challenge]
+seed = 901
+subject = "the small robot standing proudly on the top step of a three-step winners' podium, three medals hanging beside the podium on ribbons, one bronze, one silver and one gold, confetti shapes in the air"
+
+[read-the-failure]
+seed = 301
+subject = "the small robot kneeling with a large magnifying glass over a long paper scroll unrolled across the floor, one spot on the scroll circled in coral"
+
+[looking-around]
+seed = 302
+subject = "the small robot walking in a circle around a single filing cabinet, a worn circular groove of footprints on the floor around it"
+
+[searching]
+seed = 303
+subject = "the small robot with a flashlight peering into an enormous dark warehouse of shelves, while a small tidy room with one open drawer sits right behind it"
+
+[creating-files]
+seed = 304
+subject = "the small robot holding up a single small sticky note, while a thick open book lies on the floor beside it with most of its pages blank"
+
+[running-commands]
+seed = 305
+subject = "the small robot standing still in front of a closed door with a server rack symbol on it, a large hourglass beside the robot with the sand almost run out"
+
+[too-many-tools]
+seed = 306
+subject = "the small robot at a workbench with exactly seven neat tools laid in a row, an overflowing toolbox pushed to the far side of the bench"
+
+[run-long-commands-safely]
+seed = 311
+subject = "the small robot pressing a button on a small machine that keeps humming on its own in the background, the robot already walking on to the next task with a clipboard"
+
+[look-it-up]
+seed = 312
+subject = "the small robot standing on a short ladder pulling one thick reference book from a tall bookshelf, a question mark bubble above its head turning into a check mark"
+
+[check-before-finishing]
+seed = 313
+subject = "the small robot at a desk holding a magnifying glass over a finished page with a few small coral marks circled, a checklist beside it"
+
+[plan-examine-code]
+seed = 341
+subject = "three small robots in a row at three desks passing one page along: the first drawing a plan, the second holding up a blank sheet with only coloured lines and no writing, the third typing code"
+
+[frozen-gates-and-checkpoints]
+seed = 322
+subject = "the small robot walking along a path through a series of gates, each gate behind it closed with a small padlock, a flag planted at the last gate it passed"
+
+[dont-trust-the-self-exit]
+seed = 323
+subject = "the small robot proudly holding a small paper checkmark at a finish line, while a larger second robot at the line holds up a clipboard with a test to check it"
+
+[best-of-n]
+seed = 324
+subject = "three small robots side by side each building the same small block tower, one tower finished and highlighted in coral, the other two unfinished"
+
+[build-a-tool]
+seed = 325
+subject = "the small robot at a workbench assembling a brand new tool from parts, a blueprint pinned on the wall above the bench"
+
+[build-a-remedy]
+seed = 326
+subject = "the small robot fitting a small new guard rail onto a path where a gap was, a toolbox open beside it and a finish flag in the distance"
+
+[start-here]
+seed = 331
+subject = "the small robot at a starting line holding an open map, a short path of exactly six round stepping stones leading away from it across the white space"
+
+# Placeholders until generated: the .webp files are copies of their tier picture.
+[know-when-to-stop]
+seed = 8022
+subject = "the small robot raising a hand to stop beside a counter showing a turn budget run down to zero, holding a short written summary"
+
+[keep-a-plan]
+seed = 8023
+subject = "the small robot ticking items off a long checklist pinned to a board, a pencil behind its ear"
+
+[build-a-suite]
+seed = 8024
+subject = "the small robot holding two boxes labelled good and broken up to a testing machine, one light green and one red"
+
+[reasoning-as-text]
+seed = 8025
+subject = "the small robot sorting a tangled ribbon of thought bubbles and speech bubbles into two separate trays"
+
+[context-overflow]
+seed = 8026
+subject = "the small robot trying to stuff an armful of thick books into a small backpack while pages spill out"
+
+[scoreboard]
+seed = 8040
+subject = "the small robot posting run times on a tall leaderboard with a stopwatch in one hand, fastest time pinned at the top"

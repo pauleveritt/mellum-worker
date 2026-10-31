@@ -159,7 +159,7 @@ rungs 6–9 beat A18 by ≥ 3/12 or reach ≥ 10/12; A19's median requests on
 rungs 6–9 are below A18's. A20 informs the docs (what a project without the
 section gets) and does not gate. If the rule fails, the facts code is not
 merged; the fixture and A18 stay as the baseline for M.10. Each phase gets
-a `docs/ladder/<phase>/README.md` and a row in `ablation-summary.md`; raw
+a `evals/<phase>/README.md` and a row in `ablation-summary.md`; raw
 files go to a `research-YYYY-MM-DD` release (Paul's step).
 
 ## 4. ac-demo

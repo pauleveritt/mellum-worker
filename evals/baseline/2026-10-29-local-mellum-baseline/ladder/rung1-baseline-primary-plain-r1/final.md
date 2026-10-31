@@ -1,0 +1,1 @@
+The cart total now correctly accounts for item quantities. The fix was applied to `calculator.js`, and all tests pass.

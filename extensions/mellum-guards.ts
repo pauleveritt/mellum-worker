@@ -24,7 +24,7 @@
  *
  * ENABLED is set from the ladder records: the empty-final nudge capped at 3
  * and the loop breaker live are phase 2b's 15/15 configuration
- * (docs/ladder/phase2b-guards-bounded). The other guards stay
+ * (evals/2026-10-09-phase2b-guards-bounded). The other guards stay
  * dormant: their columns never went non-zero in direct mode.
  */
 
@@ -53,7 +53,8 @@ export const ENABLED: {
 	stepBudget?: number;
 	emptyFinalNudge?: number;
 	blockForegroundServer?: boolean;
-} = { emptyFinalNudge: 3, loopBreaker: true };
+	confineToWorkspace?: boolean;
+} = { emptyFinalNudge: 3, loopBreaker: true, blockForegroundServer: true, confineToWorkspace: true };
 
 export const NUDGE_TEXT =
 	"[mellum-guard] Your last turn ended with no reply and no tool call. " +
@@ -183,6 +184,48 @@ export const serverGuard: Guard = (call) => {
 	};
 };
 
+/** Whether a bash command walks a directory tree: find, ripgrep (recursive by
+ * default), recursive grep (-r/-R/--recursive), or `ls -R`. */
+export function isTreeWalk(command: string): boolean {
+	if (/\bfind\b/.test(command)) return true;
+	if (/\b(rg|ripgrep)\b/.test(command)) return true;
+	if (/\bgrep\b/.test(command) && /(?:\s-\w*[rR]|\s--recursive\b)/.test(command)) return true;
+	if (/\bls\b.*\s-\w*R/.test(command)) return true;
+	return false;
+}
+
+/** Absolute-path arguments in a command (whitespace- or start-delimited `/...` tokens).
+ * A quoted regex like `sed 's/a/b/'` starts with a quote, not `/`, so it is not matched. */
+export function absolutePathArgs(command: string): string[] {
+	return (command.match(/(?:^|\s)(\/[^\s'";|&]+)/g) ?? []).map((s) => s.trim());
+}
+
+/** Block a recursive search that reaches OUTSIDE the workspace. The recorded pathology:
+ * a worker ran `grep -rl pattern /Users /var /tmp …`, which crawls the whole machine and
+ * hangs the run for minutes. A tree-walk confined to the workspace (relative paths, or
+ * absolute paths under `root`) is allowed; one that names an absolute path outside it is not. */
+export function confineSearch(root: string): Guard {
+	const base = resolve(root);
+	const isUnder = (p: string): boolean => {
+		const r = resolve(base, p);
+		return r === base || r.startsWith(`${base}/`);
+	};
+	return (call) => {
+		if (call.toolName !== "bash") return undefined;
+		const command = commandOf(call.input);
+		if (!command || !isTreeWalk(command)) return undefined;
+		const outside = absolutePathArgs(command).filter((p) => !isUnder(p));
+		if (outside.length === 0) return undefined;
+		return {
+			block: true,
+			reason:
+				`That searches outside your workspace (${outside.slice(0, 3).join(", ")}). ` +
+				`It scans the whole machine and hangs the run. Search only within your working folder: ` +
+				`use relative paths (e.g. \`grep -rl pattern .\`) or paths under ${base}.`,
+		};
+	};
+}
+
 /** Tools after which an earlier call's result may legitimately differ. */
 const MUTATING_TOOLS = new Set(["edit", "write", "bash"]);
 
@@ -243,6 +286,7 @@ export function activeGuards(enabled = ENABLED, cwd = process.cwd()): Guard[] {
 	}
 	if (enabled.loopBreaker) guards.push(createLoopBreaker());
 	if (enabled.blockForegroundServer) guards.push(serverGuard);
+	if (enabled.confineToWorkspace) guards.push(confineSearch(cwd));
 	if (enabled.stepBudget) guards.push(createStepBudget(enabled.stepBudget));
 	return guards;
 }

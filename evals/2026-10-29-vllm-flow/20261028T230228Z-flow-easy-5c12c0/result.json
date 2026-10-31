@@ -1,0 +1,21 @@
+{
+  "suite": "easy",
+  "flow_mode": "forced",
+  "memory": null,
+  "coder_feedback": true,
+  "visible": true,
+  "graded": true,
+  "hidden_passed": 4,
+  "hidden_total": 4,
+  "todo": true,
+  "phases": 1,
+  "phase_results": [
+    true
+  ],
+  "phase_rounds": [],
+  "north_star": "Implement Phase 1 \u2014 Home Page.",
+  "model": "Mellum2.1-12B-A2.5B-Thinking",
+  "thinking": "medium",
+  "started": "2026-10-28T23:02:28Z",
+  "finished": "2026-10-29T00:17:35Z"
+}

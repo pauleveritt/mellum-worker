@@ -1,0 +1,18 @@
+{
+  "created": [
+    "app.py",
+    "models.py",
+    "templates/base.html",
+    "templates/complaints.html",
+    "templates/home.html",
+    "tests/test_app.py"
+  ],
+  "modified": [
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "out_of_layout": [
+    "pyproject.toml",
+    "uv.lock"
+  ]
+}

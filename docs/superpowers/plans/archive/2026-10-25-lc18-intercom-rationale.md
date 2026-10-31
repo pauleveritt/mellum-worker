@@ -32,7 +32,7 @@ states **why the transcript was not kept**, not what it cost.
 ## Non-goals
 
 - Re-adding a delegate mechanism, or a screen or arm for one.
-- Quoting A11's numbers, or citing `docs/ladder/` — lesson pages may not link it.
+- Quoting A11's numbers, or citing `evals/` — lesson pages may not link it.
 - Changing the worker, the prompt, the guards or the handoff block.
 
 ## Tasks
@@ -43,7 +43,7 @@ states **why the transcript was not kept**, not what it cost.
 
 - [ ] **Step 1: Write the lesson test first** — six `##` headings, steps 1–5
   badged `conjecture`, `weakest badge is `conjecture``, `position: 9`, no
-  `docs/ladder/` link, no `reference-run`, and the page names `collapseHandoffs`,
+  `evals/` link, no `reference-run`, and the page names `collapseHandoffs`,
   the summary block, and says there is no arm.
 
 - [ ] **Step 2: Run it and see it fail for the missing page.**
@@ -107,7 +107,7 @@ whose Solution is `collapseHandoffs`' one-summary-block-per-span, quoted small f
 changelog entry land with it.
 
 Nothing was measured: the page restates no percentage from the retired arm, links
-no `docs/ladder/` record, and claims no `reference-run`. What it validates is the
+no `evals/` record, and claims no `reference-run`. What it validates is the
 mechanism's contract — 93 handoff tests — and `npm test` 380/380, docs caps 4/4.
 
 Open, and stated in the Interpretation: the pairing (transcript against summary,

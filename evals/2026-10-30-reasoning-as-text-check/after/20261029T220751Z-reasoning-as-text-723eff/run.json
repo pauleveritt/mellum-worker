@@ -1,0 +1,47 @@
+{
+  "suite": "reasoning-as-text",
+  "arm": "bare",
+  "remedies": [
+    "context/repair-think-tags"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/context/repair-think-tags.ts",
+      "sha256": "7b7b8ef4719462945bacbe02a387c76ccebe47c51c42c4686a43012746fc5b66"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_challenge.py": {
+      "missing": 0,
+      "total": 2
+    }
+  },
+  "record_failures": [],
+  "requests": 5,
+  "turns": 5,
+  "tool_calls": 4,
+  "tool_errors": 0,
+  "context": 2999,
+  "output_tokens": 988,
+  "wall": 5.642,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

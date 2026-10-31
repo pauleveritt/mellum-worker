@@ -1,0 +1,63 @@
+{
+  "commit": "6985a6e",
+  "command": "three concurrent flow_run.py --suite <s> ... --runs-dir runs/flow-par-20261029T055821Z (one process per level, one vLLM)",
+  "flow": {
+    "mode": "forced",
+    "attempts": 6,
+    "timeout_s": 900,
+    "concurrency": 1,
+    "thinking": "medium",
+    "memory": null,
+    "n": 1,
+    "parallel_levels": 3
+  },
+  "host": {
+    "provider": "vast.ai",
+    "instance": "58204861",
+    "offer": "57435771",
+    "dph": 0.389,
+    "geolocation": "Arizona, US",
+    "gpu": "NVIDIA RTX A6000, 49140 MiB, driver 595.84"
+  },
+  "client": {
+    "os": "macOS (Apple M3)",
+    "pi": "1.3.0",
+    "node": "22.19.0"
+  },
+  "started": "2026-10-29T05:58:21Z",
+  "finished": "2026-10-29T09:22:00Z",
+  "pins": {
+    "BASELINE_GPU_NAME": "NVIDIA RTX A6000",
+    "BASELINE_GPU_MEMORY_MIB": "49140",
+    "BASELINE_GPU_COUNT": "1",
+    "BASELINE_GPU_VAST_NAME": "RTX_A6000",
+    "BASELINE_MIN_DRIVER_MAJOR": "580",
+    "BASELINE_VLLM_VERSION": "0.32.0",
+    "BASELINE_VLLM_IMAGE": "vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34",
+    "BASELINE_MODEL_REPO": "JetBrains/Mellum2.1-12B-A2.5B-Thinking",
+    "BASELINE_MODEL_REVISION": "92ddae9fc7665e9f801d141d2e5a6b2caf2460c4",
+    "BASELINE_SERVED_NAME": "Mellum2.1-12B-A2.5B-Thinking",
+    "BASELINE_DTYPE": "bfloat16",
+    "BASELINE_MAX_MODEL_LEN": "131072",
+    "BASELINE_GPU_MEMORY_UTILIZATION": "0.90",
+    "BASELINE_SEED": "0",
+    "BASELINE_REASONING_PARSER": "qwen3",
+    "BASELINE_TOOL_CALL_PARSER": "hermes",
+    "BASELINE_PORT": "8000",
+    "BASELINE_NODE_VERSION": "22.19.0",
+    "BASELINE_PI_VERSION": "1.3.0",
+    "BASELINE_VASTAI_VERSION": "1.9.1",
+    "BASELINE_LADDER_RUNGS": "1 2 3 4 5 6 7 8 9 10 11 12",
+    "BASELINE_LADDER_REPEAT": "3",
+    "BASELINE_LADDER_DEADLINE": "600",
+    "BASELINE_SUITES": "all",
+    "BASELINE_SUITE_REPEAT": "3",
+    "BASELINE_SUITE_DEADLINE": "2700",
+    "BASELINE_SUITE_STALL": "120",
+    "BASELINE_LESSON_PARALLEL": "3",
+    "BASELINE_LESSON_DEADLINE_CAP": "900",
+    "BASELINE_SCREEN_RUNGS": "1 6",
+    "BASELINE_SCREEN_SUITES": "easy"
+  },
+  "shared_host_with": "the preregistered lesson check (from 06:46 UTC), up to three sessions at a time"
+}

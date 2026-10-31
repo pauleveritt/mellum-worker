@@ -1,0 +1,130 @@
+{
+  "suite": "medium",
+  "arm": "bare",
+  "remedies": [
+    "guard/break-repeat-loops",
+    "guard/stay-in-workspace",
+    "guard/refuse-whole-file-rewrite",
+    "guard/block-foreground-server",
+    "context/narrow-tools",
+    "context/add-project-facts",
+    "context/use-short-prompt",
+    "nudge/nudge-empty-turn",
+    "tool/background-long-commands",
+    "tool/lookup-library-docs",
+    "check/check-code-quality"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/break-repeat-loops.ts",
+      "sha256": "855d6b09948a2ec71f544d935c2ffe63e95d0aadf516c69b57794e38382e8497"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/stay-in-workspace.ts",
+      "sha256": "58a7771b80c4ee4f4742efb1b37740fb9a519b9611091640a1f0e5128ae33ce1"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/refuse-whole-file-rewrite.ts",
+      "sha256": "a8e37f900ae7185c34f26281db4aa8c04bc4eb273837d75fc14070b8e7a25bba"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/block-foreground-server.ts",
+      "sha256": "67a40922ac7ae94ca4bc82aa81a48d200abdde62e1f522354e87c99361f40c94"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/context/narrow-tools.ts",
+      "sha256": "ae3e90cd130395e0981e2289c81d3b230617a366e3b80bf185570a7fccca72e1"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/context/add-project-facts.ts",
+      "sha256": "1c08e5b716a485a0dcc5b7804f9c46ceb4edf8456f93a3c955f6e48cabaadbce"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/context/use-short-prompt.ts",
+      "sha256": "ed5a2fb97d6f37356e2fef7d0938a3fe373066d44c8e95709e1e7c83e3affe71"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/nudge/nudge-empty-turn.ts",
+      "sha256": "34324bb6f46d17126b0f9d528443edae90e2beadff08ea24007047c8db51ff82"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/tool/background-long-commands.ts",
+      "sha256": "6d30bf68a82a1036f265faa637d8a8c70f46b6fe1a5ce090ee77c5c8f5f67441"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/tool/lookup-library-docs.ts",
+      "sha256": "4688492b55ad5f3adc7e0e2e2dc1119fc002d5da01a5421399996d6cf0994173"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/check/check-code-quality.ts",
+      "sha256": "919317b13a5047662bd0056d4754ca3b77b5abb8d2fe4b347cb250b708a248a4"
+    }
+  ],
+  "single_prompt": true,
+  "specs": "split",
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 900.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 18,
+  "checks_ran": false,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+    "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+    "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+    "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form",
+    "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+    "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 6,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 3,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 5,
+      "total": 5
+    }
+  },
+  "requests": 15,
+  "turns": 15,
+  "tool_calls": 14,
+  "tool_errors": 2,
+  "context": 1111,
+  "output_tokens": 5042,
+  "wall": 50.659,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": [
+    ".ruff_cache/.gitignore",
+    ".ruff_cache/0.17.3/7308027261920154590",
+    ".ruff_cache/CACHEDIR.TAG"
+  ]
+}

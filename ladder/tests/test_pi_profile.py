@@ -50,6 +50,20 @@ def test_direct_agent_dir_carries_the_profiles_request_params(tmp_path):
     )
 
 
+def test_direct_agent_dir_applies_sampling_overrides(tmp_path):
+    """--temperature/--top-p must reach the request the client sends, not the greedy default."""
+    from ladder.pi_profile import direct_agent_dir
+
+    agent = direct_agent_dir(
+        tmp_path / "agent", "tuned", request_overrides={"temperature": 0.7, "top_p": 0.9}
+    )
+    sampling = json.loads((agent / "models.json").read_text())["providers"]["omlx"][
+        "models"
+    ][0]["samplingParams"]
+    assert sampling["temperature"] == 0.7 and sampling["top_p"] == 0.9
+    assert sampling["presence_penalty"] == 0.5  # untouched profile value
+
+
 def test_mirror_excludes_matching_packages_in_order(tmp_path):
     src = fake_agent_dir(tmp_path)
     pkgs = [

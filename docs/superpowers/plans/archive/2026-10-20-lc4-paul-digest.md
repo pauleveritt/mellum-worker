@@ -11,7 +11,7 @@ and one LC row per lesson; no lesson text and no new run.
 
 **Spec:** [Learning Center design](../specs/2026-10-20-learning-center-design.md) §4, §5.
 
-- [x] **Step 1:** Mine `ROADMAP-M.md`, `docs/ladder/ablation-summary.md` and the
+- [x] **Step 1:** Mine `ROADMAP-M.md`, `evals/ablation-summary.md` and the
       research notes into `docs/superpowers/research/2026-10-20-paul-findings-digest.md`:
       ten ideas, each with six steps, badges on 1–5, and an Interpretation that
       names its weakest badge.

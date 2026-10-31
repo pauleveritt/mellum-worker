@@ -1,0 +1,17 @@
+{
+  "created": [
+    "app.py",
+    "models.py",
+    "stories.py",
+    "templates/base.html",
+    "templates/complaints.html",
+    "templates/home.html",
+    "templates/stories.html",
+    "tests/test_app.py",
+    "tests/write_test.txt"
+  ],
+  "modified": [],
+  "out_of_layout": [
+    "stories.py"
+  ]
+}

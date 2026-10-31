@@ -52,7 +52,7 @@ const INSTRUCTION_ROLES = new Set(["system", "developer"]);
  * last text part of array content, or as a new text part when there is none. Never
  * mutates `m`; a message that already ends with the block is returned as is.
  */
-function withFacts(m: Msg, facts: string): Msg {
+export function withFacts(m: Msg, facts: string): Msg {
 	if (typeof m.content === "string") return m.content.endsWith(facts) ? m : { ...m, content: m.content + facts };
 	if (!Array.isArray(m.content)) return { ...m, content: facts.replace(/^\n+/, "") };
 	const parts: any[] = [...m.content];
@@ -113,16 +113,20 @@ export function filterForMellum(payload: any, systemPrompt: string, opts: { expe
 		: { role: "system", content: systemPrompt };
 	const messages = opts.stripThinking ? stripReasoning(kept as Record<string, any>[]) : kept;
 	const out: any = { ...payload, messages: [system, ...messages] };
-	if (Array.isArray(payload.tools)) {
-		// pi-subagents re-adds its own tools after setActiveTools; the worker gets only its seven.
-		const tools = payload.tools.filter((t: any) => WORKER_TOOLS.includes(t?.function?.name ?? t?.name));
-		if (tools.length) out.tools = tools;
-		else delete out.tools;
-		const chosen = payload.tool_choice?.function?.name ?? payload.tool_choice?.name;
-		if (chosen && !WORKER_TOOLS.includes(chosen)) delete out.tool_choice;
-	}
+	// pi-subagents re-adds its own tools after setActiveTools; the worker gets only its seven.
+	if (Array.isArray(payload.tools)) narrowTools(payload, out);
 	if (markerMissing) out.mellumModeMarkerMissing = true;
 	return out;
+}
+
+/** Keep only the worker's seven tools in `out` (and drop a tool_choice outside them), reading
+ * them from `payload`. Shared with the `context/narrow-tools` remedy unit. */
+export function narrowTools(payload: any, out: any): void {
+	const tools = payload.tools.filter((t: any) => WORKER_TOOLS.includes(t?.function?.name ?? t?.name));
+	if (tools.length) out.tools = tools;
+	else delete out.tools;
+	const chosen = payload.tool_choice?.function?.name ?? payload.tool_choice?.name;
+	if (chosen && !WORKER_TOOLS.includes(chosen)) delete out.tool_choice;
 }
 
 /**

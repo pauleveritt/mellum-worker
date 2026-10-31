@@ -1,0 +1,1 @@
+Renamed `fetch_rows` to `load_rows` in all files.

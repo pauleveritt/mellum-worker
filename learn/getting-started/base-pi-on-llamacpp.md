@@ -9,12 +9,14 @@ backends: [llamacpp]
 
 # Base Pi on llama.cpp
 Pi is a minimal agent harness with a feedback loop, tools and prompts already built in. It works out of the box for
-most large language models. By the end of this lesson, a machine that had no Python runs a local Mellum and answers a 
-prompt through base Pi — Pi with no worker, no extensions and none of your own settings or our enhancements. 
+most large language models. By the end of this step, a machine that had no Python runs a local Mellum and answers a
+prompt through base Pi: Pi with no worker, no extensions and none of your own settings or our enhancements.
 It takes a few commands and one large download.
 
 Everything runs from a clone of `mellum-worker`, because the settings and the
-Pi profile are files in this repo; later lessons we'll add our own harness and extensions.
+Pi profile are files in this repo; in later steps we'll add our own harness and extensions.
+
+![A small robot setting up a laptop next to a llama figurine and a small server box](../assets/illustrations/base-pi-on-llamacpp.webp){ .illustration }
 
 ## What you need
 
@@ -30,21 +32,19 @@ Pi profile are files in this repo; later lessons we'll add our own harness and e
 
 We need a server that can serve LLMs in an efficient way that works with a smaller memory format, cross-platform.
 Additionally, we need package managers for Python and Node.js, which run the tools we are going to use. Pi is also installed.
-For your convenience we have an installation script for Windows and for Linux / macOS linked below:
+For your convenience there is an installation script at the root of your clone, for Windows and for Linux / macOS:
 
 **Linux / macOS**
-[install.sh](install.sh)
 ```bash
-bash ./learn/getting-started/install.sh
+bash ./install.sh
 ```
 
 **Windows**
-[install.bat](install.bat)
 ```cmd
-.\learn\getting-started\install.bat
+.\install.bat
 ```
 
-After running the script, check that you have a working system
+After running the script, check that you have a working system:
 
 ```
 llama-server --version
@@ -53,7 +53,7 @@ npm --version
 pi --version
 ```
 
-If you get any errors you will have to [troubleshoot](troubleshoot.md) until you get it working.
+If you get any errors, you will have to [troubleshoot](troubleshoot.md) until you get it working.
 
 ## 2. Let `pyproject.toml` choose Python
 
@@ -79,7 +79,7 @@ top_k = 20
 the Pi profile are generated from it, so changing a value here changes every
 one of them together.
 
-## 3. Fetch the tools a later lesson grades with
+## 3. Fetch the tools a later step grades with
 
 `uvx` runs a Python tool without installing it into the project:
 
@@ -101,12 +101,12 @@ uv run scripts/backend.py status
 
 The first `start` downloads `Q4_K_M` through llama.cpp's `-hf`, so it takes a
 while; the command waits for health and prints the pid and log path. `status`
-then reports `up on 127.0.0.1:8002` and its `n_ctx` — 50176 on this machine,
+then reports `up on 127.0.0.1:8002` and its `n_ctx`: 50176 on this machine,
 because the server pads the 50,000 it was asked for.
 
 The settings become llama.cpp's flags: `-c 50000` from `context`, and the
-model name from `[tool.mellum]`. Everything else — the batch sizes, the
-`q8_0` KV cache, Metal offload — is the 16 GB profile written into
+model name from `[tool.mellum]`. Everything else (the batch sizes, the
+`q8_0` KV cache, Metal offload) is the 16 GB profile written into
 `scripts/backend.py`, and `scripts/backend.py` is short enough to read.
 
 ## 5. Chat once
@@ -128,17 +128,17 @@ Linux / macOS
 ```bash
 export PI_CODING_AGENT_DIR=$PWD/learn/code/profile
 ```
-Windows(cmd)
+Windows (cmd)
 ```cmd
 set "PI_CODING_AGENT_DIR=%CD%\learn\code\profile"
 ```
 
-Windows(Powershell)
+Windows (PowerShell)
 ```powershell
 $env:PI_CODING_AGENT_DIR = "$PWD\learn\code\profile"
 ```
 
-After setting the environment variable, run your first Pi command
+After setting the environment variable, run your first Pi command:
 
 ```
 pi -p --provider llamacpp --model Mellum2.1-12B-A2.5B-Thinking --no-approve --no-extensions --no-skills --no-prompt-templates --no-themes --no-context-files --no-session "Say hello in one line."
@@ -161,6 +161,6 @@ uv run scripts/backend.py stop
 ## What you have
 
 A local Mellum on llama.cpp, a one-command chat, and base Pi answering
-through a profile that lives in the repo. Next, [The ditch](ditch.md) gives
-base Pi an open-ended AgentClinic session and checks its final report; the
-harness that makes that repeatable comes after it.
+through a profile that lives in the repo. Next, [Working With Pi](working-with-pi.md)
+opens Pi's interactive terminal: prompts, tools, sessions, and the two
+commands this course adds.

@@ -111,4 +111,4 @@ plausible for the first time.
   --profile baseline --provider llamacpp --base-url http://127.0.0.1:8002/v1
   --model llamacpp/Mellum2.1-12B-A2.5B-Thinking --context-window 50000`):
   PASS, 7 requests, no tool errors. It is a smoke, not a reference run;
-  nothing from it is in `docs/ladder/`.
+  nothing from it is in `evals/`.

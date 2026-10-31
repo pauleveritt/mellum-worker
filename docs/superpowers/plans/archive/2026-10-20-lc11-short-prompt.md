@@ -13,4 +13,4 @@ lifecycle: closed
 ## Result
 
 2026-10-20. Shipped on `lc11`: the lesson. No run; A0/A2/A3/A4/A5 from
-`docs/ladder/`. `npm test` 314/314, docs caps, build.
+`evals/`. `npm test` 314/314, docs caps, build.

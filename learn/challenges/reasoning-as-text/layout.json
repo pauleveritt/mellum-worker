@@ -1,0 +1,4 @@
+{
+  "allow": ["calc.py", "tests/**"],
+  "ignore": [".venv/**", "__pycache__/**", "*.pyc", "*.log", ".git/**", ".pytest_cache/**", "grader_tests/**", "uv.lock", "pyproject.toml"]
+}

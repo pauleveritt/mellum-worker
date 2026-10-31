@@ -1,0 +1,27 @@
+{
+  "suite": "hard",
+  "flow_mode": "forced",
+  "memory": null,
+  "coder_feedback": true,
+  "visible": false,
+  "graded": false,
+  "hidden_passed": 30,
+  "hidden_total": 34,
+  "todo": true,
+  "phases": 7,
+  "phase_results": [
+    true,
+    true,
+    true,
+    true,
+    false,
+    true,
+    false
+  ],
+  "phase_rounds": [],
+  "north_star": "AgentClinic is a complaint management system where AI agents can submit, track, resolve, and audit grievances, with features for reporting and historical data analysis.",
+  "model": "Mellum2.1-12B-A2.5B-Thinking",
+  "thinking": "medium",
+  "started": "2026-10-29T05:58:21Z",
+  "finished": "2026-10-29T09:22:14Z"
+}

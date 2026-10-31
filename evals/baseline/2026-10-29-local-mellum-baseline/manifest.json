@@ -1,0 +1,51 @@
+{
+  "commit": "0471a35320b674a87c6ff77fcadc05be53a9534e",
+  "lifecycle": "screen",
+  "note": "Local MLX 6-bit screen, NOT the pinned vLLM BF16 baseline. Different serving stack (oMLX/MLX vs vLLM) and a different weight precision (6-bit vs bfloat16). Compared against evals/baseline/2026-10-28-vllm-baseline.",
+  "run": {
+    "rungs": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+    "ladder_repeat": "3",
+    "mode": "primary",
+    "plain": true,
+    "deadline": "600",
+    "label": "baseline",
+    "command": "run_ladder --mode primary --plain --profile baseline --provider omlx --base-url http://127.0.0.1:8001/v1 --model omlx/Mellum2.1-12B-A2.5B-Thinking-6bit --pi-executable $(which pi) --repeat 3 --deadline 600 --rung 1..12"
+  },
+  "pins": {
+    "BASELINE_PI_VERSION": "1.3.0",
+    "BASELINE_SERVED_NAME": "Mellum2.1-12B-A2.5B-Thinking-6bit",
+    "BASELINE_DTYPE": "6-bit (MLX quant)",
+    "BASELINE_LADDER_RUNGS": "1 2 3 4 5 6 7 8 9 10 11 12",
+    "BASELINE_LADDER_REPEAT": "3",
+    "BASELINE_LADDER_DEADLINE": "600"
+  },
+  "server": {
+    "stack": "oMLX",
+    "version": "0.7.1rc1",
+    "endpoint": "http://127.0.0.1:8001/v1",
+    "models": [
+      {
+        "id": "Mellum2.1-12B-A2.5B-Thinking-6bit",
+        "precision": "6-bit",
+        "source_repo": "JetBrains/Mellum2.1-12B-A2.5B-Thinking"
+      }
+    ],
+    "model_settings": {
+      "max_tokens": 4096,
+      "thinking_budget_tokens": null,
+      "presence_penalty": 0.0
+    }
+  },
+  "host": {
+    "machine": "Apple M3 Max",
+    "os": "Darwin 27.0.0 arm64"
+  },
+  "client": {
+    "os": "Darwin 27.0.0 arm64",
+    "pi": "1.3.0",
+    "pi_executable": "/opt/homebrew/bin/pi",
+    "node": "v26.9.0",
+    "uv": "uv 0.12.18 (aarch64-apple-darwin)",
+    "divergence_from_pins": "Node v26.9.0 here vs the pinned baseline's 22.19.0 — this run used the system pi, not the pinned toolchain. Pi itself (1.3.0) matches the pin."
+  }
+}

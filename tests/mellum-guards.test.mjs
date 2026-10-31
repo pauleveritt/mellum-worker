@@ -8,7 +8,38 @@ import test from "node:test";
 process.env.MELLUM_WORKER_RUNS = "0";
 const noServer = () => Promise.reject(new Error("no server in tests"));
 
-import { createLoopBreaker, createStepBudget, newFileOnlyWrite } from "../extensions/mellum-guards.ts";
+import { createLoopBreaker, createStepBudget, newFileOnlyWrite, confineSearch, isTreeWalk, absolutePathArgs } from "../extensions/mellum-guards.ts";
+
+test("confineSearch blocks a recursive search that reaches outside the workspace", () => {
+	const guard = confineSearch("/work/ws");
+	// the exact pathology that hung the Flint run: grep -r across the whole machine
+	const d = guard({ toolName: "bash", input: { command: 'grep -rl "totalCents" /Users /var/tmp /work/ws' } });
+	assert.ok(d?.block);
+	assert.match(d.reason, /outside your workspace/i);
+	assert.match(d.reason, /\/Users/);
+});
+
+test("confineSearch allows a tree-walk confined to the workspace", () => {
+	const guard = confineSearch("/work/ws");
+	assert.equal(guard({ toolName: "bash", input: { command: "grep -rl pattern ." } }), undefined); // relative
+	assert.equal(guard({ toolName: "bash", input: { command: "find /work/ws/src -name '*.py'" } }), undefined); // under root
+	assert.equal(guard({ toolName: "bash", input: { command: "cat /etc/hosts" } }), undefined); // not a tree-walk
+});
+
+test("isTreeWalk detects find/recursive grep/rg/ls -R, not a plain grep", () => {
+	assert.ok(isTreeWalk("find / -name x"));
+	assert.ok(isTreeWalk("grep -rl x /Users"));
+	assert.ok(isTreeWalk("grep -R x ."));
+	assert.ok(isTreeWalk("rg pattern /var"));
+	assert.ok(isTreeWalk("ls -R /"));
+	assert.ok(!isTreeWalk("grep pattern app.py")); // non-recursive grep is fine
+	assert.ok(!isTreeWalk("cat /etc/hosts"));
+});
+
+test("absolutePathArgs finds absolute tokens but not quoted sed regexes", () => {
+	assert.deepEqual(absolutePathArgs("grep -rl x /Users /var/tmp ."), ["/Users", "/var/tmp"]);
+	assert.deepEqual(absolutePathArgs("sed 's/a/b/' file.txt"), []); // the regex starts with a quote, not /
+});
 
 test("write to an existing path is blocked with the fact", () => {
 	const guard = newFileOnlyWrite((p) => p === "a.py");

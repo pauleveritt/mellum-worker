@@ -1,0 +1,1 @@
+The home page route has been updated to return the required tagline "Come in. Sit down. Tell us about our human" upon request, fulfilling the requirements of spec/phase-1-home.md.

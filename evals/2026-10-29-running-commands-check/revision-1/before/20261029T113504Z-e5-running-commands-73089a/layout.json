@@ -1,0 +1,19 @@
+{
+  "created": [
+    "agentclinic_session_phased.egg-info/PKG-INFO",
+    "agentclinic_session_phased.egg-info/SOURCES.txt",
+    "agentclinic_session_phased.egg-info/dependency_links.txt",
+    "agentclinic_session_phased.egg-info/requires.txt",
+    "agentclinic_session_phased.egg-info/top_level.txt",
+    "app.py",
+    "tests/test_app.py"
+  ],
+  "modified": [],
+  "out_of_layout": [
+    "agentclinic_session_phased.egg-info/PKG-INFO",
+    "agentclinic_session_phased.egg-info/SOURCES.txt",
+    "agentclinic_session_phased.egg-info/dependency_links.txt",
+    "agentclinic_session_phased.egg-info/requires.txt",
+    "agentclinic_session_phased.egg-info/top_level.txt"
+  ]
+}

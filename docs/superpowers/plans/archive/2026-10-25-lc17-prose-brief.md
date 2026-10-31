@@ -82,7 +82,7 @@ Bounded, and the design was approved in conversation on 2026-10-25:
 ## Acceptance
 
 `npm test`, `learn/code/tests` and `docs-caps` pass; the page's numbers are in
-the run record; no `docs/ladder/` link on the page; `qualify --suite medium`
+the run record; no `evals/` link on the page; `qualify --suite medium`
 still passes.
 
 ## Session state, 2026-10-25 (written before a session reset)

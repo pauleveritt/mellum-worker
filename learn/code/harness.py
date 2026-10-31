@@ -29,9 +29,13 @@ from pathlib import Path
 CODE = Path(__file__).resolve().parent
 RUNS = Path(tempfile.gettempdir()) / "mellum-eval-runs"
 SUITES = CODE / "suites"
-RECORDER = CODE / "record-pi.mjs"
+RECORDER = CODE.parent.parent / "extensions" / "mellum-recorder.ts"
 PROFILE = CODE / "profile"
 EXTENSION = CODE.parents[1] / "extensions" / "mellum-worker.ts"
+# The think-tag repair (a no-op on a correctly served reply). The flow loads it in every session; in
+# the harness it is the remedy unit context/repair-think-tags, listed by the lines that want it.
+THINK_TAGS = CODE.parents[1] / "extensions" / "mellum-think-tags.ts"
+REMEDIES = CODE.parents[1] / "remedies"
 GUARDS_WITH_SERVER = {"emptyFinalNudge": 3, "loopBreaker": True,
                       "blockForegroundServer": True}
 ARMS = ("bare", "worker", "no-prompt", "no-nudge", "no-loop", "no-facts",
@@ -56,6 +60,8 @@ class Suite:
     canary: str | None = None
     root: Path | None = None
     layout: dict | None = None
+    # Caps on run.json fields (record.json): a failure that lives in the record.
+    record: dict | None = None
 
     @property
     def prompt(self) -> str:
@@ -90,6 +96,9 @@ def load_suite(suites_dir: Path, name: str) -> Suite:
     layout = None
     if (base / "layout.json").is_file():
         layout = json.loads((base / "layout.json").read_text())
+    record = None
+    if (base / "record.json").is_file():
+        record = json.loads((base / "record.json").read_text())
     return Suite(
         name=name,
         prompts=prompts,
@@ -99,7 +108,14 @@ def load_suite(suites_dir: Path, name: str) -> Suite:
         canary=canary,
         root=base,
         layout=layout,
+        record=record,
     )
+
+
+def record_failures(metrics: dict, caps: dict | None) -> list[str]:
+    """The run.json fields over a challenge's caps, as reasons a learner can read."""
+    return [f"{key} is {metrics.get(key, 0)} (at most {cap})"
+            for key, cap in (caps or {}).items() if (metrics.get(key) or 0) > cap]
 
 
 def profile_pin(profile_dir: Path) -> tuple[str, str]:
@@ -193,6 +209,54 @@ def sweep_group(pgid: int, grace: float = 1.0) -> list[tuple[int, str]]:
     return found
 
 
+def workspace_members(workspace: Path) -> list[tuple[int, str]]:
+    """Every live process whose working directory is inside `workspace`."""
+    root = os.path.realpath(workspace)
+    out = subprocess.run(["lsof", "-w", "-d", "cwd", "-F", "pn"],
+                         capture_output=True, text=True, check=False).stdout
+    pids, pid = [], None
+    for line in out.splitlines():
+        if line.startswith("p"):
+            pid = int(line[1:])
+        elif line.startswith("n") and pid is not None and pid != os.getpid():
+            cwd = os.path.realpath(line[1:])
+            if cwd == root or cwd.startswith(root + os.sep):
+                pids.append(pid)
+    if not pids:
+        return []
+    listed = subprocess.run(["ps", "-o", "pid=,command=", "-p", ",".join(map(str, pids))],
+                            capture_output=True, text=True, check=False).stdout
+    members = []
+    for line in listed.splitlines():
+        parts = line.split(None, 1)
+        if len(parts) == 2 and parts[0].isdigit():
+            members.append((int(parts[0]), parts[1].strip()))
+    return members
+
+
+def sweep_workspace(workspace: Path, grace: float = 1.0) -> list[tuple[int, str]]:
+    """End every process still running inside a run's workspace, and report it.
+
+    Pi's bash tool starts each command detached, in a session and process
+    group of its own, so the group sweep never reaches a server the model
+    started. Its working directory is the workspace, so that finds it. The
+    sweep must never raise.
+    """
+    found = workspace_members(workspace)
+    for signal_number in (signal.SIGTERM, signal.SIGKILL):
+        for pid, _ in workspace_members(workspace):
+            try:
+                os.kill(pid, signal_number)
+            except OSError:
+                pass
+        deadline = time.monotonic() + grace
+        while time.monotonic() < deadline:
+            if not workspace_members(workspace):
+                return found
+            time.sleep(0.05)
+    return found
+
+
 def machine_label() -> str:
     """What this run ran on: enough to tell an M1 Pro from an M5 Max.
 
@@ -250,6 +314,51 @@ def layout_report(root: Path, pristine: dict[str, str],
     return {"created": created, "modified": modified, "out_of_layout": outside}
 
 
+def resolve_pi_binary(pi_binary: str) -> str:
+    """Pi runs with the workspace as its cwd, so a --pi-binary given as a relative path is made
+    absolute here; a bare command name such as `pi` is left for PATH lookup."""
+    if os.sep in pi_binary or (os.altsep and os.altsep in pi_binary):
+        return str(Path(pi_binary).resolve())
+    return pi_binary
+
+
+def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str], list[Path]]:
+    """The remedy units (`--remedy`, names or `preset:<name>`) and a learner's own extensions
+    (`--extension`), as (unit names, files to load in order). Unknown names are refused."""
+    names: list[str] = []
+    for item in (remedy or "").split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if item.startswith("preset:"):
+            preset = REMEDIES / "presets" / f"{item.removeprefix('preset:')}.json"
+            if not preset.is_file():
+                known = sorted(f"preset:{q.stem}" for q in (REMEDIES / "presets").glob("*.json"))
+                raise SystemExit(f"no preset {item!r}; known: {', '.join(known)}")
+            names += json.loads(preset.read_text())
+        else:
+            names.append(item)
+    paths: list[Path] = []
+    for name in names:
+        path = REMEDIES / f"{name}.ts"
+        if not path.is_file():
+            known = sorted(str(q.relative_to(REMEDIES).with_suffix(""))
+                           for q in REMEDIES.glob("*/*.ts"))
+            raise SystemExit(f"no remedy unit {name!r}; known: {', '.join(known)}")
+        paths.append(path)
+    for path in extensions:
+        if not Path(path).is_file():
+            raise SystemExit(f"no extension file {path}")
+        paths.append(Path(path).resolve())
+    return names, paths
+
+
+def extension_record(paths: list[Path]) -> list[dict]:
+    """Each loaded file and its SHA-256, so a record says exactly what ran."""
+    return [{"path": str(p), "sha256": hashlib.sha256(Path(p).read_bytes()).hexdigest()}
+            for p in paths]
+
+
 def pi_argv(
     pi_binary: str,
     profile: Path,
@@ -261,6 +370,7 @@ def pi_argv(
     extension: Path | None = None,
     session_id: str | None = None,
     session_dir: Path | None = None,
+    extras: list[Path] = (),
 ) -> list[str]:
     session = (
         ["--session-id", session_id, "--session-dir", str(session_dir)]
@@ -268,6 +378,8 @@ def pi_argv(
         else []
     )
     extra = ["-e", str(extension)] if extension is not None else []
+    for path in extras:
+        extra += ["-e", str(path)]
     # The recorder goes last: Pi runs before_provider_request handlers in load
     # order and each may replace the payload, so a recorder placed first would
     # log the messages before the worker appends its facts block. The cost is
@@ -293,6 +405,30 @@ def load_variant(suite: Suite, name: str) -> Path:
     return variant
 
 
+def open_tool_call(trace_lines, now: float) -> tuple[float, str] | None:
+    """The oldest tool call still waiting for its result: (seconds open, command).
+
+    A foreground server never returns, so its call stays open; a stall cutoff
+    reads this to end the session instead of waiting out the whole deadline.
+    """
+    pending: list[dict] = []
+    for line in trace_lines:
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if row.get("type") == "tool_call":
+            pending.append(row)
+        elif row.get("type") == "tool_result" and pending:
+            pending.pop(0)
+    if not pending:
+        return None
+    call = pending[0]
+    opened = datetime.fromisoformat(call["timestamp"].replace("Z", "+00:00")).timestamp()
+    command = (call.get("input") or {}).get("command") or call.get("toolName", "")
+    return round(now - opened, 1), command
+
+
 def run_suite(
     suite: Suite,
     *,
@@ -301,8 +437,10 @@ def run_suite(
     profile: Path = PROFILE,
     pi_binary: str = "pi",
     deadline: float | None = None,
+    stall: float | None = None,
     single_prompt: bool = False,
     specs: str | None = None,
+    extras: list[Path] = (),
 ) -> Path:
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
@@ -341,6 +479,9 @@ def run_suite(
     sessions = run / "sessions"
     sessions.mkdir()
     provider, model = profile_pin(profile)
+    # Record the pinned model so run.json (assembled later, out of this scope) and the
+    # scoreboard can name which model produced the run.
+    (run / "model.txt").write_text(f"{provider}/{model}\n")
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
     env = {
@@ -348,38 +489,45 @@ def run_suite(
         "PI_CODING_AGENT_DIR": str(run / "profile"),
         "MELLUM_TRACE_FILE": str(trace),
     }
+    env.pop("VIRTUAL_ENV", None)   # else uv warns in the workspace venv
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
     started = time.monotonic()
     groups: list[int] = []
-    for prompt in prompts:
-        remaining = None if deadline is None else deadline - (time.monotonic() - started)
-        if remaining is not None and remaining <= 0:
-            (run / "deadline").write_text("hit\n")
-            break
-        argv = pi_argv(
-            pi_binary, run / "profile", recorder, provider, model, prompt,
-            extension=settings["extension"],
-            session_id=session_id, session_dir=sessions,
-        )
-        try:
-            child = subprocess.Popen(argv, cwd=workspace, env=env,
-                                     start_new_session=True)
-            groups.append(child.pid)
-        except FileNotFoundError:
-            raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
-        try:
-            child.wait(timeout=remaining)
-        except subprocess.TimeoutExpired:
-            os.killpg(child.pid, signal.SIGKILL)
-            child.wait()
-            (run / "deadline").write_text("hit\n")
-            break
     leaked: list[dict] = []
-    for pgid in groups:
-        leaked.extend({"pid": pid, "pgid": pgid, "command": command}
-                      for pid, command in sweep_group(pgid))
+    # The sweep runs however the loop ends, including a SIGTERM (main turns it
+    # into SystemExit): a stopped run must still end the servers it started.
+    try:
+        for prompt in prompts:
+            remaining = None if deadline is None else deadline - (time.monotonic() - started)
+            if remaining is not None and remaining <= 0:
+                (run / "deadline").write_text("hit\n")
+                break
+            # The spec-derived contract scopes itself to the phase this prompt names.
+            env["ACCEPTANCE_PROMPT"] = prompt
+            argv = pi_argv(
+                pi_binary, run / "profile", recorder, provider, model, prompt,
+                extension=settings["extension"],
+                session_id=session_id, session_dir=sessions, extras=extras,
+            )
+            try:
+                # No stdin: Pi with -p appends piped stdin to its prompt.
+                child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
+                                         start_new_session=True)
+                groups.append(child.pid)
+            except FileNotFoundError:
+                raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
+            ended = wait_or_stall(child, run, trace, remaining, stall)
+            if ended:
+                break
+    finally:
+        for pgid in groups:
+            leaked.extend({"pid": pid, "pgid": pgid, "command": command}
+                          for pid, command in sweep_group(pgid))
+        swept = {entry["pid"] for entry in leaked}
+        leaked.extend({"pid": pid, "pgid": None, "command": command}
+                      for pid, command in sweep_workspace(workspace) if pid not in swept)
     (run / "leaked.json").write_text(json.dumps(leaked, indent=2) + "\n")
     if pristine is not None and suite.layout is not None:
         (run / "layout.json").write_text(
@@ -389,11 +537,56 @@ def run_suite(
     return run
 
 
+def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
+                  stall: float | None) -> str | None:
+    """Wait for one Pi child; end it at the deadline, or when a command stalls.
+
+    Returns "deadline" or "stalled" when the session was ended, else None.
+    """
+    if stall is None:
+        try:
+            child.wait(timeout=remaining)
+            return None
+        except subprocess.TimeoutExpired:
+            reason = "deadline"
+    else:
+        until = None if remaining is None else time.monotonic() + remaining
+        reason = None
+        while child.poll() is None:
+            if until is not None and time.monotonic() >= until:
+                reason = "deadline"
+                break
+            open_call = open_tool_call(trace.read_text().splitlines(), time.time())
+            if open_call and open_call[0] >= stall:
+                (run / "stalled").write_text(json.dumps(
+                    {"seconds": open_call[0], "limit": stall, "command": open_call[1]}) + "\n")
+                reason = "stalled"
+                break
+            time.sleep(1)
+        if reason is None:
+            return None
+    try:
+        os.killpg(child.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    child.wait()
+    if reason == "deadline":
+        (run / "deadline").write_text("hit\n")
+    return reason
+
+
 def grader_touched(run: Path, suite: Suite) -> bool:
     if suite.canary is None:
         return False
     text = (Path(run) / "trace.jsonl").read_text(errors="ignore")
     return suite.canary in text or f"suites/{suite.name}" in text
+
+
+def grade_env(workspace: Path) -> dict[str, str]:
+    """A grader subprocess's environment: the workspace on PYTHONPATH, and no
+    VIRTUAL_ENV — uv warns when it points at a venv other than the run's."""
+    return {k: v for k, v in os.environ.items()
+            if k != "VIRTUAL_ENV"} | {"PYTHONPATH": str(workspace)}
 
 
 def grade(workspace: Path) -> list[tuple[str, bool, str]]:
@@ -416,7 +609,7 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
     for name, command in commands:
         result = subprocess.run(
             command, cwd=workspace, capture_output=True, text=True, check=False,
-            env={**os.environ, "PYTHONPATH": str(workspace)},
+            env=grade_env(workspace),
         )
         output = [line for line in (result.stdout + result.stderr).splitlines()
                   if line.strip()]
@@ -528,6 +721,16 @@ def report(run: Path) -> dict:
         "nudges": continued,
         "empty_finals": len(empties) - continued,
         "guard_blocks": guard_blocks,
+        # Assistant turns the model was sent back with its reasoning as <think>
+        # text (a serving fault; the largest history in the session).
+        "reasoning_as_text": max(
+            (sum("<think>" in str(m.get("content") or "")
+                 for m in (row.get("payload") or {}).get("messages") or []
+                 if m.get("role") == "assistant")
+             for row in rows if row.get("type") == "provider_request"),
+            default=0),
+        # Times Pi compacted a context that neared its window, losing detail.
+        "compactions": sum(row.get("type") == "before_compact" for row in rows),
     }
 
 
@@ -597,12 +800,17 @@ def _run_sessions(
     arm: str = "bare",
     single_prompt: bool = False,
     specs: str | None = None,
+    profile: Path = PROFILE,
+    stall: float | None = None,
+    remedies: list[str] = (),
+    extras: list[Path] = (),
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
         run_dir = run_suite(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
-                            single_prompt=single_prompt, specs=specs)
+                            single_prompt=single_prompt, specs=specs,
+                            profile=profile, stall=stall, extras=extras)
         grades = grade(run_dir / "workspace") if grade_run else []
         tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
         failed_checks = len(missing)
@@ -610,22 +818,30 @@ def _run_sessions(
             ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
         ) if grades else True
         contaminated = (run_dir / "contaminated").exists()
-        passed = tests_passed and quality_ok and not contaminated
         metrics = report(run_dir)
+        over = record_failures(metrics, suite.record)
+        passed = tests_passed and quality_ok and not contaminated and not over
         leaked_file = run_dir / "leaked.json"
         if leaked_file.is_file():
             metrics["leaked"] = json.loads(leaked_file.read_text())
         layout_file = run_dir / "layout.json"
         if layout_file.is_file():
             metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
+        model_file = run_dir / "model.txt"
         record = {
             "suite": suite.name,
             "arm": arm,
+            "model": model_file.read_text().strip() if model_file.is_file() else None,
+            "remedies": list(remedies),
+            "extensions": extension_record(list(extras)),
             "single_prompt": single_prompt,
             "specs": specs,
             "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
             "machine": machine_label(),
             "deadline": deadline,
+            "stall": stall,
+            "stalled": (json.loads((run_dir / "stalled").read_text())
+                        if (run_dir / "stalled").exists() else None),
             "passed": passed,
             "tests_passed": tests_passed,
             "quality_ok": quality_ok,
@@ -634,6 +850,7 @@ def _run_sessions(
             "checks_ran": checks_ran,
             "missing_checks": missing,
             "check_groups": check_groups(suite.expected, missing),
+            "record_failures": over,
             **{key: value for key, value in metrics.items()
                if key != "final_reply"},
         }
@@ -671,11 +888,18 @@ def run_suites(
     arm: str = "bare",
     single_prompt: bool = False,
     specs: str | None = None,
+    profile: Path = PROFILE,
+    stall: float | None = None,
+    remedies: list[str] = (),
+    extras: list[Path] = (),
 ) -> tuple[int, int]:
+    # Run easiest first and hardest last, so a slow hard suite never blocks the
+    # quicker ones; unknown suites keep alphabetical order after the known tiers.
     order = {"easy": 0, "medium": 1, "hard": 2}
     available = sorted(
         (
-            path.name for path in Path(suites_dir).iterdir()
+            path.name
+            for path in Path(suites_dir).iterdir()
             if ((path / "grader").is_dir() or (path / "tests").is_dir())
             and ((path / "task.md").exists() or (path / "prompts").is_dir())
         ),
@@ -693,7 +917,8 @@ def run_suites(
         results = _run_sessions(
             suite, runs_dir=runs_dir, pi_binary=pi_binary,
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
-            single_prompt=single_prompt, specs=specs,
+            single_prompt=single_prompt, specs=specs, profile=profile, stall=stall,
+            remedies=remedies, extras=extras,
         )
         sessions_passed += _print_task(suite, results, repeat)
         sessions_total += len(results)
@@ -717,7 +942,8 @@ def _line(
 ) -> str:
     tag = suite.name + (f" [{index}/{repeat}]" if repeat > 1 else "")
     n_text = f"n={repeat}; " if repeat == 1 else ""
-    deadline = " deadline" if (Path(run_dir) / "deadline").exists() else ""
+    deadline = (" deadline" if (Path(run_dir) / "deadline").exists()
+                else " stalled" if (Path(run_dir) / "stalled").exists() else "")
     label = "CONTAMINATED" if contaminated else ("PASS" if passed else "FAIL")
     notes = []
     if not quality_ok:
@@ -738,7 +964,7 @@ def _print_grades(grades: list[tuple[str, bool, str]]) -> None:
         print(f"{label}: {'PASS' if ok else 'FAIL'}" + (f" ({detail})" if not ok else ""))
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run", help="run one eval suite or all of them")
@@ -754,10 +980,28 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--repeat", type=int, default=1)
     run.add_argument("--deadline", type=float, default=600)
     run.add_argument("--arm", choices=ARMS, default="bare")
+    run.add_argument("--remedy", default=None, metavar="LIST",
+                     help="remedy units to load on top of the arm: comma-separated names "
+                          "(guard/break-repeat-loops) or preset:<name>")
+    run.add_argument("--extension", type=Path, action="append", default=[], metavar="PATH",
+                     help="a Pi extension of your own to load (repeatable)")
+    run.add_argument("--stall", type=float, default=None, metavar="SECONDS",
+                     help="end a session as stalled when one tool call has run this long "
+                          "with no result (a foreground server); off by default")
+    run.add_argument("--profile", type=Path, default=PROFILE,
+                     help="the Pi profile directory (models.json) the sessions use; "
+                          "default the pinned llama.cpp profile")
     run.add_argument("--single-prompt", action="store_true",
                      help="send the suite's prompts as one brief instead of steps")
     run.add_argument("--specs", metavar="VARIANT", default=None, choices=["joined", "split"],
                      help="use the suite's spec variant: one joined roadmap, or one file per phase")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    # A stopped run (SIGTERM, as /lesson sends) unwinds normally, so its sweep runs.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "qualify":
@@ -770,15 +1014,23 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
+    remedies, extras = resolve_extras(args.remedy, args.extension)
+    args.pi_binary = resolve_pi_binary(args.pi_binary)
+    # Pi runs with the workspace as its cwd, so every path handed to it must be absolute.
+    args.runs_dir = Path(args.runs_dir).resolve()
+    args.profile = Path(args.profile).resolve()
+    args.suites_dir = Path(args.suites_dir).resolve()
     if args.suite == "all":
         run_suites(["all"], suites_dir=args.suites_dir, runs_dir=args.runs_dir,
                    pi_binary=args.pi_binary, grade_run=args.grade,
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
-                   single_prompt=args.single_prompt, specs=args.specs)
+                   single_prompt=args.single_prompt, specs=args.specs,
+                   profile=args.profile, stall=args.stall,
+                   remedies=remedies, extras=extras)
         return 0
 
     suite = load_suite(args.suites_dir, args.suite)
-    provider, model = profile_pin(PROFILE)
+    provider, model = profile_pin(args.profile)
     if args.dry_run:
         settings = arm_settings(args.arm)
         if args.specs:
@@ -786,14 +1038,16 @@ def main(argv: list[str] | None = None) -> int:
             prompt = _read_prompt(sorted((variant / "prompts").glob("*.md"))[0])
         else:
             prompt = suite.prompt
-        print(shlex.join(pi_argv(args.pi_binary, PROFILE, RECORDER, provider,
+        print(shlex.join(pi_argv(args.pi_binary, args.profile, RECORDER, provider,
                                  model, prompt,
-                                 extension=settings["extension"])))
+                                 extension=settings["extension"], extras=extras)))
         return 0
     results = _run_sessions(
         suite, runs_dir=args.runs_dir, pi_binary=args.pi_binary,
         repeat=args.repeat, grade_run=args.grade, deadline=args.deadline,
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
+        profile=args.profile, stall=args.stall,
+        remedies=remedies, extras=extras,
     )
     _print_task(suite, results, args.repeat)
     return 0

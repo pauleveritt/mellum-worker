@@ -1,7 +1,9 @@
-# Toolchain and checks
+# Toolchain and Checks
 
 Everything here runs from a clone, and every Python command is `uv run` from
 the repository root.
+
+![A row of tools on a workbench, each checked, inspected by a small robot](../assets/illustrations/toolchain.webp){ .illustration }
 
 ## Python, uv and `pyproject.toml`
 
@@ -10,7 +12,7 @@ The root `pyproject.toml` pins `requires-python = ">=3.14"` and declares
 machine has none, then runs the command in a throwaway project environment.
 `uvx` follows the same idea for tools: nothing is installed globally.
 
-`[tool.mellum]` in that file is the single source of model settings —
+`[tool.mellum]` in that file is the single source of model settings:
 `model`, `context`, `max_tokens`, `temperature`, `top_p`, `top_k`. Do not
 edit sampling anywhere else: `learn/code/profile/models.json` is generated
 from it, and `tests/backend-profile.test.mjs` fails when the two disagree.
@@ -34,7 +36,7 @@ The profile lives at `learn/code/profile/`. Lessons point Pi at it with
 
 ## The lesson harness
 
-`uv run learn/code/harness.py run --suite easy` copies the task into
+`uv run learn/code/harness.py run --suite easy` (Bronze) copies the task into
 `learn/code/.runs/<id>/workspace`, starts a child `pi` with the private
 profile and the recorder in `learn/code/record-pi.mjs`, sends every prompt in
 `prompts/` (or `task.md`) in one session, then copies the task's tests in and
@@ -71,5 +73,5 @@ a development prerequisite even though most of the suite is Node.
 Measured work lands in `docs/superpowers/research/` with its preregistration;
 raw evidence goes to a `research-*` release, never into Git. A release is a tag that
 matches `package.json` and both README install lines, with a
-[`CHANGELOG.md`](https://github.com/pauleveritt/mellum-worker/blob/main/CHANGELOG.md)
+[`CHANGELOG.md`](https://github.com/andrevanzuydam/mellum-worker/blob/main/CHANGELOG.md)
 section; `[Unreleased]` is kept current as work lands.

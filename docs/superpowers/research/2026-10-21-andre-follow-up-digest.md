@@ -47,8 +47,8 @@ Each entry is one idea, six steps, with a badge on steps 1–5.
 - **Eval case.** Rung 9, three runs, with v9: implement the whole spec, not
   just the visible tests.
 - **Evidence of the problem.** Every earlier arm capped at 2/3 on rung 9
-  ([A19](https://github.com/pauleveritt/mellum-worker/blob/main/docs/ladder/ablation-a19-facts-on/README.md),
-  [A21](https://github.com/pauleveritt/mellum-worker/blob/main/docs/ladder/ablation-a21-light-section-roadmap/README.md)).
+  ([A19](https://github.com/pauleveritt/mellum-worker/blob/main/evals/2026-10-10-ablation-a19-facts-on/README.md),
+  [A21](https://github.com/pauleveritt/mellum-worker/blob/main/evals/2026-10-13-ablation-a21-light-section-roadmap/README.md)).
 - **Solution.** v9 tells the worker to implement the whole spec.
 - **Validation.** Rung 9 is 3/3 with v9, first attempt passing the hidden
   oracle.

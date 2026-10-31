@@ -1,0 +1,181 @@
+{
+  "rung": 8,
+  "repeat": 1,
+  "profile": "baseline",
+  "mode": "primary",
+  "backend": null,
+  "harness": "pi",
+  "plain": true,
+  "guards": false,
+  "mode_facts": null,
+  "strip_facts_section": false,
+  "facts_section": "fixture",
+  "roadmap": "phase-files",
+  "leftover_processes": [],
+  "guards_env": null,
+  "prompt_version": null,
+  "prompt_file": null,
+  "prompt_mode": null,
+  "thinking": null,
+  "request_overrides": null,
+  "acceptance_test": null,
+  "redispatch_attempts": null,
+  "redispatch_temperature_step": null,
+  "redispatch_temperature_cap": null,
+  "effort_ramp": null,
+  "redispatch_schedule": null,
+  "versions": {
+    "pi": "1.3.0",
+    "pi_launch": {
+      "executable": "/Users/codeinfinity/projects/mellum-worker/.baseline/pi-1.3.0/bin/pi",
+      "version": "1.3.0"
+    },
+    "request_overrides": null,
+    "backend": "unknown",
+    "server": {
+      "version": "0.32.0",
+      "models": [
+        {
+          "id": "Mellum2.1-12B-A2.5B-Thinking",
+          "root": "JetBrains/Mellum2.1-12B-A2.5B-Thinking",
+          "max_model_len": 131072
+        }
+      ]
+    },
+    "gpu": null,
+    "model_settings": {
+      "max_tokens": null,
+      "thinking_budget_tokens": null,
+      "presence_penalty": null,
+      "max_tool_result_tokens": null
+    }
+  },
+  "launch": {
+    "cwd": "/var/folders/8g/6p2_1pkd0z3_bsglfvynmhsr0000gn/T/ladder-4axi6eno/rung8",
+    "pi": {
+      "executable": "/Users/codeinfinity/projects/mellum-worker/.baseline/pi-1.3.0/bin/pi",
+      "version": "1.3.0"
+    },
+    "node": {
+      "executable": "/Users/codeinfinity/projects/mellum-worker/.baseline/node-v22.19.0/bin/node",
+      "version": "v22.19.0"
+    },
+    "python": {
+      "executable": "/var/folders/8g/6p2_1pkd0z3_bsglfvynmhsr0000gn/T/ladder-4axi6eno/rung8/.venv/bin/python",
+      "imports": [
+        "pytest",
+        "fastapi",
+        "turbohtml",
+        "httpx"
+      ]
+    },
+    "argv": [
+      "/Users/codeinfinity/projects/mellum-worker/.baseline/pi-1.3.0/bin/pi",
+      "-p",
+      "--mode",
+      "json",
+      "--no-session",
+      "--no-extensions",
+      "--no-skills",
+      "--no-context-files",
+      "--thinking",
+      "high",
+      "--model",
+      "vllm/Mellum2.1-12B-A2.5B-Thinking",
+      "-e",
+      "/Users/codeinfinity/projects/mellum-worker/ladder/ladder/record-pi.js",
+      "Implement specs/phase-3-add.md"
+    ]
+  },
+  "telemetry": {
+    "status": "ok",
+    "issues": [],
+    "instances": {
+      "d08e4214-cce4-4c83-bd7d-930347de3391": {
+        "runtime": {
+          "piVersion": "1.3.0",
+          "entryPath": "/Users/codeinfinity/projects/mellum-worker/.baseline/pi-1.3.0/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js",
+          "execPath": "/Users/codeinfinity/projects/mellum-worker/.baseline/node-v22.19.0/bin/node",
+          "cwd": "/private/var/folders/8g/6p2_1pkd0z3_bsglfvynmhsr0000gn/T/ladder-4axi6eno/rung8"
+        },
+        "settled": true,
+        "aborted": false,
+        "openCalls": []
+      }
+    }
+  },
+  "process": {
+    "exitCode": 0,
+    "signal": null,
+    "deadlineHit": false,
+    "elapsedMs": 123119.52800001018,
+    "settled": true,
+    "aborted": false
+  },
+  "sentence": "Implement specs/phase-3-add.md",
+  "started": 1793206751.228318,
+  "wall_seconds_untrusted": 122.9,
+  "deadline_hit": false,
+  "stop_reason": "stop",
+  "final_text_chars": 848,
+  "thinking_reentries": 0,
+  "final_text_is": "worker",
+  "baseline_lines": {
+    "templates/complaints.html": 14,
+    "app.py": 24,
+    "uv.lock": 1212,
+    "specs/phase-3-add.md": 6,
+    "pyproject.toml": 13,
+    "models.py": 17,
+    "templates/base.html": 25,
+    "specs/phase-1-home.md": 7,
+    "specs/phase-2-board.md": 7,
+    "templates/home.html": 7,
+    "tests/test_board.py": 11,
+    "tests/test_app.py": 11,
+    ".gitignore": 3,
+    "AGENTS.md": 7
+  },
+  "check": {
+    "passed": false,
+    "tests_unchanged": true,
+    "details": {
+      "facts_cmd_pass": false,
+      "hidden_pass": false,
+      "outside_write_list": [],
+      "hidden_collision": []
+    }
+  },
+  "score": {
+    "requests": 17,
+    "largest_prompt_chars": 58733,
+    "tool_calls_by_name": {
+      "bash": 5,
+      "read": 8,
+      "edit": 3
+    },
+    "tool_errors": 1,
+    "edit_anchor_failures": 0,
+    "noop_edits": 0,
+    "write_existing": 0,
+    "bash_file_mutations": 0,
+    "max_identical_streak": 2,
+    "write_shrink": 0,
+    "nudges": 0,
+    "max_identical_in_window": 2,
+    "loop_breaker_would_block": 0,
+    "effective_params": {
+      "temperature": 1,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0,
+      "max_tokens": 16384,
+      "presence_penalty": 0
+    }
+  },
+  "diff_stat": " app.py                    | 13 +++++++++++--\n templates/complaints.html | 11 +++++++++++\n tests/test_board.py       | 10 ++++++++++\n 3 files changed, 32 insertions(+), 2 deletions(-)\n",
+  "files_created": [],
+  "workspace": "/var/folders/8g/6p2_1pkd0z3_bsglfvynmhsr0000gn/T/ladder-4axi6eno/rung8",
+  "worker_version": "0.1.8",
+  "worker_git": "checkpoint-2026-10-25-hard-31of34-176-g6264a2b"
+}

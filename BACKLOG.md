@@ -10,6 +10,47 @@ never by line number.
 
 Reopen conditions, not promises.
 
+**Kill-by-name test skipped on the GitHub Actions runner.**
+`tests/backend-lifecycle.test.mjs`'s "kill ends every process with the server's
+name" spawns two fake processes under a unique name and asserts `backend.py
+kill` ends them via `pgrep -x`. It fails only on the hosted GitHub runner:
+`backend.py`'s `pgrep` finds nothing even though the test's own `pgrep` saw both
+fakes a moment earlier. Not reproducible on macOS or a clean Ubuntu 24.04
+container — there a copied binary keeps its name as `comm` and `pgrep -x`
+matches, and the production path (`pgrep -x <name>`) is proven correct — so the
+test is skipped when `GITHUB_ACTIONS=true` rather than left red. *Reopens when*
+the failure reproduces off the hosted runner (e.g. under parallel `node --test`
+load) and the cause is pinned.
+
+**Grounded knowledge / docs lookup for the coder.** The model fails exact-API
+contracts it cannot know — FastAPI's `RedirectResponse` default (307, so a POST
+redirect loops; the spec needs 303), the sqlite-utils migration API, hard's
+phase 6/7 SQL semantics — and, decisively, anything past its training cutoff:
+the ladder runs on Python 3.15, which the model was never trained on. Reasoning
+cannot recover post-cutoff facts. Plan: give the coder a `lookup` tool grounded
+in the LIVE environment — installed-package signatures, docstrings, source,
+`--help`, changelogs — not a stale snapshot, so it reflects the exact versions
+running; prompt it to look an API up before guessing, especially when a failure
+is API-shaped (`TooManyRedirects` → redirect status). Fairness boundary: ground
+on library docs a developer would have, never the task solution or hidden
+grader. Local retrieval (offline, reproducible) over open-internet lookup, which
+breaks the ladder's reproducibility. *Reopens when* a grounded-knowledge trial
+is scheduled against the exact-contract phases (hard 3/6/7).
+
+**Generalized task decomposition for `flow_run`.** `split_phases` only splits
+on `## Phase`, so it chunks the suite prompts but not an arbitrary large
+command (a spec wall, an issue dump, a file to refactor) — which this model
+drowns on, as it cannot bound its reasoning (`supportsReasoningEffort: false`).
+Planned layers, cheapest first: structural split (any header level, top-level
+numbered/bulleted items, `#{1,2} Phase/Step N`); a size gate (small stays one
+unit); a splitter sub-agent that emits a numbered step list from an
+unstructured wall (small output over large input); a paragraph size-chunk
+fallback. A terse step stays grounded by threading a small, constant forward
+context — north star, a running summary of what is built, the last phase's
+context — plus its own slice, not the whole wall. *Reopens when* a
+non-phase-structured task is measured on `flow_run`, or the harness is pointed
+at real-world, non-suite commands.
+
 **Lesson 10's layout question needs a sample it does not have.** The
 preregistered `joined`-against-`split` arm came back null at n = 3: phase-4
 missing {5, 0} against {0, 3}, two usable sessions per arm, and medium 0/3 on
@@ -178,7 +219,7 @@ the suite, because the change moves a setting the baseline was measured with.
 forwards the `## Mellum` section's `Write only:` line as text; nothing
 enforces it. On AgentClinic rungs 6–9 the text was enough: with the section
 forwarded, 0/12 runs had a non-empty `outside_write_list`
-([A19](docs/ladder/ablation-a19-facts-on/README.md)), against 8/12 with facts
+([A19](evals/2026-10-10-ablation-a19-facts-on/README.md)), against 8/12 with facts
 off (A18) and 5/12 with the fallback only (A20, no list sent). A guard that refuses `write`/`edit` outside the list is a guard
 decision, so it is measured before it ships.
 *Reopens when* a facts-on ladder phase or a run record shows a non-empty
@@ -258,6 +299,31 @@ candidate implementation (`--acceptance-test`; an n = 1 rung 9 screen on
 mlx-lm, [digest](docs/superpowers/research/2026-10-20-pr-digest.md)).
 *Reopens when* someone can run the rung 9 screen and wants the result; the
 closed cycle and its design inputs are in [`ROADMAP-M.md`](ROADMAP-M.md).
+2026-10-24, on Andre's fork: `--acceptance-test` and `--redispatch` are on
+`main` again after a merge dropped them ([LEARNING](LEARNING.md) §VII.1).
+
+**Freeze-the-oracle exit gate.** Make "done" an external test the worker cannot
+weaken, instead of its own final message. Promote the ladder's scorer checks
+(`existing_tests_kept`, `outside_write_list`) into a runtime guard on the
+worker, and gate the exit on an actual run of the frozen acceptance test with
+the failure re-dispatched as the next "make this pass". The mediated test
+supplies the external, complete test; the unweakenable half is here
+([note](docs/superpowers/research/2026-10-18-harness-exit-gate.md)).
+*Reopens when* a mediated run moves rung 9 and a trace shows a worker editing or
+deleting a test to exit, or writing outside the allowed paths, on a run that
+then scored as done. 2026-10-24: restored after a merge dropped it; rung 9 has
+moved (screens), but no such trace is recorded yet.
+
+**Benchmark a plain mlx_lm.server against oMLX.** The ladder reaches any
+OpenAI-compatible server (`--provider`, `--base-url`, `--model provider/id`;
+[recipe](docs/backends/mlx-lm.md)), but no oMLX-vs-mlx-lm runs have been made.
+The servers cannot be made byte-identical: `thinking_budget`,
+`max_tool_result_tokens` and penalty handling are oMLX server-only with no
+mlx_lm.server equivalent, so a result is a harness finding about servers, not a
+claim about the shipped worker. Sampling sweeps belong to "Model-parameter
+impact on eval results". *Reopens when* someone runs a screen (a few rungs, a
+research note naming the server's launch flags and n); a measured claim needs a
+preregistered run with the server differences pinned.
 
 **One worker.** Retire the pi-subagents Worker (agent template, child-only
 guard loading, Worker run records, the setup skill's agent-file and intercom
@@ -272,7 +338,7 @@ because the Learning Center needs one worker; the entry stays until it lands.
 
 **pi-subagents Worker: one-liners and an in-process child (were M.8, M.9).**
 `async: false`, a re-dispatch line in the description and the intercom
-opt-out ([A11](docs/ladder/ablation-a11-delegated-nointercom/README.md)); a
+opt-out ([A11](evals/2026-10-09-ablation-a11-delegated-nointercom/README.md)); a
 `mellum_worker(task)` tool through Pi's SDK
 ([cost note](docs/superpowers/research/2026-10-09-worker-cost-options.md) §2,
 §3b). *Reopens when* M.12 does not retire the Pi Worker.
@@ -318,7 +384,7 @@ runs, servers, settings drift, empty finals, loops, writing outside the
 layout, a test edited to pass, a lost phase id. Each gets the record that
 shows it and the guard, fact or spec shape that answers it. `learn` already
 counts seven of these from run records; the page adds the ladder's and links
-`docs/ladder/`, so a lesson links one pathology instead of restating it.
+`evals/`, so a lesson links one pathology instead of restating it.
 *Reopens when* the ditch lesson names more than the page covers, or a second
 lesson needs the same explanation. Taken as LC.7A on 2026-10-21; the entry stays until it lands.
 
@@ -329,3 +395,37 @@ the Learning Center's terms; this one covers the eval terms and links back.
 Session is the unit: one isolated Pi context and workspace, fed one or more
 prompts, with one trace. *Reopens when* a record or lesson uses an eval term the
 glossary lacks, or two documents use one word for different things.
+
+**Reject a gate test that cannot pass.** A frozen gate test can fail every
+correct app because the test itself is broken: Bronze's gate called
+`inspect.getfile` on a FastAPI instance (`TypeError` inside the test), and the
+model got through only by monkeypatching `inspect` in `app.py`
+([flow record](docs/superpowers/research/2026-10-29-vllm-flow.md)). The
+redirect-following client, the one instance seen twice, is fixed by
+`noFollowRedirects`. The general guarantee needs a design: before the build, a
+broken test and a missing app both error, so a dry run must tell an error
+raised in the test's own frames from one raised in app code or an import of a
+module not yet built. The 2026-10-29 rerun added a second shape: an
+assertion that contradicts the test's own setup (four audit-worthy calls, three
+entries expected), which raises nothing. *Reopens when* a design can flag
+either shape without the reference app, or a third flow run hits one.
+
+**A unit that shapes the task in a session.** Two lessons left the track on
+2026-10-29 because their remedy was a harness flag, not a unit: one spec file
+per phase (`--specs split`) and one brief per phase instead of one joined
+brief (leaving out `--single-prompt`). Their evidence is in
+[the note](docs/superpowers/research/2026-10-29-lessons-left-the-track.md):
+stepped sessions produced projects the checks could open where one-brief
+sessions did not, and per-phase Acceptance lists mattered more than the file
+layout. *Reopens when* a remedy unit can shape the task inside a Pi session
+(feeding phases one at a time, or pointing each at its own spec), so a lesson
+could show the FAIL turning into a PASS.
+
+**The handoff block as a unit.** `collapseHandoffs` in
+`extensions/mellum-worker.ts` replaces a closed span's messages with one
+handoff block, so a parent does not re-pay a child's transcript on every
+request. The lesson that taught it left the track on 2026-10-29: it is not a
+unit and has no arm, since the delegated child was retired
+([note](docs/superpowers/research/2026-10-29-lessons-left-the-track.md)).
+*Reopens when* the handoff block is a remedy unit and a challenge shows a
+session that fails on context without it and passes with it.

@@ -19,8 +19,22 @@ const ARGV = [
   "-b", "512", "-ub", "512", "-ctk", "q8_0", "-ctv", "q8_0",
 ];
 
+// serve --dry-run inherits the environment, so pin MELLUM_NGL off by default;
+// a test that wants full-GPU offload sets it.
+const serveArgv = (env = {}) => {
+  const r = spawnSync("uv", ["run", "scripts/backend.py", "serve", "--dry-run"], {
+    cwd: ROOT, encoding: "utf8", env: { ...process.env, MELLUM_NGL: "", ...env },
+  });
+  assert.equal(r.status, 0, r.stderr);
+  return r.stdout.trim();
+};
+
 test("serve builds llama-server's argv from the settings", () => {
-  assert.equal(run("serve", "--dry-run"), ARGV.join(" "));
+  assert.equal(serveArgv(), ARGV.join(" "));
+});
+
+test("MELLUM_NGL forces full GPU offload by appending -ngl", () => {
+  assert.equal(serveArgv({ MELLUM_NGL: "999" }), [...ARGV, "-ngl", "999"].join(" "));
 });
 
 const progress = (log) => {

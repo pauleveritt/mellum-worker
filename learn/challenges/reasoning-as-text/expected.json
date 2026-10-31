@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_challenge.py::test_the_four_operations",
+  "grader_tests/test_challenge.py::test_division_by_zero_is_a_value_error"
+]

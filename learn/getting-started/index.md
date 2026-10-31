@@ -1,14 +1,26 @@
-# Getting started
+# Getting Started
 
-This track is in a fixed order: each lesson builds on the one before, and
-each ends with a check you can run. Five lessons, then the findings tracks.
+This track is in a fixed order: each step builds on the one before, and
+each ends with a check you can run. Six steps, then two paths.
 
-## Lessons
+![A small robot with a backpack at the start of a path of stepping stones up a hill](../assets/illustrations/getting-started.webp){ .illustration }
 
-1. **[Base Pi on llama.cpp](base-pi-on-llamacpp.md)** — Install `uv`, llama.cpp and the Mellum weights, chat with the model, and connect Pi through a private profile to get an answer. You finish with a server, a `chat` command, and base Pi answering. Start here.
-2. **[The ditch](ditch.md)** — Drive with base Pi an open-ended AgentClinic session and check its final report. You finish knowing why evidence comes before a fix.
-3. **[Make a mini harness](harness.md)** — Write a small harness that runs Pi on a task in a fresh directory and scores it. You finish with one isolated run and a score line.
-4. **[Eval suites and the telemetry](suite.md)** — Run easy, medium and hard AgentClinic suites, grade the model's files, and read why a run failed from its trace. You finish with three suites, hidden graders and a qualification.
-5. **[The worker extension](worker-extension.md)** — Learn what a Pi extension is and how `/mellum` changes the prompt, tools and guards through events and callbacks.
+## Steps
 
-If setup fails, use [Troubleshooting uv and llama-server](troubleshoot.md).
+1. **[Base Pi on llama.cpp](base-pi-on-llamacpp.md)**: Install `uv`, llama.cpp and the Mellum weights, and get an answer from base Pi through a private profile. Start here.
+2. **[Working With Pi](working-with-pi.md)**: Use Pi's interactive terminal: prompts, tools, sessions, project trust, and the course's `/lesson` and `/remedy` commands.
+3. **[Eval suites and the telemetry](eval-suites.md)**: Run the Bronze, Silver and Gold suites through the provided harness, grade the model's files, and read why a run failed from its trace.
+4. **[The Harness](the-harness.md)**: Write a mini harness that runs Pi in a fresh folder and scores it, the instrument every lesson's before and after line uses.
+5. **[Extensions and Remedy Units](extensions.md)**: Learn what a Pi extension and a remedy unit are, how presets group units, and the two ways to switch them on.
+6. **[Troubleshooting](troubleshoot.md)**: Fix `uv` and `llama-server` when a setup step fails.
+
+## Two paths from here
+
+**Take the lessons.** Open [S0 Start Here](../lessons/start-here.md) on this
+site, or type `/lesson S0` in Pi from a trusted checkout. Each lesson adds one
+remedy unit and shows the run before and after it.
+
+**Go straight to [The Challenge](../challenge/index.md).** Run Bronze, Silver
+and Gold, apply remedies with `--remedy preset:…`, and bring your own
+extension with `--extension`. Use the lessons as a reference when a run fails
+in a way you do not understand.

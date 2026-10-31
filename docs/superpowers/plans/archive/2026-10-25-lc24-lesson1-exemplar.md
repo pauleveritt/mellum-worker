@@ -22,8 +22,8 @@ lifecycle: closed
 - Terse paragraph: between the H1 and `## Problem`, no heading, exactly two sentences, 45 words or fewer, no badge, no link, no code span.
 - `reference-run` requires: a preregistration written before the run naming lesson, arms, n, reading and decision rule; the record in `docs/superpowers/research/`; raw evidence in a `research-*` release; machine and deadline in the record.
 - Run settings: suites `easy` and `medium`, arms `bare` and `worker`, `--repeat 3`, `--grade`, `--deadline 1800`.
-- Lesson pages may not link `docs/ladder/` (seven tests assert it).
-- Do not edit `ladder/` or `docs/ladder/`; do not delete them.
+- Lesson pages may not link `evals/` (seven tests assert it).
+- Do not edit `ladder/` or `evals/`; do not delete them.
 - Never commit `trace.jsonl`, `stdout.txt` or `diff.patch`.
 - Caps: plan 400 lines and 25% fenced, roadmap Ships/Excludes 900 chars, Status 1,000, spec 400.
 
@@ -42,7 +42,7 @@ Content blocks below are shown as quotes: copy the text without the `>` markers.
 
 - [ ] **Step 1: Add the row** after `LC.23`, matching the table's column widths:
 
-> | **LC.24**  | Lesson 1 as the exemplar: the page names a pathology and the three decisions the worker takes, opens with a two-sentence paragraph, and carries `reference-run` from one preregistered easy+medium run at n=3 per arm; the template gains that paragraph's rule; `reference-run` re-points from `docs/ladder/` to the suites, and the pages that call `ladder/` the measured instrument follow. | Migrating the other eight lesson pages; editing or deleting `ladder/` or `docs/ladder/`; prompt, guard, tool or facts changes; a rate, or a claim that transfers off this machine; re-planning LC.19. | in progress 2026-10-25 — [spec](docs/superpowers/specs/2026-10-25-lc24-lesson1-exemplar-design.md), [plan](docs/superpowers/plans/2026-10-25-lc24-lesson1-exemplar.md). |
+> | **LC.24**  | Lesson 1 as the exemplar: the page names a pathology and the three decisions the worker takes, opens with a two-sentence paragraph, and carries `reference-run` from one preregistered easy+medium run at n=3 per arm; the template gains that paragraph's rule; `reference-run` re-points from `evals/` to the suites, and the pages that call `ladder/` the measured instrument follow. | Migrating the other eight lesson pages; editing or deleting `ladder/` or `evals/`; prompt, guard, tool or facts changes; a rate, or a claim that transfers off this machine; re-planning LC.19. | in progress 2026-10-25 — [spec](docs/superpowers/specs/2026-10-25-lc24-lesson1-exemplar-design.md), [plan](docs/superpowers/plans/2026-10-25-lc24-lesson1-exemplar.md). |
 
 - [ ] **Step 2: Move the pointer.** In `## Now`, `**Active:**` becomes `**Active:** LC.24, Lesson 1 as the exemplar — the page rewritten, the two-sentence convention, and `reference-run` earned on the suites.`; `**Next:**` becomes `**Next:** LC.18, then LC.19, whose instrument needs a suite before it can start, then LC.7A.`
 
@@ -93,10 +93,10 @@ test("the harness is the measured instrument", () => {
 
 - [ ] **Step 2: Run and see both fail.** `node --test tests/learn-site.test.mjs` — expect 2 failures.
 
-- [ ] **Step 3: Rewrite the two badge rows** in `evidence.md` (the `reference-run` row loses `docs/ladder/`, keeps `preregistration`; the `cited` row keeps `docs/ladder/`, marked `(pre-2026-10-25)`, and offers `or a research note on main`):
+- [ ] **Step 3: Rewrite the two badge rows** in `evidence.md` (the `reference-run` row loses `evals/`, keeps `preregistration`; the `cited` row keeps `evals/`, marked `(pre-2026-10-25)`, and offers `or a research note on main`):
 
 > | `reference-run` | A preregistered run on llama.cpp, made for this lesson, on the suites the course teaches | A preregistration written before the run naming the lesson, the arms, n, the reading and the decision rule; the record in `docs/superpowers/research/`; raw evidence in a `research-*` release; machine and deadline in the record |
-> | `cited` | An existing record made before 2026-10-25 | A record in `docs/ladder/` (pre-2026-10-25) or a research note on `main` |
+> | `cited` | An existing record made before 2026-10-25 | A record in `evals/` (pre-2026-10-25) or a research note on `main` |
 
 - [ ] **Step 4: Rewrite the glossary entry** at `### reference-run`:
 
@@ -115,7 +115,7 @@ test("the harness is the measured instrument", () => {
 
 > - `reference-run` is earned on the suites now, not on `ladder/`: the badge
 >   names a preregistration, a record in `docs/superpowers/research/` and a
->   `research-*` release. `ladder/` and `docs/ladder/` stay as the internal
+>   `research-*` release. `ladder/` and `evals/` stay as the internal
 >   instrument and the A0–A21 archive.
 
 - [ ] **Step 7: Run and see both pass, then commit.**
@@ -392,7 +392,7 @@ git add -A && git commit -m "docs(lc24): close the cycle"
 
 2026-10-25. Shipped: Lesson 1 rewritten (pathology-first Problem, the three
 decisions named with file:line, terse two-sentence opening), the rule in
-`learn/lesson-template.md`, `reference-run` re-pointed from `docs/ladder/` to
+`learn/lesson-template.md`, `reference-run` re-pointed from `evals/` to
 the suites with the four instrument sentences following, one preregistered run
 of twelve sessions, its record, and `research-2026-10-25`.
 

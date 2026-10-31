@@ -9,7 +9,7 @@ rest of this document reads as written.
 **Dated correction 2026-10-25 (second).** Three further sentences still named the
 ladder the measuring instrument after this cycle's rollout: `harness.md:81-82`,
 and `suite.md:156-158` and `:165`, where the page also told the learner that
-findings lessons cite `docs/ladder/` — a path lesson pages may not link. The
+findings lessons cite `evals/` — a path lesson pages may not link. The
 four sentences this cycle flipped were not the whole set. Corrected in LC.19A.
 
 ## Intent
@@ -27,7 +27,7 @@ has been missing, and gives it evidence strong enough to hold the top badge on
 the instrument the course actually teaches. It also settles what that top badge
 means: `reference-run` stops pointing at `ladder/` and points at the suites.
 
-`ladder/` is not deleted and `docs/ladder/` is not edited. They stay as the
+`ladder/` is not deleted and `evals/` is not edited. They stay as the
 internal instrument and the A0–A21 archive while the lessons move to a
 suite-focus.
 
@@ -35,7 +35,7 @@ suite-focus.
 
 - **The ladder retires as the lessons' instrument.** `reference-run` is earned
   on `learn/code/harness.py` and the easy/medium/hard suites, with a
-  preregistration and a `research-*` release. `docs/ladder/` remains citable
+  preregistration and a `research-*` release. `evals/` remains citable
   history, not a badge requirement. Lessons already may not link it — seven
   test files assert `!/docs\/ladder\//`.
 - **The terse paragraph lands on Lesson 1 and the template only.** The other
@@ -65,7 +65,7 @@ suite-focus.
 ## Non-goals
 
 - Migrating the other eight lesson pages to the terse paragraph.
-- Deleting `ladder/`, editing `docs/ladder/`, or changing the ladder's code.
+- Deleting `ladder/`, editing `evals/`, or changing the ladder's code.
 - Changing the worker prompt, guards, tools or facts. No re-baseline is owed.
 - A rate, a probability, or a claim that transfers to another machine.
 - Re-planning LC.19 onto a suite. It is noted as owed, not done here.
@@ -123,8 +123,8 @@ command and the operator's scoring, not the guard.
 | --- | --- | --- |
 | `reference-run` | A preregistered run on llama.cpp, made for this lesson | A preregistration written before the run naming the lesson, the arms, n, the reading and the decision rule; the record in `docs/superpowers/research/`; raw evidence in a `research-*` release; machine and deadline in the record |
 
-`cited` loses `docs/ladder/` as its only home: it becomes "an existing record
-in `docs/ladder/` (pre-2026-10-25) or a research note on `main`". The
+`cited` loses `evals/` as its only home: it becomes "an existing record
+in `evals/` (pre-2026-10-25) or a research note on `main`". The
 "Upgrading and downgrading a badge" rule is unchanged — a badge never changes
 without a linked record, and the change lands in the same commit as the record.
 
@@ -165,11 +165,11 @@ Written first and shown failing:
 - The terse paragraph exists on Lesson 1 and in the template, is two sentences,
   and carries no badge.
 - `evidence.md` and the glossary define `reference-run` with the suites and
-  without `docs/ladder/`, and still name `docs/ladder/` under `cited`.
+  without `evals/`, and still name `evals/` under `cited`.
 - The harness lesson page and the two project pages no longer call `ladder/`
   the measured instrument.
 - The existing Lesson 1 test keeps asserting six headings, the badge pattern,
-  `weakest badge is`, and no `docs/ladder/` link.
+  `weakest badge is`, and no `evals/` link.
 
 ## Deliverables
 

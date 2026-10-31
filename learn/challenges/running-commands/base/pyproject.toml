@@ -1,0 +1,13 @@
+[project]
+name = "agentclinic-session-phased"
+version = "0.1.0"
+description = "AgentClinic complaints app"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi[standard]==0.115.10",
+  "turbohtml==1.5.0",
+  "httpx",
+]
+
+[dependency-groups]
+dev = ["pytest==8.3.4"]

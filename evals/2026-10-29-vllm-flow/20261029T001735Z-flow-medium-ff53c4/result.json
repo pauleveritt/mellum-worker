@@ -1,0 +1,24 @@
+{
+  "suite": "medium",
+  "flow_mode": "forced",
+  "memory": null,
+  "coder_feedback": true,
+  "visible": true,
+  "graded": false,
+  "hidden_passed": 13,
+  "hidden_total": 18,
+  "todo": true,
+  "phases": 4,
+  "phase_results": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "phase_rounds": [],
+  "north_star": "A user wants a north star statement for the overall goal of the finished app based on the phase titles.",
+  "model": "Mellum2.1-12B-A2.5B-Thinking",
+  "thinking": "medium",
+  "started": "2026-10-29T00:17:35Z",
+  "finished": "2026-10-29T01:53:28Z"
+}

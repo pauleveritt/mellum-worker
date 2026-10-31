@@ -106,7 +106,7 @@ sets differ in one sentence each, the one that names the file.
 LC.24 flipped four sentences that called `ladder/` the measured instrument and
 missed three more: `learn/getting-started/harness.md:81-82` ("the ladder is the
 measuring instrument"), `learn/getting-started/suite.md:156-158` ("Rates come
-from the ladder … which is why findings lessons cite `docs/ladder/`") and
+from the ladder … which is why findings lessons cite `evals/`") and
 `suite.md:165`. They contradict the badge rule `learn/about/evidence.md` now
 carries, and the suite page tells a learner that lessons cite a path lesson
 pages may not link. The correction lands here, with a dated note in LC.24's
@@ -116,7 +116,7 @@ spec rather than an edit to its archived plan.
 
 - Any run, preregistration, rate or badge. LC.19 owns the two-arm run and page.
 - A new suite directory, or a change to `easy`/`medium`/`hard` defaults.
-- Editing `ladder/` or `docs/ladder/`.
+- Editing `ladder/` or `evals/`.
 - The three lessons LC.20–LC.23, which may reuse `check_groups` later.
 
 ## Tasks
@@ -161,7 +161,7 @@ findings lessons cite.``
 - [ ] **Step 4: Dated note in LC.24's spec**, under the existing correction:
   ``**Dated correction 2026-10-25 (second).** Three further sentences in
   `learn/getting-started/harness.md` and `suite.md` still named the ladder the
-  measuring instrument, and the suite page said lessons cite `docs/ladder/`.
+  measuring instrument, and the suite page said lessons cite `evals/`.
   Corrected in LC.19A.``
 
 - [ ] **Step 5: Changelog**, under `[Unreleased]` → `### Fixed`: one entry saying

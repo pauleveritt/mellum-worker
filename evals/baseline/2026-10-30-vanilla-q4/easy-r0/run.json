@@ -1,0 +1,66 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.8,
+    "limit": 120.0,
+    "command": "uv run app.py"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 20,
+  "turns": 20,
+  "tool_calls": 19,
+  "tool_errors": 2,
+  "context": 1571,
+  "output_tokens": 7768,
+  "wall": 174.7,
+  "nudges": 1,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 79606,
+      "pgid": null,
+      "command": "uv run app.py"
+    },
+    {
+      "pid": 79607,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/runs/baseline-q4-em-20261030T173325Z/20261030T173325Z-easy-1993b2/workspace/.venv/bin/python app.py"
+    },
+    {
+      "pid": 79608,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/runs/baseline-q4-em-20261030T173325Z/20261030T173325Z-easy-1993b2/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 79609,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/runs/baseline-q4-em-20261030T173325Z/20261030T173325Z-easy-1993b2/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": []
+}

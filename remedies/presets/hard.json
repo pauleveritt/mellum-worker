@@ -1,0 +1,15 @@
+[
+  "context/repair-think-tags",
+  "context/trim-tool-output",
+  "guard/break-repeat-loops",
+  "guard/stay-in-workspace",
+  "guard/refuse-whole-file-rewrite",
+  "guard/block-foreground-server",
+  "context/narrow-tools",
+  "context/add-project-facts",
+  "context/use-short-prompt",
+  "nudge/nudge-empty-turn",
+  "tool/background-long-commands",
+  "tool/lookup-library-docs",
+  "check/check-code-quality"
+]

@@ -1,69 +1,107 @@
 # Lessons
 
-Every findings lesson in one place: Paul's from the mellum-worker phases and
-ablations, Andre's from his pull requests. Each is one idea and follows the six
-steps. Scheduled lessons are their own phase; the deferred entries are
-candidates until their stated gate. Most are independent: each lists its
-prerequisites, [Getting started](../getting-started/index.md) is the only one
-unless a lesson says otherwise, and you can read them in any order.
+Each lesson takes one thing a small coding model gets wrong, measures it, and
+shows what changes it. The lessons are grouped in three tiers that rise in
+level, and every lesson stands on its own: [Getting started](../getting-started/index.md)
+is the only thing you need first, unless a lesson's prerequisites say
+otherwise.
 
-The order below is a recommendation, not a dependency chain: what the ditch
-teaches first, then the remedies, then the shapes. The author is in italics
-at the end of each line. Every lesson is being re-measured; its badges say
-what it rests on now.
+![A small robot climbing three wide steps that rise from easy to hard](../assets/illustrations/lessons.webp){ .illustration }
 
-## Start here
+<div class="grid cards" markdown>
 
-- **[The suite baseline](baseline.md)** — Baseline Pi and the Baseline Worker on easy, medium and hard, n = 3, on llama.cpp. *(Paul)*
-1. **[The primary agent is the wrong worker](primary-agent.md)** — Neither suite separates the two arms on passes at n = 3; what separates them is how they fail. *(Paul)*
+-   **[Easy](easy/index.md)**
 
-## Paul's lessons
+    ---
 
-2. **[A short prompt, not a procedure](short-prompt.md)** — Prompt v5 is 643 characters, and on easy it did not move a pass: a null at n = 3. *(Paul)*
-3. **[Thinking is working memory](thinking-working-memory.md)** — The strip-thinking arm has no instrument on llama.cpp; thinking spends the output budget. *(Paul)*
-4. **[Guards for empty turns and loops](guards-for-empty-turns.md)** — The nudge never fired in ten easy sessions: no empty turn had the shape it answers. *(Paul)*
-5. **[Project facts](project-facts.md)** — The block reaches the model in every request and did not move easy at n = 3. A null, with a lead. *(Paul)*
-6. **[Write only the files you list](write-only-listed.md)** — A file-set check now runs after every session; easy showed no writes outside the layout. *(Paul)*
-7. **Who holds the loop** — *retired 2026-10-24.* It compared worker, Mode and a
-   delegated child; LC.8 renamed Mode to Worker and removed the delegated child,
-   so there is no second policy left to compare. The number is kept so the other
-   entries stay stable. *(Paul)*
-8. **[A prose brief stops at its first reply](prose-brief.md)** — One brief against four:
-   both passed the hidden tests, and the one-brief arm used a third of the
-   context. A `screen` at n = 1, against the old claim. *(Paul)*
-9. **[The intercom block is a prefill tax](intercom-block.md)** — A delegate's
-   transcript is paid on every turn; the worker hands back one summary block per
-   span instead. A rationale, because LC.8 removed the mechanism. *(Paul)*
-10. **[One spec file per phase](one-spec-per-phase.md)** — Writing the acceptance
-    criteria into the spec took a worker from "no check could run" to one missing
-    check; one file against four did not separate at n = 3. *(Paul)*
+    One setting, one visible effect. You read the result in a table, and you
+    can follow it from Getting started alone.
 
-Every scheduled lesson in this track now has a page. Each was a feature cycle
-that re-measured it on llama.cpp when its page was written; a page's badges say
-what it rests on.
+-   **[Medium](medium/index.md)**
 
-## Andre's mediation
+    ---
 
-11. **The worker moves its own goalposts** — It narrows pytest to one test function, passes that, and calls the file done. *(Andre)*
-12. **The mediated test clears the hard rungs** — A frozen test the worker cannot weaken, re-dispatched: rungs 6–9 at 12/12, rung 9 cracked. *(Andre)*
-13. **Implement the whole spec** — v9 lifts the phase-4 id miss from 0 to 2/3; v11's self-check takes it to 3/3. *(Andre)*
-14. **Mediation is a completeness gate** — It leaves the rung the worker can do alone and drags it back only when it stops short. *(Andre)*
+    How the model spends its session: its thinking, its empty turns, the
+    shape of the task it is handed. You will read a trace.
 
-## Context and inputs
+-   **[Hard](hard/index.md)**
 
-Entries #16–#20 are **Intermediate candidates** (INT.3), not scheduled
-Lessons; #15 remains a lesson candidate. Each needs a recorded screen before
-it becomes a lesson page.
+    ---
 
-15. **Rungs 10–12: what the hard gates catch** — An archive decoy, a trap row and an overflowing file separate capability from completeness. *(Andre)*
-16. **Context search for large code** — Index and search the few relevant lines instead of loading whole files. *(Andre)*
-17. **Skeptical rethink** — Check a human's checkable claim before encoding the premise. *(Andre)*
-18. **Documents and images as inputs** — Read the PDF, the spreadsheet or the screenshot the file tools cannot. *(Andre)*
-19. **Live control and replay** — Watch the turns, edit the prompt, replay a bad one, pause at a boundary. *(Andre)*
-20. **Next-concept verify** — Re-dispatch on the failing test functions, not the whole file. *(Andre)*
+    Orchestration and advanced concepts: who drives the model, how work is
+    split, checked and re-dispatched.
 
-## Pathologies
+</div>
 
-21. **The runaway search** — A recursive search that leaves the workspace can hang the whole run; the guard is proposed on branch `lc11b-confinement` ([code](https://github.com/pauleveritt/mellum-worker/blob/176922f05702d6f8e87a9b2570ed6fe9807db733/extensions/mellum-guards.ts#L145-L185), [tests](https://github.com/pauleveritt/mellum-worker/blob/176922f05702d6f8e87a9b2570ed6fe9807db733/tests/mellum-guards.test.mjs#L13-L40)). *(Andre)*
-22. **The server that never returns** — It started `uvicorn` in the foreground and burned the deadline; exercise the endpoint in process, or detach it and keep the pid ([guard](https://github.com/pauleveritt/mellum-worker/blob/420ba1d/extensions/mellum-guards.ts), [prompt v10](https://github.com/pauleveritt/mellum-worker/blob/4666612/prompts/mellum-worker.md)). *(Andre)*
-23. **The rule it knew and skipped** — It read the rule, then left the field `None` in one run of three; a clause-by-clause check against the spec closed it ([prompt v11](https://github.com/pauleveritt/mellum-worker/blob/da04888/prompts/mellum-worker.md)). *(Andre)*
+The lessons' runs use the Bronze, Silver and Gold levels of
+[The Challenge](../challenge/index.md). A lesson's tier says how far into the
+material it goes, not which level it runs on.
+
+New here? Start with [S0 · Start Here](start-here.md): one minute, no model
+needed, and it shows you how every lesson works.
+
+## Take the lessons in Pi
+
+Every lesson also runs inside Pi, the harness it teaches. From your checkout
+of this repository:
+
+```bash
+pi
+```
+
+The first time, type `/trust` and restart Pi, so it loads the project's
+extensions. Then:
+
+- `/lesson` picks a lesson (finished ones are ticked, the next one comes
+  first, and Start Here comes first of all), and `/lesson E1` opens one. It shows the lesson's picture and walks
+  you through each step; on the Eval case and Solution steps, `r` runs the
+  before and after lines and tells you whether each session passed and why.
+- `/remedy` switches remedy units on and off in your live session, so you can
+  try one by hand: `/remedy on guard/break-repeat-loops`, `/remedy off …`,
+  or `/remedy preset:easy`.
+
+Pictures show in terminals that draw images (Kitty, Ghostty, WezTerm, iTerm2);
+elsewhere you see their description.
+
+## Pathologies and their remedies
+
+Every remedy these lessons teach is a small unit you can switch on by itself.
+The same list is on [The Challenge](../challenge/index.md), where you can
+apply any of them to an attempt with the line in the last column.
+
+<!-- remedies:start -->
+
+| Pathology | Remedy unit | Lesson | Evidence | Apply it |
+| --- | --- | --- | --- | --- |
+| Starts `python app.py` in the foreground and the session hangs until its deadline | `guard/block-foreground-server`: Blocks a foreground server start and shows the background form | n/a | screen: the hang recurs in the vLLM baseline's web-app rungs; unmeasured as a remedy | `--remedy guard/block-foreground-server` |
+| Repeats the same call over and over (245 identical `ls -R` calls in one run) | `guard/break-repeat-loops`: Blocks a call made 5 times in a row with nothing changed in between | [E3](easy/looking-around.md) | ladder: part of the guard set behind phase 2b's 15/15 | `--remedy guard/break-repeat-loops` |
+| Keeps calling tools with no end, because Pi has no turn cap | `guard/cap-turns`: Blocks every call after a budget (default 200) and asks for a summary | [E7](easy/know-when-to-stop.md) | dormant in the worker; unmeasured | `--remedy guard/cap-turns` |
+| Rewrites a whole file to change a few lines (942 lines became 2) | `guard/refuse-whole-file-rewrite`: Blocks `write` to an existing file and asks for `edit` | [E5](easy/creating-files.md) | recorded once; dormant in the worker (its column never went non-zero) | `--remedy guard/refuse-whole-file-rewrite` |
+| Searches the whole machine (`grep -rl x /Users /var`) and hangs the run | `guard/stay-in-workspace`: Blocks a recursive search that names a path outside the workspace | [E4](easy/searching.md) | screen: recorded hangs; searches only, writes are not covered | `--remedy guard/stay-in-workspace` |
+| Ends a turn with no reply and no tool call, part-way through the task | `nudge/nudge-empty-turn`: Restates the completion fact and asks for one more turn, at most 3 times | [M3](medium/nudge-an-empty-turn.md) | ladder: 5 of 45 v3 runs, every failure; a null on the suites (M2) | `--remedy nudge/nudge-empty-turn` |
+| Guesses how to run the tests instead of using the project's own command | `context/add-project-facts`: Appends the project facts (AGENTS.md `## Mellum`, test command) to user messages | [M1](medium/tell-it-how-to-test.md) | screen: 3/3 against 2/3 on Bronze (2026-10-29); a null in the page's record | `--remedy context/add-project-facts` |
+| Reaches for tools it uses badly (subagents, todo lists) instead of reading and editing | `context/narrow-tools`: Keeps read, grep, find, ls, bash, edit and write, plus tools your units register; drops the rest | [E6](easy/too-many-tools.md) | part of the Baseline Worker; not measured on its own | `--remedy context/narrow-tools` |
+| The serving stack returns reasoning as `<think>` text, and the model is fed it back as things it said | `context/repair-think-tags`: Moves a leading `<think>…</think>` in a reply into a thinking block, sent back as reasoning; leaves a correctly served reply alone | [E1](easy/reasoning-as-text.md) | LAN vLLM host: 236 of 244 turns leaked; 0 of 136 on the pinned vLLM 0.32.0 | `--remedy context/repair-think-tags` |
+| Reads more than the context holds, so Pi compacts it and the model loses what it read first | `context/trim-tool-output`: Trims a read, bash, grep, find or ls result over 8,000 characters and says how to search for the rest | [E2](easy/context-overflow.md) | context-overflow screen: 8 notes read whole, 2 compactions, 8 notes read again | `--remedy context/trim-tool-output` |
+| A long, procedural system prompt the small model follows instead of the files | `context/use-short-prompt`: Replaces the system prompt with the 643-character prompt in prompts/mellum-worker.md | [M2](medium/a-short-prompt.md) | screen: 3/3 against 1/3 on Bronze (2026-10-29), 3/9 against 3/9 earlier; not decided | `--remedy context/use-short-prompt` |
+| Runs a server or watcher in the foreground and the session waits forever | `tool/background-long-commands`: Rewrites a long-running bash command to run in the background and returns its startup output | [M4](medium/run-long-commands-safely.md) | unit-tested; not measured on the suites | `--remedy tool/background-long-commands` |
+| Loses track of a long task part-way through | `tool/keep-a-plan`: Keeps a TODO.md the model writes, follows and amends on failures | [M7](medium/keep-a-plan.md) | unit-tested; not measured on the suites | `--remedy tool/keep-a-plan` |
+| Guesses an API it never saw (a post-cutoff library, a redirect status) | `tool/lookup-library-docs`: Adds a lookup tool over the installed packages' signatures and docs | [M5](medium/look-it-up.md) | unit-tested; not measured on the suites | `--remedy tool/lookup-library-docs` |
+| Finishes with lint or type errors the grader counts as a fail | `check/check-code-quality`: Runs the quality checks before the model may finish | [M6](medium/check-before-finishing.md) | unit-tested; not measured on the suites | `--remedy check/check-code-quality` |
+| Builds a multi-phase app in one go and breaks earlier phases | `workflow/spec-driven-flow`: Plan, frozen per-phase gates and checkpoints, as tools the agent calls (run with learn/code/flow_run.py) | [H1](hard/plan-examine-code.md) | flow runs 2026-10-29: Bronze 4/4, Silver 18/18, Gold 30/34 (n = 1) | `learn/code/flow_run.py` |
+
+<!-- remedies:end -->
+
+## How every lesson reads
+
+Every lesson page has the same shape, so you know where to look:
+
+1. **Two sentences:** the problem and the solution.
+2. **Overview:** the questions the lesson answers and what you will be able to
+   do after it.
+3. **Six steps:** Problem, Eval case, Evidence of the problem, Solution,
+   Validation, Interpretation. Each step carries its own evidence badge
+   ([what the badges mean](../about/evidence.md#badges)).
+4. **Run it yourself:** the command that reproduces the lesson's arms, or a
+   plain statement that it has none yet.
+5. **Key points:** what to take away, never stronger than the evidence.

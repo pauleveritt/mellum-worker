@@ -7,9 +7,9 @@ import { formatMerge, formatReport, learnFromTexts, mergeSuggestion } from "../e
 const ROOT = resolve(import.meta.dirname, "..");
 const read = (p) => readFileSync(resolve(ROOT, p), "utf8");
 
-test("the README links all three Getting started lessons", () => {
+test("the README links the Getting Started steps", () => {
   const readme = read("README.md");
-  for (const page of ["base-pi-on-llamacpp", "harness", "suite"])
+  for (const page of ["base-pi-on-llamacpp", "working-with-pi", "eval-suites", "extensions"])
     assert.ok(readme.includes(`learn/getting-started/${page}.md`),
       `README lacks the ${page} lesson`);
   assert.ok(readme.includes("learn/code/harness.py run --suite all --grade"),
@@ -19,7 +19,7 @@ test("the README links all three Getting started lessons", () => {
 test("README carries the pinned install line and the status table", () => {
 	const readme = read("README.md");
 	const version = JSON.parse(read("package.json")).version;
-	assert.ok(readme.includes(`pi install git:github.com/pauleveritt/mellum-worker@v${version}`));
+	assert.ok(readme.includes(`pi install git:github.com/andrevanzuydam/mellum-worker@v${version}`));
 	assert.match(readme, /15\/15/);
 	assert.match(readme, /unmeasured/i);
 	assert.match(readme, /uv run --offline pytest -q/);

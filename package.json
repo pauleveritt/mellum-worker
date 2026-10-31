@@ -7,7 +7,7 @@
   "engines": {
     "node": ">=24"
   },
-  "repository": "github:pauleveritt/mellum-worker",
+  "repository": "github:andrevanzuydam/mellum-worker",
   "keywords": [
     "pi-package",
     "mellum",

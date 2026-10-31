@@ -34,13 +34,17 @@ test("the page states what it is not", () => {
   assert.match(p, /not a denominator/);
   assert.match(p, /[Rr]eference, not a rate/);
   assert.ok(!/docs\/ladder\//.test(p), "page links a ladder record");
-  const opening = p.split(/^# .+$/m)[1].split(/^## /m)[0].trim();
+  const opening = p.split(/^# .+$/m)[1].split(/^## |^!\[/m)[0].trim();
   assert.equal(opening.split(/(?<=\.)\s+/).filter(Boolean).length, 2);
   assert.ok(opening.split(/\s+/).length <= 45, "opening is over 45 words");
 });
 
-test("the ditch links the page, not the backlog placeholder", () => {
-  const ditch = page("getting-started/ditch.md");
-  assert.match(ditch, /\]\(\.\.\/pathologies\.md\)/);
-  assert.doesNotMatch(ditch, /BACKLOG\.md#pathologies-page/);
+test("false success cites the ditch session's record", () => {
+  assert.match(page("pathologies.md"), /False success\.[\s\S]*?2026-10-29-the-ditch-session\.md/);
+});
+
+test("lessons that left the track keep their evidence: the thinking pathology and the task-shaping backlog entry", () => {
+  assert.match(page("pathologies.md"), /\*\*Thinking spends the answer budget\.\*\*[\s\S]*?2026-10-29-lessons-left-the-track\.md/);
+  const backlog = readFileSync(resolve(ROOT, "BACKLOG.md"), "utf8");
+  assert.match(backlog, /\*\*A unit that shapes the task in a session\.\*\*[\s\S]*?\*Reopens when\*/);
 });

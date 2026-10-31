@@ -58,15 +58,21 @@ def serve_argv(
     port: int = PORT,
     binary: str = "llama-server",
 ) -> list[str]:
-    return [
+    argv = [
         binary, "-hf", settings["model"], "-a", ALIAS,
         "--host", host, "--port", str(port),
-        # No -ngl: llama.cpp's --fit then splits the model between GPU and CPU
-        # to fit free device memory. -c is set, so --fit never shrinks it.
+        # No -ngl by default: llama.cpp's --fit splits the model between GPU and
+        # CPU to fit free device memory, which keeps the recipe portable to a
+        # small machine. -c is set, so --fit never shrinks it. Set MELLUM_NGL
+        # (e.g. 999) to force full GPU offload where there is memory to spare.
         "-c", str(settings["context"]), "-np", "1",
         "--jinja", "-fa", "auto", "-b", "512", "-ub", "512",
         "-ctk", "q8_0", "-ctv", "q8_0",
     ]
+    ngl = os.environ.get("MELLUM_NGL")
+    if ngl:
+        argv += ["-ngl", ngl]
+    return argv
 
 
 def chat_body(settings: dict, prompt: str) -> dict:

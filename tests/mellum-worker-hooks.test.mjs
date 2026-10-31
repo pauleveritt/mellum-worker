@@ -349,7 +349,7 @@ test("run record carries host, activation, prompt version, nudges and guard bloc
 	assert.equal(rec.guardBlocks, 1);
 	assert.equal(rec.activation, "on");
 	assert.equal(rec.host, "tui");
-	assert.equal(rec.promptVersion, "v5");
+	assert.equal(rec.promptVersion, "v11");
 	assert.equal(rec.version, pkg.version);
 });
 

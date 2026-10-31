@@ -5,7 +5,7 @@
 Needs the oMLX server and the operator's hosted parent model (the mirrored
 ~/.pi/agent profile). Exercises: /mellum on, a second on, a task under the
 mode, /mellum off, a parent turn, a second off, and the one-shot
-/mellum <task>. Record: docs/ladder/ablation-a14-mellum-mode/README.md.
+/mellum <task>. Record: evals/2026-10-09-ablation-a14-mellum-mode/README.md.
 """
 
 import json

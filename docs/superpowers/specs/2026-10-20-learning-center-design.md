@@ -23,7 +23,7 @@ keeps its [backlog entry](../../../BACKLOG.md#ollama-backend-was-m4).
 
 Not a measured change: the worker, prompt, extensions, guards and ladder
 are untouched by this design. Evidence for lessons comes from runs that
-later phases make and record in `docs/ladder/`.
+later phases make and record in `evals/`.
 
 ## 1. Goals
 
@@ -69,7 +69,7 @@ names for these units.
 - **Badge**: a label on each of steps 1–5 saying what the step rests on:
   `reference-run`, `cited`, `screen` or `conjecture` (section 6).
 - **Reference run**: a preregistered ladder run on llama.cpp, recorded in
-  `docs/ladder/`, made for a lesson.
+  `evals/`, made for a lesson.
 - **Mini harness**: the small eval harness learners write in Getting
   started lesson 2, kept in `learn/code/`. It runs each task in an isolated
   directory through a private Pi profile and scores it with the task's
@@ -217,8 +217,8 @@ together; the step was named "Evidence it worked" when LC.1 shipped.
 
 | badge | means | needs |
 | --- | --- | --- |
-| `reference-run` | a preregistered run on llama.cpp, made for this lesson | a record in `docs/ladder/`, a preregistration, raw evidence in a `research-*` release |
-| `cited` | an existing record on oMLX or mlx-lm | a record in `docs/ladder/` or a research note on `main` |
+| `reference-run` | a preregistered run on llama.cpp, made for this lesson | a record in `evals/`, a preregistration, raw evidence in a `research-*` release |
+| `cited` | an existing record on oMLX or mlx-lm | a record in `evals/` or a research note on `main` |
 | `screen` | a few targeted runs or one observation | a research note, or a PR note or commit message cited by name |
 | `conjecture` | no run behind it | reasoning, design, unit tests only |
 
@@ -264,7 +264,7 @@ learn/
 - `learn/project/` is maintainer documentation, not a learner track; the
   Satyrn copy takes the learner pages only. `learn/code/profile/models.json`
   is generated from `[tool.mellum]`, and a test fails when the two disagree.
-- Lessons link to `docs/ladder/` records, research notes and code through
+- Lessons link to `evals/` records, research notes and code through
   GitHub URLs on `main`, so SDD records stay unpublished and still render
   on GitHub (`docs/sdd.md`, "Docs are a presentation layer").
 - Navigation is by track; each track's `index.md` lists its lessons in the
@@ -314,7 +314,7 @@ LC.1, before any lesson, and kept current as the center grows.
 | LC.3 | Getting started lesson 2: the mini harness and its recorder, one easy task, the score line |
 | LC.3A | Getting started lesson 3: the medium and hard tasks, the suite, telemetry, validation grading |
 | LC.3B | The ladder takes a provider, base URL and model, and a rung-1 smoke drives llama.cpp |
-| LC.3C | A preregistered llama.cpp reference run, recorded in `docs/ladder/` |
+| LC.3C | A preregistered llama.cpp reference run, recorded in `evals/` |
 | LC.4 | A digest of Paul's phases, the track index, and one phase row per lesson |
 | LC.5 | Andre's track: index and consent, adding one phase row per approved idea |
 | LC.6 | The harness takes sessions with one or more prompts, `--repeat`, and n on every line |

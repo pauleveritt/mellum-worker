@@ -10,6 +10,8 @@ backends: []
 
 For Windows, macOS, and Linux. These instructions use the native `llama-server` from llama.cpp and do not require Homebrew.
 
+![A small robot with a wrench untangling a cable between a laptop and a server box](../assets/illustrations/troubleshoot.webp){ .illustration }
+
 ## 1. Identify what is failing
 
 Open a terminal and run each command separately:

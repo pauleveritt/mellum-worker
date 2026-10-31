@@ -1,0 +1,12 @@
+[project]
+name = "project-owners"
+version = "0.1.0"
+description = "Project owners"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest==8.3.4"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

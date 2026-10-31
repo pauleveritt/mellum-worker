@@ -2,37 +2,106 @@
 site_name = "Small AI Learning Center"
 site_url = "https://pauleveritt.github.io/mellum-worker/"
 site_description = "Small coding models, measured: problems, fixes, evidence."
-repo_url = "https://github.com/pauleveritt/mellum-worker"
+repo_url = "https://github.com/andrevanzuydam/mellum-worker"
 docs_dir = "learn"
 site_dir = "site"
 exclude_docs = "code/"
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/badges.js"]
 nav = [
   { "Home" = "index.md" },
   { "Introduction" = "introduction/index.md" },
-  { "Getting started" = ["getting-started/index.md", "getting-started/base-pi-on-llamacpp.md", "getting-started/ditch.md",
-    "getting-started/harness.md",
-    "getting-started/suite.md", "getting-started/worker-extension.md",
-    "getting-started/troubleshoot.md"] },
+  { "Getting Started" = ["getting-started/index.md", "getting-started/base-pi-on-llamacpp.md",
+    "getting-started/working-with-pi.md", "getting-started/eval-suites.md", "getting-started/the-harness.md",
+    "getting-started/extensions.md", "getting-started/troubleshoot.md"] },
+  { "Lessons" = [
+    "lessons/index.md",
+    "lessons/start-here.md",
+    { "Easy" = [
+      "lessons/easy/index.md",
+      "lessons/easy/reasoning-as-text.md",
+      "lessons/easy/context-overflow.md",
+      "lessons/easy/looking-around.md",
+      "lessons/easy/searching.md",
+      "lessons/easy/creating-files.md",
+      "lessons/easy/too-many-tools.md",
+      "lessons/easy/know-when-to-stop.md"] },
+    { "Medium" = [
+      "lessons/medium/index.md",
+      "lessons/medium/tell-it-how-to-test.md",
+      "lessons/medium/a-short-prompt.md",
+      "lessons/medium/nudge-an-empty-turn.md",
+      "lessons/medium/run-long-commands-safely.md",
+      "lessons/medium/look-it-up.md",
+      "lessons/medium/check-before-finishing.md",
+      "lessons/medium/keep-a-plan.md",
+      "lessons/medium/build-a-suite.md"] },
+    { "Hard" = [
+      "lessons/hard/index.md",
+      "lessons/hard/plan-examine-code.md",
+      "lessons/hard/frozen-gates-and-checkpoints.md",
+      "lessons/hard/dont-trust-the-self-exit.md",
+      "lessons/hard/best-of-n.md",
+      "lessons/hard/build-a-tool.md",
+      "lessons/hard/build-a-remedy.md"] },
+  ] },
+  { "The Challenge" = "challenge/index.md" },
   { "Pathologies" = "pathologies.md" },
-  { "Lessons" = ["lessons/index.md", "lessons/baseline.md",
-    "lessons/primary-agent.md", "lessons/short-prompt.md",
-    "lessons/thinking-working-memory.md",
-    "lessons/guards-for-empty-turns.md",
-    "lessons/project-facts.md", "lessons/write-only-listed.md",
-    "lessons/prose-brief.md", "lessons/intercom-block.md",
-    "lessons/one-spec-per-phase.md"] },
+  { "Scoreboard" = "scoreboard.md" },
+  { "Glossary" = "glossary.md" },
   { "About" = [
     "about/index.md", "about/how-to-read.md",
     "about/evidence.md", "about/contributing.md",
+    { "Project" = ["project/index.md", "project/toolchain.md"] },
+    { "Lesson Template" = "lesson-template.md" },
+    "credits.md",
   ] },
-  { "Project" = ["project/index.md", "project/toolchain.md"] },
-  { "Glossary" = "glossary.md" },
-  { "Lesson template" = "lesson-template.md" },
-  { "Credits" = "credits.md" },
 ]
 
+[project.theme]
+language = "en"
+features = [
+  "content.code.copy",
+  "content.code.select",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.integrate",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
 [project.markdown_extensions]
+admonition = {}
+attr_list = {}
+md_in_html = {}
+pymdownx.details = {}
 pymdownx.superfences = {}
+pymdownx.tabbed.alternate_style = true
 
 [project.markdown_extensions.zensical_glossary]
 glossary_file = "glossary.md"

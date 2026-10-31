@@ -1,6 +1,6 @@
 """Turn recorded Pi events into a Score. Pure functions, replayable offline.
 
-Events are the JSON lines written by ``ladder/record-pi.js``:
+Events are the JSON lines written by ``extensions/mellum-recorder.ts``:
 ``provider_request`` (the wire payload), ``tool_call`` (toolName, input),
 and ``tool_result`` (toolName, isError, content). Every column maps to a
 pathology recorded in ``../local-ai-pi`` or ``../satyrn-evals``.

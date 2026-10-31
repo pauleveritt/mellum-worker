@@ -33,7 +33,7 @@ test("a failing run says FAIL and shows the test tail", () => {
 test("--dry-run prints the child's argv", () => {
   const r = run(tmpdir(), "fake-pi.sh", "--dry-run");
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /-p .*record-pi\.mjs/);
+  assert.match(r.stdout, /-p .*mellum-recorder\.ts/);
 });
 
 test("suite all prints every task and a total", () => {

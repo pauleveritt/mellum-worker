@@ -14,3 +14,14 @@ learn/code/.runs/
 learn/code/profile/auth.json
 learn/code/profile/models-store.json
 learn/code/profile/trust.json
+learn/code/profile/bin/
+learn/code/profile/sessions/
+learn/code/profile/mellum-lessons.json
+runs/
+
+# vast.ai credentials and the pinned client for scripts/baseline/baseline.py
+scripts/baseline/vast.env
+.baseline/
+
+# Manual lesson work: project/<lesson number>, made and reset by /lesson (p); /lesson clean removes it.
+/project/
