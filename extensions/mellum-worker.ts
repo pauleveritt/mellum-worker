@@ -21,20 +21,23 @@
  * becomes the worker prompt (prompts/mellum-worker.md, or $MELLUM_MODE_PROMPT), and the
  * messages are only those after the on-marker, minus Superpowers' bootstrap message.
  * Earlier turns' reasoning_content is left in place: removing it made runs 60% slower
- * (ladder A12). The session keeps everything; after /mellum off the parent is sent one
- * handoff block per finished span (task, files touched, last command output, final reply)
- * in place of Mellum's tool calls (the `context` hook).
+ * (ladder A12). The session keeps everything.
+ *
+ * This is the thin worker: mode machinery and the /mellum commands only. Remediation
+ * (project facts, tool-narrowing, the loop breaker and empty-turn nudge and the rest) and
+ * the handoff collapse are remedy units under remedies/ now, combined through a preset;
+ * the worker adds none of them itself. It keeps the compaction refusal and the pre-marker
+ * history drop, which protect the mode's own on-marker (mode-integrity, not remediation).
  *
  * Headless: MELLUM_MODE=1 activates at session start (the ladder's "mode" runner).
- * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum. While on, it runs the child guards (createGuardSet) itself, so no second extension is needed.
+ * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { adminBaseOf, checkSetup, type Diff, fetchJson, formatFindings, gatherInputs, loadExpected, readProvider, serverCheck, type ServerCheck } from "./mellum-check.ts";
-import { createGuardSet, type GuardSet } from "./mellum-guards.ts";
-import { factsBlock, readProjectFacts, type ProjectFacts } from "./mellum-facts.ts";
+import { type ProjectFacts } from "./mellum-facts.ts";
 import { type Activation, type Msg, promptVersionOf, runRecord, textOf, spanStats, type SpanStats } from "./mellum-record.ts";
 import { formatMerge, formatReport, learnFromTexts, mergeSuggestion, modeRunsFile, overCap, recordFiles } from "./mellum-learn.ts";
 import { formatLast, pickLast } from "./mellum-last.ts";
@@ -67,7 +70,7 @@ export function withFacts(m: Msg, facts: string): Msg {
 	return { ...m, content: parts };
 }
 
-export function filterForMellum(payload: any, systemPrompt: string, opts: { expectMarker?: boolean; facts?: string; keepSystem?: boolean; stripThinking?: boolean } = {}) {
+export function filterForMellum(payload: any, systemPrompt: string, opts: { expectMarker?: boolean; keepSystem?: boolean; stripThinking?: boolean } = {}) {
 	if (!payload || !Array.isArray(payload.messages)) return payload;
 	const msgs: Msg[] = payload.messages;
 	const isMarker = (m: Msg) => m.role === "user" && (textOf(m).includes(MARK_ON) || textOf(m).includes(MARK_OFF));
@@ -103,18 +106,17 @@ export function filterForMellum(payload: any, systemPrompt: string, opts: { expe
 			}
 		}
 	}
-	const facts = opts.facts ?? "";
 	const kept = msgs
 		.slice(start)
-		.filter((m) => !INSTRUCTION_ROLES.has(m.role ?? "") && !isMarker(m) && !isBootstrap(m))
-		.map((m) => (facts && m.role === "user" ? withFacts(m, facts) : m));
+		.filter((m) => !INSTRUCTION_ROLES.has(m.role ?? "") && !isMarker(m) && !isBootstrap(m));
 	const system = opts.keepSystem
 		? (msgs.find((m) => m.role === "system") ?? { role: "system", content: "" })
 		: { role: "system", content: systemPrompt };
 	const messages = opts.stripThinking ? stripReasoning(kept as Record<string, any>[]) : kept;
 	const out: any = { ...payload, messages: [system, ...messages] };
-	// pi-subagents re-adds its own tools after setActiveTools; the worker gets only its seven.
-	if (Array.isArray(payload.tools)) narrowTools(payload, out);
+	// Tool-narrowing and project facts are remedy units now (context/narrow-tools,
+	// context/add-project-facts); the thin worker only drops the pre-marker history and
+	// swaps the system prompt. The units reuse the narrowTools/withFacts exports below.
 	if (markerMissing) out.mellumModeMarkerMissing = true;
 	return out;
 }
@@ -306,7 +308,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	let saved: { model: any; tools: string[] } | undefined;
 	let prompt = "";
 	let warnedMissing = false;
-	let guards: GuardSet | undefined;
 	// Per-span counters for the one-line summary shown at /mellum off.
 	let span = { startedAt: 0, requests: 0, toolCalls: 0, outputTokens: 0 };
 	let activeModel = "";
@@ -317,9 +318,8 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	let host = "unknown";
 	let activation: Activation = "on";
 	let promptVersion = "unknown";
-	let nudges = 0;
-	let guardBlocks = 0;
-	let spanFacts: ProjectFacts = { source: "none", bullets: [], testCommand: null, chars: 0 };
+	// Facts are a remedy unit now; the worker records the run as facts source "none".
+	const spanFacts: ProjectFacts = { source: "none", bullets: [], testCommand: null, chars: 0 };
 	let server: ServerCheck = { match: null, diffs: [] };
 
 	// The activation check: one admin GET, at most 1 s, never throws; unreadable gives match null.
@@ -432,7 +432,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		saved = previous;
 		pi.setActiveTools(WORKER_TOOLS);
 		active = true;
-		guards = createGuardSet();
 		span = { startedAt: Date.now(), requests: 0, toolCalls: 0, outputTokens: 0 };
 		activeModel = label;
 		lastContext = [];
@@ -440,13 +439,8 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		host = typeof ctx.mode === "string" ? ctx.mode : "unknown";
 		activation = how;
 		promptVersion = promptVersionOf(prompt);
-		nudges = 0;
-		guardBlocks = 0;
 		interactive = notify;
 		warnedMissing = false;
-		// Read once per span, headless or not: the request hook forwards the same block every time.
-		spanFacts = readProjectFacts(process.cwd(), { read: (p) => (existsSync(p) ? readFileSync(p, "utf8") : undefined) });
-		if (spanFacts.warning) warn(ctx, spanFacts.warning, "warning");
 		server = await pendingServer;
 		if (server.match === false) warn(ctx, serverWarning(server.diffs), "warning");
 		if (notify) pi.sendMessage({ customType: "mellum-worker", content: `${MARK_ON} facts: ${spanFacts.source}`, display: true }, { deliverAs: "nextTurn" });
@@ -470,7 +464,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		pi.setActiveTools(saved.tools);
 		writeRunRecord(ctx);
 		active = false;
-		guards = undefined;
 		pi.sendMessage({ customType: "mellum-worker", content: MARK_OFF, display: true }, { deliverAs: "nextTurn" });
 		const secs = Math.round((Date.now() - span.startedAt) / 1000);
 		ctx.ui?.notify?.(`mellum-worker off: ${span.requests} request${span.requests === 1 ? "" : "s"}, ${span.toolCalls} tool call${span.toolCalls === 1 ? "" : "s"}, ${span.outputTokens.toLocaleString("en-US")} output tokens, ${secs} s`, "info");
@@ -485,7 +478,7 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			const open = openSpan([...lastContext, ...turnsSinceContext]);
 			if (!open) return;
 			mkdirSync(dirname(file), { recursive: true });
-			appendFileSync(file, JSON.stringify(runRecord(open.task, open.span, { endedAt: Date.now(), cwd: process.cwd(), model: activeModel, exists: existsInCwd, host, activation, promptVersion, nudges, guardBlocks, facts: { source: spanFacts.source, testCommand: spanFacts.testCommand, chars: spanFacts.chars }, server })) + "\n");
+			appendFileSync(file, JSON.stringify(runRecord(open.task, open.span, { endedAt: Date.now(), cwd: process.cwd(), model: activeModel, exists: existsInCwd, host, activation, promptVersion, nudges: 0, guardBlocks: 0, facts: { source: spanFacts.source, testCommand: spanFacts.testCommand, chars: spanFacts.chars }, server })) + "\n");
 		} catch (error) {
 			warn(ctx, `mellum-worker: could not write the run record${file ? ` to ${file}` : ""}: ${(error as Error)?.message ?? String(error)}`, "warning");
 		}
@@ -583,17 +576,14 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		return { cancel: true };
 	});
 
-	// Off: the parent gets one handoff block per finished span instead of Mellum's
-	// every read, edit and test run. The session itself keeps everything.
+	// While on, keep the last parent context snapshot for the run record. Collapsing a
+	// finished span into one handoff block for the parent is the delegate/collapse-handoffs
+	// remedy unit now, not the worker's job.
 	pi.on("context", (event: any) => {
-		if (active) {
-			lastContext = event.messages;
-			turnsSinceContext = [];
-			return undefined;
-		}
-		if (!event.messages.some((m: any) => textOf(m).includes(MARK_ON))) return undefined;
-		const collapsed = collapseHandoffs(event.messages, { exists: existsInCwd });
-		return collapsed === event.messages ? undefined : { messages: collapsed };
+		if (!active) return undefined;
+		lastContext = event.messages;
+		turnsSinceContext = [];
+		return undefined;
 	});
 
 	pi.on("before_provider_request", (event: any, ctx: any) => {
@@ -601,7 +591,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		span.requests += 1;
 		const out = filterForMellum(event.payload, prompt, {
 			expectMarker: interactive,
-			facts: factsBlock(spanFacts),
 			keepSystem: process.env.MELLUM_WORKER_PROMPT === "pi",
 			stripThinking: process.env.MELLUM_STRIP_THINKING === "1",
 		});
@@ -615,29 +604,20 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		return out;
 	});
 
-	// The child's guards, run in-session while the mode is on. A fresh set per span.
-	pi.on("tool_call", (event: any) => {
-		if (!active || !guards) return undefined;
+	// Per-span counters for the /mellum off summary and the run record. Guards (the loop
+	// breaker, empty-turn nudge and the rest) are remedy units now, not the worker's job.
+	pi.on("tool_call", () => {
+		if (!active) return undefined;
 		span.toolCalls += 1;
-		const result = guards.toolCall(event);
-		if (result?.block) guardBlocks += 1;
-		return result;
-	});
-	pi.on("turn_end", (event: any) => {
-		if (active && guards) {
-			guards.turnEnd(event);
-			const out = event?.message?.usage?.output;
-			if (event?.message?.role === "assistant") {
-				if (typeof out === "number") span.outputTokens += out;
-				turnsSinceContext.push(event.message);
-			}
-		}
 		return undefined;
 	});
-	pi.on("agent_before_settle", () => {
-		if (!active || !guards) return undefined;
-		const result = guards.beforeSettle();
-		if (result?.continue) nudges += 1;
-		return result;
+	pi.on("turn_end", (event: any) => {
+		if (!active) return undefined;
+		const out = event?.message?.usage?.output;
+		if (event?.message?.role === "assistant") {
+			if (typeof out === "number") span.outputTokens += out;
+			turnsSinceContext.push(event.message);
+		}
+		return undefined;
 	});
 }

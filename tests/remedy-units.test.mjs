@@ -104,7 +104,7 @@ test("nudge/nudge-empty-turn installs turn_end and agent_before_settle only, and
 
 // Context units: each rewrites one concern of the outgoing request, and matches what the worker's
 // filterForMellum does for that concern.
-const { filterForMellum, WORKER_TOOLS } = await import("../extensions/mellum-worker.ts");
+const { filterForMellum, withFacts, WORKER_TOOLS } = await import("../extensions/mellum-worker.ts");
 const { factsBlock, readProjectFacts } = await import("../extensions/mellum-facts.ts");
 import { readFileSync } from "node:fs";
 
@@ -156,8 +156,10 @@ test("context/add-project-facts appends the facts to user messages, as the worke
 	const pi = fakePi();
 	(await import("../remedies/context/add-project-facts.ts")).install(pi, { cwd: dir, env: {} });
 	const out = pi.fire("before_provider_request", { payload: PAYLOAD() });
-	const worker = filterForMellum(PAYLOAD(), "x", { keepSystem: true, facts });
-	assert.deepEqual(out.messages.filter((m) => m.role === "user"), worker.messages.filter((m) => m.role === "user"));
+	// The thin worker no longer injects facts; the unit builds on the same withFacts export,
+	// so the reference is withFacts applied to each user message.
+	const expectedUsers = PAYLOAD().messages.filter((m) => m.role === "user").map((m) => withFacts(m, facts));
+	assert.deepEqual(out.messages.filter((m) => m.role === "user"), expectedUsers);
 	assert.deepEqual(out.messages[0], PAYLOAD().messages[0]);
 });
 
@@ -172,8 +174,7 @@ test("context/narrow-tools keeps the seven worker tools, as the worker does", as
 	const pi = fakePi();
 	(await import("../remedies/context/narrow-tools.ts")).default(pi);
 	const out = pi.fire("before_provider_request", { payload: PAYLOAD() });
-	const worker = filterForMellum(PAYLOAD(), "x");
-	assert.deepEqual(out.tools, worker.tools);
+	// The thin worker no longer narrows tools; the unit is the sole narrower now.
 	assert.equal(out.tool_choice, undefined);
 	assert.deepEqual(out.tools.map((t) => t.function.name), WORKER_TOOLS);
 	assert.deepEqual(out.messages, PAYLOAD().messages);
@@ -223,9 +224,11 @@ test("a learner's own tool is kept when it calls keepTool", async () => {
 	assert.ok(pi.fire("before_provider_request", { payload }).tools.some((t) => t.function.name === "my_tool"));
 });
 
-// The preset is the worker: loaded in its order on a fresh headless session, the baseline-worker
-// preset sends the request the worker's mode sends, and makes the same guard decisions.
-test("preset:baseline-worker sends the same request as the worker's headless mode", async () => {
+// Behaviour-preserving parity (the baseline-kept gate): the thin worker swaps the prompt and
+// drops the pre-marker history (mode); the baseline-worker preset, applied on top, re-adds the
+// tool-narrowing and the project facts the MEASURED worker baked in. Together they reproduce the
+// request the measured worker sent, and the preset makes the same guard decisions.
+test("thin worker + preset:baseline-worker reproduces the measured worker's request", async () => {
 	const preset = JSON.parse(readFileSync(new URL("../remedies/presets/baseline-worker.json", import.meta.url), "utf8"));
 	const dir = mkdtempSync(join(tmpdir(), "preset-"));
 	writeFileSync(join(dir, "AGENTS.md"), "# P\n\n## Mellum\n\n- Test with `uv run pytest`.\n");
@@ -234,12 +237,18 @@ test("preset:baseline-worker sends the same request as the worker's headless mod
 		const unit = await import(`../remedies/${name}.ts`);
 		unit.install(pi, { cwd: dir, env: {} });
 	}
-	let viaPreset = PAYLOAD();
-	for (const h of pi.handlers.before_provider_request) viaPreset = h({ payload: viaPreset }) ?? viaPreset;
 	const facts = factsBlock(readProjectFacts(dir, { read: (p) => readFileSync(p, "utf8") }, {}));
 	const prompt = readFileSync(new URL("../prompts/mellum-worker.md", import.meta.url), "utf8").trim();
-	const viaWorker = filterForMellum(PAYLOAD(), prompt, { facts });
-	assert.deepEqual(viaPreset, viaWorker);
+	// the thin worker runs first, then the preset's before_provider_request hooks
+	let out = filterForMellum(PAYLOAD(), prompt);
+	for (const h of pi.handlers.before_provider_request) out = h({ payload: out }) ?? out;
+	assert.equal(out.messages[0].content, prompt, "system swapped to the worker prompt (mode)");
+	assert.deepEqual(out.tools.map((t) => t.function.name), WORKER_TOOLS, "tools narrowed to the seven (context/narrow-tools)");
+	assert.ok(!JSON.stringify(out).includes("Pi's own system prompt"), "Pi's base prompt is gone");
+	for (const m of out.messages.filter((m) => m.role === "user")) {
+		const text = typeof m.content === "string" ? m.content : m.content.map((p) => p.text ?? "").join("");
+		assert.ok(text.endsWith(facts), "facts appended to every user message (context/add-project-facts)");
+	}
 });
 
 test("preset:baseline-worker makes the same guard decisions as the worker's guard set", async () => {

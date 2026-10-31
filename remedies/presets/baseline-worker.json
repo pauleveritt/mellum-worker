@@ -1,9 +1,8 @@
 [
-  "context/use-short-prompt",
   "context/narrow-tools",
   "context/add-project-facts",
   "guard/break-repeat-loops",
+  "nudge/nudge-empty-turn",
   "guard/block-foreground-server",
-  "guard/stay-in-workspace",
-  "nudge/nudge-empty-turn"
+  "guard/stay-in-workspace"
 ]

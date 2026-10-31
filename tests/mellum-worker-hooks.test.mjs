@@ -49,47 +49,38 @@ test("falls back to the session's model when the oMLX one is absent", async () =
 	assert.ok(!notes.some((m) => m.includes("not found")), JSON.stringify(notes));
 });
 
-test("guard hooks are inert while mode is off", () => {
+test("the thin worker installs no guard hooks, and its tool_call/turn_end never block or nudge", () => {
 	const { handlers } = fakePi();
-	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined);
-	handlers.turn_end(emptyTurn);
-	assert.equal(handlers.agent_before_settle(), undefined);
+	// Guards (loop breaker, empty-turn nudge, …) are remedy units now; the worker adds none.
+	assert.equal(handlers.agent_before_settle, undefined, "no agent_before_settle hook");
+	modeIsOff(handlers);
+	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "tool_call never blocks");
+	assert.equal(handlers.turn_end(emptyTurn), undefined, "turn_end never nudges");
 });
 
-test("guard hooks are live while mode is on", async () => {
+test("tool_call stays unblocked across many reads while the mode is on (no built-in loop breaker)", async () => {
 	const { handlers, mellum } = fakePi();
 	await mellum("on");
-	for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-	assert.ok(handlers.tool_call(read)?.block);
-	handlers.turn_end(emptyTurn);
-	assert.ok(handlers.agent_before_settle()?.continue);
+	modeIsOn(handlers);
+	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "the thin worker never blocks a repeat read");
 });
 
-test("guard state is fresh for each span", async () => {
-	const { handlers, mellum } = fakePi();
-	await mellum("on");
-	for (let i = 0; i < 5; i++) handlers.tool_call(read);
-	await mellum("off");
-	await mellum("on");
-	assert.equal(handlers.tool_call(read), undefined, "the new span does not remember the old reads");
-});
-
-test("activating with the model missing from the registry leaves mode and guards off", async () => {
+test("activating with the model missing from the registry leaves the mode off", async () => {
 	const { handlers, mellum } = fakePi({ registryHasModel: false });
 	await mellum("on");
 	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined);
 	assert.equal(handlers.before_provider_request({ payload: { messages: [] } }), undefined);
 });
 
-test("context hook is dormant when no mellum span exists, and collapses when one does", () => {
+test("the context hook never rewrites while off: the handoff collapse is a remedy unit now", () => {
 	const { handlers } = fakePi();
 	const plain = [{ role: "user", content: [{ type: "text", text: "hi" }] }];
 	assert.equal(handlers.context({ messages: plain }), undefined);
 	const t = (text) => ({ role: "user", content: [{ type: "text", text }] });
 	const messages = [t("hi"), t("[mellum-worker on]"), t("task"), { role: "assistant", content: [{ type: "text", text: "done" }] }, t("[mellum-worker off]"), t("next")];
-	const out = handlers.context({ messages });
-	assert.ok(out && Array.isArray(out.messages));
-	assert.ok(out.messages.length < messages.length);
+	// The worker no longer collapses a finished span; delegate/collapse-handoffs does
+	// (proved in remedy-delegate.test.mjs). While off, the worker's context hook is inert.
+	assert.equal(handlers.context({ messages }), undefined);
 });
 
 test("MELLUM_STRIP_THINKING reaches the payload, and is off by default", async () => {
@@ -332,21 +323,21 @@ async function withRunsFile(body, { prompt, headless } = {}) {
 	}
 }
 
-test("run record carries host, activation, prompt version, nudges and guard blocks", async () => {
+test("run record carries host, activation, prompt version, and zero nudges and guard blocks", async () => {
 	const { readFileSync } = await import("node:fs");
 	const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 	const rec = await withRunsFile(async () => {
 		const { handlers, mellum } = recordingPi({ mode: "tui" });
 		await mellum("on");
 		handlers.context({ messages: snapshot });
-		for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-		assert.ok(handlers.tool_call(read)?.block, "the sixth identical read is blocked");
+		handlers.tool_call(read);
 		handlers.turn_end(emptyTurn);
-		assert.ok(handlers.agent_before_settle()?.continue, "the empty turn is nudged");
 		await mellum("off");
 	});
-	assert.equal(rec.nudges, 1);
-	assert.equal(rec.guardBlocks, 1);
+	// The thin worker runs no guards, so the record always reports zero; a preset's guard
+	// units own blocking and nudging now.
+	assert.equal(rec.nudges, 0);
+	assert.equal(rec.guardBlocks, 0);
 	assert.equal(rec.activation, "on");
 	assert.equal(rec.host, "tui");
 	assert.equal(rec.promptVersion, "v11");
@@ -446,7 +437,11 @@ async function recordLines(body) {
 }
 
 const offMarkers = (calls) => calls.sendMessage.filter((m) => m.content === "[mellum-worker off]").length;
-const modeIsOff = (handlers) => { for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "guard hooks inert: mode is off"); };
+// The thin worker has no guards to probe, so the mode is read through the compaction refusal:
+// active + an auto compaction returns { cancel: true }, off returns undefined. No side effects.
+const modeOn = (handlers) => handlers.session_before_compact?.({ reason: "auto" }, { ui: { notify: () => {} } })?.cancel === true;
+const modeIsOff = (handlers) => assert.equal(modeOn(handlers), false, "mode is off");
+const modeIsOn = (handlers, msg = "mode is on") => assert.ok(modeOn(handlers), msg);
 
 test("headless one shot: the handler waits for the run, then restores the model and writes the record", async () => {
 	let h;
@@ -483,8 +478,7 @@ test("one shot with a UI: the handler returns at once and agent_settled turns th
 	const h = headlessPi({ hasUI: true, startsRun: false, startTimeoutMs: 20 });
 	await h.mellum("fix it");
 	assert.equal(h.calls.waitForIdle, 0, "waitForIdle never called");
-	for (let i = 0; i < 5; i++) assert.equal(h.handlers.tool_call(read), undefined);
-	assert.ok(h.handlers.tool_call(read)?.block, "mode still on after return: the sixth identical read is blocked");
+	modeIsOn(h.handlers, "mode still on after return");
 	await h.handlers.agent_settled({}, h.ctx);
 	modeIsOff(h.handlers);
 	assert.equal(offMarkers(h.calls), 1);
@@ -493,8 +487,7 @@ test("one shot with a UI: the handler returns at once and agent_settled turns th
 test("headless ctx without waitForIdle: the handler returns with the mode on and does not throw", async () => {
 	const h = headlessPi({ withWait: false, startsRun: false, startTimeoutMs: 20 });
 	await h.mellum("fix it");
-	for (let i = 0; i < 5; i++) assert.equal(h.handlers.tool_call(read), undefined);
-	assert.ok(h.handlers.tool_call(read)?.block, "mode still on after return");
+	modeIsOn(h.handlers, "mode still on after return");
 	assert.equal(offMarkers(h.calls), 0);
 });
 
@@ -550,129 +543,6 @@ test("with a UI, a missing Mellum model is a notify error and nothing goes to st
 	modeIsOff(h.handlers);
 });
 
-// Runs `body(dir)` with the process in a fresh project directory holding `files`, restoring cwd and env.
-async function inProject(files, body, { env = {} } = {}) {
-	const { mkdtempSync, writeFileSync, realpathSync } = await import("node:fs");
-	const { tmpdir } = await import("node:os");
-	const dir = realpathSync(mkdtempSync(join_(tmpdir(), "mellum-proj-")));
-	for (const [name, content] of Object.entries(files)) writeFileSync(join_(dir, name), content);
-	const cwd = process.cwd();
-	const saved = Object.fromEntries(Object.keys(env).map((k) => [k, process.env[k]]));
-	Object.assign(process.env, env);
-	process.chdir(dir);
-	try {
-		return await body(dir);
-	} finally {
-		process.chdir(cwd);
-		for (const [k, v] of Object.entries(saved)) {
-			if (v === undefined) delete process.env[k];
-			else process.env[k] = v;
-		}
-	}
-}
-
-const FACTS_MD = "# P\n\n## Mellum\n\n- Test command: make test\n- Do not: add dependencies\n";
-const userMsg = (text) => ({ role: "user", content: [{ type: "text", text }] });
-
-test("/mellum on reads the project's facts, marks the source, and forwards the block on every request", async () => {
-	await inProject({ "AGENTS.md": FACTS_MD }, async () => {
-		const { handlers, ctx, calls, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		const on = calls.sendMessage.find((m) => String(m.content).includes("[mellum-worker on]"));
-		assert.equal(on.content, "[mellum-worker on] facts: agents-md");
-		const payload = { messages: [userMsg("[mellum-worker on] facts: agents-md"), userMsg("task one")] };
-		for (let i = 0; i < 2; i++) {
-			const out = handlers.before_provider_request({ payload }, ctx);
-			assert.equal(out.messages[1].content[0].text, "task one\n\nProject facts:\n- Test command: make test\n- Do not: add dependencies");
-		}
-		assert.equal(payload.messages[1].content[0].text, "task one", "the session's message is unchanged");
-	});
-});
-
-test("headless activation (MELLUM_MODE=1, no marker) forwards the facts to the task message", async () => {
-	await inProject({ "AGENTS.md": FACTS_MD }, async () => {
-		const { handlers, ctx, calls } = recordingPi({ mode: "json" });
-		const saved = process.env.MELLUM_MODE;
-		process.env.MELLUM_MODE = "1";
-		try {
-			await handlers.session_start({}, ctx);
-		} finally {
-			if (saved === undefined) delete process.env.MELLUM_MODE;
-			else process.env.MELLUM_MODE = saved;
-		}
-		assert.equal(calls.sendMessage.length, 0, "headless sends no marker");
-		const out = handlers.before_provider_request({ payload: { messages: [{ role: "system", content: "pi" }, userMsg("Implement specs/phase-1.md")] } }, ctx);
-		assert.deepEqual(out.messages.map((m) => m.role), ["system", "user"]);
-		assert.match(out.messages[1].content[0].text, /^Implement specs\/phase-1\.md\n\nProject facts:\n- Test command: make test\n/);
-	});
-});
-
-test("the run record carries facts: source, test command, chars", async () => {
-	const rec = await inProject({ "AGENTS.md": FACTS_MD }, () => withRunsFile(async () => {
-		const { handlers, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		handlers.context({ messages: snapshot });
-		await mellum("off");
-	}));
-	assert.deepEqual(rec.facts, { source: "agents-md", testCommand: "make test", chars: "Test command: make test".length + "Do not: add dependencies".length });
-});
-
-test("the fallback is detected from a pytest pyproject and recorded", async () => {
-	const rec = await inProject({ "pyproject.toml": '[dependency-groups]\ndev = ["pytest"]\n' }, () => withRunsFile(async () => {
-		const { handlers, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		handlers.context({ messages: snapshot });
-		await mellum("off");
-	}));
-	assert.deepEqual(rec.facts, { source: "detected", testCommand: "uv run --offline python -m pytest -q", chars: "Test command: uv run --offline python -m pytest -q".length });
-});
-
-test("MELLUM_MODE_FACTS=0 records off, marks off, and forwards nothing", async () => {
-	await inProject({ "AGENTS.md": FACTS_MD }, async () => {
-		const rec = await withRunsFile(async () => {
-			const { handlers, ctx, calls, mellum } = recordingPi({ mode: "tui" });
-			await mellum("on");
-			assert.equal(calls.sendMessage.find((m) => String(m.content).includes("[mellum-worker on]")).content, "[mellum-worker on] facts: off");
-			const out = handlers.before_provider_request({ payload: { messages: [userMsg("[mellum-worker on]"), userMsg("t")] } }, ctx);
-			assert.equal(out.messages[1].content[0].text, "t");
-			handlers.context({ messages: snapshot });
-			await mellum("off");
-		});
-		assert.deepEqual(rec.facts, { source: "off", testCommand: null, chars: 0 });
-	}, { env: { MELLUM_MODE_FACTS: "0" } });
-});
-
-test("a section over the cap warns on activation and falls back", async () => {
-	await inProject({ "AGENTS.md": `## Mellum\n- Do not: ${"x".repeat(700)}\n` }, async () => {
-		const { calls, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		assert.ok(calls.notify.some(([m, l]) => /600/.test(m) && l === "warning"), JSON.stringify(calls.notify));
-		assert.equal(calls.sendMessage.find((m) => String(m.content).includes("[mellum-worker on]")).content, "[mellum-worker on] facts: none");
-	});
-});
-
-test("without a UI the over-cap warning goes to stderr", async () => {
-	await inProject({ "AGENTS.md": `## Mellum\n- Do not: ${"x".repeat(700)}\n` }, async () => {
-		const { calls, mellum } = recordingPi({ mode: "print", hasUI: false });
-		const errs = [];
-		const orig = console.error;
-		console.error = (...a) => errs.push(a.join(" "));
-		try {
-			await mellum("on");
-		} finally {
-			console.error = orig;
-		}
-		assert.ok(errs.some((m) => /600/.test(m)), JSON.stringify(errs));
-		assert.ok(!calls.notify.some(([, l]) => l === "warning"), "no UI notification for the warning");
-	});
-});
-
-test("the parent's handoff summary line names the facts source from the span's on-marker", async () => {
-	const { handlers } = recordingPi();
-	const out = handlers.context({ messages: [userMsg("task"), { role: "custom", customType: "mellum-worker", content: "[mellum-worker on] facts: detected" }, { role: "assistant", content: [{ type: "text", text: "done" }] }, { role: "custom", customType: "mellum-worker", content: "[mellum-worker off]" }, userMsg("next")] });
-	const handoff = out.messages.find((m) => JSON.stringify(m).includes("handoff"));
-	assert.match(JSON.stringify(handoff), /, facts: detected/);
-});
 
 // ---- the server settings check: on activation, in the run record, and /mellum check ----
 
@@ -720,8 +590,7 @@ test("activation with drifted server settings warns once with the exact message,
 	await mellum("on");
 	assert.deepEqual(calls.notify.filter(([m]) => m.startsWith("Mellum server settings differ")), [[DRIFT_WARNING, "warning"]]);
 	assert.deepEqual(server.calls, [{ url: "http://127.0.0.1:8001/admin/api/models", method: "GET" }], "one admin GET, nothing else");
-	for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-	assert.ok(handlers.tool_call(read)?.block, "mode is on: the sixth identical read is blocked");
+	modeIsOn(handlers);
 });
 
 test("activation with matching server settings warns nothing", async () => {
@@ -792,8 +661,7 @@ test("an activation check whose fetch never resolves and ignores the signal retu
 	const elapsed = Date.now() - t0;
 	assert.ok(elapsed < 1500, `activation took ${elapsed} ms`);
 	assert.deepEqual(warnings(calls), []);
-	for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-	assert.ok(handlers.tool_call(read)?.block, "mode is on");
+	modeIsOn(handlers);
 });
 
 test("an unreachable server is silent on activation, with or without a UI", async () => {

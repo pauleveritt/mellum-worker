@@ -4,6 +4,24 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Added
+
+- `delegate/collapse-handoffs` remedy unit: the finished-span handoff collapse,
+  lifted out of the worker so a preset can load it (or not). It gives the parent
+  one handoff block per `[on…off]` span in place of every read, edit and command.
+
+### Changed
+
+- The **worker extension is now thin: mode and the `/mellum` commands only.** It
+  no longer bakes in project-facts injection, tool-narrowing, the guards (loop
+  breaker, empty-turn nudge, foreground-server and workspace guards) or the
+  handoff collapse — those are remedy units now, combined through a preset.
+  `preset:baseline-worker` carries exactly the units the measured worker ran, so
+  it reproduces the shipped worker's request and guard decisions (a parity test
+  proves it) and the recorded baselines stand unchanged. The compaction refusal
+  and the pre-marker history drop stay in the worker: they protect the mode's own
+  on-marker, so they are mode-integrity, not remediation.
+
 ### Fixed
 
 - `mellum-ncm` was silently inert whenever `mellum-acceptance` derived its test:
