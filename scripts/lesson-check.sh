@@ -10,7 +10,7 @@
 # Default profile: scripts/baseline/lan-profile (the 6-bit on the LAN vLLM host, LC.28).
 # Detaches by default (nohup, HUP ignored), so closing a terminal tab cannot kill a check; the
 # log is runs/<slug>-check-<ts>-<sha>/check.log. Runs land in runs/ (git-ignored); record a kept
-# check under docs/ladder/<date>-<slug>-check/ with the raw stripped.
+# check under evals/<date>-<slug>-check/ with the raw stripped.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 

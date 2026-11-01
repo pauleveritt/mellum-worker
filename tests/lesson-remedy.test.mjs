@@ -47,7 +47,7 @@ for (const url of pages) {
 		assert.match(check[1], /^(not built yet|run (once|twice) on \d{4}-\d{2}-\d{2}, and it did not show|held on \d{4}-\d{2}-\d{2}: FAIL → PASS)/,
 			"a lesson check is not built, did not show FAIL -> PASS, or held");
 		if (check[1].startsWith("held"))
-			assert.match(check[1], /docs\/ladder\/\d{4}-\d{2}-\d{2}-[a-z-]+-check/, "a held check links its record");
+			assert.match(check[1], /evals\/\d{4}-\d{2}-\d{2}-[a-z-]+-check/, "a held check links its record");
 	});
 }
 

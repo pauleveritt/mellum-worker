@@ -265,7 +265,7 @@ test("reference-run is earned on the suites, not the ladder", () => {
   assert.ok(row, "no reference-run row");
   assert.match(row, /preregistration/);
   assert.doesNotMatch(row, /docs\/ladder\//);
-  assert.match(evidence.split("\n").find((l) => l.startsWith("| `cited`")), /docs\/ladder\//);
+  assert.match(evidence.split("\n").find((l) => l.startsWith("| `cited`")), /evals\//);
   const entry = page("glossary.md").split("### Reference-run")[1].split("###")[0];
   assert.match(entry, /preregistered run on llama\.cpp/);
   assert.doesNotMatch(entry, /ladder run/);

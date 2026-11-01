@@ -24,6 +24,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- The recipe's record links now resolve: every `ladder/<name>/` link in
+  `docs/recipe.md` pointed at the pre-move location and 404'd after records
+  moved to dated `evals/<date>-<name>/` directories. Repointed all of them (and
+  the two bare `evals/` directory links), so the recipe's evidence trail is
+  clickable again.
 - `mellum-ncm` was silently inert whenever `mellum-acceptance` derived its test:
   ncm read `NCM_TEST` once at extension-load, before acceptance set it at
   `session_start`, so the verify/redispatch gate never fired and a worker could
