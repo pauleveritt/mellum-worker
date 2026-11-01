@@ -11,8 +11,8 @@ backends: [llamacpp]
 
 The last step ran Pi once, with `-p`, and exited. This one opens Pi's
 interactive terminal: where you type, what the model can touch, how to see
-what it did, and how to pick up a session later. It ends with the two
-commands this course adds, `/lesson` and `/remedy`.
+what it did, and how to pick up a session later. It ends with the commands
+this course adds — `/lesson` and `/remedy` — and the worker's own `/mellum`.
 
 Everything here is from Pi's own documentation for the version this repo
 pins (1.4.0). The `/` menu inside Pi is the exact list for your session.
@@ -168,10 +168,33 @@ is on, the footer shows `remedies: N on`. A unit that adds a tool registers it
 the first time it is switched on; Pi cannot remove a tool, so the tool stays
 offered after `off` until you restart Pi (its hooks do stop).
 
+## 7. The worker's own commands: `/mellum`
+
+The two above drive the course. The recipe itself adds one more: `/mellum`,
+the worker. It comes from the installed `mellum-worker` package (the
+`pi install` line from the README, the same recipe this course teaches), so it
+is there in any project where you install it, not only this checkout. With it
+you hand bounded work to the small local model and read how each run went.
+
+| Command | What it does |
+| --- | --- |
+| `/mellum on` | Switch the session to Mellum — model, the worker tool set, the worker prompt — and stay on across turns; it marks the span start |
+| `/mellum off` | Restore the model and tools you had before, and print a one-line summary of the span |
+| `/mellum <task>` | One-shot: switch to Mellum, run the one task, and switch back when it settles; your model gets one handoff block for the span |
+| `/mellum check` | Compare the model server and Pi's provider entry with the measured settings; it fails on a per-request mismatch and only reads |
+| `/mellum last` | The newest run at or under this directory (Mode or one-shot) as a table, with no model call |
+| `/mellum learn [n]` | Read the last `n` runs (default 10), name what went wrong, and suggest the `## Mellum` lines your `AGENTS.md` lacks |
+
+Auto-compaction is refused while the mode is on, so run `/mellum off` before a
+long main-model turn. The [Start tier](../lessons/start/turn-the-worker-on.md)
+(lessons S1–S5) walks through each command with a runnable example; `check`,
+`last` and `learn` also have terminal forms (`node scripts/mellum.mjs …`).
+
 ## What you have
 
 Pi running interactively on the local Mellum, the keys to steer and stop it,
-the tools it can call, the commands to resume or branch a session, and the
-course's `/lesson` and `/remedy` loaded from a trusted checkout. Next,
+the tools it can call, the commands to resume or branch a session, the
+course's `/lesson` and `/remedy` loaded from a trusted checkout, and the
+worker's own `/mellum`. Next,
 [Eval suites and the telemetry](eval-suites.md) runs whole projects through the
 provided harness and grades them.
