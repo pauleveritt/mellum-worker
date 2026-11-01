@@ -24,6 +24,11 @@ Versions match git tags; pin one in both install lines.
   caught; everything else reaches the editor). `/lesson before` and `/lesson
   after` run the lesson's arms in-session and show the verdict and the code the
   run wrote in the panel.
+- A **pick-a-mode menu on the first run** at the repo root: **Standard** (code
+  with Mellum, every remediation on), **Lesson** (the course), or **Challenge**
+  (the graded run). Standard pre-fills `/mellum on` and names `/remedy
+  preset:hard`; Challenge points to the challenge page until it has an in-Pi
+  runner.
 
 ### Changed
 

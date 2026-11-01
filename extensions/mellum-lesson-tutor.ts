@@ -297,6 +297,7 @@ const PANEL_HEIGHT = 16;
 let page = 0;
 let pageCount = 1;
 let unsubInput: (() => void) | undefined;
+let menuShown = false;
 
 /** The lesson as pages for the fixed-height panel: the aim, each of the six steps (with the before
  * line on Eval case and the after line on Solution), then the key points. */
@@ -315,6 +316,28 @@ function buildPages(lesson: Lesson, root: string, cwd: string, width: number): {
 	}
 	if (lesson.keyPoints.length) pages.push({ name: "Key points", content: md(lesson.keyPoints.map((k) => `- ${k}`).join("\n")).render(width) });
 	return pages;
+}
+
+/** The pick-a-mode menu on the first run at the repo root: Standard (code with Mellum, every
+ * remediation on), Lesson (the course), or Challenge (the graded run). Pi has no API to run a
+ * command for you, so Standard pre-fills the switch and names the preset. */
+async function startupMenu(ctx: any, root: string): Promise<void> {
+	try {
+		const STANDARD = "Standard — code with Mellum, every remediation on";
+		const LESSON = "Lesson — take the course, hands-on";
+		const CHALLENGE = "Challenge — the graded challenge";
+		const picked = await ctx.ui.select("Small AI Learning Center — pick a mode", [STANDARD, LESSON, CHALLENGE]);
+		if (!picked) return;
+		if (picked === LESSON) return openLesson("", ctx);
+		if (picked === CHALLENGE)
+			return ctx.ui.notify("Challenge: the graded run — see learn/challenge/index.md. An in-Pi runner is next.", "info");
+		// Standard: switch the worker in and load every remediation. The user runs the two it pre-fills.
+		ctx.ui.setEditorText?.("/mellum on");
+		ctx.ui.notify("Standard: press Enter to switch Mellum in, then `/remedy preset:hard` loads every remediation.", "info");
+		void root;
+	} catch (error) {
+		ctx.ui.notify(`menu failed: ${(error as Error)?.message ?? error}`, "error");
+	}
 }
 
 export default function (pi: any): void {
@@ -381,6 +404,11 @@ export default function (pi: any): void {
 				dispose: () => { panelRefresh = undefined; },
 			};
 		}, { placement: "aboveEditor" });
+		// First run at the repo root: offer the pick-a-mode menu (Standard / Lesson / Challenge).
+		if (!panelNumber && !menuShown && ctx.ui?.select) {
+			menuShown = true;
+			void startupMenu(ctx, root);
+		}
 	});
 	pi.registerCommand("start", {
 		description: "Start the course: open your next lesson (the same as /lesson)",
