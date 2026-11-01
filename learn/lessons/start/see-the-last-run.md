@@ -7,6 +7,7 @@ position: 4
 prerequisites: [start/run-one-task]
 authors: [Andre van Zuydam]
 backends: [none]
+tryit: "First run something, e.g. `/mellum Do the task in TASK.md` | `/mellum last` — see that run as a table"
 ---
 
 # S4 · See the Last Run

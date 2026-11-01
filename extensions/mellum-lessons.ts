@@ -39,7 +39,7 @@ export interface Lesson {
 
 const frontMatter = (text: string): Record<string, string> => {
 	const block = text.match(/^---\n([\s\S]*?)\n---/);
-	return Object.fromEntries((block?.[1] ?? "").split("\n").map((l) => l.match(/^(\w+): (.*)$/)).filter(Boolean).map((m) => [m![1], m![2]]));
+	return Object.fromEntries((block?.[1] ?? "").split("\n").map((l) => l.match(/^(\w+): (.*)$/)).filter(Boolean).map((m) => [m![1], m![2].replace(/^(["'])(.*)\1$/, "$2")]));
 };
 
 /** Every lesson, in track order: Easy, Medium, Hard, each by number. */
@@ -302,6 +302,8 @@ export function prepareProject(root: string, lesson: Pick<Lesson, "number" | "be
 	} else if (suite && existsSync(join(suite, "task.md"))) {
 		task = readFileSync(join(suite, "task.md"), "utf8");
 	}
+	// A command lesson (the Start tier) has no suite; give it a small task to try the worker on.
+	if (!task && !suite) task = "Create `add.py` with a function `add(a, b)` that returns their sum, and a\ntest `test_add.py` that checks it. Run the whole test file.\n";
 	if (task) writeFileSync(join(dir, "TASK.md"), task);
 	mkdirSync(join(dir, ".pi", "extensions"), { recursive: true });
 	writeFileSync(join(dir, ".pi", "extensions", "remedies.ts"),
@@ -323,7 +325,17 @@ export function projectGuide(root: string, cwd: string): string[] | undefined {
 	const number = projectNumber(root, cwd);
 	const entry = number && lessonIndex(root).find((e) => e.number === number);
 	if (!entry) return undefined;
-	const lesson = parseLesson(readFileSync(entry.file, "utf8"));
+	const text = readFileSync(entry.file, "utf8");
+	// A command lesson (the Start tier beyond S0) pins the /mellum commands to try, not a remedy task.
+	if (entry.tier === "start" && entry.number !== "S0") {
+		const tryit = (frontMatter(text).tryit ?? "").split("|").map((s) => s.trim()).filter(Boolean);
+		return [
+			`${entry.number} · ${entry.title}: try it here in project/${entry.number}`,
+			...tryit.map((s, i) => `${i + 1}. ${s}`),
+			"`/lesson back` returns to the lesson · `/lesson clear` starts this folder over",
+		];
+	}
+	const lesson = parseLesson(text);
 	const unit = lesson.unit.match(/`([a-z]+\/[a-z-]+)`/)?.[1];
 	const why = unitPathology(root, lesson.unit);
 	return [

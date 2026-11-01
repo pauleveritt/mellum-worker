@@ -7,6 +7,7 @@ position: 5
 prerequisites: [start/see-the-last-run]
 authors: [Andre van Zuydam]
 backends: [none]
+tryit: "Run a task or two with `/mellum`, then | `/mellum learn` — turn the runs into a `## Mellum` section for AGENTS.md"
 ---
 
 # S5 · Learn from Runs

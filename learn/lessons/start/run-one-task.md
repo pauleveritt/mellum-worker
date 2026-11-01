@@ -7,6 +7,7 @@ position: 2
 prerequisites: [start/turn-the-worker-on]
 authors: [Andre van Zuydam]
 backends: [none]
+tryit: "`/mellum Do the task in TASK.md` — one shot | Read the handoff block it leaves, then run the tests yourself"
 ---
 
 # S2 · Run One Task

@@ -7,6 +7,7 @@ position: 3
 prerequisites: [getting-started/base-pi-on-llamacpp]
 authors: [Andre van Zuydam]
 backends: [none]
+tryit: "`/mellum check` — compare your server and Pi with the measured settings | Fix any line it marks as a failure"
 ---
 
 # S3 · Check the Setup

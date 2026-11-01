@@ -7,6 +7,7 @@ position: 1
 prerequisites: [getting-started/extensions]
 authors: [Andre van Zuydam]
 backends: [none]
+tryit: "`/mellum on` — switch the worker in | Ask it to do a task, e.g. `Do the task in TASK.md` | `/mellum off` — switch back and read the span summary"
 ---
 
 # S1 · Turn the Worker On

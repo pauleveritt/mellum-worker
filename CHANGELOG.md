@@ -10,7 +10,10 @@ Versions match git tags; pin one in both install lines.
   drive the worker — turn it on and off, run one task, check the setup, see the
   last run, and learn from runs. They come before the Easy remedies, are
   reachable in Pi with `/lesson S1`..`S5`, and are in the site's Lessons nav
-  under "Start Here".
+  under "Start Here". Opening one creates its `project/<id>/` folder (with a
+  small task to try) and, on `p`, drops you into a live session with that
+  lesson's `/mellum` command pinned above the prompt — so you read and run it
+  side by side instead of in the modal step view.
 - `delegate/collapse-handoffs` remedy unit: the finished-span handoff collapse,
   lifted out of the worker so a preset can load it (or not). It gives the parent
   one handoff block per `[on…off]` span in place of every read, edit and command.

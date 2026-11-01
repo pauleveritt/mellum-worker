@@ -226,6 +226,23 @@ test("in project/<number>, the tutor's guide says what to do, step by step, and 
 	assert.equal(projectGuide(ROOT, join(ROOT, "project", "Z9")), undefined);
 });
 
+test("a command lesson's guide pins its /mellum commands, not a remedy task", async () => {
+	const { projectGuide } = await tutor();
+	const lines = projectGuide(ROOT, join(ROOT, "project", "S1"));
+	const text = lines.join("\n");
+	assert.match(lines[0], /S1 · Turn the Worker On/);
+	assert.ok(text.includes("/mellum on") && text.includes("/mellum off"), text);
+	assert.doesNotMatch(text, /Ask the model: `Do the task in TASK\.md`/, "not the remedy-lesson guide");
+	assert.ok(text.includes("/lesson back"), "still says how to return");
+});
+
+test("prepareProject seeds a command lesson's folder with a TASK.md to try", async () => {
+	const { prepareProject } = await tutor();
+	const root = mkdtempSync(join(tmpdir(), "repo-"));
+	const dir = prepareProject(root, { number: "S1", before: undefined });
+	assert.ok(existsSync(join(dir, "TASK.md")), "a TASK.md to run /mellum against");
+});
+
 test("outside a project folder the widget is a legend of the lesson commands", async () => {
 	const { lessonLegend } = await tutor();
 	const text = lessonLegend().join("\n");

@@ -322,6 +322,9 @@ async function openLesson(args: string, ctx: any, startPage = 0): Promise<void> 
 			while (index < track.length) {
 				const entry = track[index];
 				const lesson = parseLesson(readFileSync(entry.file, "utf8"));
+				// Make the project folder when the lesson opens, so `p` has somewhere to try things
+				// right away; only when missing, so reopening never wipes work in progress.
+				if (!existsSync(join(root, "project", entry.number))) prepareProject(root, lesson);
 				const result = await walk(ctx, root, lesson, entry, { index, count: track.length }, startPage);
 				startPage = 0;
 				if (result === "project") return moveTo(ctx, join(root, "project", entry.number),
