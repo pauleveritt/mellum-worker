@@ -20,10 +20,11 @@ Versions match git tags; pin one in both install lines.
 - A **fixed-height lesson panel** pinned above the prompt. Opening a lesson drops
   you into its `project/<id>/` folder with the panel showing the walkthrough —
   the aim, what to do, the six steps and the key points — which you page with
-  **PageUp/PageDown** while you keep typing to the model (only those two keys are
-  caught; everything else reaches the editor). `/lesson before` and `/lesson
-  after` run the lesson's arms in-session and show the verdict and the code the
-  run wrote in the panel.
+  **← / →** while the prompt is empty (or PageUp/PageDown), the keys named in the
+  panel's footer, while every other keystroke reaches the editor so you keep
+  typing to the model. `/lesson before` and `/lesson after` run the lesson's arms
+  in-session and show the verdict and the code the run wrote in the panel, on
+  whatever page you are on.
 - A **pick-a-mode menu on the first run** at the repo root: **Standard** (code
   with Mellum, every remediation on), **Lesson** (the course), or **Challenge**
   (the graded run). Standard pre-fills `/mellum on` and names `/remedy

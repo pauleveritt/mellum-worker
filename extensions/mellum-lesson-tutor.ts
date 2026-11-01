@@ -293,7 +293,7 @@ function panelRunBlock(root: string, lesson: Lesson, key: "before" | "after", wi
 }
 
 // The panel is a fixed height and you page through it; which page is showing, and how many there are.
-const PANEL_HEIGHT = 16;
+const PANEL_HEIGHT = 24;
 let page = 0;
 let pageCount = 1;
 let unsubInput: (() => void) | undefined;
@@ -328,7 +328,12 @@ async function startupMenu(ctx: any, root: string): Promise<void> {
 		const CHALLENGE = "Challenge — the graded challenge";
 		const picked = await ctx.ui.select("Small AI Learning Center — pick a mode", [STANDARD, LESSON, CHALLENGE]);
 		if (!picked) return;
-		if (picked === LESSON) return openLesson("", ctx);
+		// session_start's ctx has no switchSession, so the menu pre-fills the command the user runs
+		// (from a real command context) rather than switching sessions here.
+		if (picked === LESSON) {
+			ctx.ui.setEditorText?.("/start");
+			return ctx.ui.notify("Press Enter to open your next lesson.", "info");
+		}
 		if (picked === CHALLENGE)
 			return ctx.ui.notify("Challenge: the graded run — see learn/challenge/index.md. An in-Pi runner is next.", "info");
 		// Standard: switch the worker in and load every remediation. The user runs the two it pre-fills.
@@ -365,8 +370,13 @@ export default function (pi: any): void {
 		// you keep typing to the model. Only inside a lesson, and torn down when the session changes.
 		if (lesson && ctx.ui?.onTerminalInput) {
 			unsubInput = ctx.ui.onTerminalInput((data: string) => {
-				if (matchesKey(data, Key.pageDown)) { page = Math.min(pageCount - 1, page + 1); panelRefresh?.(); return { consume: true }; }
-				if (matchesKey(data, Key.pageUp)) { page = Math.max(0, page - 1); panelRefresh?.(); return { consume: true }; }
+				// ← / → page the panel, but only while the prompt is empty, so they still move the
+				// cursor once you type. PageUp/PageDown always page (for keyboards that have them).
+				const empty = (ctx.ui.getEditorText?.() ?? "") === "";
+				const fwd = matchesKey(data, Key.pageDown) || (empty && matchesKey(data, Key.right));
+				const back = matchesKey(data, Key.pageUp) || (empty && matchesKey(data, Key.left));
+				if (fwd) { page = Math.min(pageCount - 1, page + 1); panelRefresh?.(); return { consume: true }; }
+				if (back) { page = Math.max(0, page - 1); panelRefresh?.(); return { consume: true }; }
 				return undefined;
 			});
 		}
@@ -391,13 +401,17 @@ export default function (pi: any): void {
 					if (page >= pageCount) page = pageCount - 1;
 					const p = pages[page];
 					let body = [...p.content];
-					if (p.run) body.push(...panelRunBlock(root, lesson, p.run, w, theme));
+					// Show any before/after run (active or done) on every page, so the result lands
+					// right where you are after /lesson before|after, not only on the step's own page.
+					for (const key of ["before", "after"] as const)
+						if (panelRuns[key]) body.push(...panelRunBlock(root, lesson, key, w, theme));
 					body = body.flatMap((line) => wrapTextWithAnsi(line, w));
 					const area = Math.max(3, PANEL_HEIGHT - 2);
-					if (body.length > area) body = [...body.slice(0, area - 1), theme.fg("dim", "   … more — PageDown")];
+					if (body.length > area) body = [...body.slice(0, area - 1), theme.fg("dim", "   … (more in the run record)")];
 					while (body.length < area) body.push("");
 					const header = theme.bold(theme.fg("accent", `▍ ${lesson.number} · ${lesson.title}  ·  ${p.name}  (${page + 1}/${pageCount})`));
-					const foot = theme.fg("dim", ` PageUp/PageDown to page${p.run ? ` · /lesson ${p.run} runs it` : ""} · type below to talk to the model`);
+					const runHint = lesson.before ? ` · /lesson before${lesson.after ? "|after" : ""} to run` : "";
+					const foot = theme.fg("dim", ` ←/→ page (empty prompt)${runHint} · type to talk to the model`);
 					return [header, ...body, foot];
 				},
 				invalidate: () => {},
@@ -441,6 +455,8 @@ export default function (pi: any): void {
 
 /** Move this Pi into `dir`: a new session whose working directory is that folder. */
 async function moveTo(ctx: any, dir: string, note: string, then?: (next: any) => Promise<void>): Promise<void> {
+	// switchSession is only on a command context; never crash if called from somewhere without it.
+	if (typeof ctx.switchSession !== "function") return ctx.ui?.notify?.("open a lesson with /lesson or /start", "info");
 	const store = join(findRoot(dir) ?? dir, "project", ".sessions");
 	await ctx.switchSession(sessionIn(dir, CURRENT_SESSION_VERSION, store), {
 		withSession: async (next: any) => {
