@@ -275,7 +275,8 @@ function startArm(root: string, ctx: any, key: "before" | "after", command: stri
 function panelRunBlock(root: string, lesson: Lesson, key: "before" | "after", width: number, theme: any): string[] {
 	const command = key === "before" ? lesson.before : lesson.after;
 	if (!command) return [];
-	const out = ["", theme.fg("accent", key === "before" ? " Before" : " After"), ...wrapTextWithAnsi(theme.fg("dim", ` ${command}`), width)];
+	// No raw harness command here — a learner runs /lesson before, not a shell script.
+	const out = ["", theme.fg("accent", key === "before" ? " Before" : " After")];
 	const r = panelRuns[key];
 	if (!r) return out;
 	if (r.child) { out.push(theme.fg("warning", ` running (${r.label}) …`)); return out; }
@@ -479,7 +480,7 @@ async function openLesson(args: string, ctx: any, startPage = 0): Promise<void> 
 				const command = key === "before" ? lesson.before : lesson.after;
 				if (!command) return ctx.ui.notify(`this lesson has no ${key} line`, "info");
 				startArm(root, ctx, key, command);
-				return ctx.ui.notify(`running the ${key} line … watch the panel above`, "info");
+				return ctx.ui.notify(`running the ${key} line … the result will show in the panel`, "info");
 			}
 			const here = projectNumber(root, ctx.cwd ?? process.cwd());
 			if (here && ["", "back", "home"].includes(args.trim())) {
