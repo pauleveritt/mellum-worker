@@ -326,6 +326,13 @@ also Mellum; that isolates the worker role, not what a large parent gains.
 The model that owns the session before `/mellum` runs and receives the
 handoff afterward. Also called the main agent.
 
+### Handoff block
+
+The one message the parent model receives for a finished worker span, in place
+of the worker's every read, edit and command: a summary line, the files
+written, the commands run, the last output, and the worker's reply. Produced by
+the `delegate/collapse-handoffs` remedy.
+
 ## AI terms
 
 ### Agent

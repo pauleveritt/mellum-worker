@@ -16,7 +16,13 @@ nav = [
     "getting-started/extensions.md", "getting-started/troubleshoot.md"] },
   { "Lessons" = [
     "lessons/index.md",
-    "lessons/start-here.md",
+    { "Start Here" = [
+      "lessons/start-here.md",
+      "lessons/start/turn-the-worker-on.md",
+      "lessons/start/run-one-task.md",
+      "lessons/start/check-the-setup.md",
+      "lessons/start/see-the-last-run.md",
+      "lessons/start/learn-from-runs.md"] },
     { "Easy" = [
       "lessons/easy/index.md",
       "lessons/easy/reasoning-as-text.md",

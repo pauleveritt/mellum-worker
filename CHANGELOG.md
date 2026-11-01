@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The **Start tier of lessons: S1–S5**, teaching the `/mellum` commands that
+  drive the worker — turn it on and off, run one task, check the setup, see the
+  last run, and learn from runs. They come before the Easy remedies, are
+  reachable in Pi with `/lesson S1`..`S5`, and are in the site's Lessons nav
+  under "Start Here".
 - `delegate/collapse-handoffs` remedy unit: the finished-span handoff collapse,
   lifted out of the worker so a preset can load it (or not). It gives the parent
   one handoff block per `[on…off]` span in place of every read, edit and command.

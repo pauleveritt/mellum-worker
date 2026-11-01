@@ -7,16 +7,17 @@ import { join } from "node:path";
 const tutor = () => import("../extensions/mellum-lessons.ts");
 const ROOT = new URL("..", import.meta.url).pathname;
 
-test("the track lists Start Here, then every lesson in order: Easy, Medium, Hard, by number", async () => {
+test("the track lists the Start tier (S0 then the command lessons), then Easy, Medium, Hard by number", async () => {
 	const { lessonIndex } = await tutor();
 	const ids = lessonIndex(ROOT).map((l) => l.number);
-	const pages = ["easy", "medium", "hard"].flatMap((t) =>
+	const emh = ["easy", "medium", "hard"].flatMap((t) =>
 		readdirSync(join(ROOT, "learn/lessons", t)).filter((f) => f.endsWith(".md") && f !== "index.md"));
-	assert.equal(ids.length, pages.length + 1);
+	const start = readdirSync(join(ROOT, "learn/lessons/start")).filter((f) => f.endsWith(".md") && f !== "index.md");
+	assert.equal(ids.length, emh.length + start.length + 1); // + Start Here (S0)
 	assert.equal(ids[0], "S0");
-	const key = (n) => "EMH".indexOf(n[0]) * 100 + Number(n.slice(1));
-	assert.deepEqual(ids.slice(1), [...ids.slice(1)].sort((a, b) => key(a) - key(b)));
-	assert.ok(ids.slice(1).every((n) => /^[EMH]\d+$/.test(n)), ids.join(" "));
+	const key = (n) => (n[0] === "S" ? 0 : 100 + "EMH".indexOf(n[0]) * 100) + Number(n.slice(1));
+	assert.deepEqual(ids, [...ids].sort((a, b) => key(a) - key(b)));
+	assert.ok(ids.every((n) => /^[SEMH]\d+$/.test(n)), ids.join(" "));
 });
 
 test("every lesson page parses into what the walk-through shows", async () => {

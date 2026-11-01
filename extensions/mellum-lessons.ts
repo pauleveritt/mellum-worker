@@ -58,7 +58,18 @@ export function lessonIndex(root: string): LessonEntry[] {
 		const fm = frontMatter(readFileSync(start, "utf8"));
 		entries.push({ number: fm.number, title: fm.title, tier: "start", slug: "start-here", file: start });
 	}
-	const rank = (n: string) => n === "S0" ? -1 : TIERS.indexOf(TIERS.find((t) => t[0].toUpperCase() === n[0])!) * 100 + Number(n.slice(1));
+	const startDir = join(root, "learn", "lessons", "start");
+	if (existsSync(startDir)) {
+		for (const name of readdirSync(startDir).filter((f) => f.endsWith(".md") && f !== "index.md")) {
+			const file = join(startDir, name);
+			const fm = frontMatter(readFileSync(file, "utf8"));
+			entries.push({ number: fm.number, title: fm.title, tier: "start", slug: name.replace(/\.md$/, ""), file });
+		}
+	}
+	// The Start tier (S0, then the command lessons S1..) comes first, then Easy, Medium, Hard.
+	const rank = (n: string) => n[0] === "S"
+		? Number(n.slice(1))
+		: 100 + TIERS.indexOf(TIERS.find((t) => t[0].toUpperCase() === n[0])!) * 100 + Number(n.slice(1));
 	return entries.sort((a, b) => rank(a.number) - rank(b.number));
 }
 

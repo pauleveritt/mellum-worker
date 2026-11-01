@@ -10,6 +10,13 @@ otherwise.
 
 <div class="grid cards" markdown>
 
+-   **[Start Here](start-here.md)**
+
+    ---
+
+    No model needed. S0 shows how a lesson works; S1–S5 teach the `/mellum`
+    commands that drive the worker: on and off, one task, check, last, learn.
+
 -   **[Easy](easy/index.md)**
 
     ---
@@ -38,7 +45,11 @@ The lessons' runs use the Bronze, Silver and Gold levels of
 material it goes, not which level it runs on.
 
 New here? Start with [S0 · Start Here](start-here.md): one minute, no model
-needed, and it shows you how every lesson works.
+needed, and it shows you how every lesson works. Then the Start tier teaches
+the `/mellum` commands that drive the worker — [turn it on](start/turn-the-worker-on.md),
+[run one task](start/run-one-task.md), [check the setup](start/check-the-setup.md),
+[see the last run](start/see-the-last-run.md) and [learn from runs](start/learn-from-runs.md) —
+before the Easy tier adds the remedies.
 
 ## Take the lessons in Pi
 

@@ -22,8 +22,10 @@ const PENDING = new Set([
 	"dont-trust-the-self-exit", "best-of-n", "build-a-tool", "build-a-remedy",
 ]);
 
-// S0 is the one lesson without a model: stand-ins play it, on a fixture suite.
-const EXEMPT = new Set(["start-here"]);
+// The Start tier teaches the /mellum commands, not a remedy: S0 (start-here) is played by
+// stand-ins on a fixture suite, and S1-S5 are command walkthroughs with no before/after arm.
+const EXEMPT = new Set(["start-here",
+	"turn-the-worker-on", "run-one-task", "check-the-setup", "see-the-last-run", "learn-from-runs"]);
 const SHARED_SUITES = new Set(["easy", "medium", "hard"]);
 
 /** argv after the script name, as [flag, value] pairs and bare flags, order kept. */

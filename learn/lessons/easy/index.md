@@ -5,6 +5,10 @@ failure it invites, and the one remedy for that failure. You start from bare
 Pi; each lesson's *before* is everything the earlier lessons added, and its
 *after* adds one unit. After E7 you have every Easy unit, and Medium starts from them.
 
+New to the worker? Take the [Start tier](../start/turn-the-worker-on.md) first:
+S1–S5 teach the `/mellum` commands that drive it. The Easy tier here then adds
+one remedy per lesson on top.
+
 ![A small robot turning one large dial while a light bulb switches on](../../assets/illustrations/tier-easy.webp){ .illustration }
 
 <div class="grid cards" markdown>
