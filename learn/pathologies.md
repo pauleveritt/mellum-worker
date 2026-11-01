@@ -57,7 +57,7 @@ scoreboard.
    final at the very end. **Seen:** ten Bronze sessions in which the nudge never
    fired because no empty turn had the shape it answers, the finals ending on a
    context overflow or the output cap instead
-   ([lesson](lessons/medium/nudge-an-empty-turn.md)). **Answer:** the bounded
+   ([lesson](lessons/index.md)). **Answer:** the bounded
    nudge answers a self-ended empty turn; a capped or aborted one is a budget
    question and needs its own fix.
 6. **A loop.** The same text or the same call repeats until the budget is gone,
@@ -65,7 +65,7 @@ scoreboard.
    minutes retrying refused command shapes, each a slightly different call
    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-26-server-guard-run.md));
    the loop breaker exists and is unmeasured
-   ([lesson](lessons/medium/nudge-an-empty-turn.md)). **Answer:** a refusal that
+   ([lesson](lessons/index.md)). **Answer:** a refusal that
    names an alternative, and a loop breaker, which no arm has yet shown earns
    its place.
 7. **A runaway search.** Instead of working the task, the model searches (the
@@ -168,7 +168,7 @@ scoreboard.
     in every request and both attempts started one
     ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)), and
     the facts block that carried it moved no pass at n = 3
-    ([run](lessons/medium/tell-it-how-to-test.md)). **Answer:** a fact is a reminder, not
+    ([run](lessons/index.md)). **Answer:** a fact is a reminder, not
     an enforcement; the guard is the enforcement, and it stays dormant until an
     arm needs it.
 

@@ -186,8 +186,8 @@ you hand bounded work to the small local model and read how each run went.
 | `/mellum learn [n]` | Read the last `n` runs (default 10), name what went wrong, and suggest the `## Mellum` lines your `AGENTS.md` lacks |
 
 Auto-compaction is refused while the mode is on, so run `/mellum off` before a
-long main-model turn. The [Start tier](../lessons/start/turn-the-worker-on.md)
-(lessons S1–S5) walks through each command with a runnable example; `check`,
+long main-model turn. The [Lessons](../lessons/index.md)
+walk through each command with a runnable example; `check`,
 `last` and `learn` also have terminal forms (`node scripts/mellum.mjs …`).
 
 ## What you have

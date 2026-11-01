@@ -114,7 +114,7 @@ things a mini one leaves out:
   lesson's own `--suite easy` ran bare in the 2026-10-29 local 6-bit MLX smoke
   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-10-29-local-lessons-smoke/README.md)),
   the cutoff did exactly that: two of three sessions ended on a `uvicorn` call
-  that never returned (see [M4](../lessons/medium/run-long-commands-safely.md)).
+  that never returned (the M4 remedy, `tool/background-long-commands`).
 - **Clean-up and tamper checks.** It ends every process the session left
   behind, and marks a run whose grader files the model touched.
 - **Several prompts, one session.** A task holds one prompt (`task.md`) or

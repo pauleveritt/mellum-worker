@@ -71,9 +71,8 @@ eval harness. After that, any [lesson](lessons/index.md) stands alone and lists 
 
     ---
 
-    One failure, measured and fixed, per lesson. Pick a level:
-    [easy](lessons/easy/index.md), [medium](lessons/medium/index.md) or
-    [hard](lessons/hard/index.md). Each stands alone.
+    One failure, measured and fixed, per lesson. The findings lessons are
+    being rebuilt; each will stand alone.
 
 -   **[The Challenge](challenge/index.md)**
 

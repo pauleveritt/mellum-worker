@@ -16,8 +16,8 @@ each ends with a check you can run. Six steps, then two paths.
 
 ## Two paths from here
 
-**Take the lessons.** Open [S0 Start Here](../lessons/start-here.md) on this
-site, or type `/lesson S0` in Pi from a trusted checkout. Each lesson adds one
+**Take the lessons.** Open the [Lessons](../lessons/index.md) index on this
+site, or type `/lesson` in Pi from a trusted checkout. Each lesson adds one
 remedy unit and shows the run before and after it.
 
 **Go straight to [The Challenge](../challenge/index.md).** Run Bronze, Silver

@@ -188,5 +188,5 @@ searches only; a write by absolute path is not covered yet.
 What a Pi extension is and the four hooks the units use, what one remedy unit
 looks like, the presets, and two ways to switch units on: `--remedy` and
 `--extension` on a harness run, and `/remedy` in a live Pi. Next, take the
-[Lessons](../lessons/start-here.md) or go straight to
+[Lessons](../lessons/index.md) or go straight to
 [The Challenge](../challenge/index.md).

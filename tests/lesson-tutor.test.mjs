@@ -7,44 +7,6 @@ import { join } from "node:path";
 const tutor = () => import("../extensions/mellum-lessons.ts");
 const ROOT = new URL("..", import.meta.url).pathname;
 
-test("the track lists the Start tier (S0 then the command lessons), then Easy, Medium, Hard by number", async () => {
-	const { lessonIndex } = await tutor();
-	const ids = lessonIndex(ROOT).map((l) => l.number);
-	const emh = ["easy", "medium", "hard"].flatMap((t) =>
-		readdirSync(join(ROOT, "learn/lessons", t)).filter((f) => f.endsWith(".md") && f !== "index.md"));
-	const start = readdirSync(join(ROOT, "learn/lessons/start")).filter((f) => f.endsWith(".md") && f !== "index.md");
-	assert.equal(ids.length, emh.length + start.length + 1); // + Start Here (S0)
-	assert.equal(ids[0], "S0");
-	const key = (n) => (n[0] === "S" ? 0 : 100 + "EMH".indexOf(n[0]) * 100) + Number(n.slice(1));
-	assert.deepEqual(ids, [...ids].sort((a, b) => key(a) - key(b)));
-	assert.ok(ids.every((n) => /^[SEMH]\d+$/.test(n)), ids.join(" "));
-});
-
-test("every lesson page parses into what the walk-through shows", async () => {
-	const { lessonIndex, parseLesson } = await tutor();
-	for (const entry of lessonIndex(ROOT)) {
-		const l = parseLesson(readFileSync(entry.file, "utf8"));
-		assert.equal(l.number, entry.number);
-		assert.ok(l.title && l.opening, `${l.number}: title/opening`);
-		assert.match(l.image, /^(\.\.\/)+assets\/illustrations\/[a-z0-9-]+\.webp$/, `${l.number}: image`);
-		assert.ok(l.alt.length >= 20, `${l.number}: alt`);
-		assert.ok(l.questions.length && l.objectives.length, `${l.number}: overview`);
-		for (const step of ["Problem", "Eval case", "Evidence of the problem", "Solution", "Validation", "Interpretation"])
-			assert.ok(l.steps[step]?.trim(), `${l.number}: ${step}`);
-		assert.ok(l.keyPoints.length >= 1, `${l.number}: key points`);
-		assert.ok(l.commands.length >= 1, `${l.number}: commands`);
-	}
-});
-
-test("a lesson with a before and an after line exposes both", async () => {
-	const { parseLesson } = await tutor();
-	const l = parseLesson(readFileSync(join(ROOT, "learn/lessons/easy/reasoning-as-text.md"), "utf8"));
-	assert.match(l.before, /--suite reasoning-as-text --repeat 1/);
-	assert.doesNotMatch(l.before, /--remedy/);
-	assert.match(l.after, /--suite reasoning-as-text --remedy context\/repair-think-tags --repeat 1/);
-	assert.match(l.unit, /context\/repair-think-tags/);
-});
-
 test("a run is summarised from its run.json files: passes, and why each failure failed", async () => {
 	const { summariseRuns } = await tutor();
 	const dir = mkdtempSync(join(tmpdir(), "runs-"));
@@ -76,15 +38,6 @@ test("a quick run is one session; the full run keeps the page's n", async () => 
 	assert.equal(full[full.indexOf("--repeat") + 1], "3");
 });
 
-test("every lesson picture has a PNG copy for the terminal (Kitty draws PNG only)", async () => {
-	const { lessonIndex, parseLesson, terminalPicture } = await tutor();
-	const { existsSync } = await import("node:fs");
-	for (const entry of lessonIndex(ROOT)) {
-		const png = terminalPicture(ROOT, parseLesson(readFileSync(entry.file, "utf8")).image);
-		assert.ok(png.endsWith(".png") && existsSync(png), `${entry.number}: ${png}`);
-	}
-});
-
 test("soft line breaks are joined for the terminal; code, lists and tables are kept", async () => {
 	const { unwrap } = await tutor();
 	const md = "One line\nwraps here.\n\n- a list\n- item\n\n```ts\nconst a = 1;\nconst b = 2;\n```\n\n| a | b |\n| --- | --- |\n| 1 | 2 |";
@@ -109,13 +62,6 @@ test("failed hidden tests are named as such, even when no check IDs are listed",
 	mkdirSync(join(dir, "b"));
 	writeFileSync(join(dir, "b", "run.json"), JSON.stringify({ passed: false, tests_passed: true, quality_ok: false, checks_ran: true, missing_checks: [], wall: 1 }));
 	assert.match(summariseRuns(dir).lines[1], /lint or type checks failed/);
-});
-
-test("Start Here runs in seconds with no model: its before fails and its after passes", async () => {
-	const { parseLesson } = await tutor();
-	const l = parseLesson(readFileSync(join(ROOT, "learn/lessons/start-here.md"), "utf8"));
-	assert.match(l.before, /--pi-binary learn\/code\/tests\/fixtures\/fake-pi-wrong\.sh/);
-	assert.match(l.after, /--pi-binary learn\/code\/tests\/fixtures\/fake-pi\.sh/);
 });
 
 // Manual work happens in project/<lesson number>, never in the repository root: easy to find,
@@ -214,29 +160,6 @@ test("sessionIn writes an empty Pi session whose working directory is the folder
 	assert.notEqual(sessionIn(dir, 3, store), file, "each call is a fresh session");
 });
 
-test("in project/<number>, the tutor's guide says what to do, step by step, and how to get back", async () => {
-	const { projectGuide, projectNumber } = await tutor();
-	const lines = projectGuide(ROOT, join(ROOT, "project", "E1"));
-	const text = lines.join("\n");
-	assert.match(lines[0], /E1 · Reasoning Returned as Text/);
-	for (const t of ["Do the task in TASK.md", "returns reasoning as", "/lesson clear", "/remedy on context/repair-think-tags", "/lesson back"])
-		assert.ok(text.includes(t), `guide lacks ${t}`);
-	assert.equal(projectNumber(ROOT, join(ROOT, "project", "E4", "app")), "E4");
-	assert.equal(projectNumber(ROOT, ROOT), undefined);
-	assert.equal(projectGuide(ROOT, ROOT), undefined);
-	assert.equal(projectGuide(ROOT, join(ROOT, "project", "Z9")), undefined);
-});
-
-test("a command lesson's guide pins its /mellum commands, not a remedy task", async () => {
-	const { projectGuide } = await tutor();
-	const lines = projectGuide(ROOT, join(ROOT, "project", "S1"));
-	const text = lines.join("\n");
-	assert.match(lines[0], /S1 · Turn the Worker On/);
-	assert.ok(text.includes("/mellum on") && text.includes("/mellum off"), text);
-	assert.doesNotMatch(text, /Ask the model: `Do the task in TASK\.md`/, "not the remedy-lesson guide");
-	assert.ok(text.includes("/lesson back"), "still says how to return");
-});
-
 test("prepareProject seeds a command lesson's folder with a TASK.md to try", async () => {
 	const { prepareProject } = await tutor();
 	const root = mkdtempSync(join(tmpdir(), "repo-"));
@@ -251,18 +174,6 @@ test("outside a project folder the widget is a legend of the lesson commands", a
 		assert.ok(text.includes(t), `legend lacks ${t}`);
 });
 
-test("the widget is styled: a title, numbered steps, commands as code, a dimmed footer under a rule", async () => {
-	const { projectGuide, styleGuide } = await tutor();
-	const paint = { title: (s) => `<T>${s}</T>`, step: (s) => `<S>${s}</S>`, code: (s) => `<C>${s}</C>`, dim: (s) => `<D>${s}</D>`, rule: (s) => `<R>${s.length}</R>` };
-	const out = styleGuide(projectGuide(ROOT, join(ROOT, "project", "E1")), paint, 40);
-	assert.match(out[0], /^<T>▍ E1 · Reasoning Returned as Text/);
-	assert.ok(out.some((l) => l.includes("<S>1.</S>") && l.includes("<C>Do the task in TASK.md</C>")), out.join("\n"));
-	assert.ok(out.some((l) => l.includes("<C>/lesson clear</C>")));
-	assert.equal(out.at(-2), "<R>40</R>");
-	assert.match(out.at(-1), /^\s*<D>/);
-	assert.ok(!out.join("").includes("`"), "backticks are styling marks, never shown");
-});
-
 test("a failure in the record is named on the FAIL screen", async () => {
 	const { summariseRuns } = await tutor();
 	const dir = mkdtempSync(join(tmpdir(), "runs-"));
@@ -270,22 +181,6 @@ test("a failure in the record is named on the FAIL screen", async () => {
 	writeFileSync(join(dir, "a", "run.json"), JSON.stringify({ passed: false, tests_passed: true, checks_ran: true, missing_checks: [],
 		record_failures: ["reasoning_as_text is 10 (at most 0)"], wall: 60, output_tokens: 900 }));
 	assert.match(summariseRuns(dir).lines[0], /the record shows: reasoning_as_text is 10 \(at most 0\)/);
-});
-
-test("S0 is a stand-in lesson: its panel is the run-before/after loop and reading run.json, not ask-the-model", async () => {
-	const { projectGuide } = await tutor();
-	const lines = projectGuide(ROOT, join(ROOT, "project", "S0"));
-	const text = lines.join("\n");
-	assert.match(lines[0], /S0 · Start Here/);
-	assert.doesNotMatch(text, /Ask the model: `Do the task in TASK\.md`/, "S0 has no model to ask");
-	for (const t of ["/lesson before", "/lesson after", "run.json"])
-		assert.ok(text.includes(t), `S0 panel lacks ${t}`);
-});
-
-test("a remedy lesson's panel offers the before/after comparison as in-session commands", async () => {
-	const { projectGuide } = await tutor();
-	const text = projectGuide(ROOT, join(ROOT, "project", "E1")).join("\n");
-	assert.ok(text.includes("/lesson before") && text.includes("/lesson after"), text);
 });
 
 test("the worker is always loaded when Pi runs in the repo: .pi/extensions shims mellum-worker", async () => {

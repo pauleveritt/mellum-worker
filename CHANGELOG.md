@@ -4,6 +4,13 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Removed
+
+- **The findings lessons (Start / Easy / Medium / Hard — 27 pages) are removed,
+  to be rebuilt.** They explained the harness more than they taught a skill. The
+  lesson tutor, the hands-on panel and the Getting Started track stay; `/lesson`
+  and the site's Lessons section are a placeholder until new lessons land.
+
 ### Added
 
 - The **Start tier of lessons: S1–S5**, teaching the `/mellum` commands that

@@ -305,11 +305,10 @@ harness, with every claim labelled by the evidence behind it:
    Pi extension and a remedy unit are, presets, and `/mellum` as one bundle.
 5. [Troubleshoot](learn/getting-started/troubleshoot.md).
 
-From there, take the lessons, starting with
-[S0 Start Here](learn/lessons/start-here.md), or go straight to
+From there, see the [Lessons](learn/lessons/index.md) index, or go straight to
 [The Challenge](learn/challenge/index.md).
 
-All findings lessons are in [Lessons](learn/lessons/index.md). The site builds on
+The findings lessons are being rebuilt. The site builds on
 pull requests and deploys to GitHub Pages from `main`
 (`.github/workflows/docs.yml`). Run the harness with `uv run learn/code/harness.py run --suite all --grade`.
 

@@ -7,7 +7,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-export const PAGES = ["learn/lessons/index.md", "learn/challenge/index.md"];
+export const PAGES = ["learn/challenge/index.md"];
 const START = "<!-- remedies:start -->";
 const END = "<!-- remedies:end -->";
 const KINDS = ["guard", "nudge", "context", "tool", "check", "workflow"];
@@ -34,7 +34,13 @@ export async function listUnits() {
 function lessonPages() {
 	const pages = {};
 	for (const tier of ["easy", "medium", "hard"]) {
-		for (const file of readdirSync(join(ROOT, "learn", "lessons", tier))) {
+		let files = [];
+		try {
+			files = readdirSync(join(ROOT, "learn", "lessons", tier));
+		} catch {
+			continue; // the findings lessons are being rebuilt; no tier pages yet
+		}
+		for (const file of files) {
 			if (!file.endsWith(".md") || file === "index.md") continue;
 			const number = readFileSync(join(ROOT, "learn", "lessons", tier, file), "utf8").match(/^number: (\S+)/m);
 			if (number) pages[number[1]] = `learn/lessons/${tier}/${file}`;
