@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.30
 cycle: 1
-lifecycle: active
+lifecycle: closed
 ---
 
 # Worker-command lessons — plan
@@ -71,4 +71,31 @@ Proposed S-series:
 
 ## Result
 
-(written at close)
+Closed 2026-11-01 (commit `b41de18`). The **Start tier** ships: S1–S5 under
+`learn/lessons/start/`, teaching `/mellum on`·`off`·`<task>`·`check`·`last`·`learn`.
+Each is a full six-step page reusing an existing illustration (no new art),
+discoverable with `/lesson S1`..`S5`, in the Lessons nav under "Start Here", and
+linked from the Lessons and Easy index pages. Added a **Handoff block** glossary
+entry and a `CHANGELOG.md` line. Gates: node suite 677 pass / 0 fail / 1 skip,
+`zensical build` clean.
+
+### The two open decisions, settled
+
+1. **S0 stays the loop.** `S0 · Start Here` keeps teaching the before/after loop
+   (no model); the commands are numbered S1–S5 on top of it.
+2. **Home — corrected from the plan.** The plan recommended `learn/lessons/` with
+   a *lighter* shape. The enforced lesson contract overrode that: the `/lesson`
+   tutor (`tests/lesson-tutor.test.mjs`) requires every indexed lesson to carry
+   the full six-step frame, an illustration and a command, and `lessonIndex` only
+   discovers `easy|medium|hard` plus `start-here.md`. So the command lessons live
+   in a new **`learn/lessons/start/` tier** with the full frame, not a lighter
+   shape at the `lessons/` root. `lessonIndex` now scans `start/` and ranks the
+   Start tier (S0–S5) ahead of Easy/Medium/Hard; the tutor track-order test admits
+   the tier, and the contract test exempts the command lessons (no before/after
+   arm). Reusing existing illustrations avoided the per-nav-page art requirement.
+
+### Backing
+
+The ladder result the tier rests on stands: bare 1/3 → thin worker 2/3 → worker +
+`preset:easy` 3/3 on easy (local Q4, n=3), recorded in
+`evals/baseline/2026-11-01-local-q4-thin/`.
