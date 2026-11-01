@@ -29,6 +29,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- The scoreboard's **Records** table ranked by fastest pass alone, so a
+  configuration that passed one run in three could outrank one that passed every
+  time just for being quicker. Records now rank by pass rate first, then the
+  fastest pass (fewest turns, then least wall); a configuration with no pass yet
+  sorts last.
 - The recipe's record links now resolve: every `ladder/<name>/` link in
   `docs/recipe.md` pointed at the pre-move location and 404'd after records
   moved to dated `evals/<date>-<name>/` directories. Repointed all of them (and

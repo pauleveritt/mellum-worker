@@ -160,9 +160,9 @@ def render_page(entries) -> str:
     lines = [
         "# Scoreboard",
         "",
-        "Every Mellum worker run ever measured. **Records** are the fastest pass per "
-        "configuration — fewest turns, then least wall, because a shorter run is the better "
-        "pass. Every run follows below.",
+        "Every Mellum worker run ever measured. **Records** rank by pass rate first, then by "
+        "the fastest pass — fewest turns, then least wall, because a shorter pass is the better "
+        "pass. A configuration with no pass yet sorts last. Every run follows below.",
         "",
         "![A small robot posting run times on a leaderboard, stopwatch in hand](assets/illustrations/scoreboard.webp){ .illustration }",
         "",
@@ -193,7 +193,11 @@ def render_page(entries) -> str:
         best = min(passes, key=lambda r: (r.get("turns") or 1 << 30, r.get("wall") or 1e18)) if passes else None
         bt = best["turns"] if best else "—"
         bw = _fmt_wall(best["wall"]) if best else "—"
-        rank = best["turns"] if best else 1 << 30
+        # Rank by pass rate first, then the fastest pass (fewest turns, then least wall); a
+        # configuration with no pass sorts last. A fast run that rarely passes must not outrank a
+        # reliable one that is a little slower.
+        pass_rate = len(passes) / len(runs) if runs else 0.0
+        rank = (-pass_rate, best["turns"], best["wall"]) if best else (-pass_rate, 1 << 30, 1e18)
         rows.append((rank, f"| {suite} | {model or '—'} | {_stack_text(stack)} | `{ver}` | {len(passes)}/{len(runs)} | {bt} | {bw} |"))
     for _, row in sorted(rows):
         lines.append(row)
