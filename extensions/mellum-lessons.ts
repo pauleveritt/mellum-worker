@@ -310,6 +310,8 @@ export function prepareProject(root: string, lesson: Pick<Lesson, "number" | "be
 		`// /remedy for this lesson's project folder (written by /lesson).\nexport { default } from ${JSON.stringify(join(root, "extensions", "mellum-remedies.ts"))};\n`);
 	writeFileSync(join(dir, ".pi", "extensions", "lessons.ts"),
 		`// /lesson in this lesson's project folder (written by /lesson): /lesson back returns to the lesson.\nexport { default } from ${JSON.stringify(join(root, "extensions", "mellum-lesson-tutor.ts"))};\n`);
+	writeFileSync(join(dir, ".pi", "extensions", "worker.ts"),
+		`// /mellum for this lesson's project folder (written by /lesson): the worker switches load the model.\nexport { default } from ${JSON.stringify(join(root, "extensions", "mellum-worker.ts"))};\n`);
 	return dir;
 }
 
@@ -336,26 +338,42 @@ export function projectGuide(root: string, cwd: string): string[] | undefined {
 		];
 	}
 	const lesson = parseLesson(text);
+	// A stand-in lesson (no model: its before/after are fake-pi through the real harness) is a
+	// run-and-read loop, not ask-the-model: run the two lines in-session and read why each one did.
+	if (lesson.before?.includes("--pi-binary")) {
+		return [
+			`${lesson.number} · ${lesson.title}: run it here in project/${lesson.number}`,
+			"1. Run the before line: `/lesson before` → FAIL (the stand-in writes the wrong answer)",
+			"2. Read why in the result and the run's `run.json`: passed, checks_ran, stalled",
+			"3. Run the after line: `/lesson after` → PASS (the stand-in writes the right one)",
+			"`/lesson back` returns to the lesson · `/lesson clear` starts this folder over",
+		];
+	}
 	const unit = lesson.unit.match(/`([a-z]+\/[a-z-]+)`/)?.[1];
 	const why = unitPathology(root, lesson.unit);
-	return [
+	const steps = [
 		`${lesson.number} · ${lesson.title}: trying it by hand in project/${lesson.number}`,
 		"1. Ask the model: `Do the task in TASK.md`",
 		why ? `2. Watch its tool calls for this failure: ${why}` : "2. Watch its tool calls, then read what it built.",
 		unit
 			? `3. Then from scratch with the remedy: \`/lesson clear\`, then \`/remedy on ${unit}\`, and ask again.`
 			: "3. Then from scratch: `/lesson clear`, and ask again.",
-		"`/lesson back` returns to the lesson where you left it · `/lesson clear` starts this folder over",
 	];
+	// The before/after arms run in-session, so the panel shows the FAIL→PASS comparison to run.
+	if (lesson.before) steps.push(lesson.after
+		? "4. Or compare the arms: `/lesson before` (fails) and `/lesson after` (passes with the remedy)"
+		: "4. Or run the arm yourself: `/lesson before`");
+	steps.push("`/lesson back` returns to the lesson where you left it · `/lesson clear` starts this folder over");
+	return steps;
 }
 
 /** The widget outside a project folder: the lesson commands, one line each. */
 export function lessonLegend(): string[] {
 	return [
 		"Welcome to the Small AI Learning Center",
-		"Type `/start` to begin — it opens your next lesson.",
-		"`/lesson` picks any lesson · `/lesson E1` opens one · in a lesson, `r` runs a line and `p` tries it by hand",
-		"`/remedy` switches remedy units on and off · `/lesson back` returns · `/lesson clear` restarts · `/lesson clean` removes all",
+		"`/start` opens your next lesson · `/lesson` picks any · `/lesson E1` opens one",
+		"In a lesson: talk to the model, or run `/lesson before` and `/lesson after`",
+		"`/lesson read` the prose · `/lesson back` out · `/lesson clear` reset · `/remedy` units · `/lesson clean` wipe",
 	];
 }
 

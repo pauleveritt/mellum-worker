@@ -2,13 +2,14 @@
  * mellum-lesson-tutor: /lesson, the course inside Pi.
  *
  *   /lesson          pick a lesson (finished ones are ticked; the next one is first)
- *   /lesson E3       open lesson E3
+ *   /lesson E3       open lesson E3 — hands-on, in project/E3, with the lesson panel pinned on top
+ *   /lesson before   run the open lesson's before line in-session; /lesson after runs the after line
+ *   /lesson read E3  the prose deck for E3 (the opt-in slideshow), one screen per step
+ *   /lesson back     leave the project folder, back to the repository
  *
- * One screen per step: the cover (picture, opening, questions, objectives), Paul's six steps, and
- * the key points. On the Eval case step `r` runs the page's before line and on the Solution step
- * its after line, one session each (`R` runs the page's own n), and the result is summarised from
- * each session's run.json. → / Enter next, ← back, n next lesson (on the last step), Esc leave.
- * The lesson page is the only source (see mellum-lessons.ts). No model is involved.
+ * A lesson opens into its project folder with a live panel at the top (setHeader): the banner, what
+ * to do, and the before/after runs as they finish (summarised from each session's run.json). The
+ * prompt below stays yours. The lesson page is the only source (see mellum-lessons.ts).
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -221,27 +222,165 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 /** Runs still going when the session ends are stopped with it. */
 const running = new Set<ChildProcess>();
 
+// The lesson panel's live state: the before/after runs the learner triggers with /lesson before|after,
+// read by the pinned header and refreshed when a run starts or finishes. Reset when a lesson opens.
+const panelRuns: Record<string, RunState> = {};
+let panelRefresh: (() => void) | undefined;
+let panelNumber: string | undefined;
+
+/** A small banner for the top of the lesson panel. */
+const BANNER = [
+	"  .---.",
+	"  |o_o|  Small AI Learning Center",
+	"  '---'",
+];
+
+/** Run a lesson's before/after line in-session (cwd = repo root, as the harness expects), updating
+ * the panel. One session; the model Pi is on is pinned in a throwaway profile. */
+function startArm(root: string, ctx: any, key: "before" | "after", command: string): void {
+	if (panelRuns[key]?.child) return;
+	const runsDir = mkdtempSync(join(tmpdir(), `lesson-${key}-`));
+	const isHarness = command.includes("harness.py") || command.includes("flow_run.py");
+	const profile = isHarness ? sessionProfile(agentDir(), ctx.model, mkdtempSync(join(tmpdir(), "lesson-profile-"))) : undefined;
+	const argv = isHarness ? runArgv(command, runsDir, false, profile) : command.split(/\s+/);
+	const state: RunState = { label: "one session", started: Date.now(), lines: [], runsDir: isHarness ? runsDir : undefined };
+	panelRuns[key] = state;
+	const child = spawn(argv[0], argv.slice(1), { cwd: root, stdio: ["ignore", "pipe", "pipe"] });
+	state.child = child;
+	running.add(child);
+	let tail = "";
+	const keep = (b: Buffer) => { tail = (tail + b.toString()).slice(-2000); };
+	child.stdout?.on("data", keep);
+	child.stderr?.on("data", keep);
+	child.on("close", (code) => {
+		running.delete(child);
+		state.child = undefined;
+		if (isHarness) {
+			const s = summariseRuns(runsDir);
+			state.verdict = s.verdict === "NONE" ? "NO RESULT" : `${s.verdict}  (${s.passed} of ${s.total} passed)`;
+			state.lines = s.total ? s.lines : tail.trim().split("\n").slice(-4);
+		} else {
+			state.verdict = code === 0 ? "PASS" : `FAIL (exit ${code})`;
+			state.lines = tail.trim().split("\n").slice(-4);
+		}
+		// A remedy/stand-in lesson is done when its after line passes.
+		if (key === "after" && state.verdict?.startsWith("PASS") && panelNumber) markDone(panelNumber);
+		panelRefresh?.();
+	});
+	panelRefresh?.();
+}
+
+/** The result block the panel shows for a before/after run: the command, a live "running" line, then
+ * the verdict, the code the session wrote, and a "Why" for a fail. */
+function panelRunBlock(root: string, lesson: Lesson, key: "before" | "after", width: number, theme: any): string[] {
+	const command = key === "before" ? lesson.before : lesson.after;
+	if (!command) return [];
+	const out = ["", theme.fg("accent", key === "before" ? " Before" : " After"), ...wrapTextWithAnsi(theme.fg("dim", ` ${command}`), width)];
+	const r = panelRuns[key];
+	if (!r) return out;
+	if (r.child) { out.push(theme.fg("warning", ` running (${r.label}) …`)); return out; }
+	const good = r.verdict?.startsWith("PASS");
+	out.push(good ? theme.fg("success", ` ${r.verdict}`) : theme.fg("error", ` ${r.verdict}`));
+	for (const l of r.lines) out.push(...wrapTextWithAnsi(`   ${l}`, width));
+	const code = r.runsDir ? producedCode(r.runsDir) : undefined;
+	if (code) {
+		out.push("", theme.fg("accent", `   the code it wrote · ${code.name}`));
+		for (const l of code.text.replace(/\n+$/, "").split("\n")) out.push(theme.fg("mdCode", `   ${l}`));
+	}
+	const why = good ? undefined : unitPathology(root, lesson.unit);
+	if (why) out.push(...wrapTextWithAnsi(theme.fg("warning", `   Why: ${why}`), width));
+	return out;
+}
+
+// The panel is a fixed height and you page through it; which page is showing, and how many there are.
+const PANEL_HEIGHT = 16;
+let page = 0;
+let pageCount = 1;
+let unsubInput: (() => void) | undefined;
+
+/** The lesson as pages for the fixed-height panel: the aim, each of the six steps (with the before
+ * line on Eval case and the after line on Solution), then the key points. */
+function buildPages(lesson: Lesson, root: string, cwd: string, width: number): { name: string; content: string[]; run?: "before" | "after" }[] {
+	const md = (t: string) => new Markdown(t, 1, 0, getMarkdownTheme());
+	const pages: { name: string; content: string[]; run?: "before" | "after" }[] = [];
+	pages.push({ name: "Aim", content: md(`**${lesson.opening}**`).render(width) });
+	// The hands-on "what to do" page (the same lines the project guide pins): run-and-read for a
+	// stand-in lesson, the /mellum tryit for a command lesson, ask-the-model + /remedy for a remedy one.
+	const guide = projectGuide(root, cwd);
+	if (guide && guide.length > 2) pages.push({ name: "How to", content: md(guide.slice(1, -1).join("\n")).render(width) });
+	for (const s of STEPS) {
+		if (!lesson.steps[s]?.trim()) continue;
+		const run = s === "Eval case" && lesson.before ? "before" : s === "Solution" && lesson.after ? "after" : undefined;
+		pages.push({ name: s, content: md(tidy(lesson.steps[s])).render(width), run });
+	}
+	if (lesson.keyPoints.length) pages.push({ name: "Key points", content: md(lesson.keyPoints.map((k) => `- ${k}`).join("\n")).render(width) });
+	return pages;
+}
+
 export default function (pi: any): void {
 	pi.on("session_shutdown", () => {
 		for (const child of running) child.kill();
 		running.clear();
+		unsubInput?.();
+		unsubInput = undefined;
 	});
-	// Always a widget above the editor, for you and never the model: the project guide in a lesson's
-	// project folder, the command legend anywhere else in the checkout.
+	// One panel pinned above the editor, for you and never the model: the banner, the lesson guide in
+	// a project folder (the command legend elsewhere), and the before/after runs as they happen. It
+	// stays put while the chat scrolls (setHeader, the top slot, only shows at startup and scrolls off).
 	pi.on("session_start", (_event: unknown, ctx: any) => {
+		unsubInput?.();
+		unsubInput = undefined;
 		const root = findRoot(ctx.cwd ?? process.cwd());
-		const guide = root ? projectGuide(root, ctx.cwd ?? process.cwd()) : undefined;
-		const lines = guide ?? (root ? lessonLegend() : undefined);
-		ctx.ui?.setWidget?.("lesson", lines ? (_tui: any, theme: any) => ({
-			render: (width: number) => styleGuide(lines, {
-				title: (t) => theme.bold(theme.fg("accent", t)),
-				step: (t) => theme.fg("accent", t),
-				code: (t) => theme.fg("mdCode", t),
-				dim: (t) => theme.fg("dim", t),
-				rule: (t) => theme.fg("borderMuted", t),
-			}, width).flatMap((line) => wrapTextWithAnsi(line, width)),
-			invalidate: () => {},
-		}) : undefined);
+		if (!root) return ctx.ui?.setWidget?.("lesson", undefined);
+		const cwd = ctx.cwd ?? process.cwd();
+		panelNumber = projectNumber(root, cwd);
+		page = 0;
+		for (const k of Object.keys(panelRuns)) delete panelRuns[k];
+		const lessonEntry = panelNumber ? lessonIndex(root).find((e) => e.number === panelNumber) : undefined;
+		const lesson = lessonEntry ? parseLesson(readFileSync(lessonEntry.file, "utf8")) : undefined;
+		// Page the fixed-height panel with PageUp/PageDown; every other key still reaches the editor, so
+		// you keep typing to the model. Only inside a lesson, and torn down when the session changes.
+		if (lesson && ctx.ui?.onTerminalInput) {
+			unsubInput = ctx.ui.onTerminalInput((data: string) => {
+				if (matchesKey(data, Key.pageDown)) { page = Math.min(pageCount - 1, page + 1); panelRefresh?.(); return { consume: true }; }
+				if (matchesKey(data, Key.pageUp)) { page = Math.max(0, page - 1); panelRefresh?.(); return { consume: true }; }
+				return undefined;
+			});
+		}
+		ctx.ui?.setWidget?.("lesson", (tui: any, theme: any) => {
+			panelRefresh = () => tui.requestRender();
+			const paint = {
+				title: (t: string) => theme.bold(theme.fg("accent", t)),
+				step: (t: string) => theme.fg("accent", t),
+				code: (t: string) => theme.fg("mdCode", t),
+				dim: (t: string) => theme.fg("dim", t),
+				rule: (t: string) => theme.fg("borderMuted", t),
+			};
+			return {
+				render: (width: number) => {
+					const w = Math.max(20, width);
+					if (!lesson) {
+						const legend = [...BANNER.map((l) => theme.fg("accent", l)), "", ...styleGuide(lessonLegend(), paint, w)];
+						return legend.flatMap((line) => wrapTextWithAnsi(line, w));
+					}
+					const pages = buildPages(lesson, root, cwd, w);
+					pageCount = pages.length;
+					if (page >= pageCount) page = pageCount - 1;
+					const p = pages[page];
+					let body = [...p.content];
+					if (p.run) body.push(...panelRunBlock(root, lesson, p.run, w, theme));
+					body = body.flatMap((line) => wrapTextWithAnsi(line, w));
+					const area = Math.max(3, PANEL_HEIGHT - 2);
+					if (body.length > area) body = [...body.slice(0, area - 1), theme.fg("dim", "   … more — PageDown")];
+					while (body.length < area) body.push("");
+					const header = theme.bold(theme.fg("accent", `▍ ${lesson.number} · ${lesson.title}  ·  ${p.name}  (${page + 1}/${pageCount})`));
+					const foot = theme.fg("dim", ` PageUp/PageDown to page${p.run ? ` · /lesson ${p.run} runs it` : ""} · type below to talk to the model`);
+					return [header, ...body, foot];
+				},
+				invalidate: () => {},
+				dispose: () => { panelRefresh = undefined; },
+			};
+		}, { placement: "aboveEditor" });
 	});
 	pi.registerCommand("start", {
 		description: "Start the course: open your next lesson (the same as /lesson)",
@@ -254,7 +393,7 @@ export default function (pi: any): void {
 		},
 	});
 	pi.registerCommand("lesson", {
-		description: "Take a lesson: /lesson to pick one, /lesson E1 to open it; in a project folder, /lesson back returns to the lesson and /lesson clear starts over",
+		description: "Take a lesson: /lesson to pick one, /lesson E1 opens it hands-on; inside it /lesson before|after run the arms, /lesson read shows the prose, /lesson back returns, /lesson clear starts over",
 		getArgumentCompletions: (prefix: string) => {
 			const root = findRoot(process.cwd());
 			if (!root) return null;
@@ -287,16 +426,27 @@ async function openLesson(args: string, ctx: any, startPage = 0): Promise<void> 
 			const root = findRoot(ctx.cwd ?? process.cwd());
 			if (!root) return ctx.ui.notify("/lesson runs in a checkout of mellum-worker (no learn/lessons here)", "error");
 			if (ctx.mode && ctx.mode !== "tui") return ctx.ui.notify("/lesson needs Pi's interactive terminal", "error");
+			if (args.trim() === "before" || args.trim() === "after") {
+				const number = projectNumber(root, ctx.cwd ?? process.cwd());
+				const entry = number && lessonIndex(root).find((e) => e.number === number);
+				if (!entry) return ctx.ui.notify("/lesson before and /lesson after run inside a lesson's project folder", "info");
+				const lesson = parseLesson(readFileSync(entry.file, "utf8"));
+				const key = args.trim() as "before" | "after";
+				const command = key === "before" ? lesson.before : lesson.after;
+				if (!command) return ctx.ui.notify(`this lesson has no ${key} line`, "info");
+				startArm(root, ctx, key, command);
+				return ctx.ui.notify(`running the ${key} line … watch the panel above`, "info");
+			}
 			const here = projectNumber(root, ctx.cwd ?? process.cwd());
 			if (here && ["", "back", "home"].includes(args.trim())) {
-				// Back to the repository, and straight into the lesson at the step it was left on.
-				return moveTo(ctx, root, `Back from project/${here}.`, (next) => openLesson(here, next, loadProgress().at[here] ?? 0));
+				// Back to the repository; the lesson's panel/legend shows there. No slideshow to resume.
+				return moveTo(ctx, root, `Back from project/${here}. /lesson opens the next lesson.`);
 			}
 			if (args.trim() === "back" || args.trim() === "home") return ctx.ui.notify("already in the repository: /lesson opens the next lesson", "info");
 			if (args.trim() === "clear") {
 				const number = projectNumber(root, ctx.cwd ?? process.cwd());
 				const entry = number && lessonIndex(root).find((e) => e.number === number);
-				if (!entry) return ctx.ui.notify("/lesson clear works in a project folder: open a lesson and press p", "info");
+				if (!entry) return ctx.ui.notify("/lesson clear works in a project folder: open a lesson first", "info");
 				const lesson = parseLesson(readFileSync(entry.file, "utf8"));
 				return moveTo(ctx, prepareProject(root, lesson), `project/${entry.number} is back to its starting files, in a fresh session.`);
 			}
@@ -307,9 +457,14 @@ async function openLesson(args: string, ctx: any, startPage = 0): Promise<void> 
 				}
 				return;
 			}
+			// /lesson read [<n>] opens the prose deck (the opt-in slideshow); otherwise the lesson opens
+			// hands-on, straight into its project folder with the live panel pinned above the prompt.
+			let arg = args.trim();
+			const readMode = arg === "read" || arg.startsWith("read ");
+			if (readMode) arg = arg.slice(4).trim();
 			const track = lessonIndex(root);
 			const done = loadDone();
-			let index = track.findIndex((l) => l.number.toLowerCase() === args.trim().toLowerCase());
+			let index = track.findIndex((l) => l.number.toLowerCase() === arg.toLowerCase());
 			if (index < 0) {
 				const next = track.findIndex((l) => !done.has(l.number));
 				const order = next > 0 ? [...track.slice(next), ...track.slice(0, next)] : track;
@@ -319,17 +474,18 @@ async function openLesson(args: string, ctx: any, startPage = 0): Promise<void> 
 				index = track.findIndex((l) => picked.includes(` ${l.number} · `));
 				if (index < 0) return;
 			}
-			while (index < track.length) {
-				const entry = track[index];
-				const lesson = parseLesson(readFileSync(entry.file, "utf8"));
-				// Make the project folder when the lesson opens, so `p` has somewhere to try things
-				// right away; only when missing, so reopening never wipes work in progress.
-				if (!existsSync(join(root, "project", entry.number))) prepareProject(root, lesson);
+			const entry = track[index];
+			const lesson = parseLesson(readFileSync(entry.file, "utf8"));
+			// Make the project folder when the lesson opens; only when missing, so reopening never wipes WIP.
+			if (!existsSync(join(root, "project", entry.number))) prepareProject(root, lesson);
+			if (readMode) {
 				const result = await walk(ctx, root, lesson, entry, { index, count: track.length }, startPage);
-				startPage = 0;
 				if (result === "project") return moveTo(ctx, join(root, "project", entry.number),
-					`Now in project/${entry.number}: the steps are above the editor. /lesson back returns to the lesson.`);
-				if (result !== "next") break;
-				index += 1;
+					`Now in project/${entry.number}: the lesson panel is above, the prompt is yours. /lesson back returns.`);
+				return;
 			}
+			// A command lesson (no before/after arm) is done on opening; a remedy/stand-in on an after pass.
+			if (!lesson.before) markDone(entry.number);
+			return moveTo(ctx, join(root, "project", entry.number),
+				`Now in project/${entry.number}: the lesson panel is above, the prompt is yours. /lesson before and /lesson after run the arms; /lesson back returns.`);
 }

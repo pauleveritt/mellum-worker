@@ -135,7 +135,10 @@ def arm_settings(arm: str) -> dict:
     if arm not in ARMS:
         raise SystemExit(f"unknown arm {arm}; choose from {', '.join(ARMS)}")
     if arm == "bare":
-        return {"extension": None, "env": {}}
+        # The worker is always loaded, even on the bare arm, but mode stays off (no MELLUM_MODE), so
+        # bare still sends vanilla Pi's requests — MELLUM_MODE=1 below is what engages the worker.
+        # The baseline tests pin that worker-off is inert.
+        return {"extension": EXTENSION, "env": {}}
     env = {"MELLUM_MODE": "1"}
     if arm == "no-prompt":
         env["MELLUM_WORKER_PROMPT"] = "pi"

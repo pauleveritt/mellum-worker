@@ -74,7 +74,11 @@ def test_arms_select_the_extension_and_guards():
     assert json.loads(no_nudge["env"]["MELLUM_GUARDS"]) == {"loopBreaker": True}
     no_loop = harness.arm_settings("no-loop")
     assert json.loads(no_loop["env"]["MELLUM_GUARDS"]) == {"emptyFinalNudge": 3}
-    assert harness.arm_settings("bare")["extension"] is None
+    # The worker is always loaded, even on the bare arm, but mode stays off (no MELLUM_MODE), so bare
+    # still sends vanilla Pi's requests — the engagement is MELLUM_MODE=1, not the extension's presence.
+    bare = harness.arm_settings("bare")
+    assert bare["extension"].name == "mellum-worker.ts"
+    assert "MELLUM_MODE" not in bare["env"]
 
 
 def test_the_strip_thinking_arm_opens_exactly_one_seam():

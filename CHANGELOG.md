@@ -17,9 +17,24 @@ Versions match git tags; pin one in both install lines.
 - `delegate/collapse-handoffs` remedy unit: the finished-span handoff collapse,
   lifted out of the worker so a preset can load it (or not). It gives the parent
   one handoff block per `[on…off]` span in place of every read, edit and command.
+- A **fixed-height lesson panel** pinned above the prompt. Opening a lesson drops
+  you into its `project/<id>/` folder with the panel showing the walkthrough —
+  the aim, what to do, the six steps and the key points — which you page with
+  **PageUp/PageDown** while you keep typing to the model (only those two keys are
+  caught; everything else reaches the editor). `/lesson before` and `/lesson
+  after` run the lesson's arms in-session and show the verdict and the code the
+  run wrote in the panel.
 
 ### Changed
 
+- **Lessons open hands-on, not as a slideshow.** `/lesson <id>` now drops you
+  straight into `project/<id>/` with the live panel above a typeable prompt,
+  instead of the full-screen one-screen-per-step deck. That deck is still there,
+  opt-in, as `/lesson read <id>`.
+- **The worker (`/mellum`) is always loaded** when Pi runs in the repository (and
+  in every lesson's project folder), so the switches are there to use. The ladder
+  and suite harness also always load it, with the bare arm keeping mode off so
+  its requests are unchanged — the recorded baselines stand.
 - The **worker extension is now thin: mode and the `/mellum` commands only.** It
   no longer bakes in project-facts injection, tool-narrowing, the guards (loop
   breaker, empty-turn nudge, foreground-server and workspace guards) or the

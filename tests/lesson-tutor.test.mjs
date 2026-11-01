@@ -136,6 +136,7 @@ test("prepareProject sets up project/<number> with the lesson's starting files, 
 	assert.equal(readFileSync(join(dir, "TASK.md"), "utf8"), "Build it.\n\nThen test it.\n");
 	assert.match(readFileSync(join(dir, ".pi", "extensions", "remedies.ts"), "utf8"), /extensions\/mellum-remedies\.ts/);
 	assert.match(readFileSync(join(dir, ".pi", "extensions", "lessons.ts"), "utf8"), /extensions\/mellum-lesson-tutor\.ts/);
+	assert.match(readFileSync(join(dir, ".pi", "extensions", "worker.ts"), "utf8"), /extensions\/mellum-worker\.ts/);
 	assert.equal(existsSync(join(dir, ".pi", "extensions", "think-tags.ts")), false, "the repair is a unit there: /remedy on context/repair-think-tags");
 	assert.match(readFileSync(join(ROOT, ".pi", "extensions", "think-tags.ts"), "utf8"), /extensions\/mellum-think-tags\.ts/);
 	writeFileSync(join(dir, "stray.py"), "x = 1\n");
@@ -269,4 +270,25 @@ test("a failure in the record is named on the FAIL screen", async () => {
 	writeFileSync(join(dir, "a", "run.json"), JSON.stringify({ passed: false, tests_passed: true, checks_ran: true, missing_checks: [],
 		record_failures: ["reasoning_as_text is 10 (at most 0)"], wall: 60, output_tokens: 900 }));
 	assert.match(summariseRuns(dir).lines[0], /the record shows: reasoning_as_text is 10 \(at most 0\)/);
+});
+
+test("S0 is a stand-in lesson: its panel is the run-before/after loop and reading run.json, not ask-the-model", async () => {
+	const { projectGuide } = await tutor();
+	const lines = projectGuide(ROOT, join(ROOT, "project", "S0"));
+	const text = lines.join("\n");
+	assert.match(lines[0], /S0 · Start Here/);
+	assert.doesNotMatch(text, /Ask the model: `Do the task in TASK\.md`/, "S0 has no model to ask");
+	for (const t of ["/lesson before", "/lesson after", "run.json"])
+		assert.ok(text.includes(t), `S0 panel lacks ${t}`);
+});
+
+test("a remedy lesson's panel offers the before/after comparison as in-session commands", async () => {
+	const { projectGuide } = await tutor();
+	const text = projectGuide(ROOT, join(ROOT, "project", "E1")).join("\n");
+	assert.ok(text.includes("/lesson before") && text.includes("/lesson after"), text);
+});
+
+test("the worker is always loaded when Pi runs in the repo: .pi/extensions shims mellum-worker", async () => {
+	const src = readFileSync(join(ROOT, ".pi", "extensions", "worker.ts"), "utf8");
+	assert.match(src, /extensions\/mellum-worker\.ts/, "repo .pi/extensions/worker.ts must re-export the worker");
 });
