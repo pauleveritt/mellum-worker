@@ -1,6 +1,5 @@
 [
   "context/narrow-tools",
-  "context/add-project-facts",
   "guard/repeat-loops",
   "nudge/empty-turn",
   "guard/foreground-server",

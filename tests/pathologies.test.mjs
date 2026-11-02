@@ -6,11 +6,12 @@ import test from "node:test";
 const ROOT = resolve(import.meta.dirname, "..");
 const page = (p) => readFileSync(resolve(ROOT, "learn", p), "utf8");
 
-test("the pathologies page is four sections of numbered entries", () => {
+test("the pathologies page has its intro, remedy map, and the narrative sections", () => {
   const p = page("pathologies.md");
   const heads = [...p.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  assert.equal(heads.length, 5, `expected five sections, found ${heads.length}`);
+  assert.equal(heads.length, 7, `expected seven sections, found ${heads.length}`);
   assert.equal(heads[0], "How to read this");
+  assert.equal(heads[1], "Pathology and remedy");
   const entries = [...p.matchAll(/^\d+\. \*\*(.+?)\.\*\* /gm)].map((m) => m[1]);
   assert.ok(entries.length >= 11, `expected at least 11 entries, found ${entries.length}`);
   assert.equal(new Set(entries).size, entries.length, "an entry name repeats");

@@ -36,6 +36,11 @@ Versions match git tags; pin one in both install lines.
   to be rebuilt.** They explained the harness more than they taught a skill. The
   lesson tutor, the hands-on panel and the Getting Started track stay; `/lesson`
   and the site's Lessons section are a placeholder until new lessons land.
+- **The `context/add-project-facts` remedy is removed.** It injected the test
+  command and project facts into every message, which is not an agnostic,
+  inspectable remedy. It is dropped from the `baseline-worker`, `medium` and
+  `hard` presets. (The `withFacts`/`factsBlock` exports it used stay, since the
+  lesson tutor still relies on them.)
 
 ### Added
 

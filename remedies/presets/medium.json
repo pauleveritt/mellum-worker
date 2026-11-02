@@ -6,7 +6,6 @@
   "guard/whole-file-rewrite",
   "guard/foreground-server",
   "context/narrow-tools",
-  "context/add-project-facts",
   "context/use-short-prompt",
   "nudge/empty-turn",
   "tool/background-long-commands",
