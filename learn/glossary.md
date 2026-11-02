@@ -92,9 +92,9 @@ is a hypothesis, not a pathology.
 
 ### Baseline lesson
 
-Until 2026-10-29, the n=3 comparison of Baseline Pi and the Baseline Worker on
+Until 2026-10-29, the n=3 comparison of Vanilla Pi and the Baseline Worker on
 easy, medium and hard. S0 Start Here now teaches reading
-Baseline Pi's failures and naming what went wrong; the worker is a preset, not a lesson.
+Vanilla Pi's failures and naming what went wrong; the worker is a preset, not a lesson.
 
 ### Baseline Worker
 
@@ -103,11 +103,12 @@ The shipped `/mellum` worker: worker prompt, seven built-in tools,
 empty-final nudge, loop breaker, project facts, context isolation and the
 handoff. It is the control for a remedy lesson.
 
-### Baseline Pi
+### Vanilla Pi
 
-<!-- zensical-glossary-aliases: bare Pi -->
-Pi with no worker extension: Pi’s base system prompt, the built-in tools and
-no worker guards or facts.
+<!-- zensical-glossary-aliases: Baseline Pi, bare Pi, plain Pi -->
+Pi with no worker extension and no remedies: Pi’s base system prompt, the
+built-in tools and no worker guards or facts. The `bare` arm, and what
+`/challenge <tier>:vanilla` runs.
 
 ### Arm
 

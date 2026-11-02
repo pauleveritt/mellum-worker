@@ -57,7 +57,7 @@ Each level has its own page — what to build, the trap to clear and the checks:
 
 ## The score to beat
 
-The suite baseline is the reference: Pi with no remedies, three sessions per
+The suite baseline is the reference: Vanilla Pi, three sessions per
 level on llama.cpp (the [Lessons](../lessons/index.md) show what it gets
 wrong), with the same Mellum model you set up in
 [Getting Started](../getting-started/index.md). The last row is the replicable
@@ -66,9 +66,9 @@ baseline: the same model at full precision on a rented GPU, rebuilt with
 
 | Setup | Easy | Medium | Hard |
 | --- | --- | --- | --- |
-| Pi on its own | 0/3 | 0/3 | 0/3 |
+| Vanilla Pi | 0/3 | 0/3 | 0/3 |
 | The Baseline Worker | 1/3 | 2/3 | 0/3 |
-| Pi on its own, BF16 on vLLM (the replicable baseline) | 1/3 | 1/3 | 0/3 |
+| Vanilla Pi, BF16 on vLLM (the replicable baseline) | 1/3 | 1/3 | 0/3 |
 
 A pass means every hidden check passed. Anything less is a fail, and the
 record tells you which checks were missing and why.
@@ -80,8 +80,8 @@ model, Pi, and the suites. You do not need the lessons; they are a reference
 for when a run fails in a way you do not understand.
 
 From a trusted checkout, run a level in Pi with `/challenge`. It runs on the
-**worker**; switch extra remedy units on top with `/remedy` (see [Remedies you
-can try](remedies.md)), then run the tier:
+**Baseline Worker**; switch extra remedy units on top with `/remedy` (see
+[Remedies you can try](remedies.md)), then run the tier:
 
 ```
 /challenge easy
@@ -89,14 +89,14 @@ can try](remedies.md)), then run the tier:
 /challenge easy
 ```
 
-The first line runs Easy on the worker with nothing extra — your baseline. The
-next two switch on the whole Easy stack on top and run it again, so you can watch
-the score move. For plain Pi with no worker, add `:vanilla`
+The first line runs Easy on the Baseline Worker with nothing extra — your
+baseline. The next two switch on the whole Easy stack on top and run it again, so
+you can watch the score move. For Vanilla Pi with no worker, add `:vanilla`
 (`/challenge easy:vanilla`). `/challenge easy n=3` runs three times; `/challenge
 submit` opens a pull request with the runs you pick. While it runs, the model's
 turns stream so you see what it is doing, and the result reports the passes, the
 turns and the wall-clock. See [Working With
-Pi](../getting-started/working-with-pi.md#challenge-score-a-tier-on-the-worker-with-the-remedies-you-have-on).
+Pi](../getting-started/working-with-pi.md#challenge-score-a-tier-on-the-baseline-worker-with-the-remedies-you-have-on).
 
 Change one thing at a time, run the same level again, and compare — that is
 exactly how every [lesson](../lessons/index.md) is built.
