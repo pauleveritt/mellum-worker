@@ -98,10 +98,12 @@ Vanilla Pi's failures and naming what went wrong; the worker is a preset, not a 
 
 ### Baseline Worker
 
-<!-- zensical-glossary-aliases: full worker -->
-The shipped `/mellum` worker: worker prompt, seven built-in tools,
-empty-final nudge, loop breaker, project facts, context isolation and the
-handoff. It is the control for a remedy lesson.
+The `/mellum` worker in Mellum mode (`MELLUM_MODE=1`): only the command tool and
+the mode machinery — switch to Mellum, drop the pre-marker history, track the
+span, write the run record. It bundles nothing: no prompt swap, no tool
+narrowing, no facts, no guards. Those are all remedy units now, and the
+`baseline-worker` preset is the explicit set that reconstructs the worker's old
+bundle. The `worker` arm.
 
 ### Vanilla Pi
 
@@ -112,19 +114,22 @@ built-in tools and no worker guards or facts. The `bare` arm, and what
 
 ### Arm
 
-One configuration in an experiment. The suite arms are `bare`, `worker`,
-`no-prompt`, `no-nudge` and `no-loop`.
+One configuration in an experiment. The arms are `vanilla` (no worker
+extension, the floor), `bare` (the worker loaded but mode off), `worker`
+(Mellum mode on) and `strip-thinking`. To remove one remediation you drop a
+`--remedy` unit from the stack — that is the ablation now, not a per-arm knob.
 
 ### Ablation
 
-A comparison that removes one part from the Baseline Worker. An ablation
-measures the removed part; it is not a lesson module.
+A comparison that drops one unit from a `--remedy` stack to measure that unit.
+An ablation measures the removed part; it is not a lesson module. (The old
+per-arm ablations went with the worker's bundle.)
 
 ### Remedy
 
-A change that corrects one pathology. Since 2026-10-29 each remedy is a
-remedy unit, taught by one lesson, and the worker is the preset of the units
-it uses.
+A change that corrects one pathology. Each remedy is a remedy unit, taught by
+one lesson. The worker bundles none of them; a tier's remedies are a preset of
+units switched on with `--remedy`.
 
 ### Remedy unit
 
@@ -137,9 +142,9 @@ with `--remedy <kind>/<name>`.
 ### Preset
 
 A named list of remedy units, loaded with `--remedy preset:<name>`.
-`preset:easy` and `preset:medium` are what each tier adds; each tier's
-lessons start from the previous tier's preset. `preset:baseline-worker` is
-the worker's own list, proven to send the same request as the worker.
+`preset:easy` is the measured Easy stack; each tier's preset builds on the
+previous one. `preset:baseline-worker` is the explicit set of units that
+reconstructs the worker's old, pre-decoupling bundle.
 
 ### Before and after
 
@@ -155,14 +160,15 @@ pathology on the host it ran on.
 
 ### Tool
 
-A capability the model can call. Pi ships `read`, `write`, `edit`, `bash`,
-`ls`, `find` and `grep`; our tool units add `lookup` and others. A remedy
-changes behaviour; a tool adds a capability.
+A capability the model can call. Pi enables four by default — `read`, `bash`,
+`edit`, `write` — with `find`, `grep`, `ls`, `glob` and `codemode` in the
+registry but off unless switched on; our tool units add `lookup` and others. A
+remedy changes behaviour; a tool adds a capability.
 
 ### Nudge
 
-A message the worker sends after a turn ends without text or a tool call,
-asking the model to continue. The shipped worker allows three per run.
+A message a nudge unit sends after a turn ends without text or a tool call,
+asking the model to continue. `nudge/empty-turn` allows three per run.
 
 ### Empty-final nudge
 
@@ -170,31 +176,16 @@ The specific guard for an empty final turn: `agent_before_settle` sees no
 text and no tool call and returns `continue: true` with a restatement of the
 completion fact, up to three times.
 
-### No-nudge
-
-The Baseline Worker with the empty-final nudge turned off. It keeps the worker
-prompt, seven tools, loop breaker and facts; it is not “no guards.”
-
 ### Loop breaker
 
 The guard that blocks the next identical tool call after five repeats with
 nothing changed in between. An edit, write or bash call clears the memory.
-
-### No-loop
-
-The Baseline Worker with the loop breaker turned off. It keeps the nudge, prompt,
-tools and facts.
 
 ### Guard
 
 A function wired to an event that observes a tool call or a turn and decides
 whether to block it or ask for one more request. The loop breaker and the
 empty-final nudge are guards; they are code, not metadata.
-
-### No-prompt
-
-The Baseline Worker with Pi’s base system prompt instead of the worker prompt.
-The tools, guards and facts stay on.
 
 ### Strip thinking
 

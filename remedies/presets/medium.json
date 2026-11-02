@@ -1,14 +1,6 @@
 [
-  "context/repair-think-tags",
-  "context/trim-tool-output",
-  "guard/repeat-loops",
-  "guard/outside-workspace",
-  "guard/whole-file-rewrite",
+  "prompt/name-the-layout",
+  "prompt/python-developer",
   "guard/foreground-server",
-  "context/narrow-tools",
-  "context/use-short-prompt",
-  "nudge/empty-turn",
-  "tool/background-long-commands",
-  "tool/lookup-library-docs",
-  "check/code-quality"
+  "prompt/verify-the-spec"
 ]

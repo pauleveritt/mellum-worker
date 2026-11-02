@@ -6,6 +6,17 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The harness arms are now `vanilla`, `bare`, `worker`, `strip-thinking`.** The
+  six ablation arms (`no-prompt`, `no-nudge`, `no-loop`, `no-facts`,
+  `server-guard`, `no-facts-guard`) went inert when the worker was decoupled — it
+  reads only `MELLUM_STRIP_THINKING` now and ignores `MELLUM_GUARDS`,
+  `MELLUM_WORKER_PROMPT` and `MELLUM_MODE_FACTS` — so they are removed. Ablate by
+  adding or dropping a `--remedy` unit instead of switching an arm.
+- **The `medium` and `hard` presets now build on the measured `easy` stack.** The
+  old twelve-unit guard-heavy presets were unmeasured for the current
+  architecture; Medium passed n=1 on the Easy stack, so the presets start from
+  that proven base and grow as each tier is measured. The glossary's
+  worker/arm/preset entries are corrected to match the decoupled design.
 - **The `easy` preset is now the measured Easy stack** — `prompt/name-the-layout`,
   `prompt/python-developer`, `guard/foreground-server`, `prompt/verify-the-spec` —
   which passes Easy 6/6 at n=6. It replaces the old guard-heavy bundle; on the

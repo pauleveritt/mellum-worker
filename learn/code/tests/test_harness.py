@@ -65,20 +65,27 @@ def test_pi_argv_isolates_the_child():
     assert argv[-1] == task.prompt
 
 
-def test_arms_select_the_extension_and_guards():
+def test_arms_select_the_extension():
     worker = harness.arm_settings("worker")
     assert worker["extension"].name == "mellum-worker.ts"
-    no_prompt = harness.arm_settings("no-prompt")
-    assert no_prompt["env"]["MELLUM_WORKER_PROMPT"] == "pi"
-    no_nudge = harness.arm_settings("no-nudge")
-    assert json.loads(no_nudge["env"]["MELLUM_GUARDS"]) == {"loopBreaker": True}
-    no_loop = harness.arm_settings("no-loop")
-    assert json.loads(no_loop["env"]["MELLUM_GUARDS"]) == {"emptyFinalNudge": 3}
+    assert worker["env"] == {"MELLUM_MODE": "1"}
     # The worker is always loaded, even on the bare arm, but mode stays off (no MELLUM_MODE), so bare
     # still sends vanilla Pi's requests — the engagement is MELLUM_MODE=1, not the extension's presence.
     bare = harness.arm_settings("bare")
     assert bare["extension"].name == "mellum-worker.ts"
     assert "MELLUM_MODE" not in bare["env"]
+    # vanilla is the true floor: no worker extension at all, only the recorder.
+    assert harness.arm_settings("vanilla")["extension"] is None
+
+
+def test_the_dead_ablation_arms_are_gone():
+    # The decoupled worker reads only MELLUM_STRIP_THINKING; MELLUM_GUARDS,
+    # MELLUM_WORKER_PROMPT and MELLUM_MODE_FACTS are read by nothing, so the arms
+    # that set them were inert and have been removed. Ablation is a `--remedy` now.
+    assert harness.ARMS == ("vanilla", "bare", "worker", "strip-thinking")
+    for dead in ("no-prompt", "no-nudge", "no-loop", "no-facts", "server-guard", "no-facts-guard"):
+        with pytest.raises(SystemExit):
+            harness.arm_settings(dead)
 
 
 def test_the_strip_thinking_arm_opens_exactly_one_seam():
@@ -99,17 +106,6 @@ def test_the_record_says_whether_reasoning_was_stripped(tmp_path):
         assert record["arm"] == arm
 
 
-def test_the_server_guard_arm_keeps_the_other_guards_on():
-    env = harness.arm_settings("server-guard")["env"]
-    # MELLUM_GUARDS replaces ENABLED, so the arm must carry the whole set or it
-    # would change three things and be no arm at all.
-    assert json.loads(env["MELLUM_GUARDS"]) == harness.GUARDS_WITH_SERVER
-    assert harness.GUARDS_WITH_SERVER == {"emptyFinalNudge": 3, "loopBreaker": True,
-                                          "blockForegroundServer": True}
-    assert "MELLUM_MODE_FACTS" not in env
-    alone = harness.arm_settings("no-facts-guard")["env"]
-    assert alone["MELLUM_MODE_FACTS"] == "0"
-    assert json.loads(alone["MELLUM_GUARDS"]) == harness.GUARDS_WITH_SERVER
 
 
 def test_two_prompts_share_one_session(tmp_path):
@@ -775,19 +771,6 @@ def test_qualify_proves_both_directions():
     assert results == {"known-good": True, "known-broken": False}
 
 
-def test_the_arm_owns_the_facts_knob(tmp_path, monkeypatch):
-    task = harness.load_suite(SUITES, "add")
-    monkeypatch.setenv("MELLUM_MODE_FACTS", "1")
-
-    def seen(arm):
-        run_dir = harness.run_suite(
-            task, runs_dir=tmp_path / arm, profile=PROFILE,
-            pi_binary=str(FIX / "fake-pi-env.sh"), arm=arm,
-        )
-        return (run_dir / "workspace" / "env.txt").read_text().strip()
-
-    assert seen("no-facts") == "MELLUM_MODE_FACTS=0"
-    assert seen("worker") == "MELLUM_MODE_FACTS="
 
 
 def test_the_recorder_loads_after_the_worker_extension():

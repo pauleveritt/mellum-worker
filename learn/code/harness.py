@@ -36,14 +36,12 @@ EXTENSION = CODE.parents[1] / "extensions" / "mellum-worker.ts"
 # the harness it is the remedy unit context/repair-think-tags, listed by the lines that want it.
 THINK_TAGS = CODE.parents[1] / "extensions" / "mellum-think-tags.ts"
 REMEDIES = CODE.parents[1] / "remedies"
-GUARDS_WITH_SERVER = {"emptyFinalNudge": 3, "loopBreaker": True,
-                      "blockForegroundServer": True}
-ARMS = ("vanilla", "bare", "worker", "no-prompt", "no-nudge", "no-loop", "no-facts",
-        "server-guard", "no-facts-guard", "strip-thinking")
+ARMS = ("vanilla", "bare", "worker", "strip-thinking")
 # Every knob an arm may set. A run clears them from the inherited environment
-# first, so an exported value cannot make two arms the same policy.
-ARM_ENV_KEYS = ("MELLUM_MODE", "MELLUM_GUARDS", "MELLUM_WORKER_PROMPT",
-                "MELLUM_MODE_FACTS", "MELLUM_STRIP_THINKING")
+# first, so an exported value cannot make two arms the same policy. The decoupled
+# worker reads only these two; the old guards/prompt/facts env vars are gone with
+# the ablation arms that set them — ablation is a `--remedy` now, not an `--arm`.
+ARM_ENV_KEYS = ("MELLUM_MODE", "MELLUM_STRIP_THINKING")
 FLAGS = [
     "-p", "--no-approve", "--no-extensions", "--no-skills",
     "--no-prompt-templates", "--no-themes", "--no-context-files",
@@ -144,25 +142,14 @@ def arm_settings(arm: str) -> dict:
         # bare still sends vanilla Pi's requests — MELLUM_MODE=1 below is what engages the worker.
         # The baseline tests pin that worker-off is inert.
         return {"extension": EXTENSION, "env": {}}
+    # Only worker and strip-thinking reach here (vanilla and bare returned above).
     env = {"MELLUM_MODE": "1"}
-    if arm == "no-prompt":
-        env["MELLUM_WORKER_PROMPT"] = "pi"
-    elif arm == "no-nudge":
-        env["MELLUM_GUARDS"] = json.dumps({"loopBreaker": True})
-    elif arm == "no-loop":
-        env["MELLUM_GUARDS"] = json.dumps({"emptyFinalNudge": 3})
-    elif arm == "no-facts":
-        env["MELLUM_MODE_FACTS"] = "0"
-    elif arm == "server-guard":
-        # The full set: MELLUM_GUARDS replaces ENABLED, so a partial object
-        # would silently drop the nudge and the loop breaker.
-        env["MELLUM_GUARDS"] = json.dumps(GUARDS_WITH_SERVER)
-    elif arm == "no-facts-guard":
-        env["MELLUM_GUARDS"] = json.dumps(GUARDS_WITH_SERVER)
-        env["MELLUM_MODE_FACTS"] = "0"
-    elif arm == "strip-thinking":
+    if arm == "strip-thinking":
         # Opens the seam the worker closes by default (A12): earlier reasoning is
-        # dropped from the payload, everything else identical.
+        # dropped from the payload, everything else identical. The worker reads
+        # MELLUM_STRIP_THINKING directly; it is the one ablation arm still live
+        # after the decoupling. The rest ablated bundle parts the worker no longer
+        # has, so they are gone — ablate with a `--remedy` unit instead.
         env["MELLUM_STRIP_THINKING"] = "1"
     return {"extension": EXTENSION, "env": env}
 
