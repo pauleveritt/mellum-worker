@@ -17,6 +17,11 @@ Versions match git tags; pin one in both install lines.
 - **Pathologies is tied to remedies.** A table maps each pathology to the
   `/remedy` unit that answers it, and marks the ones with no loadable remedy
   (answered by the harness, the spec or the sampling settings instead).
+- **Breadcrumbs are standard across the site.** Introduction, Pathologies,
+  Scoreboard and Glossary are now one-page sections, so every page (except Home)
+  shows a breadcrumb and a clickable nav entry back to its top.
+- **Terminology is unified to Vanilla Pi and the Baseline Worker** on the site
+  (see above under the glossary rename).
 
 ### Removed
 
