@@ -10,7 +10,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const PAGES = ["learn/challenge/remedies.md"];
 const START = "<!-- remedies:start -->";
 const END = "<!-- remedies:end -->";
-const KINDS = ["guard", "nudge", "context", "tool", "check", "workflow"];
+const KINDS = ["guard", "nudge", "context", "prompt", "tool", "check", "workflow"];
 
 /** Every unit under remedies/<kind>/<name>.ts, in kind order, with its meta. */
 export async function listUnits() {

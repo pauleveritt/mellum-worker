@@ -20,7 +20,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const REMEDIES = join(dirname(fileURLToPath(import.meta.url)), "..", "remedies");
-const KINDS = ["guard", "nudge", "context", "tool", "check", "workflow"];
+const KINDS = ["guard", "nudge", "context", "prompt", "tool", "check", "workflow"];
 
 interface Unit {
 	name: string;
