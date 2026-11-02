@@ -23,23 +23,23 @@ Every Mellum worker run ever measured, split by tier.
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `a2227186` | 6/6 | 17 | 76s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `quality` | `2d12c19f` | 1/1 | 21 | 64s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `f966018c` | 1/1 | 21 | 67s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | `4700735e` | 3/3 | 62 | 229s |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | `4700735e` | 3/3 | 62 | 229s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | `—` | 2/3 | 14 | 41s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `—` | 2/3 | 17 | 71s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | `—` | 2/3 | 27 | 116s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | `—` | 2/3 | 27 | 125s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | `—` | 2/3 | 34 | 207s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` · `acceptance` · `ncm` · `nonblock` | `a2227186` | 3/5 | 30 | 143s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | `—` | 3/6 | 24 | 87s |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `—` | 2/3 | 27 | 116s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `—` | 2/3 | 27 | 125s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `—` | 2/3 | 34 | 207s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | `a2227186` | 3/5 | 30 | 143s |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 3/6 | 24 | 87s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | `78b5dfc1` | 1/3 | 9 | 46s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `—` | 1/3 | 16 | 67s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 2/6 | 17 | 54s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `db5dd4f0` | 1/3 | 21 | 77s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 1/3 | 23 | 76s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | `—` | 1/3 | 56 | 221s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 1/3 | 56 | 221s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `0c0f3935` | 1/3 | 102 | 622s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `9359a70b` | 1/3 | 125 | 702s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | `—` | 4/13 | 27 | 175s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `—` | 4/13 | 27 | 175s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 0/3 | — | — |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` | `3ddecccb` | 0/3 | — | — |
 
@@ -47,63 +47,63 @@ Every Mellum worker run ever measured, split by tier.
 
 | date | model | stack | result | turns | wall | run |
 |---|---|---|---|---|---|---|
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | pass | 27 | 116s | `20261031T220809Z-easy-ebf6d9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | fail | 25 | 100s | `20261031T220624Z-easy-495b50` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | pass | 57 | 211s | `20261031T220249Z-easy-8b6aea` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | pass | 34 | 122s | `20261031T211232Z-easy-fd845e` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | pass | 76 | 232s | `20261031T210837Z-easy-29b98a` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 35 | 214s | `20261031T210459Z-easy-7cc4d4` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/block-foreground-server` · `guard/break-repeat-loops` · `guard/refuse-whole-file-rewrite` · `guard/stay-in-workspace` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | pass | 27 | 116s | `20261031T220809Z-easy-ebf6d9` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 25 | 100s | `20261031T220624Z-easy-495b50` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | pass | 57 | 211s | `20261031T220249Z-easy-8b6aea` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 34 | 122s | `20261031T211232Z-easy-fd845e` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 76 | 232s | `20261031T210837Z-easy-29b98a` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 35 | 214s | `20261031T210459Z-easy-7cc4d4` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 20 | 48s | `20261031T210408Z-easy-ba5399` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 11 | 21s | `20261031T210144Z-easy-e2e1a5` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 17 | 54s | `20261031T205845Z-easy-525755` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | pass | 24 | 87s | `20261031T185258Z-easy-68465c` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 35 | 207s | `20261031T184926Z-easy-c2618b` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 24 | 157s | `20261031T184646Z-easy-760b91` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 24 | 87s | `20261031T185258Z-easy-68465c` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 35 | 207s | `20261031T184926Z-easy-c2618b` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 24 | 157s | `20261031T184646Z-easy-760b91` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 29 | 114s | `20261031T184447Z-easy-56638f` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 11 | 29s | `20261031T184415Z-easy-ad2ebc` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 20 | 79s | `20261031T184052Z-easy-54c8cc` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | fail | 47 | 217s | `20261031T165657Z-easy-afac3c` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | pass | 34 | 207s | `20261031T165325Z-easy-e75180` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | pass | 50 | 277s | `20261031T164843Z-easy-4f9385` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | fail | 47 | 217s | `20261031T165657Z-easy-afac3c` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 34 | 207s | `20261031T165325Z-easy-e75180` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 50 | 277s | `20261031T164843Z-easy-4f9385` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | pass | 25 | 130s | `20261031T164628Z-easy-c70ea1` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | fail | 10 | 38s | `20261031T164547Z-easy-ab9981` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | pass | 17 | 71s | `20261031T164431Z-easy-f7ea9a` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | fail | 36 | 258s | `20261031T154333Z-easy-fd9e63` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | pass | 27 | 125s | `20261031T154124Z-easy-73981e` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | pass | 39 | 178s | `20261031T153822Z-easy-abbe87` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | fail | 36 | 258s | `20261031T154333Z-easy-fd9e63` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | pass | 27 | 125s | `20261031T154124Z-easy-73981e` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | pass | 39 | 178s | `20261031T153822Z-easy-abbe87` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | pass | 16 | 67s | `20261031T153512Z-easy-7934be` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 44 | 335s | `20261031T152934Z-easy-be784b` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 10 | 25s | `20261031T152705Z-easy-aa645b` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 45 | 149s | `20261031T145820Z-easy-17cd17` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 58 | 210s | `20261031T145446Z-easy-b2030c` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | pass | 56 | 221s | `20261031T145102Z-easy-bcba4c` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 45 | 149s | `20261031T145820Z-easy-17cd17` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 58 | 210s | `20261031T145446Z-easy-b2030c` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 56 | 221s | `20261031T145102Z-easy-bcba4c` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 16 | 41s | `20261031T143926Z-easy-d690c7` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 17 | 48s | `20261031T143834Z-easy-a44a49` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 19 | 79s | `20261031T143710Z-easy-381a84` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 27 | 115s | `20261031T124850Z-easy-832194` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 21 | 61s | `20261031T124746Z-easy-289b78` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | pass | 27 | 175s | `20261031T124447Z-easy-4dc48c` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 27 | 115s | `20261031T124850Z-easy-832194` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 21 | 61s | `20261031T124746Z-easy-289b78` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 27 | 175s | `20261031T124447Z-easy-4dc48c` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | fail | 14 | 31s | `20261031T124211Z-easy-4bacc4` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | pass | 25 | 71s | `20261031T123856Z-easy-c727cb` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | pass | 14 | 41s | `20261031T123609Z-easy-7a3848` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` · `acceptance` · `ncm` · `nonblock` | pass | 43 | 214s | `20261031T121941Z-easy-9e702e` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` · `acceptance` · `ncm` · `nonblock` | pass | 50 | 196s | `20261031T121620Z-easy-e1b892` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` · `acceptance` · `ncm` · `nonblock` | pass | 30 | 143s | `20261031T121355Z-easy-102df8` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` · `acceptance` · `ncm` · `nonblock` | fail | 40 | 117s | `20261031T121155Z-easy-870d1b` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` · `acceptance` · `ncm` · `nonblock` | fail | 17 | 99s | `20261031T121011Z-easy-1b4972` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | pass | 40 | 241s | `20261031T112023Z-easy-c08943` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 46 | 176s | `20261031T111723Z-easy-f419da` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 28 | 102s | `20261031T111536Z-easy-f70700` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 30 | 212s | `20261031T111201Z-easy-f9e734` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | pass | 39 | 177s | `20261031T110859Z-easy-0a4660` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 42 | 234s | `20261031T101620Z-easy-818f52` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 29 | 119s | `20261031T101418Z-easy-9629c5` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 49 | 165s | `20261031T101129Z-easy-ee63b0` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | pass | 42 | 208s | `20261031T100757Z-easy-6be5bf` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `arm:worker` | fail | 25 | 104s | `20261031T100608Z-easy-576a01` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | pass | 43 | 214s | `20261031T121941Z-easy-9e702e` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | pass | 50 | 196s | `20261031T121620Z-easy-e1b892` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | pass | 30 | 143s | `20261031T121355Z-easy-102df8` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | fail | 40 | 117s | `20261031T121155Z-easy-870d1b` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | fail | 17 | 99s | `20261031T121011Z-easy-1b4972` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 40 | 241s | `20261031T112023Z-easy-c08943` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 46 | 176s | `20261031T111723Z-easy-f419da` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 28 | 102s | `20261031T111536Z-easy-f70700` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 30 | 212s | `20261031T111201Z-easy-f9e734` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 39 | 177s | `20261031T110859Z-easy-0a4660` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 42 | 234s | `20261031T101620Z-easy-818f52` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 29 | 119s | `20261031T101418Z-easy-9629c5` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 49 | 165s | `20261031T101129Z-easy-ee63b0` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 42 | 208s | `20261031T100757Z-easy-6be5bf` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 25 | 104s | `20261031T100608Z-easy-576a01` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 17 | 76s | `20261031T080429Z-easy-de64c0` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 18 | 58s | `20261031T080329Z-easy-74a7db` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 19 | 79s | `20261031T080205Z-easy-d162fe` |
@@ -140,55 +140,55 @@ Every Mellum worker run ever measured, split by tier.
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | `a5560e1f` | 3/3 | 51 | 471s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | `—` | 2/3 | 47 | 347s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `—` | 2/3 | 47 | 347s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 2/3 | 71 | 522s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | `—` | 1/3 | 52 | 269s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `—` | 1/3 | 52 | 269s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 1/3 | 73 | 585s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `—` | 1/3 | 111 | 1193s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 1/6 | 76 | 667s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | `—` | 1/6 | 80 | 547s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | `—` | 0/3 | — | — |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 1/6 | 80 | 547s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 0/3 | — | — |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `—` | 0/3 | — | — |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | `—` | 0/3 | — | — |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `—` | 0/3 | — | — |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `a2227186` | 0/3 | — | — |
 
 **All runs** — newest first.
 
 | date | model | stack | result | turns | wall | run |
 |---|---|---|---|---|---|---|
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | fail | 46 | 265s | `20261031T222316Z-medium-25b0c9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | fail | 74 | 294s | `20261031T221819Z-medium-d3286c` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | `arm:worker` | fail | 69 | 484s | `20261031T221009Z-medium-560ee1` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 82 | 402s | `20261031T215543Z-medium-2bbe0b` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 79 | 310s | `20261031T214829Z-medium-37c465` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 69 | 247s | `20261031T214218Z-medium-01af08` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 46 | 265s | `20261031T222316Z-medium-25b0c9` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 74 | 294s | `20261031T221819Z-medium-d3286c` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 69 | 484s | `20261031T221009Z-medium-560ee1` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 82 | 402s | `20261031T215543Z-medium-2bbe0b` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 79 | 310s | `20261031T214829Z-medium-37c465` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 69 | 247s | `20261031T214218Z-medium-01af08` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 58 | 417s | `20261031T213316Z-medium-c3253e` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 76 | 667s | `20261031T212004Z-medium-0388b0` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 45 | 322s | `20261031T211439Z-medium-029554` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 66 | 446s | `20261031T195545Z-medium-aaf88b` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 58 | 285s | `20261031T195055Z-medium-1ed570` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | pass | 80 | 547s | `20261031T194144Z-medium-a0c445` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 66 | 446s | `20261031T195545Z-medium-aaf88b` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 58 | 285s | `20261031T195055Z-medium-1ed570` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 80 | 547s | `20261031T194144Z-medium-a0c445` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 83 | 651s | `20261031T192846Z-medium-3a09b6` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 224 | 1801s | `20261031T185839Z-medium-9341e3` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 43 | 126s | `20261031T185428Z-medium-0d2440` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 98 | 882s | `20261031T181934Z-medium-2caf88` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 73 | 612s | `20261031T180916Z-medium-564187` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 73 | 585s | `20261031T175925Z-medium-4405de` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | pass | 58 | 513s | `20261031T174955Z-medium-81753b` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | pass | 47 | 347s | `20261031T174402Z-medium-043395` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | `arm:worker` | fail | 70 | 463s | `20261031T173616Z-medium-2ad673` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 58 | 513s | `20261031T174955Z-medium-81753b` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 47 | 347s | `20261031T174402Z-medium-043395` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | fail | 70 | 463s | `20261031T173616Z-medium-2ad673` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | fail | 56 | 569s | `20261031T172641Z-medium-c269cd` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | fail | 36 | 240s | `20261031T172037Z-medium-e7141e` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | pass | 111 | 1193s | `20261031T170039Z-medium-70a118` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | fail | 79 | 363s | `20261031T163355Z-medium-497f22` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | fail | 70 | 318s | `20261031T162831Z-medium-d8b479` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | `arm:worker` | pass | 52 | 269s | `20261031T162359Z-medium-75675e` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | fail | 79 | 363s | `20261031T163355Z-medium-497f22` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | fail | 70 | 318s | `20261031T162831Z-medium-d8b479` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | pass | 52 | 269s | `20261031T162359Z-medium-75675e` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 44 | 278s | `20261031T161917Z-medium-34e9e6` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 105 | 1606s | `20261031T155024Z-medium-582869` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 9 | 26s | `20261031T154754Z-medium-c473b1` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 76 | 364s | `20261031T151831Z-medium-e068ec` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 85 | 380s | `20261031T151204Z-medium-f56b19` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `arm:worker` | fail | 93 | 546s | `20261031T150255Z-medium-90bb94` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 76 | 364s | `20261031T151831Z-medium-e068ec` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 85 | 380s | `20261031T151204Z-medium-f56b19` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 93 | 546s | `20261031T150255Z-medium-90bb94` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | pass | 102 | 1460s | `20261031T134320Z-medium-5d5e38` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | pass | 51 | 471s | `20261031T133525Z-medium-5e01e9` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | pass | 76 | 489s | `20261031T132711Z-medium-673535` |

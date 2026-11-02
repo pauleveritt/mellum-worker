@@ -150,10 +150,27 @@ def _fmt_wall(w) -> str:
     return "—" if w is None else f"{round(w)}s"
 
 
+# How the base config reads on the page: a plain name, never the raw `arm:` token, so a reader
+# is not sent down the harness's arm rabbit hole. Remedy units keep their own names. Only
+# `worker` is named outright (its ENABLED guard set); the research arms set MELLUM_GUARDS, which
+# *replaces* ENABLED, so their composition is non-obvious — name them by arm, assert nothing.
+ARM_LABELS = {
+    "worker": "Baseline Worker",
+}
+
+
+def _arm_label(arm: str) -> str:
+    return ARM_LABELS.get(arm, f"Baseline Worker, {arm} arm")
+
+
+def _unit_text(token: str) -> str:
+    return token.replace("tool/background-long-commands", "nonblock").replace("mellum-", "")
+
+
 def _stack_text(stack) -> str:
     if not stack:
         return "vanilla Pi"
-    return " · ".join(s.replace("tool/background-long-commands", "nonblock").replace("mellum-", "") for s in stack)
+    return " · ".join(_arm_label(s[4:]) if s.startswith("arm:") else _unit_text(s) for s in stack)
 
 
 SUITE_ORDER = ["easy", "medium", "hard"]
@@ -165,11 +182,11 @@ def _model_md(model) -> str:
 
 
 def _stack_md(stack) -> str:
-    """The stack as code chips (uniform, and the glossary skips code), or vanilla Pi for no stack."""
+    """The stack for the page: the base in plain words (Baseline Worker), remedy units as code
+    chips (uniform, and the glossary skips code), or vanilla Pi for no stack."""
     if not stack:
         return "vanilla Pi"
-    parts = [s.replace("tool/background-long-commands", "nonblock").replace("mellum-", "") for s in stack]
-    return " · ".join(f"`{p}`" for p in parts)
+    return " · ".join(_arm_label(s[4:]) if s.startswith("arm:") else f"`{_unit_text(s)}`" for s in stack)
 
 
 def _record_rows(entries) -> list[str]:
