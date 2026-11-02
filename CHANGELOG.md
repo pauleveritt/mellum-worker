@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The `easy` preset is now the measured Easy stack** — `prompt/name-the-layout`,
+  `prompt/python-developer`, `guard/foreground-server`, `prompt/verify-the-spec` —
+  which passes Easy 6/6 at n=6. It replaces the old guard-heavy bundle; on the
+  ladder those guards fired 0× and moved no rep, so the preset is now the three
+  prompt lines that earn the pass plus the one guard that was along for the ride.
 - **The worker (`/mellum`, `MELLUM_MODE`) bundles nothing now.** It is purely the
   command tool plus the mode machinery (switch to Mellum, drop the pre-marker
   history, track the span, write the run record). It no longer swaps the system

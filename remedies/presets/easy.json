@@ -1,9 +1,6 @@
 [
-  "context/repair-think-tags",
-  "context/trim-tool-output",
-  "guard/repeat-loops",
-  "guard/outside-workspace",
-  "guard/whole-file-rewrite",
+  "prompt/name-the-layout",
+  "prompt/python-developer",
   "guard/foreground-server",
-  "context/narrow-tools"
+  "prompt/verify-the-spec"
 ]

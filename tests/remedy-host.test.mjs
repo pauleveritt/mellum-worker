@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 /** A fake Pi with commands, a UI that records notifications and status, and hook dispatch. */
 function fakePi() {
@@ -51,7 +52,8 @@ test("/remedy preset:easy turns on every unit in the preset", async () => {
 	const pi = fakePi();
 	await (await host()).default(pi);
 	await pi.run("remedy", "preset:easy");
-	assert.equal(pi.ui.status.remedies, "remedies: 7 on");
+	const easyPreset = JSON.parse(readFileSync(new URL("../remedies/presets/easy.json", import.meta.url)));
+	assert.equal(pi.ui.status.remedies, `remedies: ${easyPreset.length} on`);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "uv run python app.py" } })?.block, true);
 });
 
