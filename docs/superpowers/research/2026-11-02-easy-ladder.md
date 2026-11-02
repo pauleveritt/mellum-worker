@@ -20,12 +20,13 @@ bundle.
 | Config | Pass | Notes |
 | --- | --- | --- |
 | `vanilla` (recorder only) | fail | the floor |
-| plain worker — `preset:baseline-worker` (6 units, **no prompt**) | **0/3** | flailed ~15 turns on `find`/`ls`, then invented the layout (`main.py`, no templates) |
+| plain worker — `preset:baseline-worker` (6 units, **no prompt**) | **0/3** | flailed ~15 turns shelling `find`/`ls` through `bash` (no search tool was offered — see below), then invented the layout (`main.py`, no templates) |
 | `arm:worker` (full worker, **with** the worker prompt) | 2/3 | 53–64 turns |
 | `vanilla + prompt/name-the-layout` | **2/3** | one agnostic line ("take the layout from the spec"); fastest pass **15 turns** |
 | `vanilla + name-the-layout + guard/repeat-loops` | 2/3 | `repeat-loops` fired **0 times**; no change |
 | `vanilla + name-the-layout + prompt/python-developer` (n=3) | 3/3 | 20 · 19 · 14 |
 | `vanilla + name-the-layout + prompt/python-developer` (**n=6**) | **4/6** | median 18 (15–28) |
+| `vanilla + name-the-layout + python-developer + guard/foreground-server` (**n=6**) | **5/6** | blocking the server-start that stood in for a check moved one more rep across; within n=6 variance, a lead |
 
 **Reading:** on Easy the lever is **guidance, not guards**. Two agnostic prompt
 lines on Vanilla Pi reach a fast pass with no guards and nothing coded to the eval.
@@ -43,6 +44,27 @@ turns vs 53. The guards stop bad *actions* (hangs, loops); the failures here are
 **inventing the wrong layout**, then — from the feed — **shipping a careless
 `if __name__ == "main__":` typo unchecked** and **declaring "done" without
 running the check**. A loop guard does not touch those.
+
+## The tool set these runs actually ran on (measured, corrects an assumption)
+
+Every one of the 26 easy-ladder runs — vanilla and each rung — was offered the
+**same four tools**: `read`, `bash`, `edit`, `write`. Read straight from each
+run's first `provider_request` in `trace.jsonl`; all 26 agree. `grep`, `find`,
+`ls`, `glob` and `codemode` were **never offered** on any run, and `codemode`
+and `glob` were **never used** because they were never there. Pi's full built-in
+registry is nine tools, but five are off by default; `read, bash, edit, write`
+is the whole default surface (it matches Pi's own tagline).
+
+Two consequences for reading this ladder:
+
+- **The worker's "tool narrowing" is a no-op here.** `WORKER_TOOLS` is seven and
+  `context/narrow-tools` only *filters the offered list down* — with just the
+  four already inside that seven, it removes nothing. Narrowing bites only when
+  something upstream (a `--tools` flag or an extension) first *adds* grep/find/ls.
+- **The model had no search tool on Easy.** The plain-worker flailing "on
+  `find`/`ls`" was `find`/`ls` run **through `bash`**, not tool calls. The
+  absence of a search tool is a plausible contributor to the wandering and the
+  invented layout — untested here, a lead for a rung that adds a search tool.
 
 ## Theories (conjecture — to measure, not yet run)
 
