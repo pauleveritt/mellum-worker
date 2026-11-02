@@ -9,7 +9,7 @@ exclude_docs = "code/"
 extra_css = ["stylesheets/extra.css"]
 extra_javascript = ["javascripts/badges.js"]
 nav = [
-  { "Home" = "index.md" },
+  { "Home" = ["index.md"] },
   { "Introduction" = ["introduction/index.md"] },
   { "Getting Started" = ["getting-started/index.md", "getting-started/base-pi-on-llamacpp.md",
     "getting-started/working-with-pi.md", "getting-started/eval-suites.md", "getting-started/the-harness.md",
