@@ -32,11 +32,31 @@ export async function listUnits() {
 
 const cell = (text) => text.replace(/\|/g, "\\|");
 
-/** The remedies table: one row per unit, switched on in a live Pi with `/remedy on <unit>`. */
+/** A readable heading for each kind, in the order units are listed. */
+const KIND_LABELS = {
+	guard: "Guards",
+	nudge: "Nudges",
+	context: "Context",
+	prompt: "Prompts",
+	tool: "Tools",
+	check: "Checks",
+	workflow: "Workflows",
+};
+
+/** The remedies table, grouped by kind: a `###` section per category, each its own table. */
 export function renderTable(units) {
-	const rows = units.map(({ name, meta }) =>
-		`| ${cell(meta.pathology)} | \`${name}\`: ${cell(meta.does)} | ${cell(meta.evidence)} | \`/remedy on ${name}\` |`);
-	return [START, "", "| Pathology | Remedy unit | Evidence | Switch on |", "| --- | --- | --- | --- |", ...rows, "", END].join("\n");
+	const out = [START, ""];
+	for (const kind of KINDS) {
+		const group = units.filter((u) => u.name.startsWith(`${kind}/`));
+		if (!group.length) continue;
+		out.push(`### ${KIND_LABELS[kind] ?? kind}`, "", "| Pathology | Remedy unit | Evidence | Switch on |", "| --- | --- | --- | --- |");
+		for (const { name, meta } of group) {
+			out.push(`| ${cell(meta.pathology)} | \`${name}\`: ${cell(meta.does)} | ${cell(meta.evidence)} | \`/remedy on ${name}\` |`);
+		}
+		out.push("");
+	}
+	out.push(END);
+	return out.join("\n");
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
