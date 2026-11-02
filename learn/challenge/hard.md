@@ -19,6 +19,36 @@ measured here has passed it yet.
 
 **Watch out** — a concatenated SQL filter is a security fail; migrations must be idempotent; cents stay integers; the `seq` and never-reuse-`id` rules hold across archive too.
 
-**Graded (34)** — Medium's 18 · Phase 5 archive / audit / stats (5) · Phase 6 sums / `archived_at` / integers (3) · visits filter + range (2) · migrations exist / recorded / re-runnable (6).
+## What each check verifies
+
+Thirty-four checks: **Medium's eighteen re-run**, plus sixteen new ones across three phases and the migrations.
+
+**Phase 5 — archive & audit (5)**
+
+1. **Archive only when resolved** — archiving an `open` complaint returns `400` and leaves it open.
+2. **Archive hides but keeps** — resolve then archive returns `303`, sets status `archived`, keeps the record in the data, and drops its text from the board.
+3. **Ids never reused** — posting a new complaint after archiving yields an `id` above the current maximum.
+4. **Stats open count** — `GET /stats` returns `open` equal to the number of complaints whose status is `open`.
+5. **Audit in order, monotonic `seq`** — a resolve then reopen appends audit actions `resolve`, `reopen` in that order; every audit `seq` is sorted and unique.
+
+**Phase 6 — tickets report (3)**
+
+1. **Exact sums** — `GET /report` returns `open_total_cents` = 500, `archived_total_cents` = 1000, `all_time_total_cents` = 2099.
+2. **Archived by `archived_at`** — a row archived but still status-open counts as archived, never open.
+3. **Integer cents** — all three `*_total_cents` values are integers.
+
+**Phase 7 — visits report (2)**
+
+1. **Filter, group, sort, limit** — `GET /visits?from=&to=&min_minutes=&limit=` returns the exact per-agent rows (count, total and average minutes), grouped by agent, sorted by total then name, and limited.
+2. **Inclusive range, minutes floor** — the `from`/`to` range includes both ends and `min_minutes` is applied as a floor.
+
+**Migrations (6)** — run with `sqlite-utils migrate`
+
+1. **All recorded in order** — `_sqlite_migrations` for set `agentclinic` lists the four migrations in order: the index, the `resolved_at` backfill, the `open_tickets` view, the `note` column.
+2. **Index exists** — `idx_tickets_status_archived` is present.
+3. **`resolved_at` backfilled** — every resolved ticket has `resolved_at` = `2026-01-03T00:00:00`.
+4. **`open_tickets` view** — every row of the view has status `open` and `archived_at IS NULL`.
+5. **`note` column** — the `tickets` table has a `note` column.
+6. **Re-running is a no-op** — running `sqlite-utils migrate` again leaves `_sqlite_migrations` unchanged.
 
 Run it with `/challenge hard`. Before: [Medium — the complaints board](medium.md).

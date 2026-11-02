@@ -34,7 +34,6 @@ row is one problem and the unit that answers it; the last column is the
 
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
-| Guesses how to run the tests instead of the project's own command | `context/add-project-facts`: Adds the project facts and test command to each message | screen: 3/3 against 2/3 on Easy (2026-10-29); a null in the page's record | `/remedy on context/add-project-facts` |
 | Reaches for tools it uses badly instead of reading and editing | `context/narrow-tools`: Keeps the seven core tools; drops the rest | part of the Baseline Worker; not measured on its own | `/remedy on context/narrow-tools` |
 | Reasoning comes back as `<think>` text and is fed back as speech | `context/repair-think-tags`: Turns a leading `<think>` reply back into a thinking block | LAN vLLM host: 236 of 244 turns leaked; 0 of 136 on the pinned vLLM 0.32.0 | `/remedy on context/repair-think-tags` |
 | Reads more than the context holds, then loses it to compaction | `context/trim-tool-output`: Trims a tool result over 8,000 chars and says how to get the rest | context-overflow screen: 8 notes read whole, 2 compactions, 8 notes read again | `/remedy on context/trim-tool-output` |
@@ -45,6 +44,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Invents its own file layout instead of the one the spec names | `prompt/name-the-layout`: Tells the model to take the file layout from the spec | new unit; unmeasured | `/remedy on prompt/name-the-layout` |
+| Works without a focused, careful developer frame (ships typos, declares done unchecked) | `prompt/python-developer`: Prepends a meticulous experienced-Python-developer, spec-driven role to the system prompt | theory; unmeasured (easy-ladder, 2026-11-02) | `/remedy on prompt/python-developer` |
 
 ### Tools
 

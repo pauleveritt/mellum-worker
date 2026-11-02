@@ -6,6 +6,13 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The worker (`/mellum`, `MELLUM_MODE`) bundles nothing now.** It is purely the
+  command tool plus the mode machinery (switch to Mellum, drop the pre-marker
+  history, track the span, write the run record). It no longer swaps the system
+  prompt or narrows the tool list; the prompt, tool-narrowing, project facts and
+  the guards are all remedy units switched on with `/remedy` or a preset. AGENTS.md
+  documents the architecture (Vanilla Pi floor, thin worker, explicit remedies) so
+  it is not re-bundled. A new `--arm vanilla` runs the recorder-only floor.
 - **The Challenge section is reorganized into pages.** The index is now a hub
   (what AgentClinic is, the cumulative phase matrix, the score table, how to
   attempt), and **Easy**, **Medium**, **Hard** and **Remedies** each get their
@@ -29,6 +36,11 @@ Versions match git tags; pin one in both install lines.
   to be rebuilt.** They explained the harness more than they taught a skill. The
   lesson tutor, the hands-on panel and the Getting Started track stay; `/lesson`
   and the site's Lessons section are a placeholder until new lessons land.
+- **The `context/add-project-facts` remedy is removed.** It injected the test
+  command and project facts into every message, which is not an agnostic,
+  inspectable remedy. It is dropped from the `baseline-worker`, `medium` and
+  `hard` presets. (The `withFacts`/`factsBlock` exports it used stay, since the
+  lesson tutor still relies on them.)
 
 ### Added
 

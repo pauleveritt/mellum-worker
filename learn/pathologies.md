@@ -44,9 +44,10 @@ entries below.
 | 11 | A stop-cap and a gate deadlock | none — a harness fix (reconcile the cap and the gate) |
 | 12 | Writes outside the layout | none yet — a write-confining guard is planned; `guard/outside-workspace` covers searches only |
 | 13 | A lost id | none as a unit — the acceptance list carries the contract; `workflow/spec-driven-flow`'s frozen gates come closest |
-| 14 | The project stops importing | `context/add-project-facts` — the test command in every message, so the signal lands on turn one |
+| 14 | The project stops importing | none as a unit — a seeded test and the test command in the brief give the signal; the harness records `checks_ran` |
 | 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
-| 16 | A skipped rule | `context/add-project-facts` reminds; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
+| 16 | A skipped rule | none — a fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
+| 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
 
 ## It says it is done and it is not
 
@@ -198,6 +199,23 @@ entries below.
     ([run](lessons/index.md)). **Answer:** a fact is a reminder, not
     an enforcement; the guard is the enforcement, and it stays dormant until an
     arm needs it.
+
+## It ships a defect it never ran
+
+17. **Ships without running its own code.** The run declares done after an
+    ineffective self-check — it starts a foreground server, or only re-reads the
+    files, instead of exercising the real route or test — so a genuine defect
+    ships even though nothing was fabricated. Unlike false success (1), the model
+    is not inventing a result; it is verifying by the wrong means. **Seen:** the
+    Easy ladder at n = 6 (4/6) on `vanilla + name-the-layout + python-developer`,
+    where rep 2 wrote `def home(request):` (no `Request` annotation, so `GET /`
+    returned 422) and "verified" by launching `uvicorn`, which never hits the
+    route, and rep 5 had the route right but a different defect and only re-read
+    the files before stopping
+    ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
+    **Answer:** verification — run the real route or test before finishing;
+    `guard/foreground-server` removes the server-start that stands in for a check,
+    forcing a different verification, and a verify lever is being measured.
 
 ---
 

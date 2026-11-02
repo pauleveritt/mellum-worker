@@ -342,18 +342,19 @@ test("run record carries host, activation, prompt version, and zero nudges and g
 	assert.equal(rec.guardBlocks, 0);
 	assert.equal(rec.activation, "on");
 	assert.equal(rec.host, "tui");
-	assert.equal(rec.promptVersion, "v11");
+	// The worker applies no prompt now (the prompt is a remedy unit), so the record says "none".
+	assert.equal(rec.promptVersion, "none");
 	assert.equal(rec.version, pkg.version);
 });
 
-test("a prompt without a version marker records promptVersion unknown", async () => {
+test("the worker records promptVersion none even when a prompt is set — the prompt is a remedy now", async () => {
 	const rec = await withRunsFile(async () => {
 		const { handlers, mellum } = recordingPi({ mode: "tui" });
 		await mellum("on");
 		handlers.context({ messages: snapshot });
 		await mellum("off");
-	}, { prompt: "no marker" });
-	assert.equal(rec.promptVersion, "unknown");
+	}, { prompt: "a prompt the worker must ignore" });
+	assert.equal(rec.promptVersion, "none");
 });
 
 test("MELLUM_MODE=1 at session_start records activation headless and the host mode", async () => {

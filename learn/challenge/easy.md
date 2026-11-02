@@ -18,7 +18,14 @@ The first level of [the Challenge](index.md): Phase 1 of AgentClinic, graded by
 
 **Watch out** — the `do not start servers` rule: a foreground server that never returns burns a bare run to the deadline.
 
-**Graded (4)** — doctype · `lang="en"` · `GET /` → 200 with the tagline · navbar links.
+## What each check verifies
+
+Phase 1 is graded by four checks; a setup passes Easy when all four are green.
+
+1. **`GET /` → 200 with the tagline** — the home route responds `200` and the body contains the exact string *"Come in. Sit down. Tell us about your human."*
+2. **HTML5 doctype** — the home document begins with `<!doctype html>`.
+3. **`lang="en"`** — the `<html>` element declares `lang="en"` (case-insensitive).
+4. **Navbar links** — the body contains `AgentClinic`, plus an anchor to `/` labelled *Home* and an anchor to `/complaints` labelled *Complaints* (label case-insensitive).
 
 Run it with `/challenge easy` (see [Attempt it](index.md#attempt-it)). Next:
 [Medium — the complaints board](medium.md).

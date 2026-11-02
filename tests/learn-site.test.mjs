@@ -50,7 +50,7 @@ test("the glossary is parsed by zensical-glossary", () => {
   assert.match(toml, /pymdownx\.superfences = \{\}/);
   const glossary = page("glossary.md");
   for (const term of ["screen", "nudge", "empty-final nudge", "no-nudge",
-    "Baseline Worker", "Baseline Pi"])
+    "Baseline Worker", "Vanilla Pi"])
     assert.match(glossary, new RegExp(`^### ${term}$`, "mi"));
 });
 
