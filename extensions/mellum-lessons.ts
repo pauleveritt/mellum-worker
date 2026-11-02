@@ -47,6 +47,7 @@ export function lessonIndex(root: string): LessonEntry[] {
 	const entries: LessonEntry[] = [];
 	for (const tier of TIERS) {
 		const dir = join(root, "learn", "lessons", tier);
+		if (!existsSync(dir)) continue; // a tier with no lessons yet (they are being rebuilt)
 		for (const name of readdirSync(dir).filter((f) => f.endsWith(".md") && f !== "index.md")) {
 			const file = join(dir, name);
 			const fm = frontMatter(readFileSync(file, "utf8"));

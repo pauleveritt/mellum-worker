@@ -183,6 +183,13 @@ test("a failure in the record is named on the FAIL screen", async () => {
 	assert.match(summariseRuns(dir).lines[0], /the record shows: reasoning_as_text is 10 \(at most 0\)/);
 });
 
+test("lessonIndex survives a repo with no lesson folders (returns [], no scandir crash)", async () => {
+	const { lessonIndex } = await tutor();
+	const root = mkdtempSync(join(tmpdir(), "repo-"));
+	mkdirSync(join(root, "learn", "lessons"), { recursive: true });
+	assert.deepEqual(lessonIndex(root), [], "missing tier dirs must not throw ENOENT");
+});
+
 test("the worker is always loaded when Pi runs in the repo: .pi/extensions shims mellum-worker", async () => {
 	const src = readFileSync(join(ROOT, ".pi", "extensions", "worker.ts"), "utf8");
 	assert.match(src, /extensions\/mellum-worker\.ts/, "repo .pi/extensions/worker.ts must re-export the worker");

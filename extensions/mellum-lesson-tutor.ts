@@ -508,6 +508,7 @@ async function openLesson(args: string, ctx: any, startPage = 0): Promise<void> 
 			const readMode = arg === "read" || arg.startsWith("read ");
 			if (readMode) arg = arg.slice(4).trim();
 			const track = lessonIndex(root);
+			if (track.length === 0) return ctx.ui.notify("The lessons are being rebuilt — none to open yet.", "info");
 			const done = loadDone();
 			let index = track.findIndex((l) => l.number.toLowerCase() === arg.toLowerCase());
 			if (index < 0) {
