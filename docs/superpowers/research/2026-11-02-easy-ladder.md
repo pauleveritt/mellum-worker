@@ -24,13 +24,20 @@ bundle.
 | `arm:worker` (full worker, **with** the worker prompt) | 2/3 | 53–64 turns |
 | `vanilla + prompt/name-the-layout` | **2/3** | one agnostic line ("take the layout from the spec"); fastest pass **15 turns** |
 | `vanilla + name-the-layout + guard/repeat-loops` | 2/3 | `repeat-loops` fired **0 times**; no change |
-| `vanilla + name-the-layout + prompt/python-developer` | **3/3** | 20t · 19t · 14t — reliable and fast |
+| `vanilla + name-the-layout + prompt/python-developer` (n=3) | 3/3 | 20 · 19 · 14 |
+| `vanilla + name-the-layout + prompt/python-developer` (**n=6**) | **4/6** | median 18 (15–28) |
 
 **Reading:** on Easy the lever is **guidance, not guards**. Two agnostic prompt
-lines on Vanilla Pi — "take the layout from the spec" and "an experienced,
-meticulous python developer in a spec-driven paradigm" — reach **3/3 at 14–20
-turns**, beating the whole worker (2/3 at 53–64) with no guards and nothing coded
-to the eval. T1 holds on this screen. The six guards+facts
+lines on Vanilla Pi reach a fast pass with no guards and nothing coded to the eval.
+But **n=3 (3/3) was optimistic — n=6 is 4/6 (~67%)**: a strong lead, not a reliable
+pass. The two failures are **different bugs with one common cause — no real
+verification**: rep2 wrote `def home(request):` (missing `Request` → `GET /` 422)
+and "verified" by starting a foreground server, which never hits the route; rep5
+had the route correct but a different defect and just re-read the files before
+declaring done. The `python-developer` prompt makes the model *attempt* care, but
+"care" comes out as reading files or launching uvicorn, not running `GET /`. So the
+reliability lever is **verification** (run the real route/test before finishing),
+which would catch both; `tool/lookup-library-docs` (T2) only addresses rep2's class. The six guards+facts
 got 0/3; one agnostic prompt line matched the whole worker's 2/3 and did it in 15
 turns vs 53. The guards stop bad *actions* (hangs, loops); the failures here are
 **inventing the wrong layout**, then — from the feed — **shipping a careless
