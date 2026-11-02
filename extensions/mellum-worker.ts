@@ -26,8 +26,8 @@
  * This is the thin worker: mode machinery and the /mellum commands only. Remediation
  * (project facts, tool-narrowing, the loop breaker and empty-turn nudge and the rest) and
  * the handoff collapse are remedy units under remedies/ now, combined through a preset;
- * the worker adds none of them itself. It keeps the compaction refusal and the pre-marker
- * history drop, which protect the mode's own on-marker (mode-integrity, not remediation).
+ * the worker adds none of them itself. It keeps the pre-marker history drop, which protects
+ * the mode's own on-marker (mode-integrity, not remediation).
  *
  * Headless: MELLUM_MODE=1 activates at session start (the ladder's "mode" runner).
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
@@ -36,7 +36,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { adminBaseOf, checkSetup, type Diff, fetchJson, formatFindings, gatherInputs, loadExpected, readProvider, serverCheck, type ServerCheck } from "./mellum-check.ts";
+import { adminBaseOf, checkSetup, fetchJson, formatFindings, gatherInputs, loadExpected, readProvider, serverCheck, type ServerCheck } from "./mellum-check.ts";
 import { type ProjectFacts } from "./mellum-facts.ts";
 import { type Activation, type Msg, promptVersionOf, runRecord, textOf, spanStats, type SpanStats } from "./mellum-record.ts";
 import { formatMerge, formatReport, learnFromTexts, mergeSuggestion, modeRunsFile, overCap, recordFiles } from "./mellum-learn.ts";
@@ -46,7 +46,7 @@ export const MARK_ON = "[mellum-worker on]";
 export const MARK_OFF = "[mellum-worker off]";
 export const BOOTSTRAP_MARKER = "superpowers:using-superpowers bootstrap for pi";
 export const WORKER_TOOLS = ["read", "grep", "find", "ls", "bash", "edit", "write"];
-const DEFAULT_MODEL = { provider: "omlx", id: "Mellum2.1-12B-A2.5B-Thinking-6bit" };
+const DEFAULT_MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
 
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
 
@@ -240,10 +240,13 @@ export function parseSubcommand(args: string): Subcommand {
 	return { cmd: "task", task: want };
 }
 
-/** The one line shown on activation when the server's settings differ. */
-export function serverWarning(diffs: Diff[]): string {
-	const show = (v: unknown) => JSON.stringify(v) ?? "missing";
-	return `Mellum server settings differ: ${diffs.map((d) => `${d.key} ${show(d.actual)} (expected ${show(d.expected)})`).join(", ")}. Run /mellum check.`;
+/** The one line shown on activation when the server is not as the measured settings expect. */
+export function serverWarning(server: ServerCheck, nCtxMin: number): string | undefined {
+	if (server.up === false) return "the llama-server did not report status ok. Run /mellum check.";
+	if (server.nCtx !== undefined && server.nCtx < nCtxMin) {
+		return `the llama-server context window is ${server.nCtx}, below the measured ${nCtxMin}. Run /mellum check.`;
+	}
+	return undefined;
 }
 
 /** The trailing span still open at the end of `messages`: its task text and messages, or undefined. */
@@ -320,7 +323,7 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	let promptVersion = "unknown";
 	// Facts are a remedy unit now; the worker records the run as facts source "none".
 	const spanFacts: ProjectFacts = { source: "none", bullets: [], testCommand: null, chars: 0 };
-	let server: ServerCheck = { match: null, diffs: [] };
+	let server: ServerCheck = { up: null };
 
 	// The activation check: one admin GET, at most 1 s, never throws; unreadable gives match null.
 	async function checkServer(): Promise<ServerCheck> {
@@ -328,7 +331,7 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			const { baseUrl } = readProvider("pi", home(), readIfExists);
 			return await serverCheck(adminBaseOf(baseUrl), { timeoutMs: 1000, fetch: options.fetch });
 		} catch {
-			return { match: null, diffs: [] };
+			return { up: null };
 		}
 	}
 
@@ -442,7 +445,8 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		interactive = notify;
 		warnedMissing = false;
 		server = await pendingServer;
-		if (server.match === false) warn(ctx, serverWarning(server.diffs), "warning");
+		const serverWarn = serverWarning(server, loadExpected().nCtxMin);
+		if (serverWarn) warn(ctx, serverWarn, "warning");
 		if (notify) pi.sendMessage({ customType: "mellum-worker", content: `${MARK_ON} facts: ${spanFacts.source}`, display: true }, { deliverAs: "nextTurn" });
 		if (notify) ctx.ui?.notify?.(`mellum-worker on: ${label}, tools ${WORKER_TOOLS.join(",")}`, "info");
 	}
@@ -565,15 +569,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 
 	pi.on("session_start", async (_event: any, ctx: any) => {
 		if (process.env.MELLUM_MODE === "1" && !active) await activate(ctx, false, "headless");
-	});
-
-	// Pi sizes auto-compaction against the active model's window (Mellum's 56k) over the
-	// whole, unfiltered session. Compacting the parent's history with Mellum would be a
-	// lossy change to the user's session, and it would erase the on-marker. Refuse while on.
-	pi.on("session_before_compact", (event: any, ctx: any) => {
-		if (!active || event?.reason === "manual") return undefined;
-		ctx.ui?.notify?.("mellum-worker: auto-compaction skipped while the mode is on (/mellum off first, or /compact)", "warning");
-		return { cancel: true };
 	});
 
 	// While on, keep the last parent context snapshot for the run record. Collapsing a

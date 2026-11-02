@@ -31,7 +31,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PROFILE = ROOT / "learn" / "code" / "profile" / "models.json"
 HOST = "127.0.0.1"
-PORT = 8002
+PORT = 8001
 ALIAS = "Mellum2.1-12B-A2.5B-Thinking"
 PIDFILE = Path(tempfile.gettempdir()) / "llamacpp-mellum.pid"
 LOGFILE = Path(tempfile.gettempdir()) / "llamacpp-mellum.log"

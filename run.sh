@@ -34,17 +34,17 @@ draw_bar() {   # $1 done MB, $2 total MB
 
 start_server() {
     # Already serving? Go straight to Pi.
-    if curl -s -m 3 http://127.0.0.1:8002/health 2>/dev/null | grep -q '"status":"ok"'; then
+    if curl -s -m 3 http://127.0.0.1:8001/health 2>/dev/null | grep -q '"status":"ok"'; then
         echo "[OK] the Mellum server is already up."
         return 0
     fi
     # Not healthy — clear the decks before starting, so a stray llama-server or
-    # something squatting on 8002 (e.g. a leftover uvicorn from a lesson) can't
+    # something squatting on 8001 (e.g. a leftover uvicorn from a lesson) can't
     # block the bind. This is why a re-run used to fail with "server did not start".
     local squatters
     uv run scripts/backend.py stop >/dev/null 2>&1 || true
     pkill -f llama-server 2>/dev/null || true
-    squatters="$(lsof -ti tcp:8002 2>/dev/null || true)"
+    squatters="$(lsof -ti tcp:8001 2>/dev/null || true)"
     [ -n "${squatters:-}" ] && kill $squatters 2>/dev/null || true
     sleep 1
     local have=0

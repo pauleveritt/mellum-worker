@@ -19,12 +19,12 @@ const copy = (from, to) => {
 	copyFileSync(from, to);
 };
 
-// A fixtures dir with the given admin-models fixture as admin-models.json.
-function fixtures(adminModels) {
+// A fixtures dir with the given props fixture as props.json, beside health and the model list.
+function fixtures(props) {
 	const dir = temp("mellum-cli-fix-");
+	copy(join(FIX, "health.json"), join(dir, "health.json"));
 	copy(join(FIX, "v1-models.json"), join(dir, "v1-models.json"));
-	copy(join(FIX, adminModels), join(dir, "admin-models.json"));
-	copy(join(FIX, "global-settings.json"), join(dir, "global-settings.json"));
+	copy(join(FIX, props), join(dir, "props.json"));
 	return dir;
 }
 
@@ -34,10 +34,10 @@ function home() {
 	return dir;
 }
 
-function run(args, { adminModels = "admin-models-match.json", script = SCRIPT, env = {} } = {}) {
+function run(args, { props = "props.json", script = SCRIPT, env = {} } = {}) {
 	return spawnSync(process.execPath, [script, ...args], {
 		encoding: "utf8",
-		env: { ...process.env, HOME: home(), MELLUM_CHECK_FIXTURES: fixtures(adminModels), ...env },
+		env: { ...process.env, HOME: home(), MELLUM_CHECK_FIXTURES: fixtures(props), ...env },
 	});
 }
 
@@ -49,21 +49,25 @@ test("check --json on the matching fixtures exits 0 with parseable findings and 
 	assert.equal(out.baseUrl, "http://127.0.0.1:8001/v1");
 	assert.ok(Array.isArray(out.findings) && out.findings.length > 0);
 	assert.deepEqual(out.findings.filter((f) => f.level === "fail"), []);
-	assert.equal(out.findings.find((f) => f.id === "settings").level, "ok");
+	assert.equal(out.findings.find((f) => f.id === "server").level, "ok");
+	assert.equal(out.findings.find((f) => f.id === "model").level, "ok");
+	assert.equal(out.findings.find((f) => f.id === "context").level, "ok");
 });
 
-test("check --json on the drift fixture exits 1 and reports the settings fail with the PUT to run", () => {
-	const r = run(["check", "--json"], { adminModels: "admin-models-drift.json" });
+test("check --json on a low context window exits 1 and reports the context fail with a relaunch fix, no PUT", () => {
+	const r = run(["check", "--json"], { props: "props-low.json" });
 	assert.equal(r.status, 1, r.stderr);
-	const settings = JSON.parse(r.stdout).findings.find((f) => f.id === "settings");
-	assert.equal(settings.level, "fail");
-	assert.match(settings.fix, /^curl -s -X PUT http:\/\/127\.0\.0\.1:8001\/admin\/api\/models\//);
+	const context = JSON.parse(r.stdout).findings.find((f) => f.id === "context");
+	assert.equal(context.level, "fail");
+	assert.match(context.message, /below the measured 50000/);
+	assert.match(context.fix, /relaunch/);
+	assert.doesNotMatch(context.fix, /curl -X PUT/);
 });
 
 test("check without --json prints the findings as text, fails first", () => {
-	const r = run(["check"], { adminModels: "admin-models-drift.json" });
+	const r = run(["check"], { props: "props-low.json" });
 	assert.equal(r.status, 1);
-	assert.match(r.stdout, /^FAIL settings: model settings differ/);
+	assert.match(r.stdout, /^FAIL context: context window 32768 is below the measured 50000/);
 	assert.match(r.stdout, /checks ok\n?$/);
 });
 
@@ -89,8 +93,7 @@ test("installed under node_modules, the CLI runs from a mirror in the temp dir",
 	const files = [
 		"package.json",
 		"scripts/mellum.mjs",
-		"templates/omlx-model-settings.json",
-		"templates/pi/models.omlx.json",
+		"templates/llama-model-settings.json",
 		...readdirSync(join(ROOT, "extensions")).filter((f) => f.endsWith(".ts")).map((f) => `extensions/${f}`),
 	];
 	for (const f of files) copy(join(ROOT, f), join(pkg, f));
@@ -99,6 +102,7 @@ test("installed under node_modules, the CLI runs from a mirror in the temp dir",
 	assert.equal(r.status, 0, r.stderr);
 	assert.equal(JSON.parse(r.stdout).host, "pi");
 	assert.ok(existsSync(join(tmp, `mellum-worker-${version}`, "extensions", "mellum-check.ts")), "mirror written under the temp dir");
+	assert.ok(existsSync(join(tmp, `mellum-worker-${version}`, "templates", "llama-model-settings.json")), "the llama settings template is mirrored");
 	const cwd = project("servers");
 	const l = learnRun(["learn", "--json", "--file", cwd.runs], { cwd: cwd.dir, script: join(pkg, "scripts/mellum.mjs"), env: { TMPDIR: tmp } });
 	assert.equal(l.status, 0, l.stderr);

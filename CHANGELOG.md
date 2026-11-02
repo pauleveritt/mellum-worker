@@ -40,6 +40,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The local llama-server now runs on port `:8001`** (the port oMLX used to
+  hold): `scripts/backend.py`, `run.sh` and the course profile target `:8001`.
+- **`/mellum check` validates the llama-server you actually run**, not oMLX. It
+  reads `GET /health` (up), `GET /v1/models` (the model is served) and
+  `GET /props` (context window at least 50000), and prints a `backend.py` command
+  to fix a mismatch — no admin API, no `PUT`, no oMLX. The activation check is a
+  one-shot `/health` probe.
+- **Auto-compaction is no longer blocked while the worker is on.** Pi compacts as
+  usual; the mode keeps its on-marker across a compaction, so there is no need to
+  `/mellum off` before a long turn.
 - **Getting Started leads with the worker.** "Working With Pi" now introduces
   `/mellum` first, as the core the whole recipe builds on, with `/remedy` and
   `/lesson` presented as the course commands built on it; the `/lesson`

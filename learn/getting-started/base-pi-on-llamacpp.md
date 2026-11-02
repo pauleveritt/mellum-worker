@@ -101,7 +101,7 @@ uv run scripts/backend.py status
 
 The first `start` downloads `Q4_K_M` through llama.cpp's `-hf`, so it takes a
 while; the command waits for health and prints the pid and log path. `status`
-then reports `up on 127.0.0.1:8002` and its `n_ctx`: 50176 on this machine,
+then reports `up on 127.0.0.1:8001` and its `n_ctx`: 50176 on this machine,
 because the server pads the 50,000 it was asked for.
 
 The settings become llama.cpp's flags: `-c 50000` from `context`, and the

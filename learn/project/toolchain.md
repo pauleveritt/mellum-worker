@@ -25,7 +25,7 @@ from it, and `tests/backend-profile.test.mjs` fails when the two disagree.
 | --- | --- |
 | `uv run scripts/backend.py serve` | `llama-server` in the foreground |
 | `uv run scripts/backend.py start` | background, pidfile and log, waits for health |
-| `uv run scripts/backend.py status` | `up`/`down` on `127.0.0.1:8002`, with `n_ctx` |
+| `uv run scripts/backend.py status` | `up`/`down` on `127.0.0.1:8001`, with `n_ctx` |
 | `uv run scripts/backend.py stop` | stops the background server |
 | `uv run scripts/backend.py chat "…"` | one request with the settings as parameters |
 | `uv run scripts/backend.py profile` | rewrites the private Pi profile |

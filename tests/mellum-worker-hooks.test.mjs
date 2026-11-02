@@ -3,7 +3,7 @@ import test from "node:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import install from "../extensions/mellum-worker.ts";
-import { checkSetup, formatFindings, loadExpected, providerEntry } from "../extensions/mellum-check.ts";
+import { checkSetup, formatFindings, loadExpected } from "../extensions/mellum-check.ts";
 
 // No test reads or writes the real ~/.pi/agent: activation reads $HOME/.pi/agent/models.json
 // for the server URL, and the run record defaults to $HOME/.pi/agent.
@@ -13,7 +13,7 @@ const noServer = async () => {
 	throw new TypeError("fetch failed: no server in tests");
 };
 
-const MODEL = { provider: "omlx", id: "Mellum2.1-12B-A2.5B-Thinking-6bit" };
+const MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
 
 function fakePi({ registryHasModel = true } = {}) {
 	const handlers = {};
@@ -53,6 +53,8 @@ test("the thin worker installs no guard hooks, and its tool_call/turn_end never 
 	const { handlers } = fakePi();
 	// Guards (loop breaker, empty-turn nudge, …) are remedy units now; the worker adds none.
 	assert.equal(handlers.agent_before_settle, undefined, "no agent_before_settle hook");
+	// Auto-compaction now runs while the mode is on; the worker registers no cancel hook.
+	assert.equal(handlers.session_before_compact, undefined, "no session_before_compact hook");
 	modeIsOff(handlers);
 	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "tool_call never blocks");
 	assert.equal(handlers.turn_end(emptyTurn), undefined, "turn_end never nudges");
@@ -437,9 +439,10 @@ async function recordLines(body) {
 }
 
 const offMarkers = (calls) => calls.sendMessage.filter((m) => m.content === "[mellum-worker off]").length;
-// The thin worker has no guards to probe, so the mode is read through the compaction refusal:
-// active + an auto compaction returns { cancel: true }, off returns undefined. No side effects.
-const modeOn = (handlers) => handlers.session_before_compact?.({ reason: "auto" }, { ui: { notify: () => {} } })?.cancel === true;
+// The thin worker has no compaction hook now (auto-compaction runs while the mode is on), so the
+// mode is read through before_provider_request: it rewrites the payload while on and returns
+// undefined while off.
+const modeOn = (handlers) => handlers.before_provider_request({ payload: { messages: [] } }, { ui: { notify: () => {} } }) !== undefined;
 const modeIsOff = (handlers) => assert.equal(modeOn(handlers), false, "mode is off");
 const modeIsOn = (handlers, msg = "mode is on") => assert.ok(modeOn(handlers), msg);
 
@@ -530,7 +533,7 @@ test("without a UI, a missing Mellum model is reported on stderr and the mode st
 	h.ctx.modelRegistry.find = () => undefined;
 	const lines = await captureStderr(() => h.mellum("fix it"));
 	assert.equal(lines.length, 1, "one stderr line");
-	assert.match(lines[0], /omlx\/Mellum2\.1-12B-A2\.5B-Thinking-6bit not found/);
+	assert.match(lines[0], /llamacpp\/Mellum2\.1-12B-A2\.5B-Thinking not found/);
 	modeIsOff(h.handlers);
 });
 
@@ -549,17 +552,16 @@ test("with a UI, a missing Mellum model is a notify error and nothing goes to st
 const FIX = new URL("./fixtures/check/", import.meta.url);
 const fixtureJson = (name) => JSON.parse(readFileSync(new URL(name, FIX), "utf8"));
 const response = (body, status = 200) => ({ ok: status < 300, status, json: async () => body });
-const DRIFT_WARNING =
-	"Mellum server settings differ: max_context_window 32768 (expected 56000), turboquant_kv_enabled true (expected false). Run /mellum check.";
+const LOW_CTX_WARNING = "the llama-server context window is 32768, below the measured 50000. Run /mellum check.";
 
-// A fake oMLX that answers the three GETs from the fixtures and records every call.
-function fakeServer(adminModels = "admin-models-drift.json") {
+// A fake llama-server that answers /health, /props and /v1/models from the fixtures and records every call.
+function fakeServer(props = "props-low.json") {
 	const calls = [];
 	const fetch = async (url, init) => {
 		const u = String(url);
 		calls.push({ url: u, method: init?.method ?? "GET" });
-		if (u.endsWith("/admin/api/models")) return response(fixtureJson(adminModels));
-		if (u.endsWith("/admin/api/global-settings")) return response(fixtureJson("global-settings.json"));
+		if (u.endsWith("/health")) return response(fixtureJson("health.json"));
+		if (u.endsWith("/props")) return response(fixtureJson(props));
 		if (u.endsWith("/v1/models")) return response(fixtureJson("v1-models.json"));
 		return response({}, 404);
 	};
@@ -584,73 +586,45 @@ async function withHome(models, body) {
 
 const warnings = (calls) => calls.notify.filter(([, l]) => l === "warning");
 
-test("activation with drifted server settings warns once with the exact message, and Mode still turns on", async () => {
-	const server = fakeServer("admin-models-drift.json");
+test("activation with a low context window warns once with the exact message, and Mode still turns on", async () => {
+	const server = fakeServer("props-low.json");
 	const { handlers, calls, mellum } = recordingPi({ mode: "tui", fetch: server.fetch });
 	await mellum("on");
-	assert.deepEqual(calls.notify.filter(([m]) => m.startsWith("Mellum server settings differ")), [[DRIFT_WARNING, "warning"]]);
-	assert.deepEqual(server.calls, [{ url: "http://127.0.0.1:8001/admin/api/models", method: "GET" }], "one admin GET, nothing else");
+	assert.deepEqual(calls.notify.filter(([m]) => m.startsWith("the llama-server")), [[LOW_CTX_WARNING, "warning"]]);
+	assert.deepEqual(
+		server.calls,
+		[
+			{ url: "http://127.0.0.1:8001/health", method: "GET" },
+			{ url: "http://127.0.0.1:8001/props", method: "GET" },
+		],
+		"one /health and one /props GET, nothing else",
+	);
 	modeIsOn(handlers);
 });
 
-test("activation with matching server settings warns nothing", async () => {
-	const server = fakeServer("admin-models-match.json");
+test("activation against a healthy server at the measured context warns nothing", async () => {
+	const server = fakeServer("props.json");
 	const { calls, mellum } = recordingPi({ mode: "tui", fetch: server.fetch });
 	await mellum("on");
 	assert.deepEqual(warnings(calls), []);
-	assert.equal(server.calls.length, 1);
+	assert.equal(server.calls.length, 2);
 });
 
-test("activation ignores server values the client's request overrides (max_tokens, thinking, penalties)", async () => {
-	const admin = fixtureJson("admin-models-match.json");
-	Object.assign(admin.models[0].settings, { max_tokens: 16384, forced_ct_kwargs: null, enable_thinking: false, presence_penalty: 0.5 });
-	const { calls, mellum } = recordingPi({ mode: "tui", fetch: async () => response(admin) });
+test("activation warns when the server does not report status ok", async () => {
+	const fetch = async (url) => (String(url).endsWith("/health") ? response({ status: "loading" }) : response(fixtureJson("props.json")));
+	const { calls, mellum } = recordingPi({ mode: "tui", fetch });
 	await mellum("on");
-	assert.deepEqual(warnings(calls), []);
-	const rec = await withRunsFile(async () => {
-		const { handlers, mellum: m } = recordingPi({ mode: "tui", fetch: async () => response(admin) });
-		await m("on");
-		handlers.context({ messages: snapshot });
-		await m("off");
-	});
-	assert.deepEqual(rec.server, { match: true, diffs: [] });
+	assert.deepEqual(warnings(calls).map(([m]) => m), ["the llama-server did not report status ok. Run /mellum check."]);
 });
 
-test("the three server rules warn on activation and mark the record; their near-misses do not", async () => {
-	const withSettings = (over) => {
-		const admin = fixtureJson("admin-models-match.json");
-		Object.assign(admin.models[0].settings, over);
-		return admin;
-	};
-	const activate = async (over) => {
-		const { calls, mellum } = recordingPi({ mode: "tui", fetch: async () => response(withSettings(over)) });
-		await mellum("on");
-		return warnings(calls).map(([m]) => m);
-	};
-	assert.deepEqual(await activate({ forced_ct_kwargs: ["enable_thinking"], enable_thinking: false }), [
-		"Mellum server settings differ: enable_thinking false (expected true). Run /mellum check.",
-	]);
-	assert.deepEqual(await activate({ force_sampling: true, temperature: 0.6 }), ["Mellum server settings differ: temperature 0.6 (expected 1). Run /mellum check."]);
-	assert.deepEqual(await activate({ thinking_budget_enabled: true }), ["Mellum server settings differ: thinking_budget_enabled true (expected false). Run /mellum check."]);
-	assert.deepEqual(await activate({ enable_thinking: false }), [], "not forced: the request wins");
-	assert.deepEqual(await activate({ force_sampling: false, temperature: 0.6 }), [], "sampling not forced");
-	const rec = await withRunsFile(async () => {
-		const { handlers, mellum } = recordingPi({ mode: "tui", fetch: async () => response(withSettings({ max_tool_result_tokens: 4000 })) });
-		await mellum("on");
-		handlers.context({ messages: snapshot });
-		await mellum("off");
-	});
-	assert.deepEqual(rec.server, { match: false, diffs: [{ key: "max_tool_result_tokens", expected: null, actual: 4000 }] });
-});
-
-test("the activation check uses the baseUrl of the Pi omlx provider", async () => {
+test("the activation check uses the baseUrl of the Pi llamacpp provider", async () => {
 	const models = fixtureJson("pi-models.json");
-	models.providers.omlx.baseUrl = "http://127.0.0.1:9999/v1";
+	models.providers.llamacpp.baseUrl = "http://127.0.0.1:9999/v1";
 	await withHome(models, async () => {
-		const server = fakeServer();
+		const server = fakeServer("props.json");
 		const { mellum } = recordingPi({ mode: "tui", fetch: server.fetch });
 		await mellum("on");
-		assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:9999/admin/api/models"]);
+		assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:9999/health", "http://127.0.0.1:9999/props"]);
 	});
 });
 
@@ -674,11 +648,11 @@ test("an unreachable server is silent on activation, with or without a UI", asyn
 });
 
 test("the one-shot and headless activations run the check too; without a UI the warning goes to stderr", async () => {
-	const oneShot = fakeServer();
+	const oneShot = fakeServer("props-low.json");
 	const a = recordingPi({ mode: "tui", hasUI: true, fetch: oneShot.fetch });
 	await a.mellum("fix it");
-	assert.deepEqual(a.calls.notify.filter(([m]) => m === DRIFT_WARNING), [[DRIFT_WARNING, "warning"]]);
-	const headless = fakeServer();
+	assert.deepEqual(a.calls.notify.filter(([m]) => m === LOW_CTX_WARNING), [[LOW_CTX_WARNING, "warning"]]);
+	const headless = fakeServer("props-low.json");
 	const b = recordingPi({ mode: "json", hasUI: false, fetch: headless.fetch });
 	const saved = process.env.MELLUM_MODE;
 	process.env.MELLUM_MODE = "1";
@@ -689,11 +663,11 @@ test("the one-shot and headless activations run the check too; without a UI the 
 		if (saved === undefined) delete process.env.MELLUM_MODE;
 		else process.env.MELLUM_MODE = saved;
 	}
-	assert.deepEqual(lines, [DRIFT_WARNING]);
-	assert.equal(headless.calls.length, 1);
+	assert.deepEqual(lines, [LOW_CTX_WARNING]);
+	assert.equal(headless.calls.length, 2);
 });
 
-test("the run record carries server: match false with the diffs, true when they match, null when unreadable", async () => {
+test("the run record carries server: up with the context window, and up null when unreachable", async () => {
 	const span = async (fetch) =>
 		withRunsFile(async () => {
 			const { handlers, mellum } = recordingPi({ mode: "tui", fetch });
@@ -701,32 +675,22 @@ test("the run record carries server: match false with the diffs, true when they 
 			handlers.context({ messages: snapshot });
 			await mellum("off");
 		});
-	const drift = await span(fakeServer("admin-models-drift.json").fetch);
-	assert.deepEqual(drift.server, {
-		match: false,
-		diffs: [
-			{ key: "max_context_window", expected: 56000, actual: 32768 },
-			{ key: "turboquant_kv_enabled", expected: false, actual: true },
-		],
-	});
-	assert.deepEqual((await span(fakeServer("admin-models-match.json").fetch)).server, { match: true, diffs: [] });
-	assert.deepEqual((await span(noServer)).server, { match: null, diffs: [] });
-	assert.deepEqual((await span(async () => response({}, 401))).server, { match: null, diffs: [] });
+	assert.deepEqual((await span(fakeServer("props-low.json").fetch)).server, { up: true, nCtx: 32768 });
+	assert.deepEqual((await span(fakeServer("props.json").fetch)).server, { up: true, nCtx: 50176 });
+	assert.deepEqual((await span(noServer)).server, { up: null });
+	assert.deepEqual((await span(async () => response({}, 401))).server, { up: null });
 });
 
-// The text /mellum check should print for the drift fixture with HOME holding pi-models.json.
-function expectedCheckText(adminModels) {
+// The text /mellum check should print, built from the same fixtures the fake server answers.
+function expectedCheckText(props) {
 	const ok = (value) => ({ ok: true, value });
-	const template = providerEntry("pi", JSON.parse(readFileSync(new URL("../templates/pi/models.omlx.json", import.meta.url), "utf8")));
 	return formatFindings(
 		checkSetup(
 			{
 				baseUrl: "http://127.0.0.1:8001/v1",
+				health: ok(fixtureJson("health.json")),
+				props: ok(fixtureJson(props)),
 				models: ok(fixtureJson("v1-models.json")),
-				adminModels: ok(fixtureJson(adminModels)),
-				global: ok(fixtureJson("global-settings.json")),
-				provider: { host: "pi", entry: providerEntry("pi", fixtureJson("pi-models.json")) },
-				template,
 			},
 			loadExpected(),
 		),
@@ -735,11 +699,11 @@ function expectedCheckText(adminModels) {
 
 test("/mellum check notifies the findings, GETs only, and never turns Mode on", async () => {
 	await withHome(fixtureJson("pi-models.json"), async () => {
-		const server = fakeServer("admin-models-drift.json");
+		const server = fakeServer("props-low.json");
 		const { handlers, calls, mellum } = recordingPi({ mode: "tui", hasUI: true, fetch: server.fetch });
 		await mellum("check");
-		const text = expectedCheckText("admin-models-drift.json");
-		assert.match(text, /^FAIL settings/);
+		const text = expectedCheckText("props-low.json");
+		assert.match(text, /^FAIL context/);
 		assert.deepEqual(calls.notify, [[text, "error"]]);
 		assert.deepEqual(server.calls.map((c) => c.method), ["GET", "GET", "GET"]);
 		assert.deepEqual(calls.setModel, [], "no model switch");
@@ -750,7 +714,7 @@ test("/mellum check notifies the findings, GETs only, and never turns Mode on", 
 
 test("/mellum check without a UI prints the findings to stdout", async () => {
 	await withHome(fixtureJson("pi-models.json"), async () => {
-		const server = fakeServer("admin-models-match.json");
+		const server = fakeServer("props.json");
 		const { handlers, calls, mellum } = recordingPi({ mode: "print", hasUI: false, fetch: server.fetch });
 		const out = [];
 		const original = console.log;
@@ -760,7 +724,7 @@ test("/mellum check without a UI prints the findings to stdout", async () => {
 		} finally {
 			console.log = original;
 		}
-		assert.deepEqual(out, [expectedCheckText("admin-models-match.json")]);
+		assert.deepEqual(out, [expectedCheckText("props.json")]);
 		assert.deepEqual(calls.notify, []);
 		assert.deepEqual(calls.setModel, []);
 		modeIsOff(handlers);
@@ -974,11 +938,11 @@ test("/mellum learn re-reads AGENTS.md after yes: an edit that changes the lines
 });
 
 test("/mellum check <words> is a one-shot task, not the check", async () => {
-	const server = fakeServer("admin-models-match.json");
+	const server = fakeServer("props.json");
 	const { calls, mellum } = recordingPi({ mode: "tui", hasUI: true, fetch: server.fetch });
 	await mellum("check the export totals");
 	assert.equal(calls.setModel.length, 1, "Mode switched to Mellum");
-	assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:8001/admin/api/models"], "only the activation GET");
+	assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:8001/health", "http://127.0.0.1:8001/props"], "only the activation GETs");
 });
 
 // ---- /mellum last: the newest run as a Markdown table ----

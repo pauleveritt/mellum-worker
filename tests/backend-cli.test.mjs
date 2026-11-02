@@ -14,7 +14,7 @@ const run = (...args) => {
 
 const ARGV = [
   "llama-server", "-hf", "JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF:Q4_K_M",
-  "-a", "Mellum2.1-12B-A2.5B-Thinking", "--host", "127.0.0.1", "--port", "8002",
+  "-a", "Mellum2.1-12B-A2.5B-Thinking", "--host", "127.0.0.1", "--port", "8001",
   "-c", "50000", "-np", "1", "--jinja", "-fa", "auto",
   "-b", "512", "-ub", "512", "-ctk", "q8_0", "-ctv", "q8_0",
 ];

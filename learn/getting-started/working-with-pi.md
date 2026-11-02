@@ -145,8 +145,7 @@ the small local model and read how each run went.
 | `/mellum last` | The newest run at or under this directory (Mode or one-shot) as a table, with no model call |
 | `/mellum learn [n]` | Read the last `n` runs (default 10), name what went wrong, and suggest the `## Mellum` lines your `AGENTS.md` lacks |
 
-Auto-compaction is refused while the mode is on, so run `/mellum off` before a
-long main-model turn. `check`, `last` and `learn` also have terminal forms
+`check`, `last` and `learn` also have terminal forms
 (`node scripts/mellum.mjs …`).
 
 ## 7. The course commands, built on the worker: `/remedy` and `/lesson`
