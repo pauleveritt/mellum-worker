@@ -175,6 +175,10 @@ offered after `off` until you restart Pi (its hooks do stop).
 
 ### `/lesson`: the course inside Pi
 
+`/start` opens your next lesson, and on the first run of a fresh checkout it
+offers a pick-a-mode menu — **Standard** (code with Mellum, every remediation
+on), **Lesson** (the course), or **Challenge** (the graded run).
+
 `/lesson` opens a lesson hands-on: it moves Pi into the lesson's `project/<id>/`
 folder with a panel pinned above the prompt — the lesson, step by step, and its
 run results — while the prompt below stays yours. Page the panel with `←`/`→`
