@@ -4,6 +4,38 @@ This repo ships the measured "Mellum as a bounded coding worker" recipe for
 Pi and OpenCode. Read [`README.md`](README.md) first. The numbers come from
 the ladder (`ladder/`) and are recorded in `evals/`.
 
+## The architecture: Vanilla Pi, a thin worker, explicit remedies
+
+This is the design the project settled on. Hold it — do not quietly re-bundle it,
+and do not gatekeep it with "that's frozen" / "that's risky" when the direction
+is this. The friction, historically, was the agent, not the work.
+
+- **The floor is Vanilla Pi + the recorder — nothing else.** `--arm vanilla`
+  loads no worker extension, only the recorder. Every behaviour beyond plain Pi is
+  added explicitly and can be read and measured.
+- **The worker bundles NOTHING.** `extensions/mellum-worker.ts` (`/mellum`,
+  `MELLUM_MODE`) is only the command tool plus the mode machinery — switch to
+  Mellum, drop the pre-marker history (mode-integrity), track the span, write the
+  run record. It does **not** swap the system prompt, narrow the tools, add project
+  facts, or install any guard.
+- **Everything else is an explicit, additive remedy unit** under
+  `remedies/<kind>/` — `guard`, `nudge`, `context`, `prompt`, `tool`, `check`,
+  `workflow`. Switch them on with `/remedy` (live) or `--remedy` (a run); combine
+  them with a preset. Each is one small, inspectable file. The **prompt** is its
+  own kind: small fragments added one at a time, never a monolithic prompt swap.
+- **The presets are the RESULT of measurement, not an input.**
+  `remedies/presets/{easy,medium,hard}.json` are whichever units — added one at a
+  time from the floor and measured, reading the model's feed — make that tier
+  pass; not a stack inherited from the worker. `baseline-worker` is just the
+  explicit units that equal the old bundle, inspectable like any other preset.
+- **No magic, no coding to the eval.** A remedy must be agnostic: no suite path,
+  file, route or expected value (a unit that names `app.py` is void as evidence).
+  State as fact only what a run measured — a screen at n is a lead; a theory goes
+  in a dated research note until it is run. The hidden grader is the oracle.
+
+The recurring confusion this ends: **the worker is not a bundle of guards and a
+prompt. It is a command tool. The guards and the prompt are remedies.**
+
 ## Spec-driven development
 
 This project runs Superpowers SDD: brainstorm → spec → plan → execute →

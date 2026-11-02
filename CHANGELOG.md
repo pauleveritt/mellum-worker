@@ -6,6 +6,13 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The worker (`/mellum`, `MELLUM_MODE`) bundles nothing now.** It is purely the
+  command tool plus the mode machinery (switch to Mellum, drop the pre-marker
+  history, track the span, write the run record). It no longer swaps the system
+  prompt or narrows the tool list; the prompt, tool-narrowing, project facts and
+  the guards are all remedy units switched on with `/remedy` or a preset. AGENTS.md
+  documents the architecture (Vanilla Pi floor, thin worker, explicit remedies) so
+  it is not re-bundled. A new `--arm vanilla` runs the recorder-only floor.
 - **The Challenge section is reorganized into pages.** The index is now a hub
   (what AgentClinic is, the cumulative phase matrix, the score table, how to
   attempt), and **Easy**, **Medium**, **Hard** and **Remedies** each get their

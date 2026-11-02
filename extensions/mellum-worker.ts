@@ -17,17 +17,17 @@
  * Each activation GETs the server's model settings (1 s at most) and warns once when they
  * differ from the measured profile; the run record keeps the result as `server`.
  *
- * While on, before_provider_request rewrites the outgoing payload: the system message
- * becomes the worker prompt (prompts/mellum-worker.md, or $MELLUM_MODE_PROMPT), and the
- * messages are only those after the on-marker, minus Superpowers' bootstrap message.
+ * While on, before_provider_request keeps only the messages after the on-marker (minus
+ * Superpowers' bootstrap message) — the pre-marker history drop, so Mellum never sees the
+ * parent's earlier turns. It swaps nothing else: not the system prompt, not the tool list.
  * Earlier turns' reasoning_content is left in place: removing it made runs 60% slower
  * (ladder A12). The session keeps everything.
  *
- * This is the thin worker: mode machinery and the /mellum commands only. Remediation
- * (project facts, tool-narrowing, the loop breaker and empty-turn nudge and the rest) and
- * the handoff collapse are remedy units under remedies/ now, combined through a preset;
- * the worker adds none of them itself. It keeps the pre-marker history drop, which protects
- * the mode's own on-marker (mode-integrity, not remediation).
+ * This is the thin worker: mode machinery and the /mellum commands only — it bundles NOTHING.
+ * The prompt, tool-narrowing, project facts, the loop breaker and empty-turn nudge and the
+ * rest, and the handoff collapse, are all remedy units under remedies/ now, combined through
+ * a preset; the worker adds none of them itself. It keeps only the pre-marker history drop,
+ * which protects the mode's own on-marker (mode-integrity, not remediation).
  *
  * Headless: MELLUM_MODE=1 activates at session start (the ladder's "mode" runner).
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
@@ -35,10 +35,9 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { adminBaseOf, checkSetup, fetchJson, formatFindings, gatherInputs, loadExpected, readProvider, serverCheck, type ServerCheck } from "./mellum-check.ts";
 import { type ProjectFacts } from "./mellum-facts.ts";
-import { type Activation, type Msg, promptVersionOf, runRecord, textOf, spanStats, type SpanStats } from "./mellum-record.ts";
+import { type Activation, type Msg, runRecord, textOf, spanStats, type SpanStats } from "./mellum-record.ts";
 import { formatMerge, formatReport, learnFromTexts, mergeSuggestion, modeRunsFile, overCap, recordFiles } from "./mellum-learn.ts";
 import { formatLast, pickLast } from "./mellum-last.ts";
 
@@ -276,12 +275,6 @@ function runsFile(): string | undefined {
 	return file === undefined ? undefined : resolve(file);
 }
 
-function loadPrompt(): string {
-	const here = dirname(fileURLToPath(import.meta.url));
-	const file = process.env.MELLUM_MODE_PROMPT || resolve(here, "..", "prompts", "mellum-worker.md");
-	return readFileSync(file, "utf8").trim();
-}
-
 /**
  * Reports a problem the user must see. Without a UI (`pi -p`, `--mode json`) Pi's notify
  * is a no-op, so the message goes to stderr instead. Never throws.
@@ -424,7 +417,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		}
 		const label = `${model.provider}/${model.id}`;
 		const previous = { model: ctx.model, tools: pi.getActiveTools() };
-		prompt = loadPrompt();
 		// Runs while the model switches; awaited below, so it adds at most its own timeout.
 		const pendingServer = checkServer();
 		const switched = await pi.setModel(model);
@@ -433,7 +425,6 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			return;
 		}
 		saved = previous;
-		pi.setActiveTools(WORKER_TOOLS);
 		active = true;
 		span = { startedAt: Date.now(), requests: 0, toolCalls: 0, outputTokens: 0 };
 		activeModel = label;
@@ -441,14 +432,14 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		turnsSinceContext = [];
 		host = typeof ctx.mode === "string" ? ctx.mode : "unknown";
 		activation = how;
-		promptVersion = promptVersionOf(prompt);
+		promptVersion = "none"; // the worker applies no prompt; it is a remedy unit now
 		interactive = notify;
 		warnedMissing = false;
 		server = await pendingServer;
 		const serverWarn = serverWarning(server, loadExpected().nCtxMin);
 		if (serverWarn) warn(ctx, serverWarn, "warning");
 		if (notify) pi.sendMessage({ customType: "mellum-worker", content: `${MARK_ON} facts: ${spanFacts.source}`, display: true }, { deliverAs: "nextTurn" });
-		if (notify) ctx.ui?.notify?.(`mellum-worker on: ${label}, tools ${WORKER_TOOLS.join(",")}`, "info");
+		if (notify) ctx.ui?.notify?.(`mellum-worker on: ${label}`, "info");
 	}
 
 	async function deactivate(ctx: any) {
@@ -584,9 +575,13 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	pi.on("before_provider_request", (event: any, ctx: any) => {
 		if (!active) return undefined;
 		span.requests += 1;
+		// The worker swaps nothing into the payload now — not the prompt, not the tools. It only
+		// drops the pre-marker history (mode-integrity, so Mellum never sees the parent's turns).
+		// The prompt and tool-narrowing are remedy units (context/use-short-prompt,
+		// context/narrow-tools) a preset switches on, like every other remediation.
 		const out = filterForMellum(event.payload, prompt, {
 			expectMarker: interactive,
-			keepSystem: process.env.MELLUM_WORKER_PROMPT === "pi",
+			keepSystem: true,
 			stripThinking: process.env.MELLUM_STRIP_THINKING === "1",
 		});
 		if (out?.mellumModeMarkerMissing) {
