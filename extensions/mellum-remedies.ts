@@ -167,11 +167,13 @@ function readRecords(): any[] {
 	}
 }
 
-/** One line for the picker: tier, passes, turns, wall, remedy count, when. */
+/** One line for the picker: tier, base (worker/vanilla) + remedy count, passes, turns, wall, when. */
 function recordLabel(r: any, i: number): string {
 	const date = String(r.at ?? "").replace("T", " ").slice(0, 16);
 	const rem = r.remedies?.length ?? 0;
-	return `${i + 1}. ${r.tier} · ${r.passed}/${r.total} · ${r.turns} turns · ${Math.round(r.wall)} s · ${rem} remed${rem === 1 ? "y" : "ies"} · ${date}`;
+	const base = r.arm === "bare" ? "vanilla" : "worker";
+	const stack = rem ? `${base}+${rem}` : base;
+	return `${i + 1}. ${r.tier} · ${stack} · ${r.passed}/${r.total} · ${r.turns} turns · ${Math.round(r.wall)} s · ${date}`;
 }
 
 /** Run a command to completion, collecting stdout+stderr, never throwing. */
@@ -260,16 +262,18 @@ async function submitChallenge(ctx: any): Promise<void> {
 	ctx.ui.notify(`submitted ${picked.length} run${picked.length === 1 ? "" : "s"} — ${prUrl}`, "info");
 }
 
-/** Run a challenge tier through the harness `runs` times with `units` loaded, score it, record the score. */
-function runChallenge(tier: string, units: string[], runs: number, ctx: any): void {
+/** Run a challenge tier through the harness `runs` times on `arm` with `units` loaded, score and record it. */
+function runChallenge(tier: string, units: string[], runs: number, arm: string, ctx: any): void {
 	if (!existsSync(join(ROOT, "learn", "code", "harness.py"))) {
 		return ctx.ui.notify("/challenge runs from a mellum-worker checkout (no learn/code/harness.py here)", "error");
 	}
 	const runsDir = mkdtempSync(join(tmpdir(), `challenge-${tier}-`));
-	const argv = ["run", "python", "learn/code/harness.py", "run", "--suite", tier, "--grade", "--repeat", String(runs), "--runs-dir", runsDir];
+	// --arm worker turns the worker on (MELLUM_MODE=1); --arm bare is vanilla Pi. /remedy units stack on top.
+	const argv = ["run", "python", "learn/code/harness.py", "run", "--suite", tier, "--arm", arm, "--grade", "--repeat", String(runs), "--runs-dir", runsDir];
 	if (units.length) argv.push("--remedy", units.join(","));
-	const on = `${units.length} remed${units.length === 1 ? "y" : "ies"} on`;
-	ctx.ui?.notify?.(`running the ${tier} challenge — n=${runs}, ${on} — a full suite on the real model, so give it a while.`, "info");
+	const base = arm === "worker" ? "worker" : "vanilla Pi";
+	const on = `${base}${units.length ? ` + ${units.length} remed${units.length === 1 ? "y" : "ies"}` : ""}`;
+	ctx.ui?.notify?.(`running the ${tier} challenge — ${on}, n=${runs} — a full suite on the real model, so give it a while.`, "info");
 	const child = spawn("uv", argv, { cwd: ROOT, stdio: ["ignore", "pipe", "pipe"] });
 	running.add(child);
 	let tail = "";
@@ -303,7 +307,7 @@ function runChallenge(tier: string, units: string[], runs: number, ctx: any): vo
 			return;
 		}
 		const rows = s.rows.map((r) => ({ passed: r.passed, turns: r.turns, wall: Math.round(r.wall) }));
-		recordChallenge({ tier, remedies: units, runs, passed: s.passed, total: s.total, turns: s.turns, wall: Math.round(s.wall), rows, at: new Date().toISOString() });
+		recordChallenge({ tier, arm, remedies: units, runs, passed: s.passed, total: s.total, turns: s.turns, wall: Math.round(s.wall), rows, at: new Date().toISOString() });
 		const head = `${tier} challenge · n=${runs} · ${on}`;
 		const summary = `${s.passed}/${s.total} passed · ${s.turns} turns · ${Math.round(s.wall)} s wall`;
 		const perRep = s.total > 1
@@ -394,20 +398,22 @@ export default async function (pi: any): Promise<void> {
 	pi.registerCommand("challenge", {
 		description: "Run a challenge tier with the remedies you have on and score it (passes, turns, wall): /challenge easy|medium|hard [n=1]; /challenge submit opens a PR with the runs you choose",
 		getArgumentCompletions: (prefix: string) => {
-			const base = [...TIERS.flatMap((t) => [t, `${t} n=3`, `${t} n=5`]), "submit"];
+			const base = [...TIERS.flatMap((t) => [t, `${t} n=3`, `${t}:vanilla`]), "submit"];
 			const items = base.filter((c) => c.startsWith(prefix)).map((c) => ({ value: c, label: c }));
 			return items.length ? items : null;
 		},
 		handler: async (args: string, ctx: any) => {
 			const toks = args.trim().split(/\s+/).filter(Boolean);
 			if (toks[0] === "submit") return submitChallenge(ctx);
-			const tier = toks.find((t) => TIERS.includes(t));
+			const tierTok = toks.find((t) => /^(easy|medium|hard)(:vanilla)?$/.test(t));
 			const nTok = toks.find((t) => /^n=\d+$/.test(t));
 			const runs = nTok ? Math.max(1, Number(nTok.slice(2))) : 1;
-			if (!tier) {
-				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the real model with the remedies you have on (${on.size} on now); n sets how many runs, default 1. /challenge submit opens a PR with the runs you choose`, "info");
+			if (!tierTok) {
+				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the worker with the remedies you have on (${on.size} on now); add :vanilla (e.g. easy:vanilla) for bare Pi with no worker; n sets how many runs, default 1. /challenge submit opens a PR with the runs you choose`, "info");
 			}
-			runChallenge(tier, [...on], runs, ctx);
+			const vanilla = tierTok.endsWith(":vanilla");
+			const tier = vanilla ? tierTok.slice(0, -":vanilla".length) : tierTok;
+			runChallenge(tier, [...on], runs, vanilla ? "bare" : "worker", ctx);
 		},
 	});
 }

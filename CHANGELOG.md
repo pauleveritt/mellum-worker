@@ -14,10 +14,12 @@ Versions match git tags; pin one in both install lines.
 ### Added
 
 - **`/challenge <tier>` in a live Pi**: runs a challenge suite (`easy`, `medium`
-  or `hard`) through the harness on the real model with exactly the remedy units
-  you have switched on with `/remedy`, then reports the score — passes out of the
-  runs, the turns and the wall-clock, and each run's own turns and wall when you
-  ask for more than one. `n=` sets the run count and defaults to 1, so a bare
+  or `hard`) through the harness on the real model. It runs on the **worker**
+  with the remedy units you have switched on with `/remedy` stacked on top (add
+  `:vanilla`, e.g. `/challenge easy:vanilla`, for plain Pi with no worker), then
+  reports the score — passes out of the runs, the turns and the wall-clock, and
+  each run's own turns and wall when you ask for more than one. `n=` sets the run
+  count and defaults to 1, so a bare
   `/challenge easy` is a quick single run; `/challenge easy n=3` runs three. The
   run happens in the background and streams what the model does — each tool call
   as it makes it, with a live turn count in the footer — so a long run never

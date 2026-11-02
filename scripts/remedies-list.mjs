@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-export const PAGES = ["learn/challenge/index.md"];
+export const PAGES = ["learn/challenge/remedies.md"];
 const START = "<!-- remedies:start -->";
 const END = "<!-- remedies:end -->";
 const KINDS = ["guard", "nudge", "context", "tool", "check", "workflow"];

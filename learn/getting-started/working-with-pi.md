@@ -173,18 +173,19 @@ is on, the footer shows `remedies: N on`. A unit that adds a tool registers it
 the first time it is switched on; Pi cannot remove a tool, so the tool stays
 offered after `off` until you restart Pi (its hooks do stop).
 
-### `/challenge`: score a tier with the remedies you have on
+### `/challenge`: score a tier on the worker with the remedies you have on
 
 `/challenge <tier>` runs a challenge suite through the harness on the real
-model, with exactly the remedy units you have switched on, then scores the
-runs. It is how you see what a remedy stack buys: switch some units on with
+model. It runs on the **worker** (the shipped `/mellum` bundle), with the remedy
+units you have switched on stacked on top, then scores the runs. It is how you
+see what a remedy stack buys over the worker: switch some units on with
 `/remedy`, run `/challenge easy`, read the passes, the turns and the wall-clock.
 
 | Command | What it does |
 | --- | --- |
-| `/challenge easy` | Run the easy tier once (n=1) with the units you have on |
+| `/challenge easy` | Run the easy tier once (n=1) on the worker + the units you have on |
 | `/challenge medium n=3` | Run the medium tier three times |
-| `/challenge hard n=5` | Run the hard tier five times |
+| `/challenge easy:vanilla` | Run it on plain Pi, with no worker, for comparison |
 | `/challenge submit` | Pick scored runs and open a pull request with them |
 
 `n` sets how many runs and defaults to 1, so a bare `/challenge easy` is the

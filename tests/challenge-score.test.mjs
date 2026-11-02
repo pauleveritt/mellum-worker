@@ -85,7 +85,7 @@ test("completions offer each tier, its n= presets, and submit", async () => {
 	const easy = (await pi.commands.challenge.getArgumentCompletions("easy")).map((i) => i.value);
 	assert.ok(easy.includes("easy"));
 	assert.ok(easy.includes("easy n=3"));
-	assert.ok(easy.includes("easy n=5"));
+	assert.ok(easy.includes("easy:vanilla"));
 	const sub = (await pi.commands.challenge.getArgumentCompletions("sub")).map((i) => i.value);
 	assert.deepEqual(sub, ["submit"]);
 });
@@ -124,6 +124,6 @@ test("/challenge submit lists recorded runs to toggle, then confirms before any 
 		() => "Cancel", // decline the PR, so no git/gh runs
 	);
 	await withAgentDir(agent, () => pi.run("challenge", "submit"));
-	assert.ok(pi.ui.seen[0].some((x) => x.includes("easy · 1/1 · 42 turns")));
+	assert.ok(pi.ui.seen[0].some((x) => x.includes("easy · worker+1 · 1/1 · 42 turns")));
 	assert.ok(pi.ui.seen.at(-1).includes("Open PR"));
 });
