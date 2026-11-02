@@ -152,7 +152,7 @@ def _fmt_wall(w) -> str:
 
 def _stack_text(stack) -> str:
     if not stack:
-        return "— bare —"
+        return "vanilla Pi"
     return " · ".join(s.replace("tool/background-long-commands", "nonblock").replace("mellum-", "") for s in stack)
 
 
@@ -165,9 +165,9 @@ def _model_md(model) -> str:
 
 
 def _stack_md(stack) -> str:
-    """The stack as code chips (uniform, and the glossary skips code), or the bare marker."""
+    """The stack as code chips (uniform, and the glossary skips code), or vanilla Pi for no stack."""
     if not stack:
-        return "— bare —"
+        return "vanilla Pi"
     parts = [s.replace("tool/background-long-commands", "nonblock").replace("mellum-", "") for s in stack]
     return " · ".join(f"`{p}`" for p in parts)
 
@@ -204,15 +204,12 @@ def _run_rows(entries) -> list[str]:
 
 
 def render_page(entries) -> str:
-    suites = [s for s in SUITE_ORDER if any(e.get("suite") == s for e in entries)]
-    suites += sorted({e.get("suite") for e in entries if e.get("suite") and e.get("suite") not in SUITE_ORDER})
+    present = {e.get("suite") for e in entries if e.get("suite")}
+    suites = SUITE_ORDER + sorted(s for s in present if s not in SUITE_ORDER)
     lines = [
         "# Scoreboard",
         "",
-        "Every Mellum worker run ever measured, split by tier. Within a tier, **Records** rank by "
-        "pass rate first, then by the fastest pass — fewest turns, then least wall, because a "
-        "shorter pass is the better pass. A code change to an extension is a new **version** of the "
-        "same stack, so an improvement shows as a new row that can beat the old one.",
+        "Every Mellum worker run ever measured, split by tier.",
         "",
         "![A small robot posting run times on a leaderboard, stopwatch in hand](assets/illustrations/scoreboard.webp){ .illustration }",
         "",
@@ -222,15 +219,21 @@ def render_page(entries) -> str:
         " run, commit its entry file under `evals/scoreboard/entries/` — the page is rebuilt"
         " after merge.",
         "",
-        f"{len(entries)} runs recorded.",
+        "## Overview",
+        "",
+        f"{len(entries)} runs recorded. Within a tier, **Records** rank by pass rate first, then "
+        "by the fastest pass — fewest turns, then least wall, because a shorter pass is the better "
+        "pass. A code change to an extension is a new **version** of the same stack, so an "
+        "improvement shows as a new row that can beat the old one.",
     ]
     for suite in suites:
         sub = [e for e in entries if e.get("suite") == suite]
+        lines += ["", f"## {suite.capitalize()}", ""]
+        if not sub:
+            lines += ["No runs recorded yet.", ""]
+            continue
         passes = sum(1 for e in sub if e.get("passed"))
         lines += [
-            "",
-            f"## {suite.capitalize()}",
-            "",
             f"{len(sub)} runs, {passes} passed.",
             "",
             "**Records** — the fastest pass per stack and version.",
