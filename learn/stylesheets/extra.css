@@ -40,3 +40,25 @@
 [data-md-color-scheme="slate"] .md-typeset .evidence-badge--screen { color: #ffcc80; background: #3a2a10; }
 [data-md-color-scheme="slate"] .md-typeset .evidence-badge--conjecture { color: #bdc1c6; background: #2a2c2f; }
 .md-typeset .evidence-badge { white-space: nowrap; }
+
+/* ---------------------------------------------------------------------------
+   Uniform sidebar: every page reads as its own title + that page's TOC, like
+   the single-page sections (Pathologies, Scoreboard, Glossary). On desktop,
+   inside the active section we hide the inactive sibling pages so a multi-page
+   section (Getting Started, The Challenge, About) presents the same clean
+   title-header + table-of-contents as a one-page section. The breadcrumb
+   (navigation.path), the footer prev/next (navigation.footer) and each
+   section's index hub remain the way to move between and back up the pages.
+   Scoped to the wide-viewport sidebar only: the mobile drawer (< 76.25em)
+   keeps the full tree, which is its sole means of navigation.
+   --------------------------------------------------------------------------- */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary
+    .md-nav--primary
+    .md-nav__item--active.md-nav__item--section
+    > .md-nav
+    > .md-nav__list
+    > .md-nav__item:not(.md-nav__item--active) {
+    display: none;
+  }
+}
