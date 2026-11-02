@@ -40,6 +40,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **Getting Started leads with the worker.** "Working With Pi" now introduces
+  `/mellum` first, as the core the whole recipe builds on, with `/remedy` and
+  `/lesson` presented as the course commands built on it; the `/lesson`
+  description matches the hands-on panel (no stale slideshow keys).
 - **Lessons open hands-on, not as a slideshow.** `/lesson <id>` now drops you
   straight into `project/<id>/` with the live panel above a typeable prompt,
   instead of the full-screen one-screen-per-step deck. That deck is still there,
