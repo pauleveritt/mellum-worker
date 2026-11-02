@@ -318,10 +318,9 @@ used the Node calculator fixture: facts were measured headless only, and
 the interactive facts path (`/mellum on`, `/mellum <task>`, the
 `[mellum-worker on] facts:` line, the handoff's `facts:`) is unit-tested, not
 yet observed in a real Pi session (a probe on a Python fixture such as
-agentclinic-p1 would observe it). The refusal to auto-compact while on
-is unit-tested. Mellum Worker is loaded as a package extension; its payload filter rewrites the request it sees, and other packages' hooks may run before or after it. Load order was only verified for the `-e` form in the ladder. None of
-Superpowers, pi-subagents or context7 rewrites the payload today. Auto-compaction is refused while the mode is on
-(`/compact` still works); run `/mellum off` before a long parent turn.
+agentclinic-p1 would observe it). Mellum Worker is loaded as a package extension; its payload filter rewrites the request it sees, and other packages' hooks may run before or after it. Load order was only verified for the `-e` form in the ladder. None of
+Superpowers, pi-subagents or context7 rewrites the payload today. Auto-compaction runs
+as usual while the mode is on; the on-marker survives it (the pre-marker history drop).
 
 ## 4c. Records, learn and check
 

@@ -67,8 +67,7 @@ Pi switches to Mellum, runs the task, and switches back. For several tasks,
 `/mellum on`, type them as normal prompts, then `/mellum off`; your model
 gets one handoff block per span (summary line, files written, commands run,
 last output, Mellum's reply) instead of every edit. Run the tests yourself
-afterwards. Run `/mellum off` before a long main-model turn: auto-compaction
-is refused while Mode is on. `pi -p "/mellum <task>"` runs one task
+afterwards. `pi -p "/mellum <task>"` runs one task
 headlessly.
 
 Each span appends a JSON line to `~/.pi/agent/mellum-mode-runs.jsonl`
