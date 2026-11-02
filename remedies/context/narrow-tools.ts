@@ -3,8 +3,8 @@ import { narrowTools } from "../../extensions/mellum-worker.ts";
 import { keptTools, type PiLike, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Reaches for tools it uses badly (subagents, todo lists) instead of reading and editing",
-	does: "Keeps read, grep, find, ls, bash, edit and write, plus tools your units register; drops the rest",
+	pathology: "Reaches for tools it uses badly instead of reading and editing",
+	does: "Keeps the seven core tools; drops the rest",
 	lesson: "E6",
 	evidence: "part of the Baseline Worker; not measured on its own",
 };

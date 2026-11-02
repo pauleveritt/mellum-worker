@@ -5,8 +5,8 @@
  * start off, so the session is bare Pi until the learner turns something on:
  *
  *   /remedy                          a picker of every unit, marked on or off
- *   /remedy on guard/break-repeat-loops
- *   /remedy off guard/break-repeat-loops
+ *   /remedy on guard/repeat-loops
+ *   /remedy off guard/repeat-loops
  *   /remedy preset:easy              every unit in a preset
  *
  * A switch takes effect at the next tool call or request. A tool a unit adds is registered the

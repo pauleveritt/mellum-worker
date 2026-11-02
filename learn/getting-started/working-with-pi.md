@@ -164,8 +164,8 @@ until you switch something on.
 | Command | What it does |
 | --- | --- |
 | `/remedy` | A picker of every unit, marked on (`●`) or off (`○`); pick one to flip it |
-| `/remedy on guard/break-repeat-loops` | Switch one unit on |
-| `/remedy off guard/break-repeat-loops` | Switch it off |
+| `/remedy on guard/repeat-loops` | Switch one unit on |
+| `/remedy off guard/repeat-loops` | Switch it off |
 | `/remedy preset:easy` | Switch on every unit in a preset |
 
 A switch takes effect at the next tool call or model request. While any unit

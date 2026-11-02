@@ -1084,17 +1084,17 @@ def test_the_stall_limit_reaches_the_record_and_the_summary(tmp_path, capsys):
 # --remedy and --extension: remedy units and a learner's own extensions, loaded on top of the arm.
 
 def test_resolve_extras_maps_unit_names_and_expands_a_preset():
-    names, paths = harness.resolve_extras("guard/break-repeat-loops,nudge/nudge-empty-turn", [])
-    assert names == ["guard/break-repeat-loops", "nudge/nudge-empty-turn"]
-    assert paths == [harness.REMEDIES / "guard" / "break-repeat-loops.ts",
-                     harness.REMEDIES / "nudge" / "nudge-empty-turn.ts"]
+    names, paths = harness.resolve_extras("guard/repeat-loops,nudge/empty-turn", [])
+    assert names == ["guard/repeat-loops", "nudge/empty-turn"]
+    assert paths == [harness.REMEDIES / "guard" / "repeat-loops.ts",
+                     harness.REMEDIES / "nudge" / "empty-turn.ts"]
     names, paths = harness.resolve_extras("preset:baseline-worker", [])
     preset = json.loads((harness.REMEDIES / "presets" / "baseline-worker.json").read_text())
     assert names == preset and len(paths) == len(preset) and all(p.is_file() for p in paths)
 
 
 def test_resolve_extras_refuses_an_unknown_unit_and_lists_the_known_ones():
-    with pytest.raises(SystemExit, match="guard/break-repeat-loops"):
+    with pytest.raises(SystemExit, match="guard/repeat-loops"):
         harness.resolve_extras("guard/no-such-unit", [])
 
 
@@ -1121,7 +1121,7 @@ def test_the_parser_takes_remedy_and_repeatable_extension():
 def test_a_session_loads_the_extras_and_records_them(tmp_path):
     own = tmp_path / "my-unit.ts"
     own.write_text("export default () => {};\n")
-    names, paths = harness.resolve_extras("guard/break-repeat-loops", [own])
+    names, paths = harness.resolve_extras("guard/repeat-loops", [own])
     results = harness._run_sessions(
         harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
         pi_binary=str(FIX / "fake-pi-argv.sh"), repeat=1, grade_run=False,
@@ -1131,7 +1131,7 @@ def test_a_session_loads_the_extras_and_records_them(tmp_path):
     argv = (run_dir / "workspace" / "argv.txt").read_text().splitlines()
     assert str(paths[0]) in argv and str(own) in argv
     record = json.loads((run_dir / "run.json").read_text())
-    assert record["remedies"] == ["guard/break-repeat-loops"]
+    assert record["remedies"] == ["guard/repeat-loops"]
     assert [e["path"] for e in record["extensions"]] == [str(p) for p in paths]
     assert all(len(e["sha256"]) == 64 for e in record["extensions"])
 

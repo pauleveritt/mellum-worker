@@ -11,8 +11,8 @@ import { textOf } from "../../extensions/mellum-record.ts";
 import type { PiLike, UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "A delegated worker's every read, edit and command floods the parent's context",
-	does: "Collapses each finished [on…off] Mellum span into one handoff block (task, files, commands, final reply)",
+	pathology: "A delegated worker floods the parent's context",
+	does: "Collapses each finished span into one handoff block",
 	lesson: "—",
 	evidence: "delegation behaviour lifted from the worker; not measured on its own",
 };

@@ -69,7 +69,7 @@ exports a `meta` record (the pathology it fixes, what it does, its lesson and
 its evidence); the remedies table in [The Challenge](../challenge/index.md)
 is generated from those records.
 
-The smallest is a guard. This is `remedies/guard/break-repeat-loops.ts`,
+The smallest is a guard. This is `remedies/guard/repeat-loops.ts`,
 whole:
 
 ```ts
@@ -123,8 +123,8 @@ separated by commas; `--extension` loads an extension of your own, and can be
 repeated. An unknown name is refused before anything runs.
 
 ```bash
-uv run python learn/code/harness.py run --suite easy --remedy guard/break-repeat-loops
-uv run python learn/code/harness.py run --suite easy --remedy preset:easy,nudge/nudge-empty-turn
+uv run python learn/code/harness.py run --suite easy --remedy guard/repeat-loops
+uv run python learn/code/harness.py run --suite easy --remedy preset:easy,nudge/empty-turn
 uv run python learn/code/harness.py run --suite easy --extension path/to/yours.ts
 ```
 
@@ -179,7 +179,7 @@ extension or an MCP server has added tools. It is not measured on its own.
 A model can hang a whole run by searching the machine instead of its
 workspace: `grep -rl pattern /Users /var /tmp …` crawls everything and keeps
 the tool call open. The runaway search guard is now the
-`guard/stay-in-workspace` unit, part of `easy` and `baseline-worker`: it
+`guard/outside-workspace` unit, part of `easy` and `baseline-worker`: it
 blocks a recursive search that names a path outside the workspace. It covers
 searches only; a write by absolute path is not covered yet.
 

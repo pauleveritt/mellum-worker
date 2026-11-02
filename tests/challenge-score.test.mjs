@@ -116,7 +116,7 @@ test("/challenge submit lists recorded runs to toggle, then confirms before any 
 	const agent = mkdtempSync(join(tmpdir(), "agent-recs-"));
 	writeFileSync(
 		join(agent, "mellum-challenge-runs.jsonl"),
-		JSON.stringify({ tier: "easy", remedies: ["guard/break-repeat-loops"], runs: 1, passed: 1, total: 1, turns: 42, wall: 300, at: "2026-11-02T15:34:00.000Z" }) + "\n",
+		JSON.stringify({ tier: "easy", remedies: ["guard/repeat-loops"], runs: 1, passed: 1, total: 1, turns: 42, wall: 300, at: "2026-11-02T15:34:00.000Z" }) + "\n",
 	);
 	pi.ui.picks.push(
 		(o) => o.find((x) => x.includes("1. easy")), // toggle the run on

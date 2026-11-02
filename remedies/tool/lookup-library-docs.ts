@@ -3,8 +3,8 @@ import ext from "../../extensions/mellum-knowledge.ts";
 import { keepingTools, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Guesses an API it never saw (a post-cutoff library, a redirect status)",
-	does: "Adds a lookup tool over the installed packages' signatures and docs",
+	pathology: "Guesses an API it never saw",
+	does: "Adds a lookup over the installed packages' docs",
 	lesson: "M5",
 	evidence: "unit-tested; not measured on the suites",
 };

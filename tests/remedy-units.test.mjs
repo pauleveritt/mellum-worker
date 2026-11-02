@@ -20,11 +20,11 @@ function fakePi() {
 }
 
 const GUARDS = [
-	"block-foreground-server",
-	"break-repeat-loops",
-	"stay-in-workspace",
-	"refuse-whole-file-rewrite",
-	"cap-turns",
+	"foreground-server",
+	"repeat-loops",
+	"outside-workspace",
+	"whole-file-rewrite",
+	"turn-cap",
 ];
 
 for (const name of GUARDS) {
@@ -39,7 +39,7 @@ for (const name of GUARDS) {
 }
 
 test("every unit carries the metadata the remedies list is generated from", async () => {
-	for (const path of [...GUARDS.map((n) => `guard/${n}`), "nudge/nudge-empty-turn"]) {
+	for (const path of [...GUARDS.map((n) => `guard/${n}`), "nudge/empty-turn"]) {
 		const { meta } = await import(`../remedies/${path}.ts`);
 		for (const key of ["pathology", "does", "lesson", "evidence"]) {
 			assert.equal(typeof meta[key], "string", `${path} meta.${key}`);
@@ -50,9 +50,9 @@ test("every unit carries the metadata the remedies list is generated from", asyn
 	}
 });
 
-test("guard/break-repeat-loops blocks the sixth identical read and forgets after a write", async () => {
+test("guard/repeat-loops blocks the sixth identical read and forgets after a write", async () => {
 	const pi = fakePi();
-	(await import("../remedies/guard/break-repeat-loops.ts")).default(pi);
+	(await import("../remedies/guard/repeat-loops.ts")).default(pi);
 	const ls = { toolName: "ls", input: { path: "." } };
 	for (let i = 0; i < 5; i++) assert.equal(pi.fire("tool_call", ls), undefined);
 	assert.equal(pi.fire("tool_call", ls)?.block, true);
@@ -60,41 +60,41 @@ test("guard/break-repeat-loops blocks the sixth identical read and forgets after
 	assert.equal(pi.fire("tool_call", ls), undefined);
 });
 
-test("guard/block-foreground-server blocks `python app.py` and allows it backgrounded", async () => {
+test("guard/foreground-server blocks `python app.py` and allows it backgrounded", async () => {
 	const pi = fakePi();
-	(await import("../remedies/guard/block-foreground-server.ts")).default(pi);
+	(await import("../remedies/guard/foreground-server.ts")).default(pi);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "uv run python app.py" } })?.block, true);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "nohup uv run python app.py &" } }), undefined);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "grep uvicorn app.py" } }), undefined);
 });
 
-test("guard/stay-in-workspace blocks a tree walk outside the workspace and allows one inside", async () => {
+test("guard/outside-workspace blocks a tree walk outside the workspace and allows one inside", async () => {
 	const pi = fakePi();
-	(await import("../remedies/guard/stay-in-workspace.ts")).default(pi);
+	(await import("../remedies/guard/outside-workspace.ts")).default(pi);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "grep -rl x /Users /var" } })?.block, true);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "grep -rl x ." } }), undefined);
 });
 
-test("guard/refuse-whole-file-rewrite blocks write to an existing file, allows a new one", async () => {
+test("guard/whole-file-rewrite blocks write to an existing file, allows a new one", async () => {
 	const dir = mkdtempSync(join(tmpdir(), "unit-"));
 	writeFileSync(join(dir, "app.py"), "x = 1\n");
 	const pi = fakePi();
-	(await import("../remedies/guard/refuse-whole-file-rewrite.ts")).install(pi, { cwd: dir });
+	(await import("../remedies/guard/whole-file-rewrite.ts")).install(pi, { cwd: dir });
 	assert.equal(pi.fire("tool_call", { toolName: "write", input: { path: "app.py", content: "" } })?.block, true);
 	assert.equal(pi.fire("tool_call", { toolName: "write", input: { path: "new.py", content: "" } }), undefined);
 });
 
-test("guard/cap-turns allows its budget and blocks the call after it", async () => {
+test("guard/turn-cap allows its budget and blocks the call after it", async () => {
 	const pi = fakePi();
-	(await import("../remedies/guard/cap-turns.ts")).install(pi, { max: 2 });
+	(await import("../remedies/guard/turn-cap.ts")).install(pi, { max: 2 });
 	assert.equal(pi.fire("tool_call", { toolName: "ls", input: {} }), undefined);
 	assert.equal(pi.fire("tool_call", { toolName: "ls", input: {} }), undefined);
 	assert.equal(pi.fire("tool_call", { toolName: "ls", input: {} })?.block, true);
 });
 
-test("nudge/nudge-empty-turn installs turn_end and agent_before_settle only, and nudges an empty final", async () => {
+test("nudge/empty-turn installs turn_end and agent_before_settle only, and nudges an empty final", async () => {
 	const pi = fakePi();
-	(await import("../remedies/nudge/nudge-empty-turn.ts")).default(pi);
+	(await import("../remedies/nudge/empty-turn.ts")).default(pi);
 	assert.deepEqual(pi.events(), ["agent_before_settle", "turn_end"]);
 	pi.fire("turn_end", { message: { role: "assistant", stopReason: "stop", content: [] } });
 	assert.equal(pi.fire("agent_before_settle", {})?.continue, true);
@@ -185,7 +185,7 @@ const OPT_IN = {
 	"tool/background-long-commands": "mellum-nonblock",
 	"tool/lookup-library-docs": "mellum-knowledge",
 	"tool/keep-a-plan": "mellum-plan",
-	"check/check-code-quality": "mellum-quality",
+	"check/code-quality": "mellum-quality",
 	"workflow/spec-driven-flow": "mellum-flow",
 };
 

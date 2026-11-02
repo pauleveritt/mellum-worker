@@ -8,8 +8,8 @@ const LINE =
 	"files at exactly those paths — do not invent your own layout.";
 
 export const meta: UnitMeta = {
-	pathology: "Invents its own file layout instead of the one the spec names (e.g. writes main.py, skips the named folders)",
-	does: "Appends one line telling the model to take the file layout from the project's spec, not invent one",
+	pathology: "Invents its own file layout instead of the one the spec names",
+	does: "Tells the model to take the file layout from the spec",
 	lesson: "",
 	evidence: "new unit; unmeasured",
 };

@@ -4,8 +4,8 @@ import { confineSearch } from "../../extensions/mellum-guards.ts";
 import { installGuard, type PiLike, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Searches the whole machine (`grep -rl x /Users /var`) and hangs the run",
-	does: "Blocks a recursive search that names a path outside the workspace",
+	pathology: "Searches the whole machine and hangs the run",
+	does: "Blocks a recursive search outside the workspace",
 	lesson: "E4",
 	evidence: "screen: recorded hangs; searches only, writes are not covered",
 };

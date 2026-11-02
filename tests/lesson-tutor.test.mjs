@@ -30,7 +30,7 @@ test("a run is summarised from its run.json files: passes, and why each failure 
 
 test("a quick run is one session; the full run keeps the page's n", async () => {
 	const { runArgv } = await tutor();
-	const cmd = "uv run python learn/code/harness.py run --suite easy --arm bare --remedy guard/break-repeat-loops --repeat 3 --grade";
+	const cmd = "uv run python learn/code/harness.py run --suite easy --arm bare --remedy guard/repeat-loops --repeat 3 --grade";
 	const quick = runArgv(cmd, "/tmp/r", false);
 	assert.equal(quick[quick.indexOf("--repeat") + 1], "1");
 	assert.equal(quick[quick.indexOf("--runs-dir") + 1], "/tmp/r");
@@ -138,8 +138,8 @@ test("sessionProfile writes a profile pinned to Pi's current provider and model"
 
 test("the FAIL screen's why: a lesson's remedy unit gives its pathology line", async () => {
 	const { unitPathology } = await tutor();
-	assert.match(unitPathology(ROOT, "**Remedy unit:** `guard/block-foreground-server`; apply it with --remedy"),
-		/foreground and the session hangs/);
+	assert.match(unitPathology(ROOT, "**Remedy unit:** `guard/foreground-server`; apply it with --remedy"),
+		/foreground server and hangs/);
 	assert.equal(unitPathology(ROOT, "**Remedy unit:** none: you write it"), undefined);
 	assert.equal(unitPathology(ROOT, "`guard/no-such-unit`"), undefined);
 });

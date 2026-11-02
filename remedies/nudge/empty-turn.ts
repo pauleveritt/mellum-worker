@@ -3,8 +3,8 @@ import { createEmptyFinalNudge } from "../../extensions/mellum-guards.ts";
 import type { PiLike, UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Ends a turn with no reply and no tool call, part-way through the task",
-	does: "Restates the completion fact and asks for one more turn, at most 3 times",
+	pathology: "Ends a turn empty, part-way through the task",
+	does: "Restates the goal and asks for one more turn (at most 3)",
 	lesson: "M3",
 	evidence: "ladder: 5 of 45 v3 runs, every failure; a null on the suites (M2)",
 };

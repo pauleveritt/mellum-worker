@@ -3,8 +3,8 @@ import ext from "../../extensions/mellum-nonblock.ts";
 import { keepingTools, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Runs a server or watcher in the foreground and the session waits forever",
-	does: "Rewrites a long-running bash command to run in the background and returns its startup output",
+	pathology: "Runs a server in the foreground and waits forever",
+	does: "Reruns a long command in the background and returns its startup output",
 	lesson: "M4",
 	evidence: "unit-tested; not measured on the suites",
 };

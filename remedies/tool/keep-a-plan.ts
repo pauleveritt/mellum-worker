@@ -3,8 +3,8 @@ import ext from "../../extensions/mellum-plan.ts";
 import { keepingTools, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Loses track of a long task part-way through",
-	does: "Keeps a TODO.md the model writes, follows and amends on failures",
+	pathology: "Loses track of a long task",
+	does: "Keeps a TODO.md it writes, follows and amends",
 	lesson: "M7",
 	evidence: "unit-tested; not measured on the suites",
 };

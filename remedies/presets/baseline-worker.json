@@ -1,8 +1,8 @@
 [
   "context/narrow-tools",
   "context/add-project-facts",
-  "guard/break-repeat-loops",
-  "nudge/nudge-empty-turn",
-  "guard/block-foreground-server",
-  "guard/stay-in-workspace"
+  "guard/repeat-loops",
+  "nudge/empty-turn",
+  "guard/foreground-server",
+  "guard/outside-workspace"
 ]

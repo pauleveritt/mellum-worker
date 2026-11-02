@@ -3,8 +3,8 @@ import { createLoopBreaker } from "../../extensions/mellum-guards.ts";
 import { installGuard, type PiLike, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Repeats the same call over and over (245 identical `ls -R` calls in one run)",
-	does: "Blocks a call made 5 times in a row with nothing changed in between",
+	pathology: "Repeats the same call with nothing changed",
+	does: "Blocks a call made 5 times in a row unchanged",
 	lesson: "E3",
 	evidence: "ladder: part of the guard set behind phase 2b's 15/15",
 };

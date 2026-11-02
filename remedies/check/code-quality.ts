@@ -3,8 +3,8 @@ import ext from "../../extensions/mellum-quality.ts";
 import { keepingTools, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Finishes with lint or type errors the grader counts as a fail",
-	does: "Runs the quality checks before the model may finish",
+	pathology: "Finishes with lint or type errors",
+	does: "Runs the quality checks before finishing",
 	lesson: "M6",
 	evidence: "unit-tested; not measured on the suites",
 };

@@ -990,7 +990,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--arm", choices=ARMS, default="bare")
     run.add_argument("--remedy", default=None, metavar="LIST",
                      help="remedy units to load on top of the arm: comma-separated names "
-                          "(guard/break-repeat-loops) or preset:<name>")
+                          "(guard/repeat-loops) or preset:<name>")
     run.add_argument("--extension", type=Path, action="append", default=[], metavar="PATH",
                      help="a Pi extension of your own to load (repeatable)")
     run.add_argument("--stall", type=float, default=None, metavar="SECONDS",

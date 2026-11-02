@@ -4,7 +4,7 @@ import { keepingTools, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
 	pathology: "Builds a multi-phase app in one go and breaks earlier phases",
-	does: "Plan, frozen per-phase gates and checkpoints, as tools the agent calls (run with learn/code/flow_run.py)",
+	does: "Adds a plan with frozen per-phase gates and checkpoints",
 	lesson: "H1",
 	evidence: "flow runs 2026-10-29: Easy 4/4, Medium 18/18, Hard 30/34 (n = 1)",
 };

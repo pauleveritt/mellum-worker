@@ -35,18 +35,18 @@ entries below.
 | 2 | Fabricated evidence | none — the harness runs the command after the child exits |
 | 3 | A dropped requirement | none as a unit — cumulative grading is a harness guarantee; `workflow/spec-driven-flow`'s per-phase gates come closest |
 | 4 | A narrowed test | none — hidden graders are copied in after the run |
-| 5 | An empty final | `nudge/nudge-empty-turn` |
-| 6 | A loop | `guard/break-repeat-loops` (and `guard/cap-turns` for an unbounded budget) |
-| 7 | A runaway search | `guard/stay-in-workspace` |
-| 8 | A server nobody can stop | `guard/block-foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
+| 5 | An empty final | `nudge/empty-turn` |
+| 6 | A loop | `guard/repeat-loops` (and `guard/turn-cap` for an unbounded budget) |
+| 7 | A runaway search | `guard/outside-workspace` |
+| 8 | A server nobody can stop | `guard/foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
 | 9 | Thinking spends the answer budget | none — an output cap with room for the answer, a sampling-settings fix |
 | 10 | An inert gate | none — a harness fix (read the gate's config at settle time) |
 | 11 | A stop-cap and a gate deadlock | none — a harness fix (reconcile the cap and the gate) |
-| 12 | Writes outside the layout | none yet — a write-confining guard is planned; `guard/stay-in-workspace` covers searches only |
+| 12 | Writes outside the layout | none yet — a write-confining guard is planned; `guard/outside-workspace` covers searches only |
 | 13 | A lost id | none as a unit — the acceptance list carries the contract; `workflow/spec-driven-flow`'s frozen gates come closest |
 | 14 | The project stops importing | `context/add-project-facts` — the test command in every message, so the signal lands on turn one |
 | 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
-| 16 | A skipped rule | `context/add-project-facts` reminds; the guard enforces (e.g. `guard/block-foreground-server` for "do not start servers") |
+| 16 | A skipped rule | `context/add-project-facts` reminds; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
 
 ## It says it is done and it is not
 
@@ -142,7 +142,7 @@ entries below.
    refuses the next call ("budget reached — stop") while a verify gate refuses
    the settle ("tests still fail — keep going"), so the worker can neither act
    nor finish and churns text turns to the deadline. **Seen:** the 2026-10-31
-   easy screen, a `cap-turns(120)` + `mellum-ncm` rep that ran 296 turns to the
+   easy screen, a `turn-cap(120)` + `mellum-ncm` rep that ran 296 turns to the
    1800 s wall with `tool_calls` pinned at 120, `agent_settled` zero times, 349
    budget blocks against 193 gate refusals; the one rep where the cap barely bit
    (5 blocks) passed at 125 turns

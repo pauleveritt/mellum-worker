@@ -3,7 +3,7 @@ import { serverGuard } from "../../extensions/mellum-guards.ts";
 import { installGuard, type PiLike, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Starts `python app.py` in the foreground and the session hangs until its deadline",
+	pathology: "Starts a foreground server and hangs to the deadline",
 	does: "Blocks a foreground server start and shows the background form",
 	lesson: "",
 	evidence: "screen: the hang recurs in the vLLM baseline's web-app rungs; unmeasured as a remedy",

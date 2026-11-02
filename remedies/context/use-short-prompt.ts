@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 import type { PiLike, UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "A long, procedural system prompt the small model follows instead of the files",
-	does: "Replaces the system prompt with the 643-character prompt in prompts/mellum-worker.md",
+	pathology: "Follows a long system prompt instead of the files",
+	does: "Swaps in the 643-character worker prompt",
 	lesson: "M2",
 	evidence: "screen: 3/3 against 1/3 on Easy (2026-10-29), 3/9 against 3/9 earlier; not decided",
 };

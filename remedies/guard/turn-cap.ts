@@ -3,8 +3,8 @@ import { createStepBudget } from "../../extensions/mellum-guards.ts";
 import { installGuard, type PiLike, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Keeps calling tools with no end, because Pi has no turn cap",
-	does: "Blocks every call after a budget (default 200) and asks for a summary",
+	pathology: "Calls tools with no end",
+	does: "Blocks calls past a budget (default 200) and asks for a summary",
 	lesson: "E7",
 	evidence: "dormant in the worker; unmeasured",
 };
