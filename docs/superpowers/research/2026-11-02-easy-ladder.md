@@ -27,6 +27,7 @@ bundle.
 | `vanilla + name-the-layout + prompt/python-developer` (n=3) | 3/3 | 20 · 19 · 14 |
 | `vanilla + name-the-layout + prompt/python-developer` (**n=6**) | **4/6** | median 18 (15–28) |
 | `vanilla + name-the-layout + python-developer + guard/foreground-server` (**n=6**) | **5/6** | blocking the server-start that stood in for a check moved one more rep across; within n=6 variance, a lead |
+| `+ prompt/verify-the-spec` (**n=6**) | **6/6** | the dropped-requirement failure closed — every rep green, 0 failed checks; median 25 turns (22–44). `guard/foreground-server` fired **0×** in all six, so the lever is the verify prompt, not the guard |
 
 **Reading:** on Easy the lever is **guidance, not guards**. Two agnostic prompt
 lines on Vanilla Pi reach a fast pass with no guards and nothing coded to the eval.
@@ -44,6 +45,19 @@ turns vs 53. The guards stop bad *actions* (hangs, loops); the failures here are
 **inventing the wrong layout**, then — from the feed — **shipping a careless
 `if __name__ == "main__":` typo unchecked** and **declaring "done" without
 running the check**. A loop guard does not touch those.
+
+**Update — the verify prompt closes it (6/6).** On a closer read the last
+failure was not the fake-verify after all: rep `c05e80` passed the tagline check
+but **left out the home page's navigation links** — a *dropped requirement*, not
+an unrun check (`guard_blocks` 0, `out_of_layout` empty). Adding
+`prompt/verify-the-spec` — one agnostic line, "check every requirement the spec
+lists is present and run the tests before finishing" — took the stack from 5/6
+to **6/6** at n = 6, every rep with 0 failed checks, median 25 turns (22–44). The
+verify prompt catches the dropped requirement by making the model account for
+each requirement, not just the test it wrote. **`guard/foreground-server` fired
+0× across all six**, so on Easy the lever is the three prompt lines, not the
+guard. The next rung drops the guard to confirm the minimal stack —
+`name-the-layout + python-developer + verify-the-spec`.
 
 ## The tool set these runs actually ran on (measured, corrects an assumption)
 

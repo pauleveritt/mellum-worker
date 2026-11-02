@@ -44,6 +44,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **`prompt/verify-the-spec` remedy** — a `/remedy` unit of one agnostic line:
+  check every requirement the spec lists is present, and run the project's own
+  tests, before finishing. On the Easy ladder it took the stack from 5/6 to
+  **6/6** (n=6) by closing a dropped-requirement failure (a home page missing
+  its navigation links).
 - **`/challenge <tier>` in a live Pi**: runs a challenge suite (`easy`, `medium`
   or `hard`) through the harness on the real model. It runs on the **worker**
   with the remedy units you have switched on with `/remedy` stacked on top (add

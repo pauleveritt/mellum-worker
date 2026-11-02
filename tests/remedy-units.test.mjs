@@ -157,6 +157,32 @@ test("context/narrow-tools keeps the seven worker tools, as the worker does", as
 	assert.deepEqual(out.messages, PAYLOAD().messages);
 });
 
+// Prompt units: each adds a small instruction fragment to the outgoing request and nothing else.
+for (const name of ["name-the-layout", "python-developer", "verify-the-spec"]) {
+	test(`prompt/${name} installs one before_provider_request hook and carries metadata`, async () => {
+		const mod = await import(`../remedies/prompt/${name}.ts`);
+		const pi = fakePi();
+		mod.default(pi);
+		assert.deepEqual(pi.events(), ["before_provider_request"]);
+		assert.equal(pi.tools.length, 0);
+		assert.ok(mod.meta.pathology && mod.meta.does && mod.meta.evidence);
+	});
+}
+
+test("prompt/verify-the-spec appends its check to every user message and leaves the rest", async () => {
+	const pi = fakePi();
+	(await import("../remedies/prompt/verify-the-spec.ts")).default(pi);
+	const out = pi.fire("before_provider_request", { payload: PAYLOAD() });
+	for (const m of out.messages.filter((x) => x.role === "user")) {
+		const text = typeof m.content === "string" ? m.content : m.content.map((b) => b.text).join("");
+		assert.match(text, /spec/i, "names the spec");
+		assert.match(text, /\brun\b/i, "tells it to run the tests");
+	}
+	assert.deepEqual(out.messages[0], PAYLOAD().messages[0]); // system untouched
+	assert.deepEqual(out.messages[2], PAYLOAD().messages[2]); // assistant untouched
+	assert.deepEqual(out.tools, PAYLOAD().tools); // tools untouched
+});
+
 // Opt-in units: each re-exports an existing extension unchanged, with the list's metadata.
 const OPT_IN = {
 	"tool/background-long-commands": "mellum-nonblock",
