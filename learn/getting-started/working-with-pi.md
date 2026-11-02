@@ -148,11 +148,12 @@ the small local model and read how each run went.
 `check`, `last` and `learn` also have terminal forms
 (`node scripts/mellum.mjs …`).
 
-## 7. The course commands, built on the worker: `/remedy` and `/lesson`
+## 7. The course commands, built on the worker: `/remedy`, `/challenge` and `/lesson`
 
-This repository's `.pi/extensions/` loads two more commands, so they appear only
-after you trust the checkout and restart Pi. Both build on the worker: `/remedy`
-switches the worker's fixes on and off, and `/lesson` teaches each one.
+This repository's `.pi/extensions/` loads three more commands, so they appear
+only after you trust the checkout and restart Pi. All build on the worker:
+`/remedy` switches the worker's fixes on and off, `/challenge` scores a tier
+with whatever you have on, and `/lesson` teaches each fix.
 
 ### `/remedy`: switch remedy units on and off
 
@@ -171,6 +172,27 @@ A switch takes effect at the next tool call or model request. While any unit
 is on, the footer shows `remedies: N on`. A unit that adds a tool registers it
 the first time it is switched on; Pi cannot remove a tool, so the tool stays
 offered after `off` until you restart Pi (its hooks do stop).
+
+### `/challenge`: score a tier with the remedies you have on
+
+`/challenge <tier>` runs a challenge suite through the harness on the real
+model, with exactly the remedy units you have switched on, then scores the
+runs. It is how you see what a remedy stack buys: switch some units on with
+`/remedy`, run `/challenge easy`, read the passes, the turns and the wall-clock.
+
+| Command | What it does |
+| --- | --- |
+| `/challenge easy` | Run the easy tier once (n=1) with the units you have on |
+| `/challenge medium n=3` | Run the medium tier three times |
+| `/challenge hard n=5` | Run the hard tier five times |
+
+`n` sets how many runs and defaults to 1, so a bare `/challenge easy` is the
+quick single run you test with. A full suite on the real model takes a while,
+so the command runs in the background and reports when it is done: passes out
+of the runs, the turns and the wall-clock, with each run's own turns and wall
+when `n` is more than 1. Every score is kept for `/challenge submit`, which
+opens a pull request with the runs you choose. `/challenge` runs from a trusted
+checkout, since it drives the repository's own harness.
 
 ### `/lesson`: the course inside Pi
 
@@ -191,7 +213,7 @@ folder. (The findings lessons are being rebuilt — see
 
 Pi running interactively on the local Mellum, the keys to steer and stop it,
 the tools it can call, the commands to resume or branch a session, the worker's
-`/mellum` — the core the recipe is built on — and the course's `/remedy` and
-`/lesson` loaded from a trusted checkout. Next,
+`/mellum` — the core the recipe is built on — and the course's `/remedy`,
+`/challenge` and `/lesson` loaded from a trusted checkout. Next,
 [Eval suites and the telemetry](eval-suites.md) runs whole projects through the
 provided harness and grades them.

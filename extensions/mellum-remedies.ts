@@ -13,7 +13,9 @@
  * first time the unit is switched on; Pi cannot unregister a tool, so it stays offered after
  * `off` until the session restarts (its hooks do stop).
  */
-import { readdirSync, readFileSync } from "node:fs";
+import { spawn, type ChildProcess } from "node:child_process";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -54,6 +56,89 @@ function presetNames(): string[] {
 	} catch {
 		return [];
 	}
+}
+
+// ---- /challenge: run a tier with the remedies you have on, and score it --------------------
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const agentDir = () => process.env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent");
+const CHALLENGE_RUNS = () => join(agentDir(), "mellum-challenge-runs.jsonl");
+const TIERS = ["easy", "medium", "hard"];
+/** Challenge runs still going when the session ends are stopped with it. */
+const running = new Set<ChildProcess>();
+
+export interface RunRow { passed: boolean; turns: number; wall: number; }
+export interface Score { passed: number; total: number; turns: number; wall: number; rows: RunRow[]; }
+
+/** Read every run.json under a harness runs dir: one row per run, plus passes/turns/wall totals. */
+export function scoreRuns(dir: string): Score {
+	const rows: RunRow[] = [];
+	let names: string[] = [];
+	try {
+		names = readdirSync(dir);
+	} catch {
+		return { passed: 0, total: 0, turns: 0, wall: 0, rows };
+	}
+	for (const name of names) {
+		let r: any;
+		try {
+			r = JSON.parse(readFileSync(join(dir, name, "run.json"), "utf8"));
+		} catch {
+			continue;
+		}
+		rows.push({ passed: !!r.passed, turns: Number(r.turns ?? r.requests ?? 0), wall: Number(r.wall ?? 0) });
+	}
+	return {
+		passed: rows.filter((r) => r.passed).length,
+		total: rows.length,
+		turns: rows.reduce((a, r) => a + r.turns, 0),
+		wall: rows.reduce((a, r) => a + r.wall, 0),
+		rows,
+	};
+}
+
+/** Append a scored challenge run, for /challenge submit to pick up later. A record never fails a run. */
+function recordChallenge(rec: object): void {
+	try {
+		mkdirSync(agentDir(), { recursive: true });
+		appendFileSync(CHALLENGE_RUNS(), JSON.stringify(rec) + "\n");
+	} catch {
+		// ignore
+	}
+}
+
+/** Run a challenge tier through the harness `runs` times with `units` loaded, score it, record the score. */
+function runChallenge(tier: string, units: string[], runs: number, ctx: any): void {
+	if (!existsSync(join(ROOT, "learn", "code", "harness.py"))) {
+		return ctx.ui.notify("/challenge runs from a mellum-worker checkout (no learn/code/harness.py here)", "error");
+	}
+	const runsDir = mkdtempSync(join(tmpdir(), `challenge-${tier}-`));
+	const argv = ["run", "python", "learn/code/harness.py", "run", "--suite", tier, "--grade", "--repeat", String(runs), "--runs-dir", runsDir];
+	if (units.length) argv.push("--remedy", units.join(","));
+	const on = `${units.length} remed${units.length === 1 ? "y" : "ies"} on`;
+	ctx.ui?.notify?.(`running the ${tier} challenge — n=${runs}, ${on} — a full suite on the real model, so give it a while.`, "info");
+	const child = spawn("uv", argv, { cwd: ROOT, stdio: ["ignore", "pipe", "pipe"] });
+	running.add(child);
+	let tail = "";
+	const keep = (b: Buffer) => { tail = (tail + b.toString()).slice(-2000); };
+	child.stdout?.on("data", keep);
+	child.stderr?.on("data", keep);
+	child.on("close", () => {
+		running.delete(child);
+		const s = scoreRuns(runsDir);
+		if (s.total === 0) {
+			ctx.ui?.notify?.(`the ${tier} challenge produced no result:\n${tail.trim().split("\n").slice(-4).join("\n")}`, "error");
+			return;
+		}
+		const rows = s.rows.map((r) => ({ passed: r.passed, turns: r.turns, wall: Math.round(r.wall) }));
+		recordChallenge({ tier, remedies: units, runs, passed: s.passed, total: s.total, turns: s.turns, wall: Math.round(s.wall), rows, at: new Date().toISOString() });
+		const head = `${tier} challenge · n=${runs} · ${on}`;
+		const summary = `${s.passed}/${s.total} passed · ${s.turns} turns · ${Math.round(s.wall)} s wall`;
+		const perRep = s.total > 1
+			? s.rows.map((r, i) => `  rep ${i + 1}: ${r.passed ? "pass" : "fail"} · ${r.turns} turns · ${Math.round(r.wall)} s`)
+			: [];
+		ctx.ui?.notify?.([head, summary, ...perRep].join("\n"), s.passed === s.total ? "info" : "warning");
+	});
 }
 
 /** A copy of `pi` whose hooks only run while `isOn()`, and whose tools wait for the first switch-on. */
@@ -124,6 +209,30 @@ export default async function (pi: any): Promise<void> {
 			if (!picked) return;
 			const name = units.find((u) => picked.includes(` ${u.name} `))?.name;
 			if (name) apply(`${on.has(name) ? "off" : "on"} ${name}`, ctx);
+		},
+	});
+
+	pi.on?.("session_shutdown", () => {
+		for (const c of running) c.kill();
+		running.clear();
+	});
+
+	pi.registerCommand("challenge", {
+		description: "Run a challenge tier on the real model with the remedies you have on, and score it (passes, turns, wall): /challenge easy|medium|hard [n=1]",
+		getArgumentCompletions: (prefix: string) => {
+			const base = TIERS.flatMap((t) => [t, `${t} n=3`, `${t} n=5`]);
+			const items = base.filter((c) => c.startsWith(prefix)).map((c) => ({ value: c, label: c }));
+			return items.length ? items : null;
+		},
+		handler: async (args: string, ctx: any) => {
+			const toks = args.trim().split(/\s+/).filter(Boolean);
+			const tier = toks.find((t) => TIERS.includes(t));
+			const nTok = toks.find((t) => /^n=\d+$/.test(t));
+			const runs = nTok ? Math.max(1, Number(nTok.slice(2))) : 1;
+			if (!tier) {
+				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the real model with the remedies you have on (${on.size} on now); n sets how many runs, default 1`, "info");
+			}
+			runChallenge(tier, [...on], runs, ctx);
 		},
 	});
 }
