@@ -185,14 +185,21 @@ runs. It is how you see what a remedy stack buys: switch some units on with
 | `/challenge easy` | Run the easy tier once (n=1) with the units you have on |
 | `/challenge medium n=3` | Run the medium tier three times |
 | `/challenge hard n=5` | Run the hard tier five times |
+| `/challenge submit` | Pick scored runs and open a pull request with them |
 
 `n` sets how many runs and defaults to 1, so a bare `/challenge easy` is the
 quick single run you test with. A full suite on the real model takes a while,
-so the command runs in the background and reports when it is done: passes out
-of the runs, the turns and the wall-clock, with each run's own turns and wall
-when `n` is more than 1. Every score is kept for `/challenge submit`, which
-opens a pull request with the runs you choose. `/challenge` runs from a trusted
-checkout, since it drives the repository's own harness.
+so the command runs in the background and the footer shows the live turn count
+(`easy: turn 14…`) while it works, so the screen never looks dead. When it is
+done it reports passes out of the runs, the turns and the wall-clock, with each
+run's own turns and wall when `n` is more than 1.
+
+`/challenge submit` opens a pull request with the scores you choose. It lists
+every run you have scored this way, you toggle the ones to submit and pick
+**Submit**, and after a confirm it writes them under `evals/challenge/`, pushes
+a branch and opens the pull request against the repository. `/challenge` and
+`/challenge submit` both run from a trusted checkout, since they drive the
+repository's own harness and git.
 
 ### `/lesson`: the course inside Pi
 

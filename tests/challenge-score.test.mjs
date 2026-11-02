@@ -9,8 +9,15 @@ const host = () => import("../extensions/mellum-remedies.ts");
 /** A fake Pi that records notifications and runs registered commands, like remedy-host's. */
 function fakePi() {
 	const commands = {};
-	const ui = { notes: [] };
-	const ctx = { hasUI: true, ui: { notify: (msg, level) => ui.notes.push([level, msg]), setStatus() {} } };
+	const ui = { notes: [], picks: [], seen: [] };
+	const ctx = {
+		hasUI: true,
+		ui: {
+			notify: (msg, level) => ui.notes.push([level, msg]),
+			setStatus() {},
+			select: async (_title, options) => { ui.seen.push(options); return ui.picks.shift()?.(options); },
+		},
+	};
 	return {
 		commands, ui, ctx,
 		on() {},
@@ -72,12 +79,51 @@ test("/challenge bronze is refused as an unknown tier", async () => {
 	assert.match(pi.ui.notes.at(-1)[1], /easy\|medium\|hard/);
 });
 
-test("completions offer each tier and its n= presets", async () => {
+test("completions offer each tier, its n= presets, and submit", async () => {
 	const pi = fakePi();
 	await (await host()).default(pi);
-	const items = await pi.commands.challenge.getArgumentCompletions("easy");
-	const values = items.map((i) => i.value);
-	assert.ok(values.includes("easy"));
-	assert.ok(values.includes("easy n=3"));
-	assert.ok(values.includes("easy n=5"));
+	const easy = (await pi.commands.challenge.getArgumentCompletions("easy")).map((i) => i.value);
+	assert.ok(easy.includes("easy"));
+	assert.ok(easy.includes("easy n=3"));
+	assert.ok(easy.includes("easy n=5"));
+	const sub = (await pi.commands.challenge.getArgumentCompletions("sub")).map((i) => i.value);
+	assert.deepEqual(sub, ["submit"]);
+});
+
+/** Run a block with PI_CODING_AGENT_DIR pointed at a throwaway agent dir. */
+async function withAgentDir(dir, fn) {
+	const prev = process.env.PI_CODING_AGENT_DIR;
+	process.env.PI_CODING_AGENT_DIR = dir;
+	try {
+		await fn();
+	} finally {
+		if (prev === undefined) delete process.env.PI_CODING_AGENT_DIR;
+		else process.env.PI_CODING_AGENT_DIR = prev;
+	}
+}
+
+test("/challenge submit with no recorded runs says so and opens nothing", async () => {
+	const pi = fakePi();
+	await (await host()).default(pi);
+	await withAgentDir(mkdtempSync(join(tmpdir(), "agent-empty-")), () => pi.run("challenge", "submit"));
+	assert.equal(pi.ui.notes.at(-1)[0], "info");
+	assert.match(pi.ui.notes.at(-1)[1], /no challenge runs recorded/);
+});
+
+test("/challenge submit lists recorded runs to toggle, then confirms before any PR", async () => {
+	const pi = fakePi();
+	await (await host()).default(pi);
+	const agent = mkdtempSync(join(tmpdir(), "agent-recs-"));
+	writeFileSync(
+		join(agent, "mellum-challenge-runs.jsonl"),
+		JSON.stringify({ tier: "easy", remedies: ["guard/break-repeat-loops"], runs: 1, passed: 1, total: 1, turns: 42, wall: 300, at: "2026-11-02T15:34:00.000Z" }) + "\n",
+	);
+	pi.ui.picks.push(
+		(o) => o.find((x) => x.includes("1. easy")), // toggle the run on
+		(o) => o.find((x) => x.startsWith("✅")), // Submit
+		() => "Cancel", // decline the PR, so no git/gh runs
+	);
+	await withAgentDir(agent, () => pi.run("challenge", "submit"));
+	assert.ok(pi.ui.seen[0].some((x) => x.includes("easy · 1/1 · 42 turns")));
+	assert.ok(pi.ui.seen.at(-1).includes("Open PR"));
 });

@@ -14,7 +14,7 @@
  * `off` until the session restarts (its hooks do stop).
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -64,8 +64,42 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const agentDir = () => process.env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent");
 const CHALLENGE_RUNS = () => join(agentDir(), "mellum-challenge-runs.jsonl");
 const TIERS = ["easy", "medium", "hard"];
-/** Challenge runs still going when the session ends are stopped with it. */
+const REPO = "andrevanzuydam/mellum-worker";
+/** Challenge runs still going when the session ends are stopped with it, and their progress timers. */
 const running = new Set<ChildProcess>();
+const timers = new Set<ReturnType<typeof setInterval>>();
+
+/** Peek at a live runs dir: how many runs have finished, and the turn count of the one in flight. */
+function liveStatus(runsDir: string): { runsDone: number; turns: number } {
+	let subs: string[] = [];
+	try {
+		subs = readdirSync(runsDir);
+	} catch {
+		return { runsDone: 0, turns: 0 };
+	}
+	let runsDone = 0;
+	let newest = "";
+	let newestM = -1;
+	for (const s of subs) {
+		const d = join(runsDir, s);
+		if (existsSync(join(d, "run.json"))) runsDone += 1;
+		try {
+			const m = statSync(join(d, "trace.jsonl")).mtimeMs;
+			if (m > newestM) { newestM = m; newest = join(d, "trace.jsonl"); }
+		} catch {
+			// no trace yet
+		}
+	}
+	let turns = 0;
+	if (newest) {
+		try {
+			turns = (readFileSync(newest, "utf8").match(/"type"\s*:\s*"provider_request"/g) ?? []).length;
+		} catch {
+			// mid-write
+		}
+	}
+	return { runsDone, turns };
+}
 
 export interface RunRow { passed: boolean; turns: number; wall: number; }
 export interface Score { passed: number; total: number; turns: number; wall: number; rows: RunRow[]; }
@@ -107,6 +141,108 @@ function recordChallenge(rec: object): void {
 	}
 }
 
+/** Every recorded challenge run, newest last, for /challenge submit to pick from. */
+function readRecords(): any[] {
+	try {
+		return readFileSync(CHALLENGE_RUNS(), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
+	} catch {
+		return [];
+	}
+}
+
+/** One line for the picker: tier, passes, turns, wall, remedy count, when. */
+function recordLabel(r: any, i: number): string {
+	const date = String(r.at ?? "").replace("T", " ").slice(0, 16);
+	const rem = r.remedies?.length ?? 0;
+	return `${i + 1}. ${r.tier} · ${r.passed}/${r.total} · ${r.turns} turns · ${Math.round(r.wall)} s · ${rem} remed${rem === 1 ? "y" : "ies"} · ${date}`;
+}
+
+/** Run a command to completion, collecting stdout+stderr, never throwing. */
+function sh(cmd: string, args: string[], cwd: string): Promise<{ code: number; out: string }> {
+	return new Promise((resolve) => {
+		const p = spawn(cmd, args, { cwd });
+		let out = "";
+		const keep = (b: Buffer) => { out += b.toString(); };
+		p.stdout?.on("data", keep);
+		p.stderr?.on("data", keep);
+		p.on("error", (e) => resolve({ code: 1, out: String(e) }));
+		p.on("close", (code) => resolve({ code: code ?? 0, out: out.trim() }));
+	});
+}
+
+/** /challenge submit: pick recorded runs and open a pull request with their scores. */
+async function submitChallenge(ctx: any): Promise<void> {
+	if (!existsSync(join(ROOT, ".git"))) {
+		return ctx.ui.notify("/challenge submit runs from a mellum-worker checkout", "error");
+	}
+	const recs = readRecords();
+	if (!recs.length) {
+		return ctx.ui.notify("no challenge runs recorded yet — run /challenge easy first, then submit", "info");
+	}
+
+	const chosen = new Set<number>();
+	for (;;) {
+		const opts = recs.map((r, i) => `${chosen.has(i) ? "●" : "○"} ${recordLabel(r, i)}`);
+		opts.push(`✅ Submit ${chosen.size} run${chosen.size === 1 ? "" : "s"}`, "✕ Cancel");
+		const pick = await ctx.ui.select("Challenge runs — toggle the ones to submit, then Submit", opts);
+		if (!pick || pick.startsWith("✕")) return;
+		if (pick.startsWith("✅")) {
+			if (chosen.size) break;
+			continue;
+		}
+		const idx = opts.indexOf(pick);
+		if (idx >= 0 && idx < recs.length) chosen.has(idx) ? chosen.delete(idx) : chosen.add(idx);
+	}
+	const picked = [...chosen].sort((a, b) => a - b).map((i) => recs[i]);
+
+	const confirm = await ctx.ui.select(`Open a pull request to ${REPO} with ${picked.length} run${picked.length === 1 ? "" : "s"}?`, ["Open PR", "Cancel"]);
+	if (confirm !== "Open PR") return;
+	ctx.ui.notify(`submitting ${picked.length} run${picked.length === 1 ? "" : "s"} to ${REPO}…`, "info");
+
+	const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+	const dir = join(ROOT, "evals", "challenge");
+	mkdirSync(dir, { recursive: true });
+	const files = picked.map((r, k) => {
+		const at = String(r.at ?? stamp).replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z").replace("T", "-");
+		const rel = join("evals", "challenge", `${at}-${r.tier}-${k + 1}.json`);
+		writeFileSync(join(ROOT, rel), JSON.stringify(r, null, 2) + "\n");
+		return rel;
+	});
+
+	const branch = `challenge-submit-${stamp}`;
+	const title = `challenge: submit ${picked.length} run${picked.length === 1 ? "" : "s"}`;
+	const body = [
+		"Challenge scores submitted from a live Pi with `/challenge submit`.",
+		"",
+		"| tier | passed | turns | wall (s) | remedies |",
+		"| --- | --- | --- | --- | --- |",
+		...picked.map((r) => `| ${r.tier} | ${r.passed}/${r.total} | ${r.turns} | ${Math.round(r.wall)} | ${(r.remedies ?? []).join(", ") || "none"} |`),
+		"",
+		"🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+	].join("\n");
+	const bodyFile = join(tmpdir(), `${branch}.md`);
+	writeFileSync(bodyFile, body);
+
+	const steps: [string, string[]][] = [
+		["git", ["checkout", "-b", branch]],
+		["git", ["add", ...files]],
+		["git", ["commit", "-m", title]],
+		["git", ["push", "-u", "origin", branch]],
+		["gh", ["pr", "create", "--repo", REPO, "--base", "main", "--head", branch, "--title", title, "--body-file", bodyFile]],
+	];
+	let prUrl = "";
+	for (const [cmd, args] of steps) {
+		const { code, out } = await sh(cmd, args, ROOT);
+		if (cmd === "gh") prUrl = out.split("\n").find((l) => l.startsWith("http")) ?? out;
+		if (code !== 0) {
+			await sh("git", ["checkout", "-"], ROOT);
+			return ctx.ui.notify(`submit stopped at \`${cmd} ${args[0]}\`:\n${out.split("\n").slice(-4).join("\n")}`, "error");
+		}
+	}
+	await sh("git", ["checkout", "-"], ROOT);
+	ctx.ui.notify(`submitted ${picked.length} run${picked.length === 1 ? "" : "s"} — ${prUrl}`, "info");
+}
+
 /** Run a challenge tier through the harness `runs` times with `units` loaded, score it, record the score. */
 function runChallenge(tier: string, units: string[], runs: number, ctx: any): void {
 	if (!existsSync(join(ROOT, "learn", "code", "harness.py"))) {
@@ -123,7 +259,18 @@ function runChallenge(tier: string, units: string[], runs: number, ctx: any): vo
 	const keep = (b: Buffer) => { tail = (tail + b.toString()).slice(-2000); };
 	child.stdout?.on("data", keep);
 	child.stderr?.on("data", keep);
+
+	const tick = setInterval(() => {
+		const { runsDone, turns } = liveStatus(runsDir);
+		const where = runs > 1 ? `run ${Math.min(runsDone + 1, runs)}/${runs} · ` : "";
+		ctx.ui?.setStatus?.("challenge", `${tier}: ${where}turn ${turns}…`);
+	}, 2000);
+	timers.add(tick);
+
 	child.on("close", () => {
+		clearInterval(tick);
+		timers.delete(tick);
+		ctx.ui?.setStatus?.("challenge", undefined);
 		running.delete(child);
 		const s = scoreRuns(runsDir);
 		if (s.total === 0) {
@@ -215,22 +362,25 @@ export default async function (pi: any): Promise<void> {
 	pi.on?.("session_shutdown", () => {
 		for (const c of running) c.kill();
 		running.clear();
+		for (const t of timers) clearInterval(t);
+		timers.clear();
 	});
 
 	pi.registerCommand("challenge", {
-		description: "Run a challenge tier on the real model with the remedies you have on, and score it (passes, turns, wall): /challenge easy|medium|hard [n=1]",
+		description: "Run a challenge tier with the remedies you have on and score it (passes, turns, wall): /challenge easy|medium|hard [n=1]; /challenge submit opens a PR with the runs you choose",
 		getArgumentCompletions: (prefix: string) => {
-			const base = TIERS.flatMap((t) => [t, `${t} n=3`, `${t} n=5`]);
+			const base = [...TIERS.flatMap((t) => [t, `${t} n=3`, `${t} n=5`]), "submit"];
 			const items = base.filter((c) => c.startsWith(prefix)).map((c) => ({ value: c, label: c }));
 			return items.length ? items : null;
 		},
 		handler: async (args: string, ctx: any) => {
 			const toks = args.trim().split(/\s+/).filter(Boolean);
+			if (toks[0] === "submit") return submitChallenge(ctx);
 			const tier = toks.find((t) => TIERS.includes(t));
 			const nTok = toks.find((t) => /^n=\d+$/.test(t));
 			const runs = nTok ? Math.max(1, Number(nTok.slice(2))) : 1;
 			if (!tier) {
-				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the real model with the remedies you have on (${on.size} on now); n sets how many runs, default 1`, "info");
+				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the real model with the remedies you have on (${on.size} on now); n sets how many runs, default 1. /challenge submit opens a PR with the runs you choose`, "info");
 			}
 			runChallenge(tier, [...on], runs, ctx);
 		},
