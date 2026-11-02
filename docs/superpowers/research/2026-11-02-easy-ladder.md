@@ -28,6 +28,7 @@ bundle.
 | `vanilla + name-the-layout + prompt/python-developer` (**n=6**) | **4/6** | median 18 (15–28) |
 | `vanilla + name-the-layout + python-developer + guard/foreground-server` (**n=6**) | **5/6** | blocking the server-start that stood in for a check moved one more rep across; within n=6 variance, a lead |
 | `+ prompt/verify-the-spec` (**n=6**) | **6/6** | the dropped-requirement failure closed — every rep green, 0 failed checks; median 25 turns (22–44). `guard/foreground-server` fired **0×** in all six, so the lever is the verify prompt, not the guard |
+| `+ NCM` (`mellum-acceptance` + `mellum-ncm`, **n=6**) | **5/6** | the gate fired **0×** in every rep — on Easy the prompts already pass its derived contract before it checks. The one loss spun **66 turns to the 600 s deadline with zero settle attempts**, so the gate never ran |
 
 **Reading:** on Easy the lever is **guidance, not guards**. Two agnostic prompt
 lines on Vanilla Pi reach a fast pass with no guards and nothing coded to the eval.
@@ -58,6 +59,23 @@ each requirement, not just the test it wrote. **`guard/foreground-server` fired
 0× across all six**, so on Easy the lever is the three prompt lines, not the
 guard. The next rung drops the guard to confirm the minimal stack —
 `name-the-layout + python-developer + verify-the-spec`.
+
+**NCM on Easy — a settle-time gate can't catch a spin.** Adding the mediated
+acceptance gate (`mellum-acceptance` derives a structural contract from the spec;
+`mellum-ncm` re-runs it at settle and re-dispatches a red one) on top of the 6/6
+stack gave **5/6**, not better. The gate fired **0× in all six reps**: on Easy the
+three prompts already satisfy the derived contract before the worker settles, so
+there is nothing to re-dispatch. The single loss (rep `3b3820`) is the telling
+one — it ran **66 turns to the 600 s deadline with zero `agent_before_settle`
+events**, so the gate never got a turn to run, and it shipped without the HTML5
+doctype that its own contract (`test_page_0_root`) checks for. NCM is a
+**finish-time gate, not a watchdog** — blind to the one failure mode that never
+settles. To make it bite a spin you must pair it with a turn-cap or a
+stall-forced settle that hands it a turn, and carefully, because a hard cap and a
+refuse-to-settle gate can deadlock ([pathology
+11](../../../learn/pathologies.md)). On Easy, then, NCM adds nothing the prompts
+don't already give, and the one rep it might have saved is the one it structurally
+can't reach.
 
 ## The tool set these runs actually ran on (measured, corrects an assumption)
 
