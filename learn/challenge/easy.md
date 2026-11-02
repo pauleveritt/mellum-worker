@@ -7,6 +7,8 @@ title: Easy
 The first level of [the Challenge](index.md): Phase 1 of AgentClinic, graded by
 **4 hidden checks**. A setup that holds together passes it in minutes.
 
+![The Easy tier: a small robot building a single web page](../assets/illustrations/tier-easy.webp){ .illustration }
+
 **Build**
 
 - `app.py` exposes the FastAPI app as `app`.

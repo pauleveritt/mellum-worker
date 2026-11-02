@@ -4,6 +4,17 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Changed
+
+- **The Challenge section is reorganized into pages.** The index is now a hub
+  (what AgentClinic is, the cumulative phase matrix, the score table, how to
+  attempt), and **Easy**, **Medium**, **Hard** and **Remedies** each get their
+  own page, with an illustration and an Overview entry in the section nav.
+- **The Scoreboard is split by tier** (Easy / Medium / Hard sections, each in the
+  left nav), and model and stack cells render as code so they read uniformly and
+  the glossary no longer links inside them; three entries whose model id had a
+  stack descriptor appended were normalized.
+
 ### Removed
 
 - **The findings lessons (Start / Easy / Medium / Hard — 27 pages) are removed,

@@ -156,13 +156,63 @@ def _stack_text(stack) -> str:
     return " · ".join(s.replace("tool/background-long-commands", "nonblock").replace("mellum-", "") for s in stack)
 
 
+SUITE_ORDER = ["easy", "medium", "hard"]
+
+
+def _model_md(model) -> str:
+    """The model id as code, so it reads as data and the glossary never links inside it."""
+    return f"`{model}`" if model else "—"
+
+
+def _stack_md(stack) -> str:
+    """The stack as code chips (uniform, and the glossary skips code), or the bare marker."""
+    if not stack:
+        return "— bare —"
+    parts = [s.replace("tool/background-long-commands", "nonblock").replace("mellum-", "") for s in stack]
+    return " · ".join(f"`{p}`" for p in parts)
+
+
+def _record_rows(entries) -> list[str]:
+    """Record rows for one suite: split by (model, stack, version) so a new version never blends
+    with the old, ranked by pass rate, then fewest turns, then least wall."""
+    vgroups: dict[tuple, list[dict]] = {}
+    for e in entries:
+        key = (e.get("model"), tuple(e.get("stack") or ()), e.get("version") or "—")
+        vgroups.setdefault(key, []).append(e)
+    rows = []
+    for (model, stack, ver), runs in vgroups.items():
+        passes = [r for r in runs if r.get("passed")]
+        best = min(passes, key=lambda r: (r.get("turns") or 1 << 30, r.get("wall") or 1e18)) if passes else None
+        bt = best["turns"] if best else "—"
+        bw = _fmt_wall(best["wall"]) if best else "—"
+        pass_rate = len(passes) / len(runs) if runs else 0.0
+        rank = (-pass_rate, best["turns"], best["wall"]) if best else (-pass_rate, 1 << 30, 1e18)
+        rows.append((rank, f"| {_model_md(model)} | {_stack_md(stack)} | `{ver}` | {len(passes)}/{len(runs)} | {bt} | {bw} |"))
+    return [row for _, row in sorted(rows)]
+
+
+def _run_rows(entries) -> list[str]:
+    """Every run for one suite, newest first."""
+    out = []
+    for e in sorted(entries, key=lambda e: (e.get("date") or "", e.get("id") or ""), reverse=True):
+        res = "pass" if e.get("passed") else "fail"
+        out.append(
+            f"| {e.get('date') or '—'} | {_model_md(e.get('model'))} | {_stack_md(e.get('stack'))} | "
+            f"{res} | {e.get('turns')} | {_fmt_wall(e.get('wall'))} | `{e.get('id')}` |"
+        )
+    return out
+
+
 def render_page(entries) -> str:
+    suites = [s for s in SUITE_ORDER if any(e.get("suite") == s for e in entries)]
+    suites += sorted({e.get("suite") for e in entries if e.get("suite") and e.get("suite") not in SUITE_ORDER})
     lines = [
         "# Scoreboard",
         "",
-        "Every Mellum worker run ever measured. **Records** rank by pass rate first, then by "
-        "the fastest pass — fewest turns, then least wall, because a shorter pass is the better "
-        "pass. A configuration with no pass yet sorts last. Every run follows below.",
+        "Every Mellum worker run ever measured, split by tier. Within a tier, **Records** rank by "
+        "pass rate first, then by the fastest pass — fewest turns, then least wall, because a "
+        "shorter pass is the better pass. A code change to an extension is a new **version** of the "
+        "same stack, so an improvement shows as a new row that can beat the old one.",
         "",
         "![A small robot posting run times on a leaderboard, stopwatch in hand](assets/illustrations/scoreboard.webp){ .illustration }",
         "",
@@ -173,49 +223,28 @@ def render_page(entries) -> str:
         " after merge.",
         "",
         f"{len(entries)} runs recorded.",
-        "",
-        "## Records",
-        "",
-        "A code change to an extension is a new **version** of the same stack, so an improvement"
-        " shows as a new row that can beat the old one rather than blending into it.",
-        "",
-        "| suite | model | stack | version | pass | best turns | best wall |",
-        "|---|---|---|---|---|---|---|",
     ]
-    # Records split by version (suite, model, stack-names, version), so v2 never blends with v1.
-    vgroups: dict[tuple, list[dict]] = {}
-    for e in entries:
-        key = (e.get("suite"), e.get("model"), tuple(e.get("stack") or ()), e.get("version") or "—")
-        vgroups.setdefault(key, []).append(e)
-    rows = []
-    for (suite, model, stack, ver), runs in vgroups.items():
-        passes = [r for r in runs if r.get("passed")]
-        best = min(passes, key=lambda r: (r.get("turns") or 1 << 30, r.get("wall") or 1e18)) if passes else None
-        bt = best["turns"] if best else "—"
-        bw = _fmt_wall(best["wall"]) if best else "—"
-        # Rank by pass rate first, then the fastest pass (fewest turns, then least wall); a
-        # configuration with no pass sorts last. A fast run that rarely passes must not outrank a
-        # reliable one that is a little slower.
-        pass_rate = len(passes) / len(runs) if runs else 0.0
-        rank = (-pass_rate, best["turns"], best["wall"]) if best else (-pass_rate, 1 << 30, 1e18)
-        rows.append((rank, f"| {suite} | {model or '—'} | {_stack_text(stack)} | `{ver}` | {len(passes)}/{len(runs)} | {bt} | {bw} |"))
-    for _, row in sorted(rows):
-        lines.append(row)
-    lines += [
-        "",
-        "## All runs",
-        "",
-        "Newest first. Turns and wall-clock are shown for every run.",
-        "",
-        "| date | suite | model | stack | result | turns | wall | run |",
-        "|---|---|---|---|---|---|---|---|",
-    ]
-    for e in sorted(entries, key=lambda e: (e.get("date") or "", e.get("id") or ""), reverse=True):
-        res = "pass" if e.get("passed") else "fail"
-        lines.append(
-            f"| {e.get('date') or '—'} | {e.get('suite')} | {e.get('model') or '—'} | "
-            f"{_stack_text(e.get('stack'))} | {res} | {e.get('turns')} | {_fmt_wall(e.get('wall'))} | `{e.get('id')}` |"
-        )
+    for suite in suites:
+        sub = [e for e in entries if e.get("suite") == suite]
+        passes = sum(1 for e in sub if e.get("passed"))
+        lines += [
+            "",
+            f"## {suite.capitalize()}",
+            "",
+            f"{len(sub)} runs, {passes} passed.",
+            "",
+            "**Records** — the fastest pass per stack and version.",
+            "",
+            "| model | stack | version | pass | best turns | best wall |",
+            "|---|---|---|---|---|---|",
+            *_record_rows(sub),
+            "",
+            "**All runs** — newest first.",
+            "",
+            "| date | model | stack | result | turns | wall | run |",
+            "|---|---|---|---|---|---|---|",
+            *_run_rows(sub),
+        ]
     return "\n".join(lines) + "\n"
 
 

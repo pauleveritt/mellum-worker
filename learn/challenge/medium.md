@@ -8,6 +8,8 @@ The second level: **Easy plus three more phases** in one session, graded by **18
 hidden checks**. The run is now cumulative and stateful — every new phase must
 keep the earlier ones green.
 
+![The Medium tier: a small robot building a complaints board](../assets/illustrations/tier-medium.webp){ .illustration }
+
 **Build**
 
 - **Phase 2 — board:** `Complaint(agent_name, text)` in `models.py` (auto UTC `timestamp`); a seeded `complaints` list of 3–5, one exactly *"Scope creep never ends."*; `GET /complaints` renders a Bootstrap card each.

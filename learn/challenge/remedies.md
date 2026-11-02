@@ -4,6 +4,8 @@ title: Remedies
 
 # Remedies you can try
 
+![A small robot fitting a new part onto itself](../assets/illustrations/build-a-remedy.webp){ .illustration }
+
 You do not need to read all of these. Start from a preset — `/remedy
 preset:easy` switches on the whole Easy stack at once — run the tier, and reach
 for a single unit only when the trace shows a problem the preset missed. Each

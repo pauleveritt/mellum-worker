@@ -8,6 +8,8 @@ The third level: **Medium plus three more phases and a real SQLite database**
 (`data.db`), across eleven prompts, graded by **34 hidden checks**. No setup
 measured here has passed it yet.
 
+![The Hard tier: a small robot wiring up a database and reports](../assets/illustrations/tier-hard.webp){ .illustration }
+
 **Build**
 
 - **Phase 5 — archive & audit:** archive only a *resolved* complaint (archiving an open one is **400**, no change); archived leaves the board but stays in the data; `models.audit` logs every transition with a strictly increasing `seq`; `/stats` returns the open count.

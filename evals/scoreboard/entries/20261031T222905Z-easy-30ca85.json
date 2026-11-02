@@ -4,7 +4,7 @@
   "id": "20261031T222905Z-easy-30ca85",
   "machine": "Apple M3 Max, 48 GiB",
   "missing": 0,
-  "model": "M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M worker+preset-easy",
+  "model": "M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M",
   "passed": true,
   "stack": [
     "arm:worker",
