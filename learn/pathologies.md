@@ -87,7 +87,7 @@ scoreboard.
    [run](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson1-run.md),
    [attempts](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md),
    [6-bit](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-local-lessons-smoke.md),
-   [gate screen](../docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
+   [gate screen](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
    **Answer:** a brief that names the check (`pytest`, `TestClient`) stops it
    at the source; the dormant guard refuses the call when it appears, at the
    cost of retries.
@@ -106,7 +106,7 @@ scoreboard.
    at extension-load — before `mellum-acceptance` set it at `session_start` — so
    `[mellum-ncm]` fired zero times and a 17-turn session settled with the app
    built as `main.py` and the Phase-1 home checks unmet
-   ([record](../docs/superpowers/research/2026-10-30-acceptance-gate-inert.md)).
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-30-acceptance-gate-inert.md)).
    **Answer:** read the gate's config at settle time, not at load, and run the
    contract with the workspace on `PYTHONPATH`; a smoke run that asserts the gate
    actually redispatches would have caught it.
@@ -119,7 +119,7 @@ scoreboard.
    1800 s wall with `tool_calls` pinned at 120, `agent_settled` zero times, 349
    budget blocks against 193 gate refusals; the one rep where the cap barely bit
    (5 blocks) passed at 125 turns
-   ([record](../docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
    **Answer:** do not run a hard stop-cap and a refuse-to-settle gate together
    without reconciling them — the gate stands down once the budget is exhausted,
    letting the run settle on its real (incomplete) state rather than timing out.

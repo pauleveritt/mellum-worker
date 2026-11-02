@@ -155,7 +155,7 @@ This repository's `.pi/extensions/` loads two more commands, so they appear only
 after you trust the checkout and restart Pi. Both build on the worker: `/remedy`
 switches the worker's fixes on and off, and `/lesson` teaches each one.
 
-### `/remedy`: switch the worker's fixes on and off
+### `/remedy`: switch remedy units on and off
 
 A remedy unit is one fix for one failure, in one file. `/remedy` installs every
 unit at session start, and all of them start off, so the session is plain Pi
