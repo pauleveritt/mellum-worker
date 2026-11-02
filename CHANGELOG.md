@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The `/lesson` panel scrolls.** `↑`/`↓` slide the step's body — the run record
+  and the code the model wrote — while the lesson title stays pinned; `←`/`→`
+  still page between steps, and moving to another step resets the scroll. A
+  long Before/After run is no longer clipped with no way to read the rest.
 - **The harness arms are now `vanilla`, `bare`, `worker`, `strip-thinking`.** The
   six ablation arms (`no-prompt`, `no-nudge`, `no-loop`, `no-facts`,
   `server-guard`, `no-facts-guard`) went inert when the worker was decoupled — it

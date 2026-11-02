@@ -80,7 +80,17 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 	return ctx.ui.custom((tui: any, theme: any, _kb: unknown, done: (r: "next" | "leave" | "project") => void) => {
 		const pages = ["Cover", ...STEPS, "Key points"];
 		let page = Math.min(Math.max(startPage, 0), pages.length - 1);
+		let scroll = 0;
 		let cached: string[] | undefined;
+		// Scroll keeps the two-line header fixed and slides the body. The panel's render gets
+		// only a width, not a height, so the body can always slide until its last line reaches
+		// the top; ↑/↓ move it, and a page change resets it.
+		const view = (full: string[]): string[] => {
+			const body = full.slice(2);
+			const maxScroll = Math.max(0, body.length - 1);
+			if (scroll > maxScroll) scroll = maxScroll;
+			return scroll > 0 ? [...full.slice(0, 2), ...body.slice(scroll)] : full;
+		};
 		const runs: Record<string, RunState> = {};
 		const md = (text: string) => new Markdown(text, 1, 0, getMarkdownTheme());
 		const list = (items: string[]) => items.map((i) => `- ${i}`).join("\n");
@@ -165,7 +175,7 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 		}
 
 		function render(width: number): string[] {
-			if (cached) return cached;
+			if (cached) return view(cached);
 			const w = Math.max(20, width);
 			const name = pages[page];
 			const lines: string[] = [];
@@ -189,21 +199,30 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 					lines.push(...projectBlock(w));
 				}
 			}
-			lines.push("", theme.fg("dim", " ← back   → / Enter next   Esc leave"));
+			const scrollable = lines.length > 24;
+			lines.push("", theme.fg("dim", ` ← back   → / Enter next   Esc leave${scrollable ? "   ↑↓ scroll" : ""}`));
 			cached = lines.map((l) => truncateToWidth(l, w));
-			return cached;
+			return view(cached);
 		}
 
 		function handleInput(data: string) {
 			const name = pages[page];
 			if (matchesKey(data, Key.escape)) return leave("leave");
 			if (matchesKey(data, Key.right) || matchesKey(data, Key.enter)) {
-				if (page < pages.length - 1) page += 1;
+				if (page < pages.length - 1) { page += 1; scroll = 0; }
 				return refresh();
 			}
 			if (matchesKey(data, Key.left)) {
-				if (page > 0) page -= 1;
+				if (page > 0) { page -= 1; scroll = 0; }
 				return refresh();
+			}
+			if (matchesKey(data, Key.up)) {
+				if (scroll > 0) { scroll -= 1; tui.requestRender(); }
+				return;
+			}
+			if (matchesKey(data, Key.down)) {
+				scroll += 1; tui.requestRender();
+				return;
 			}
 			if ((data === "r" || data === "R") && (name === "Eval case" || name === "Solution"))
 				return startRun(name === "Eval case" ? "before" : "after", data === "R");
