@@ -38,7 +38,7 @@ THINK_TAGS = CODE.parents[1] / "extensions" / "mellum-think-tags.ts"
 REMEDIES = CODE.parents[1] / "remedies"
 GUARDS_WITH_SERVER = {"emptyFinalNudge": 3, "loopBreaker": True,
                       "blockForegroundServer": True}
-ARMS = ("bare", "worker", "no-prompt", "no-nudge", "no-loop", "no-facts",
+ARMS = ("vanilla", "bare", "worker", "no-prompt", "no-nudge", "no-loop", "no-facts",
         "server-guard", "no-facts-guard", "strip-thinking")
 # Every knob an arm may set. A run clears them from the inherited environment
 # first, so an exported value cannot make two arms the same policy.
@@ -134,6 +134,11 @@ def new_run(runs_dir: Path, name: str) -> Path:
 def arm_settings(arm: str) -> dict:
     if arm not in ARMS:
         raise SystemExit(f"unknown arm {arm}; choose from {', '.join(ARMS)}")
+    if arm == "vanilla":
+        # The true floor: no worker extension at all, only the recorder (added by pi_argv). Every
+        # guard and remedy must then come in explicitly through --remedy. This is the base the
+        # lessons build up from, with nothing hidden.
+        return {"extension": None, "env": {}}
     if arm == "bare":
         # The worker is always loaded, even on the bare arm, but mode stays off (no MELLUM_MODE), so
         # bare still sends vanilla Pi's requests — MELLUM_MODE=1 below is what engages the worker.
