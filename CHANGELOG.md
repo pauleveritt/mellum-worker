@@ -14,6 +14,9 @@ Versions match git tags; pin one in both install lines.
   left nav), and model and stack cells render as code so they read uniformly and
   the glossary no longer links inside them; three entries whose model id had a
   stack descriptor appended were normalized.
+- **Pathologies is tied to remedies.** A table maps each pathology to the
+  `/remedy` unit that answers it, and marks the ones with no loadable remedy
+  (answered by the harness, the spec or the sampling settings instead).
 
 ### Removed
 

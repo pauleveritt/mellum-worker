@@ -21,6 +21,33 @@ scoreboard.
 - **`Answer:` means the shape that answers it, not a proven cure.** Where
   nothing answers it yet, the line says so.
 
+## Pathology and remedy
+
+Each pathology is tied here to the remedy unit that answers it — the `/remedy`
+unit you switch on, listed in [Remedies you can try](challenge/remedies.md) — or
+marked where there is **no loadable remedy**, because the answer lives in the
+harness, the spec or the sampling settings instead. The numbers match the
+entries below.
+
+| # | Pathology | Remedy |
+| --- | --- | --- |
+| 1 | False success | none — the harness runs the command and scores it |
+| 2 | Fabricated evidence | none — the harness runs the command after the child exits |
+| 3 | A dropped requirement | none as a unit — cumulative grading is a harness guarantee; `workflow/spec-driven-flow`'s per-phase gates come closest |
+| 4 | A narrowed test | none — hidden graders are copied in after the run |
+| 5 | An empty final | `nudge/nudge-empty-turn` |
+| 6 | A loop | `guard/break-repeat-loops` (and `guard/cap-turns` for an unbounded budget) |
+| 7 | A runaway search | `guard/stay-in-workspace` |
+| 8 | A server nobody can stop | `guard/block-foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
+| 9 | Thinking spends the answer budget | none — an output cap with room for the answer, a sampling-settings fix |
+| 10 | An inert gate | none — a harness fix (read the gate's config at settle time) |
+| 11 | A stop-cap and a gate deadlock | none — a harness fix (reconcile the cap and the gate) |
+| 12 | Writes outside the layout | none yet — a write-confining guard is planned; `guard/stay-in-workspace` covers searches only |
+| 13 | A lost id | none as a unit — the acceptance list carries the contract; `workflow/spec-driven-flow`'s frozen gates come closest |
+| 14 | The project stops importing | `context/add-project-facts` — the test command in every message, so the signal lands on turn one |
+| 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
+| 16 | A skipped rule | `context/add-project-facts` reminds; the guard enforces (e.g. `guard/block-foreground-server` for "do not start servers") |
+
 ## It says it is done and it is not
 
 1. **False success.** The final reply reports a working app and passing tests
