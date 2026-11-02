@@ -3,7 +3,7 @@
 // from each unit's `meta` export and written into the Lessons index and The Challenge between
 // `<!-- remedies:start -->` and `<!-- remedies:end -->`. `--check` exits 1 when a page is stale.
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -30,37 +30,13 @@ export async function listUnits() {
 	return units;
 }
 
-/** Lesson number (E3, M2, ...) to its page path under learn/, from the pages' front matter. */
-function lessonPages() {
-	const pages = {};
-	for (const tier of ["easy", "medium", "hard"]) {
-		let files = [];
-		try {
-			files = readdirSync(join(ROOT, "learn", "lessons", tier));
-		} catch {
-			continue; // the findings lessons are being rebuilt; no tier pages yet
-		}
-		for (const file of files) {
-			if (!file.endsWith(".md") || file === "index.md") continue;
-			const number = readFileSync(join(ROOT, "learn", "lessons", tier, file), "utf8").match(/^number: (\S+)/m);
-			if (number) pages[number[1]] = `learn/lessons/${tier}/${file}`;
-		}
-	}
-	return pages;
-}
-
 const cell = (text) => text.replace(/\|/g, "\\|");
 
-/** The table as it reads on `page` (lesson links are relative to it). */
-export function renderTable(units, page) {
-	const pages = lessonPages();
-	const from = dirname(page);
-	const rows = units.map(({ name, meta }) => {
-		const lesson = meta.lesson && pages[meta.lesson] ? `[${meta.lesson}](${relative(from, pages[meta.lesson])})` : "n/a";
-		const apply = name.startsWith("workflow/") ? "`learn/code/flow_run.py`" : `\`--remedy ${name}\``;
-		return `| ${cell(meta.pathology)} | \`${name}\`: ${cell(meta.does)} | ${lesson} | ${cell(meta.evidence)} | ${apply} |`;
-	});
-	return [START, "", "| Pathology | Remedy unit | Lesson | Evidence | Apply it |", "| --- | --- | --- | --- | --- |", ...rows, "", END].join("\n");
+/** The remedies table: one row per unit, switched on in a live Pi with `/remedy on <unit>`. */
+export function renderTable(units) {
+	const rows = units.map(({ name, meta }) =>
+		`| ${cell(meta.pathology)} | \`${name}\`: ${cell(meta.does)} | ${cell(meta.evidence)} | \`/remedy on ${name}\` |`);
+	return [START, "", "| Pathology | Remedy unit | Evidence | Switch on |", "| --- | --- | --- | --- |", ...rows, "", END].join("\n");
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -70,7 +46,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 	for (const page of PAGES) {
 		const path = join(ROOT, page);
 		const text = readFileSync(path, "utf8");
-		const table = renderTable(units, page);
+		const table = renderTable(units);
 		const at = text.indexOf(START);
 		const end = text.indexOf(END);
 		if (at < 0 || end < 0) {

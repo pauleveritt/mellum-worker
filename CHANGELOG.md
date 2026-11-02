@@ -19,9 +19,10 @@ Versions match git tags; pin one in both install lines.
   runs, the turns and the wall-clock, and each run's own turns and wall when you
   ask for more than one. `n=` sets the run count and defaults to 1, so a bare
   `/challenge easy` is a quick single run; `/challenge easy n=3` runs three. The
-  run happens in the background and the footer shows a live turn count while it
-  works, so a long run never looks stalled. It runs from a trusted checkout,
-  since it drives the repository's own harness.
+  run happens in the background and streams what the model does — each tool call
+  as it makes it, with a live turn count in the footer — so a long run never
+  looks stalled. It runs from a trusted checkout, since it drives the
+  repository's own harness.
 - **`/challenge submit`**: lists the runs you have scored, lets you toggle the
   ones to submit, and after a confirm writes them under `evals/challenge/`,
   pushes a branch and opens a pull request with the scores.

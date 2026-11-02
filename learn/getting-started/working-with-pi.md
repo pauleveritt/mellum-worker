@@ -188,11 +188,12 @@ runs. It is how you see what a remedy stack buys: switch some units on with
 | `/challenge submit` | Pick scored runs and open a pull request with them |
 
 `n` sets how many runs and defaults to 1, so a bare `/challenge easy` is the
-quick single run you test with. A full suite on the real model takes a while,
-so the command runs in the background and the footer shows the live turn count
-(`easy: turn 14…`) while it works, so the screen never looks dead. When it is
-done it reports passes out of the runs, the turns and the wall-clock, with each
-run's own turns and wall when `n` is more than 1.
+quick single run you test with. A full suite on the real model takes a while, so
+the command runs in the background and streams what the model does — each tool
+call as it makes it (`easy · bash python app.py`) — with a live turn count in the
+footer, so the screen never looks dead. When it is done it reports passes out of
+the runs, the turns and the wall-clock, with each run's own turns and wall when
+`n` is more than 1.
 
 `/challenge submit` opens a pull request with the scores you choose. It lists
 every run you have scored this way, you toggle the ones to submit and pick

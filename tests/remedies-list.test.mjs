@@ -12,12 +12,11 @@ test("the remedies list names every unit file under remedies/", async () => {
 	assert.ok(units.every((u) => u.meta.pathology && u.meta.does));
 });
 
-test("the Apply column names the remedy; lesson links are omitted while the findings lessons are rebuilt", async () => {
+test("the Switch on column uses /remedy, and there is no Lesson column", async () => {
 	const units = await listUnits();
-	const fromChallenge = renderTable(units, "learn/challenge/index.md");
-	assert.match(fromChallenge, /`--remedy context\/add-project-facts`/);
-	// M1 carries a lesson in its meta, but no lesson page exists yet, so the Lesson cell is n/a.
-	assert.doesNotMatch(fromChallenge, /\]\(\.\.\/lessons\//);
+	const fromChallenge = renderTable(units);
+	assert.match(fromChallenge, /`\/remedy on context\/add-project-facts`/);
+	assert.doesNotMatch(fromChallenge, /Lesson/);
 });
 
 test("both pages carry the current list (run scripts/remedies-list.mjs to update)", async () => {

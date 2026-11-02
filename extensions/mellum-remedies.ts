@@ -69,36 +69,53 @@ const REPO = "andrevanzuydam/mellum-worker";
 const running = new Set<ChildProcess>();
 const timers = new Set<ReturnType<typeof setInterval>>();
 
-/** Peek at a live runs dir: how many runs have finished, and the turn count of the one in flight. */
-function liveStatus(runsDir: string): { runsDone: number; turns: number } {
+/** Read the in-flight run: the newest trace, how many runs are done, the turn count, and each
+ * tool call so far ("bash python app.py"), so the command can stream what the model is doing. */
+function progress(runsDir: string): { trace: string; runsDone: number; turns: number; calls: string[] } {
 	let subs: string[] = [];
 	try {
 		subs = readdirSync(runsDir);
 	} catch {
-		return { runsDone: 0, turns: 0 };
+		return { trace: "", runsDone: 0, turns: 0, calls: [] };
 	}
 	let runsDone = 0;
-	let newest = "";
+	let trace = "";
 	let newestM = -1;
 	for (const s of subs) {
 		const d = join(runsDir, s);
 		if (existsSync(join(d, "run.json"))) runsDone += 1;
 		try {
 			const m = statSync(join(d, "trace.jsonl")).mtimeMs;
-			if (m > newestM) { newestM = m; newest = join(d, "trace.jsonl"); }
+			if (m > newestM) { newestM = m; trace = join(d, "trace.jsonl"); }
 		} catch {
 			// no trace yet
 		}
 	}
 	let turns = 0;
-	if (newest) {
+	const calls: string[] = [];
+	if (trace) {
+		let txt = "";
 		try {
-			turns = (readFileSync(newest, "utf8").match(/"type"\s*:\s*"provider_request"/g) ?? []).length;
+			txt = readFileSync(trace, "utf8");
 		} catch {
-			// mid-write
+			return { trace, runsDone, turns, calls };
+		}
+		for (const line of txt.split("\n")) {
+			if (line.includes('"provider_request"')) {
+				turns += 1;
+			} else if (line.includes('"tool_call"')) {
+				try {
+					const ev = JSON.parse(line);
+					if (ev.type !== "tool_call") continue;
+					const input = typeof ev.input === "string" ? ev.input : JSON.stringify(ev.input ?? "");
+					calls.push(`${ev.toolName ?? "?"} ${input.replace(/\s+/g, " ").slice(0, 56)}`);
+				} catch {
+					// a line still being written
+				}
+			}
 		}
 	}
-	return { runsDone, turns };
+	return { trace, runsDone, turns, calls };
 }
 
 export interface RunRow { passed: boolean; turns: number; wall: number; }
@@ -260,9 +277,17 @@ function runChallenge(tier: string, units: string[], runs: number, ctx: any): vo
 	child.stdout?.on("data", keep);
 	child.stderr?.on("data", keep);
 
+	let curTrace = "";
+	let emitted = 0;
 	const tick = setInterval(() => {
-		const { runsDone, turns } = liveStatus(runsDir);
-		const where = runs > 1 ? `run ${Math.min(runsDone + 1, runs)}/${runs} · ` : "";
+		const { trace, runsDone, turns, calls } = progress(runsDir);
+		if (!trace) return;
+		if (trace !== curTrace) { curTrace = trace; emitted = 0; } // a new run of the batch started
+		const where = runs > 1 ? `run ${Math.min(runsDone + 1, runs)}/${runs} ` : "";
+		for (let i = emitted; i < calls.length; i += 1) {
+			ctx.ui?.notify?.(`${tier} ${where}· ${calls[i]}`, "info"); // stream what the model just did
+		}
+		emitted = calls.length;
 		ctx.ui?.setStatus?.("challenge", `${tier}: ${where}turn ${turns}…`);
 	}, 2000);
 	timers.add(tick);
