@@ -44,7 +44,7 @@ would print and mean nothing.
 
 **Badge:** `conjecture`
 
-Bronze, in `learn/code/suites/easy/`: a base AgentClinic project, one prompt
+Easy, in `learn/code/suites/easy/`: a base AgentClinic project, one prompt
 asking for phase 1, and the tests that check it. The prompt goes to `pi -p` as
 the request; nothing else about the suite is shown to the model.
 
@@ -152,7 +152,7 @@ printed PASS for a correct answer and FAIL for a wrong one. It has not been
 run against the model.
 
 Check the provided harness the same way, by running it and reading what it
-kept. `uv run learn/code/harness.py run --suite easy` runs one Bronze task and
+kept. `uv run learn/code/harness.py run --suite easy` runs one Easy task and
 prints a score line:
 
 ```text
@@ -183,7 +183,7 @@ A suite may also ship a **spec variant**: the same project with its phased
 requirements laid out another way. `--specs joined|split` runs the suite with
 that variant's prompts and workspace, and the run record carries `specs`, so
 two arms are told apart by the record rather than by memory. Only a suite with
-`spec-variants/` has them; `medium` (Silver) ships `joined`, whose briefs
+`spec-variants/` has them; `medium` ships `joined`, whose briefs
 point at one `specs/roadmap.md`, and `split`, whose briefs each point at their
 own `specs/phase-4.md`. Without the flag the suite runs exactly as shipped.
 

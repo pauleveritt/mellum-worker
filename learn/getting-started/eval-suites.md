@@ -43,22 +43,22 @@ fails because of that, not because the harness withheld something.
 
 ## The three suites
 
-The three suites are Bronze, Silver and Gold, and together they are [The Challenge](../challenge/index.md).
+The three suites are Easy, Medium and Hard, and together they are [The Challenge](../challenge/index.md).
 
 | Suite      | Starts from                                                           | Requests                              | Graded on                                  |
 |------------|-----------------------------------------------------------------------|---------------------------------------|--------------------------------------------|
-| **Bronze** | an empty AgentClinic project, with a hinted four-phase roadmap        | one: phase 1                          | the phase-1 grader                         |
-| **Silver** | an empty AgentClinic project, with a user-story roadmap               | four: one per phase                   | phases 1–4                                 |
-| **Gold**   | an empty AgentClinic project, with a user-story roadmap and `data.db` | eleven: seven phases, four migrations | phases 1–7, the reports and the migrations |
+| **Easy**   | an empty AgentClinic project, with a hinted four-phase roadmap        | one: phase 1                          | the phase-1 grader                         |
+| **Medium** | an empty AgentClinic project, with a user-story roadmap               | four: one per phase                   | phases 1–4                                 |
+| **Hard**   | an empty AgentClinic project, with a user-story roadmap and `data.db` | eleven: seven phases, four migrations | phases 1–7, the reports and the migrations |
 
-Gold is the one that punishes assumptions: the same four phases as
-Silver, then three more, with four migrations interleaved. The database schema
+Hard is the one that punishes assumptions: the same four phases as
+Medium, then three more, with four migrations interleaved. The database schema
 has to be discovered, and `archived_at IS NOT NULL` is not the same as
 `status = 'archived'`.
 
-### What Gold adds
+### What Hard adds
 
-The first four requests are Silver's. The rest are:
+The first four requests are Medium's. The rest are:
 
 | Request | What it asks for                                                                                                                                                                                                                                                        |
 |---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -85,7 +85,7 @@ uv run scripts/backend.py start
 uv run learn/code/harness.py run --suite all --grade
 ```
 
-One line per suite (`easy` is Bronze, `medium` Silver, `hard` Gold), then a total:
+One line per suite (Easy, Medium, Hard), then a total:
 
 ```text
 easy: PASS (n=1; run /var/folders/...; 1 request, 3 tool calls, 0 tool errors)
@@ -157,7 +157,7 @@ Every run writes `trace.jsonl` beside its workspace. The rows to read first:
 - `message_end`: a message, including the final reply's text;
 - `agent_settled`: the run ended.
 
-A Gold run that fails with 11 requests and 2 tool errors kept going and kept
+A Hard run that fails with 11 requests and 2 tool errors kept going and kept
 hitting errors; a run that fails with 1 request and no tool calls wrote
 nothing. The counts on the score line are these rows, summed.
 

@@ -36,7 +36,7 @@ The profile lives at `learn/code/profile/`. Lessons point Pi at it with
 
 ## The lesson harness
 
-`uv run learn/code/harness.py run --suite easy` (Bronze) copies the task into
+`uv run learn/code/harness.py run --suite easy` (Easy) copies the task into
 `learn/code/.runs/<id>/workspace`, starts a child `pi` with the private
 profile and the recorder in `learn/code/record-pi.mjs`, sends every prompt in
 `prompts/` (or `task.md`) in one session, then copies the task's tests in and

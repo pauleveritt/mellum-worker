@@ -8,7 +8,7 @@ You have run a small model, built a harness and read what goes wrong. Now
 prove it: point your setup at the same three projects every lesson is measured
 on, and see how far it gets.
 
-![A small robot on a winners' podium with bronze, silver and gold medals](../assets/illustrations/challenge.webp){ .illustration }
+![A small robot on a winners' podium for the three tiers: Easy, Medium and Hard](../assets/illustrations/challenge.webp){ .illustration }
 
 ## The three levels
 
@@ -18,21 +18,21 @@ judged on.
 
 <div class="grid cards" markdown>
 
--   **Bronze**
+-   **Easy**
 
     ---
 
     One prompt: build the home page. **4 hidden checks.** A good first
     target: a setup that holds together passes it in minutes.
 
--   **Silver**
+-   **Medium**
 
     ---
 
     Four prompts, one per phase of a growing app. **18 hidden checks.** The
     model has to keep earlier phases working while it adds new ones.
 
--   **Gold**
+-   **Hard**
 
     ---
 
@@ -50,7 +50,7 @@ wrong), with the same Mellum model you set up in
 baseline: the same model at full precision on a rented GPU, rebuilt with
 `scripts/baseline/baseline.py`.
 
-| Setup | Bronze | Silver | Gold |
+| Setup | Easy | Medium | Hard |
 | --- | --- | --- | --- |
 | Pi on its own | 0/3 | 0/3 | 0/3 |
 | The Baseline Worker | 1/3 | 2/3 | 0/3 |
@@ -71,7 +71,7 @@ for when a run fails in a way you do not understand.
 uv run python learn/code/harness.py run --suite easy --repeat 3 --grade
 ```
 
-Bronze is `--suite easy`, Silver `--suite medium` and Gold `--suite hard`.
+Easy is `--suite easy`, Medium `--suite medium` and Hard `--suite hard`.
 Each session gets a fresh copy of the project; the summary line says how many
 of the three passed, and each session's `run.json` lists the checks it
 missed. Then add remedies, one line at a time, from the list below, or a
@@ -114,16 +114,16 @@ lesson that teaches a remedy if you want to know why it works.
 | Rewrites a whole file to change a few lines (942 lines became 2) | `guard/refuse-whole-file-rewrite`: Blocks `write` to an existing file and asks for `edit` | n/a | recorded once; dormant in the worker (its column never went non-zero) | `--remedy guard/refuse-whole-file-rewrite` |
 | Searches the whole machine (`grep -rl x /Users /var`) and hangs the run | `guard/stay-in-workspace`: Blocks a recursive search that names a path outside the workspace | n/a | screen: recorded hangs; searches only, writes are not covered | `--remedy guard/stay-in-workspace` |
 | Ends a turn with no reply and no tool call, part-way through the task | `nudge/nudge-empty-turn`: Restates the completion fact and asks for one more turn, at most 3 times | n/a | ladder: 5 of 45 v3 runs, every failure; a null on the suites (M2) | `--remedy nudge/nudge-empty-turn` |
-| Guesses how to run the tests instead of using the project's own command | `context/add-project-facts`: Appends the project facts (AGENTS.md `## Mellum`, test command) to user messages | n/a | screen: 3/3 against 2/3 on Bronze (2026-10-29); a null in the page's record | `--remedy context/add-project-facts` |
+| Guesses how to run the tests instead of using the project's own command | `context/add-project-facts`: Appends the project facts (AGENTS.md `## Mellum`, test command) to user messages | n/a | screen: 3/3 against 2/3 on Easy (2026-10-29); a null in the page's record | `--remedy context/add-project-facts` |
 | Reaches for tools it uses badly (subagents, todo lists) instead of reading and editing | `context/narrow-tools`: Keeps read, grep, find, ls, bash, edit and write, plus tools your units register; drops the rest | n/a | part of the Baseline Worker; not measured on its own | `--remedy context/narrow-tools` |
 | The serving stack returns reasoning as `<think>` text, and the model is fed it back as things it said | `context/repair-think-tags`: Moves a leading `<think>…</think>` in a reply into a thinking block, sent back as reasoning; leaves a correctly served reply alone | n/a | LAN vLLM host: 236 of 244 turns leaked; 0 of 136 on the pinned vLLM 0.32.0 | `--remedy context/repair-think-tags` |
 | Reads more than the context holds, so Pi compacts it and the model loses what it read first | `context/trim-tool-output`: Trims a read, bash, grep, find or ls result over 8,000 characters and says how to search for the rest | n/a | context-overflow screen: 8 notes read whole, 2 compactions, 8 notes read again | `--remedy context/trim-tool-output` |
-| A long, procedural system prompt the small model follows instead of the files | `context/use-short-prompt`: Replaces the system prompt with the 643-character prompt in prompts/mellum-worker.md | n/a | screen: 3/3 against 1/3 on Bronze (2026-10-29), 3/9 against 3/9 earlier; not decided | `--remedy context/use-short-prompt` |
+| A long, procedural system prompt the small model follows instead of the files | `context/use-short-prompt`: Replaces the system prompt with the 643-character prompt in prompts/mellum-worker.md | n/a | screen: 3/3 against 1/3 on Easy (2026-10-29), 3/9 against 3/9 earlier; not decided | `--remedy context/use-short-prompt` |
 | Runs a server or watcher in the foreground and the session waits forever | `tool/background-long-commands`: Rewrites a long-running bash command to run in the background and returns its startup output | n/a | unit-tested; not measured on the suites | `--remedy tool/background-long-commands` |
 | Loses track of a long task part-way through | `tool/keep-a-plan`: Keeps a TODO.md the model writes, follows and amends on failures | n/a | unit-tested; not measured on the suites | `--remedy tool/keep-a-plan` |
 | Guesses an API it never saw (a post-cutoff library, a redirect status) | `tool/lookup-library-docs`: Adds a lookup tool over the installed packages' signatures and docs | n/a | unit-tested; not measured on the suites | `--remedy tool/lookup-library-docs` |
 | Finishes with lint or type errors the grader counts as a fail | `check/check-code-quality`: Runs the quality checks before the model may finish | n/a | unit-tested; not measured on the suites | `--remedy check/check-code-quality` |
-| Builds a multi-phase app in one go and breaks earlier phases | `workflow/spec-driven-flow`: Plan, frozen per-phase gates and checkpoints, as tools the agent calls (run with learn/code/flow_run.py) | n/a | flow runs 2026-10-29: Bronze 4/4, Silver 18/18, Gold 30/34 (n = 1) | `learn/code/flow_run.py` |
+| Builds a multi-phase app in one go and breaks earlier phases | `workflow/spec-driven-flow`: Plan, frozen per-phase gates and checkpoints, as tools the agent calls (run with learn/code/flow_run.py) | n/a | flow runs 2026-10-29: Easy 4/4, Medium 18/18, Hard 30/34 (n = 1) | `learn/code/flow_run.py` |
 
 <!-- remedies:end -->
 
@@ -146,7 +146,7 @@ A submitted remedy that measurably helps is the start of a new lesson.
 
 ## Tips
 
-- Start with Bronze. If it does not pass, the problem is in the setup, not the
+- Start with Easy. If it does not pass, the problem is in the setup, not the
   model's ambition; [Troubleshooting](../getting-started/troubleshoot.md)
   covers the usual causes.
 - Read the trace, not only the score: [Pathologies](../pathologies.md) names

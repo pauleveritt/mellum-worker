@@ -13,7 +13,7 @@ start at [Getting started](../getting-started/index.md).
   its guards), `skills/mellum-setup/` and the prompt under `prompts/`. The
   subagent worker, its templates and the intercom phases were retired in
   LC.8; `/mellum` and the run-record path stayed.
-- **The harness**: `learn/code/harness.py` and the Bronze, Silver and Gold suites,
+- **The harness**: `learn/code/harness.py` and the Easy, Medium and Hard suites,
   the instrument the lessons measure with. `ladder/` reruns rungs 1–9
   internally and is no longer the lessons' instrument.
 

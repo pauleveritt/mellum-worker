@@ -8,7 +8,7 @@ export const meta: UnitMeta = {
 	pathology: "A long, procedural system prompt the small model follows instead of the files",
 	does: "Replaces the system prompt with the 643-character prompt in prompts/mellum-worker.md",
 	lesson: "M2",
-	evidence: "screen: 3/3 against 1/3 on Bronze (2026-10-29), 3/9 against 3/9 earlier; not decided",
+	evidence: "screen: 3/3 against 1/3 on Easy (2026-10-29), 3/9 against 3/9 earlier; not decided",
 };
 
 const SHIPPED = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "prompts", "mellum-worker.md");

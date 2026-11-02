@@ -54,7 +54,7 @@ scoreboard.
 
 5. **An empty final.** A turn ends with no text and no tool call, and the run
    stops there having done nothing, followed by the quiet version, an empty
-   final at the very end. **Seen:** ten Bronze sessions in which the nudge never
+   final at the very end. **Seen:** ten Easy sessions in which the nudge never
    fired because no empty turn had the shape it answers, the finals ending on a
    context overflow or the output cap instead
    ([lesson](lessons/index.md)). **Answer:** the bounded
@@ -78,7 +78,7 @@ scoreboard.
 8. **A server nobody can stop.** The model starts `uvicorn` in the foreground to
    check its work, the call never returns, and the session burns its whole
    deadline waiting. **Seen:** three `no-facts` sessions that went silent for
-   143–460 s, two of three `bare` Bronze sessions, LC.19's first two attempts,
+   143–460 s, two of three `bare` Easy sessions, LC.19's first two attempts,
    and, on the local 6-bit MLX host, two of three bare `build-a-harness` sessions
    (2026-10-29 smoke), and two of three easy `acceptance + ncm` reps on local Q4
    that were killed at the 120 s stall on a foreground `python main.py`, before
@@ -95,7 +95,7 @@ scoreboard.
 9. **Thinking spends the answer budget.** The model reasons until the output
    cap is gone, and the turn ends with no answer. **Seen:** a one-turn smoke at
    `max_tokens 32` that spent all 32 tokens thinking and returned empty content,
-   and suite finals on Bronze and Silver ended by `length`
+   and suite finals on Easy and Medium ended by `length`
    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-lessons-left-the-track.md)). **Answer:** an output cap with room for the answer;
    stripping earlier reasoning does not give the turn its budget back.
 10. **An inert gate (not the model's fault).** The verify-and-redispatch gate

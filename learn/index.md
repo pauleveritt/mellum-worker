@@ -78,7 +78,7 @@ eval harness. After that, any [lesson](lessons/index.md) stands alone and lists 
 
     ---
 
-    Test what you have learnt: Bronze, Silver and Gold, the same three
+    Test what you have learnt: Easy, Medium and Hard, the same three
     projects every lesson is measured on. Can your setup beat the baseline?
 
 -   **[Pathologies](pathologies.md)**

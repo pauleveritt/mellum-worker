@@ -40,6 +40,9 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The Challenge's three tiers are named Easy, Medium and Hard** (matching the
+  `--suite easy|medium|hard` names), not Bronze, Silver and Gold; the challenge
+  illustration is reworked to a plain three-step podium.
 - **The local llama-server now runs on port `:8001`** (the port oMLX used to
   hold): `scripts/backend.py`, `run.sh` and the course profile target `:8001`.
 - **`/mellum check` validates the llama-server you actually run**, not oMLX. It

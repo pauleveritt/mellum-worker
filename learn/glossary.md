@@ -33,9 +33,9 @@ badges let you trust it, and what is still open.
 
 ### Challenge
 
-<!-- zensical-glossary-aliases: The Challenge, Bronze, Silver, Gold -->
-The three levels learners attempt to test what they have learnt: Bronze (one
-prompt, 4 hidden checks), Silver (four prompts, 18 checks) and Gold (eleven
+<!-- zensical-glossary-aliases: The Challenge, Easy, Medium, Hard -->
+The three levels learners attempt to test what they have learnt: Easy (one
+prompt, 4 hidden checks), Medium (four prompts, 18 checks) and Hard (eleven
 prompts, 34 checks). They are the eval suites `easy`, `medium` and `hard`;
 [The Challenge](challenge/index.md) explains how to attempt them.
 
