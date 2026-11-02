@@ -111,10 +111,10 @@ A preset is a named list of units in `remedies/presets/<name>.json`.
 
 | Preset | Units | What it is |
 | --- | --- | --- |
-| `easy` | 5 | Four guards (repeat loops, stay in the workspace, whole-file rewrites, foreground servers) and `context/narrow-tools` |
-| `medium` | 11 | `easy` plus project facts, the short prompt, the empty-turn nudge, background commands, the docs lookup and the quality check |
-| `hard` | 11 | The same list as `medium` today |
-| `baseline-worker` | 7 | The worker's own list: the short prompt, narrow tools, project facts, three guards and the empty-turn nudge |
+| `easy` | 7 | Repair think-tags, trim tool output, four guards (repeat loops, stay in the workspace, whole-file rewrites, foreground servers) and `context/narrow-tools` |
+| `medium` | 13 | `easy` plus project facts, the short prompt, the empty-turn nudge, background commands, the docs lookup and the quality check |
+| `hard` | 13 | The same list as `medium` today |
+| `baseline-worker` | 6 | The worker's own list: narrow tools, project facts, three guards (repeat loops, stay in the workspace, foreground servers) and the empty-turn nudge |
 
 ## Two ways to apply them
 
