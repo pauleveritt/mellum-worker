@@ -67,8 +67,7 @@ turn, and the run shipped without the HTML5 doctype its own contract checks for.
 
 **Badge:** `screen`
 
-**Remedy unit:** `guard/foreground-server`; read its firing with the run record,
-`--remedy preset:easy` versus the same with the gate's two extensions.
+**Remedy unit:** `guard/foreground-server`; switch it on live in Pi with `/remedy on guard/foreground-server`, then read its firing in the run record — `--remedy preset:easy` versus the same with the gate's two extensions.
 
 **Lesson check:** guard 0× across six reps; NCM 5/6 with the gate at 0×
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).

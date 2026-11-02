@@ -65,7 +65,7 @@ actions; they do not tell the model where a file goes.
 
 **Badge:** `screen`
 
-**Remedy unit:** `prompt/name-the-layout`; apply it with `--remedy prompt/name-the-layout`.
+**Remedy unit:** `prompt/name-the-layout`; switch it on live in Pi with `/remedy on prompt/name-the-layout`, or pass `--remedy prompt/name-the-layout` to a graded run.
 
 **Lesson check:** 2 of 3 on the local host, the fastest pass at 15 turns
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).

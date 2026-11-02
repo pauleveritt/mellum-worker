@@ -60,7 +60,7 @@ run. The gap is not where the file goes, it is how the work is done.
 
 **Badge:** `screen`
 
-**Remedy unit:** `prompt/python-developer`; apply it with `--remedy prompt/python-developer`.
+**Remedy unit:** `prompt/python-developer`; switch it on live in Pi with `/remedy on prompt/python-developer`, or pass `--remedy prompt/python-developer` to a graded run.
 
 **Lesson check:** 2/3 rose to 3/3 at n=3 on the local host, a screen
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).

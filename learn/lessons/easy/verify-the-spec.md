@@ -65,7 +65,7 @@ model did one of those and called it checked.
 
 **Badge:** `screen`
 
-**Remedy unit:** `prompt/verify-the-spec`; apply it with `--remedy prompt/verify-the-spec`.
+**Remedy unit:** `prompt/verify-the-spec`; switch it on live in Pi with `/remedy on prompt/verify-the-spec`, or pass `--remedy prompt/verify-the-spec` to a graded run.
 
 **Lesson check:** 5/6 rose to **6/6** at n=6 on the local host, every rep with 0
 failed checks
