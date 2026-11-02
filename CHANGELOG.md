@@ -49,6 +49,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **Four Easy lessons** in the Learning Center — *Name the Layout*, *A
+  Developer's Frame*, *Verify the Whole Spec*, and *Guards You Didn't Need*. Each
+  ties a measured ladder result to the one remedy unit that answers it, with the
+  before/after commands to run, and together they build a 6/6 Easy pass from the
+  bare floor. The first tier of the rebuilt lessons track; the `/lesson` tutor and
+  the site both read them.
 - **`prompt/verify-the-spec` remedy** — a `/remedy` unit of one agnostic line:
   check every requirement the spec lists is present, and run the project's own
   tests, before finishing. On the Easy ladder it took the stack from 5/6 to

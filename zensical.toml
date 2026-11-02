@@ -14,7 +14,10 @@ nav = [
   { "Getting Started" = ["getting-started/index.md", "getting-started/base-pi-on-llamacpp.md",
     "getting-started/working-with-pi.md", "getting-started/eval-suites.md", "getting-started/the-harness.md",
     "getting-started/extensions.md", "getting-started/troubleshoot.md"] },
-  { "Lessons" = ["lessons/index.md"] },
+  { "Lessons" = ["lessons/index.md",
+    { "Easy" = ["lessons/easy/name-the-layout.md", "lessons/easy/developer-frame.md",
+      "lessons/easy/verify-the-spec.md", "lessons/easy/guards-you-didnt-need.md"] },
+  ] },
   { "The Challenge" = [
     "challenge/index.md",
     "challenge/easy.md", "challenge/medium.md", "challenge/hard.md", "challenge/remedies.md",
