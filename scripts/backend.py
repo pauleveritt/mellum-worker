@@ -645,10 +645,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "profile":
         rendered = render_profile(settings)
         if args.dry_run:
-            print(rendered, end="")
+            # LF on every OS: Windows text mode would turn "\n" into "\r\n".
+            sys.stdout.buffer.write(rendered.encode())
             return 0
         PROFILE.parent.mkdir(parents=True, exist_ok=True)
-        PROFILE.write_text(rendered)
+        PROFILE.write_text(rendered, newline="\n")
         print(f"wrote {PROFILE.relative_to(ROOT)}")
         return 0
 

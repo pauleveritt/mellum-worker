@@ -53,6 +53,15 @@ Versions match git tags; pin one in both install lines.
   the model leaves behind is still found and ended; Pi's npm `.cmd` shim is run
   straight through node, so cmd.exe cannot mangle a multi-line prompt; and the
   harness reruns itself in UTF-8 mode, so it can read the model's trace.
+- **More Windows fixes.** `/mellum learn` and `/mellum last` now count runs from
+  a project's subfolders on Windows (the folder match assumed `/`); with no
+  `HOME` set (PowerShell), run records go to your home folder, not into the
+  project; `backend.py profile` writes `models.json` with LF, so regenerating it
+  no longer shows as a change; stopping a challenge run (a hard kill on Windows)
+  now also ends every process its session started; the "unknown remedy" message
+  lists unit names with `/`; and a `--pi-binary` shell script runs through bash.
+  Text files now check out with LF on every OS (`.gitattributes`), as the docs
+  and their parsers expect.
 - **Lessons open on a Windows checkout.** With git's `core.autocrlf` on, the
   lesson pages have CRLF line endings, so `/start` and `/lesson` crashed reading
   their front matter (and would have lost each step's commands). The lesson

@@ -183,6 +183,18 @@ if WINDOWS:
         _fields_ = [("assigned", wintypes.DWORD), ("listed", wintypes.DWORD),
                     ("ids", ctypes.c_size_t * 4096)]
 
+    class _JobLimits(ctypes.Structure):  # JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+        _fields_ = [("per_process_time", ctypes.c_int64), ("per_job_time", ctypes.c_int64),
+                    ("flags", wintypes.DWORD), ("min_ws", ctypes.c_size_t),
+                    ("max_ws", ctypes.c_size_t), ("active_limit", wintypes.DWORD),
+                    ("affinity", ctypes.c_size_t), ("priority", wintypes.DWORD),
+                    ("scheduling", wintypes.DWORD), ("io", ctypes.c_uint64 * 6),
+                    ("process_memory", ctypes.c_size_t), ("job_memory", ctypes.c_size_t),
+                    ("peak_process", ctypes.c_size_t), ("peak_job", ctypes.c_size_t)]
+
+    _K32.SetInformationJobObject.argtypes = (
+        wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD)
+
 
 def start_child(argv: list[str], **kwargs) -> subprocess.Popen:
     """Start a child in a group of its own: a session on POSIX, a job object on Windows.
@@ -197,6 +209,11 @@ def start_child(argv: list[str], **kwargs) -> subprocess.Popen:
                              | 0x00000004, **kwargs)  # CREATE_SUSPENDED
     handle = int(child._handle)  # type: ignore[attr-defined]
     job = _K32.CreateJobObjectW(None, None)
+    if job:
+        # Stopping a run on Windows is a hard kill, so no sweep runs: have the OS end
+        # the job's processes when the harness, which holds the job's handle, dies.
+        limits = _JobLimits(flags=0x2000)  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        _K32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
     if job and _K32.AssignProcessToJobObject(job, handle):
         JOBS[child.pid] = job
     _NTDLL.NtResumeProcess(handle)
@@ -212,13 +229,16 @@ def job_pids(job: int) -> list[int]:
 
 
 def native_argv(argv: list[str]) -> list[str]:
-    """On Windows, run an npm .cmd shim's script with node directly.
+    """On Windows, run an npm .cmd shim's script with node directly, and a .sh through bash.
 
     Pi installs as pi.cmd, and cmd.exe would mangle a multi-line prompt that
     holds < > % or quotes. Elsewhere the argv is returned unchanged.
     """
     if not WINDOWS:
         return argv
+    if argv[0].lower().endswith(".sh") and Path(argv[0]).is_file():
+        # Windows cannot start a shell script itself; run it through bash (Git Bash).
+        return [shutil.which("bash") or "bash", *argv]
     found = shutil.which(argv[0])
     if found is None:
         return argv
@@ -392,6 +412,8 @@ def sweep_workspace(workspace: Path, grace: float = 1.0) -> list[tuple[int, str]
     sweep must never raise.
     """
     found = workspace_members(workspace)
+    if not found:
+        return []  # nothing left: skip the kill-and-recheck (each listing takes ~1 s on Windows)
     for signal_number in KILL_SIGNALS:
         for pid, _ in workspace_members(workspace):
             if WINDOWS:
@@ -494,7 +516,8 @@ def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str
     for name in names:
         path = REMEDIES / f"{name}.ts"
         if not path.is_file():
-            known = sorted(str(q.relative_to(REMEDIES).with_suffix(""))
+            # as_posix: unit names use "/" on every OS (guard/repeat-loops, not guard\repeat-loops)
+            known = sorted(q.relative_to(REMEDIES).with_suffix("").as_posix()
                            for q in REMEDIES.glob("*/*.ts"))
             raise SystemExit(f"no remedy unit {name!r}; known: {', '.join(known)}")
         paths.append(path)
@@ -761,9 +784,10 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
     )
     results = []
     for name, command in commands:
+        # The tools print UTF-8; Windows would decode it as its ANSI code page and lose the output.
         result = subprocess.run(
             command, cwd=workspace, capture_output=True, text=True, check=False,
-            env=grade_env(workspace),
+            encoding="utf-8", errors="replace", env=grade_env(workspace),
         )
         output = [line for line in (result.stdout + result.stderr).splitlines()
                   if line.strip()]

@@ -14,6 +14,12 @@ const SCRIPT = join(ROOT, "scripts/mellum.mjs");
 const version = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).version;
 
 const temp = (prefix) => mkdtempSync(join(tmpdir(), prefix));
+// A path as it sits inside a JSON string, and as a literal in a RegExp: a Windows path's
+// backslashes must be escaped in both.
+const inJson = (p) => JSON.stringify(p).slice(1, -1);
+const re = (p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// os.tmpdir() reads TMPDIR on POSIX and TEMP/TMP on Windows.
+const tmpEnv = (dir) => ({ TMPDIR: dir, TEMP: dir, TMP: dir });
 const copy = (from, to) => {
 	mkdirSync(dirname(to), { recursive: true });
 	copyFileSync(from, to);
@@ -98,13 +104,13 @@ test("installed under node_modules, the CLI runs from a mirror in the temp dir",
 	];
 	for (const f of files) copy(join(ROOT, f), join(pkg, f));
 	const tmp = temp("mellum-cli-tmp-");
-	const r = run(["check", "--json"], { script: join(pkg, "scripts/mellum.mjs"), env: { TMPDIR: tmp } });
+	const r = run(["check", "--json"], { script: join(pkg, "scripts/mellum.mjs"), env: tmpEnv(tmp) });
 	assert.equal(r.status, 0, r.stderr);
 	assert.equal(JSON.parse(r.stdout).host, "pi");
 	assert.ok(existsSync(join(tmp, `mellum-worker-${version}`, "extensions", "mellum-check.ts")), "mirror written under the temp dir");
 	assert.ok(existsSync(join(tmp, `mellum-worker-${version}`, "templates", "llama-model-settings.json")), "the llama settings template is mirrored");
 	const cwd = project("servers");
-	const l = learnRun(["learn", "--json", "--file", cwd.runs], { cwd: cwd.dir, script: join(pkg, "scripts/mellum.mjs"), env: { TMPDIR: tmp } });
+	const l = learnRun(["learn", "--json", "--file", cwd.runs], { cwd: cwd.dir, script: join(pkg, "scripts/mellum.mjs"), env: tmpEnv(tmp) });
 	assert.equal(l.status, 0, l.stderr);
 	assert.deepEqual(JSON.parse(l.stdout).suggestion, ["Do not: start servers"]);
 	assert.ok(existsSync(join(tmp, `mellum-worker-${version}`, "extensions", "mellum-learn.ts")), "learn ran from the mirror");
@@ -119,7 +125,7 @@ const LEARN = join(ROOT, "tests/fixtures/learn");
 function project(pattern) {
 	const dir = realpathSync(temp("mellum-cli-proj-"));
 	const runs = join(temp("mellum-cli-runs-"), "runs.jsonl");
-	writeFileSync(runs, readFileSync(join(LEARN, "patterns", `${pattern}.jsonl`), "utf8").replaceAll("/home/user/proj", dir));
+	writeFileSync(runs, readFileSync(join(LEARN, "patterns", `${pattern}.jsonl`), "utf8").replaceAll("/home/user/proj", inJson(dir)));
 	return { dir, runs };
 }
 
@@ -135,7 +141,7 @@ test("learn --file paul-runs.jsonl --n 10 prints the report and never creates AG
 	const dir = realpathSync(temp("mellum-cli-proj-"));
 	const r = learnRun(["learn", "--file", join(LEARN, "paul-runs.jsonl"), "--n", "10"], { cwd: dir });
 	assert.equal(r.status, 0, r.stderr);
-	assert.match(r.stdout, new RegExp(`^mellum learn: 0 runs in ${dir}\\nSkipped \\d+ old and 0 bad lines\\.\\nnothing to fix\\n$`));
+	assert.match(r.stdout, new RegExp(`^mellum learn: 0 runs in ${re(dir)}\\nSkipped \\d+ old and 0 bad lines\\.\\nnothing to fix\\n$`));
 	assert.equal(existsSync(join(dir, "AGENTS.md")), false);
 });
 
@@ -219,7 +225,7 @@ test("last with no runs under the directory, or with recording off, exits 1 and 
 	const elsewhere = realpathSync(temp("mellum-cli-elsewhere-"));
 	const none = learnRun(["last", "--file", p.runs], { cwd: elsewhere });
 	assert.equal(none.status, 1);
-	assert.match(none.stderr, new RegExp(`no Mellum runs recorded under ${elsewhere}`));
+	assert.match(none.stderr, new RegExp(`no Mellum runs recorded under ${re(elsewhere)}`));
 	const off = learnRun(["last"], { cwd: p.dir, env: { MELLUM_MODE_RUNS: "0" } });
 	assert.equal(off.status, 1);
 	assert.match(off.stderr, /run records are off/);
