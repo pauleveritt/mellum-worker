@@ -496,6 +496,10 @@ def run_suite(
     started = time.monotonic()
     groups: list[int] = []
     leaked: list[dict] = []
+    child = None
+    execution_started = None
+    execution_ended = None
+    termination_reason = "error"
     # The sweep runs however the loop ends, including a SIGTERM (main turns it
     # into SystemExit): a stopped run must still end the servers it started.
     try:
@@ -514,12 +518,18 @@ def run_suite(
             )
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
-                child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
-                                         start_new_session=True)
+                if execution_started is None:
+                    execution_started = time.monotonic()
+                with (run / "stdout.txt").open("a") as output:
+                    child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
+                                             stdout=output, stderr=subprocess.STDOUT,
+                                             start_new_session=True)
                 groups.append(child.pid)
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
             ended = wait_or_stall(child, run, trace, remaining, stall)
+            execution_ended = time.monotonic()
+            termination_reason = ended or "exited"
             if ended:
                 break
     finally:
@@ -529,6 +539,19 @@ def run_suite(
         swept = {entry["pid"] for entry in leaked}
         leaked.extend({"pid": pid, "pgid": None, "command": command}
                       for pid, command in sweep_workspace(workspace) if pid not in swept)
+        if child is not None:
+            try:
+                child.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                pass
+        elapsed = (execution_ended or time.monotonic()) - (execution_started or started)
+        execution = {"elapsed_seconds": round(elapsed, 3),
+                     "exit_code": child.returncode if child is not None else None,
+                     "termination_reason": termination_reason,
+                     "cleanup_ok": not any(group_members(pgid) for pgid in groups)
+                                   and not workspace_members(workspace)}
+        (run / "execution.json").write_text(json.dumps(execution, indent=2) + "\n")
+        (run / "leaked.json").write_text(json.dumps(leaked, indent=2) + "\n")
     (run / "leaked.json").write_text(json.dumps(leaked, indent=2) + "\n")
     if pristine is not None and suite.layout is not None:
         (run / "layout.json").write_text(
@@ -590,15 +613,16 @@ def grade_env(workspace: Path) -> dict[str, str]:
             if k != "VIRTUAL_ENV"} | {"PYTHONPATH": str(workspace)}
 
 
-def grade(workspace: Path) -> list[tuple[str, bool, str]]:
+def grade(workspace: Path, *, versions: dict[str, str] | None = None) -> list[tuple[str, bool, str]]:
     workspace = Path(workspace)
     (workspace / "pyrefly.toml").write_text(
         'project-includes = [\n    "**/*.py",\n]\n'
         'project-excludes = [\n    "tests/**",\n]\n')
     def tool(name: str, *args: str) -> list[str]:
+        requirement = f"{name}=={versions[name]}" if versions else name
         if (workspace / "pyproject.toml").is_file():
-            return ["uv", "run", "--with", name, name, *args]
-        return ["uvx", name, *args]
+            return ["uv", "run", "--with", requirement, name, *args]
+        return ["uvx", "--from", requirement, name, *args]
 
     commands = (
         ("ruff", tool("ruff", "check", "--select", "F,E9", "--extend-exclude", "tests", "--extend-exclude", "grader_tests", ".")),
@@ -607,14 +631,27 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
                             "--exclude", "tests", "--exclude", "grader_tests", ".")),
     )
     results = []
+    diagnostics = {}
     for name, command in commands:
-        result = subprocess.run(
-            command, cwd=workspace, capture_output=True, text=True, check=False,
-            env=grade_env(workspace),
-        )
+        version = versions.get(name) if versions else None
+        try:
+            if version is None:
+                version_result = subprocess.run(tool(name, "--version"), cwd=workspace,
+                    capture_output=True, text=True, check=False, env=grade_env(workspace))
+                version = (version_result.stdout + version_result.stderr).strip()
+            result = subprocess.run(command, cwd=workspace, capture_output=True, text=True,
+                                    check=False, env=grade_env(workspace))
+            status = "pass" if result.returncode == 0 else "fail"
+        except OSError as error:
+            result = subprocess.CompletedProcess(command, 127, "", str(error))
+            status = "not checked"
+        diagnostics[name] = {"status": status, "version": version,
+                             "command": command, "exit_code": result.returncode,
+                             "stdout": result.stdout, "stderr": result.stderr}
         output = [line for line in (result.stdout + result.stderr).splitlines()
                   if line.strip()]
         results.append((name, result.returncode == 0, output[0] if output else ""))
+    (workspace.parent / "grade.json").write_text(json.dumps(diagnostics, indent=2) + "\n")
     return results
 
 
@@ -735,6 +772,31 @@ def report(run: Path) -> dict:
     }
 
 
+def execution_outcome(run: Path) -> dict:
+    """Native settlement and process termination are independent of artifact grade."""
+    execution = json.loads((run / "execution.json").read_text())
+    rows = [json.loads(line) for line in (run / "trace.jsonl").read_text().splitlines() if line.strip()]
+    messages = [row.get("message", {}) for row in rows if row.get("type") == "message_end"]
+    assistants = [m for m in messages if m.get("role") == "assistant"]
+    errors = [m for m in assistants if m.get("stopReason") == "error"]
+    # A returned tool call or substantive answer is work, even without token accounting.
+    worked = any(m.get("stopReason") not in ("error", "aborted") and
+                 any(b.get("type") in ("text", "toolCall") and (b.get("text") or b.get("name"))
+                     for b in m.get("content", [])) for m in assistants)
+    provider_error = ({"classification": "review" if worked else "infrastructure", "evidence": errors}
+                      if errors else None)
+    settlements = [row for row in rows if row.get("type") == "agent_settled"]
+    terminal_error = bool(assistants and assistants[-1].get("stopReason") in ("error", "aborted"))
+    clean_settlement = bool(settlements and settlements[-1].get("aborted") is False)
+    reason = execution["termination_reason"]
+    completion = (reason if reason in ("stalled", "deadline") else
+                  "settled" if execution["exit_code"] == 0 and execution["cleanup_ok"]
+                  and clean_settlement and not terminal_error else "error")
+    return {"completion": completion, "elapsed_seconds": execution["elapsed_seconds"],
+            "wall": execution["elapsed_seconds"], "provider_error": provider_error,
+            "cleanup_ok": execution["cleanup_ok"], "exit_code": execution["exit_code"]}
+
+
 
 def score(run: Path, suite: Suite) -> tuple[bool, str]:
     return score_workspace(Path(run) / "workspace", suite)
@@ -771,8 +833,11 @@ def score_workspace_details(
     )
     result = subprocess.run(
         command, cwd=workspace, capture_output=True, text=True, check=False,
-        env={**os.environ, "PYTHONPATH": str(workspace)},
+        env=grade_env(workspace),
     )
+    (workspace.parent / "hidden-grade.json").write_text(json.dumps({
+        "command": command, "exit_code": result.returncode,
+        "stdout": result.stdout, "stderr": result.stderr}, indent=2) + "\n")
     output = (result.stdout + result.stderr).strip()
     # A collection error (or no tests collected) means the hidden checks never
     # executed -- usually because the workspace lacks a module they import. That
@@ -806,24 +871,32 @@ def _run_sessions(
     remedies: list[str] = (),
     extras: list[Path] = (),
     context_files: bool = False,
+    grade_versions: dict[str, str] | None = None,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
+        print(f"Starting {suite.name} / {arm} session", flush=True)
         run_dir = run_suite(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
                             context_files=context_files)
-        grades = grade(run_dir / "workspace") if grade_run else []
+        grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
+                  grade(run_dir / "workspace")) if grade_run else []
         tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
         failed_checks = len(missing)
         quality_ok = all(
             ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
-        ) if grades else True
+        ) if grades else None
+        health_status = "not checked" if quality_ok is None else "pass" if quality_ok else "fail"
+        if (run_dir / "grade.json").is_file():
+            diagnostics = json.loads((run_dir / "grade.json").read_text())
+            if any(diagnostics[name]["status"] == "not checked" for name in ("ruff", "complexipy")):
+                health_status = "not checked"
         contaminated = (run_dir / "contaminated").exists()
         metrics = report(run_dir)
         over = record_failures(metrics, suite.record)
-        passed = tests_passed and quality_ok and not contaminated and not over
+        passed = tests_passed and quality_ok is not False and not contaminated and not over
         leaked_file = run_dir / "leaked.json"
         if leaked_file.is_file():
             metrics["leaked"] = json.loads(leaked_file.read_text())
@@ -848,16 +921,22 @@ def _run_sessions(
             "passed": passed,
             "tests_passed": tests_passed,
             "quality_ok": quality_ok,
+            "code_health": health_status,
             "contaminated": contaminated,
             "failed_checks": failed_checks,
             "checks_ran": checks_ran,
+            "checks_passed": len(suite.expected) - len(missing) if checks_ran else 0,
+            "checks_total": len(suite.expected),
             "missing_checks": missing,
             "check_groups": check_groups(suite.expected, missing),
             "record_failures": over,
             **{key: value for key, value in metrics.items()
                if key != "final_reply"},
+            **execution_outcome(run_dir),
         }
         (run_dir / "run.json").write_text(json.dumps(record, indent=2) + "\n")
+        from baseline import render_scorecard
+        print(render_scorecard([{**record, "run_id": run_dir.name}]), flush=True)
         results.append((run_dir, passed, tail, grades, metrics,
                         tests_passed, quality_ok, contaminated))
     return results
@@ -950,7 +1029,7 @@ def _line(
                 else " stalled" if (Path(run_dir) / "stalled").exists() else "")
     label = "CONTAMINATED" if contaminated else ("PASS" if passed else "FAIL")
     notes = []
-    if not quality_ok:
+    if quality_ok is False:
         notes.append("quality FAIL")
     if contaminated:
         notes.append("grader touched")

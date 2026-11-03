@@ -46,6 +46,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- Harness records now separate hidden-check correctness, code health, and native
+  session completion. Execution time includes silent waits; unchecked health
+  stays explicit, and full checker output and provider errors are retained.
+
 - **The Windows installer installs the pinned Pi and the harness.**
   `install.bat` ran `npm install -g` with no version, so a fresh clone got
   whatever npm's `latest` happened to be, and it never registered the package,

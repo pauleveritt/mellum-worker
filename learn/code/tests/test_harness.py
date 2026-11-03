@@ -582,7 +582,8 @@ def test_run_sessions_writes_metrics(tmp_path):
     assert record["check_groups"] == {}
     assert record["turns"] == 0
     assert record["context"] is None
-    assert record["wall"] is None
+    assert record["wall"] >= 0
+    assert record["wall"] == record["elapsed_seconds"]
 
 
 def test_grade_ignores_the_workspace_venv(tmp_path):
@@ -1165,3 +1166,111 @@ def test_relative_runs_dir_and_profile_are_made_absolute_before_pi_runs(tmp_path
     harness.main(["run", "--suites-dir", str(SUITES), "--suite", "add", "--runs-dir", "runs/x", "--profile", "prof"])
     assert seen["runs_dir"] == tmp_path / "runs" / "x"
     assert seen["profile"] == tmp_path / "prof"
+
+# Trusted baseline regressions: these catch misleading success and budget records.
+def _observed_pi(tmp_path, rows, *, sleep=0, exit_code=0):
+    binary = tmp_path / 'observed-pi'
+    script = f"""
+const fs = require('node:fs');
+fs.writeFileSync('add.py', 'def add(a, b):\\n    return a + b\\n');
+for (const row of {json.dumps(rows)}) {{
+ row.timestamp ??= new Date().toISOString();
+ fs.appendFileSync(process.env.MELLUM_TRACE_FILE, JSON.stringify(row)+'\\n');
+}}
+setTimeout(()=>process.exit({exit_code}), {sleep * 1000});
+"""
+    binary.write_text("#!/bin/sh\nexec node <<'JS'\n" + script + "\nJS\n")
+    binary.chmod(0o755)
+    return str(binary)
+
+
+def _observed_record(tmp_path, rows, **kwargs):
+    binary = _observed_pi(tmp_path, rows, sleep=kwargs.pop('sleep', 0),
+                          exit_code=kwargs.pop('exit_code', 0))
+    result = harness._run_sessions(harness.load_suite(SUITES, 'add'),
+        runs_dir=tmp_path / 'runs', pi_binary=binary, repeat=1,
+        grade_run=False, deadline=10, **kwargs)
+    path = result[0][0]
+    return path, json.loads((path / 'run.json').read_text())
+
+
+def test_elapsed_includes_silent_tail(tmp_path):
+    path, record = _observed_record(tmp_path, [
+        {'type':'provider_request'}, {'type':'agent_settled','aborted':False}], sleep=.4)
+    execution = json.loads((path / 'execution.json').read_text())
+    assert .4 <= record['elapsed_seconds'] < 4
+    assert record['wall'] == record['elapsed_seconds'] == execution['elapsed_seconds']
+    assert execution['exit_code'] == 0
+
+
+def test_artifact_pass_can_stall(tmp_path):
+    _, record = _observed_record(tmp_path, [
+        {'type':'tool_call','toolName':'bash','input':{'command':'sleep 20'}}],
+        sleep=20, stall=.1)
+    assert record['tests_passed'] is True
+    assert record['completion'] == 'stalled'
+
+
+@pytest.mark.parametrize('rows,code,want', [
+    ([], 0, 'error'),
+    ([{'type':'agent_settled','aborted':True}], 0, 'error'),
+    ([{'type':'agent_settled','aborted':False}], 7, 'error'),
+    ([{'type':'agent_settled','aborted':False},
+      {'type':'message_end','message':{'role':'assistant','stopReason':'error','errorMessage':'HTTP 503'}}], 0, 'error'),
+    ([{'type':'message_end','message':{'role':'assistant','stopReason':'error','errorMessage':'HTTP 503'}},
+      {'type':'message_end','message':{'role':'assistant','stopReason':'stop','content':[{'type':'text','text':'done'}]}},
+      {'type':'agent_settled','aborted':False}], 0, 'settled'),
+])
+def test_settlement_requires_native_evidence(tmp_path, rows, code, want):
+    _, record = _observed_record(tmp_path, rows, exit_code=code)
+    assert record['completion'] == want
+
+
+def test_code_health_not_checked_is_explicit(tmp_path):
+    _, record = _observed_record(tmp_path, [])
+    assert record['quality_ok'] is None
+    assert record['code_health'] == 'not checked'
+    assert record['output_tokens'] is None
+
+
+def test_checker_outputs_are_retained(tmp_path, monkeypatch):
+    workspace = _workspace(tmp_path, 'def add(a, b):\n    return a+b\n')
+    real = subprocess.run
+    def checker(command, **kwargs):
+        if command[0] in ('uv', 'uvx'):
+            if '--version' in command:
+                return subprocess.CompletedProcess(command, 0, 'checker 1.2.3\n', '')
+            if 'ruff==1.2.3' in command:
+                raise FileNotFoundError('checker missing')
+            return subprocess.CompletedProcess(command, 0, 'full output\nsecond line\n', 'diagnostic\n')
+        return real(command, **kwargs)
+    monkeypatch.setattr(harness.subprocess, 'run', checker)
+    grades = harness.grade(workspace, versions={k:'1.2.3' for k in ('ruff','complexipy','pyrefly')})
+    assert dict((name, ok) for name, ok, _ in grades)['ruff'] is False
+    diagnostic = json.loads((workspace.parent / 'grade.json').read_text())
+    assert diagnostic['complexipy']['stdout'] == 'full output\nsecond line\n'
+    assert diagnostic['complexipy']['stderr'] == 'diagnostic\n'
+    assert diagnostic['complexipy']['version'] == '1.2.3'
+    assert diagnostic['ruff']['status'] == 'not checked'
+
+
+def test_collection_error_is_not_four_executed_failures():
+    import baseline
+    rendered = baseline.render_scorecard([{'run_id':'r1', 'checks_ran':False,
+        'checks_passed':0, 'checks_total':4, 'code_health':'not checked',
+        'completion':'stalled', 'turns':3, 'output_tokens':None, 'elapsed_seconds':181.2}])
+    assert 'not run (0/4)' in rendered
+    assert 'unknown' in rendered
+    assert len(rendered.splitlines()[0].strip('|').split('|')) == 7
+
+
+@pytest.mark.parametrize('worked,want', [(False,'infrastructure'), (True,'review')])
+def test_provider_error_preserves_work_evidence(tmp_path, worked, want):
+    rows = [{'type':'provider_request'}]
+    if worked:
+        rows += [{'type':'message_end','message':{'role':'assistant','stopReason':'toolUse',
+            'content':[{'type':'toolCall','name':'read','id':'a'}], 'usage':{'output':8}}}]
+    rows += [{'type':'message_end','message':{'role':'assistant','stopReason':'error','errorMessage':'HTTP 503 unavailable'}}]
+    _, record = _observed_record(tmp_path, rows)
+    assert record['provider_error']['classification'] == want
+    assert record['provider_error']['evidence'][0]['errorMessage'] == 'HTTP 503 unavailable'

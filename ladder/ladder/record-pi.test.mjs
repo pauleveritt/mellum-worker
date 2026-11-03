@@ -132,3 +132,19 @@ test('shipped guard hook decisions and payloads are identical with telemetry', a
   assert.ok(plain.decisions.flat().some(d=>d.continue));
   assert.deepEqual(observed,plain);
 });
+
+test('last recorder sees payload returned by an earlier request transformer', async () => {
+  const listeners = [], rows = [];
+  const pi = {on: (name, fn) => { if (name === 'before_provider_request') listeners.push(fn); }};
+  pi.on('before_provider_request', event => ({...event.payload,
+    messages:[{role:'system',content:'controlled replacement'}, ...event.payload.messages]}));
+  recorder.installRecorder(pi, {write:row=>rows.push(structuredClone(row)), runtime:{piVersion:'1.4.0'}});
+  let currentPayload = structuredClone(request.payload);
+  for (const handler of listeners) {
+    const result = await handler({type:'before_provider_request', payload:currentPayload});
+    if (result !== undefined) currentPayload = result;
+  }
+  assert.equal(rows.find(r=>r.type==='provider_request').payload.messages[0].content,'controlled replacement');
+  assert.deepEqual(rows.find(r=>r.type==='provider_request').payload,currentPayload);
+  assert.equal(request.payload.messages.length,1);
+});
