@@ -451,6 +451,8 @@ export default function (pi: any): void {
 			};
 			return {
 				render: (width: number) => {
+					// While a /challenge run is streaming, its feed takes this space instead.
+					if ((globalThis as Record<string, unknown>).__mellumChallengeActive) return [];
 					const w = Math.max(20, width);
 					if (!lesson) {
 						const legend = [...BANNER.map((l) => theme.fg("accent", l)), "", ...styleGuide(lessonLegend(), paint, w)];

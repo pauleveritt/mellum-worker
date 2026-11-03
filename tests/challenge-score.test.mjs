@@ -127,3 +127,26 @@ test("/challenge submit lists recorded runs to toggle, then confirms before any 
 	assert.ok(pi.ui.seen[0].some((x) => x.includes("easy · worker+1 · 1/1 · 42 turns")));
 	assert.ok(pi.ui.seen.at(-1).includes("Open PR"));
 });
+
+test("the challenge feed shows the live turns and tool calls, then the final score", async () => {
+	const { renderFeed } = await host();
+	const theme = { fg: (_k, s) => s, bold: (s) => s };
+	const cut = (s, w) => s.slice(0, w);
+	// Running: header names tier and label; body streams turns and the recent tool calls.
+	const live = renderFeed(
+		{ tier: "easy", label: "worker + 2 remedies", runs: 3, runsDone: 0, turns: 7,
+		  calls: ['read app.py', 'bash {"command":"pytest"}'], started: Date.now() - 5000 },
+		80, theme, cut).join("\n");
+	assert.match(live, /Challenge · easy · worker \+ 2 remedies · run 1\/3/);
+	assert.match(live, /turn 7/);
+	assert.match(live, /read app\.py/);
+	assert.match(live, /bash .*pytest/);
+	// Done: the score and per-rep lines replace the feed.
+	const done = renderFeed(
+		{ tier: "easy", label: "worker", runs: 2, runsDone: 2, turns: 0, calls: [], started: Date.now() - 9000,
+		  done: { passed: 1, total: 2, rows: [{ passed: true, turns: 12, wall: 40 }, { passed: false, turns: 9, wall: 30 }] } },
+		80, theme, cut).join("\n");
+	assert.match(done, /1\/2 passed/);
+	assert.match(done, /rep 1: pass · 12 turns/);
+	assert.match(done, /rep 2: fail · 9 turns/);
+});

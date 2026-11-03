@@ -4,6 +4,15 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Changed
+
+- **`/challenge` shows a live feed panel.** The model's turns and tool calls
+  streamed as scattered chat notifications that were easy to miss, with only a
+  one-line status in the footer. A run now pins a feed panel — the tier and
+  remedy label, the current run and turn, the last tool calls as they happen, and
+  the score with per-rep lines when it finishes — and the lesson panel steps
+  aside while it runs so the feed has the space.
+
 ### Fixed
 
 - **The scoreboard page has its own illustration.** `scoreboard.webp` was a

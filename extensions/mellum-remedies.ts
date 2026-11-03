@@ -75,6 +75,40 @@ const REPO = "andrevanzuydam/mellum-worker";
 const running = new Set<ChildProcess>();
 const timers = new Set<ReturnType<typeof setInterval>>();
 
+// The live challenge feed, shown in a pinned widget while a run is active (see runChallenge).
+// A global flag lets the lesson panel step aside so the feed has the space.
+type ChallengeFeed = {
+	tier: string; label: string; runs: number;
+	runsDone: number; turns: number; calls: string[]; started: number;
+	done?: { passed: number; total: number; rows: { passed: boolean; turns: number; wall: number }[] };
+};
+let challenge: ChallengeFeed | undefined;
+let challengeRefresh: (() => void) | undefined;
+
+/** The feed panel's lines: the header, then the live turns and tool calls, or the final score. */
+export function renderFeed(c: ChallengeFeed, width: number, theme: any, truncate: (s: string, w: number) => string): string[] {
+	const w = Math.max(20, width);
+	const secs = Math.round((Date.now() - c.started) / 1000);
+	const run = c.runs > 1 ? ` · run ${Math.min(c.runsDone + 1, c.runs)}/${c.runs}` : "";
+	const lines = [
+		theme.bold(theme.fg("accent", `▍ Challenge · ${c.tier} · ${c.label}${run}`)),
+		theme.fg("dim", "─".repeat(w)),
+	];
+	if (c.done) {
+		const ok = c.done.passed === c.done.total;
+		lines.push(theme.fg(ok ? "success" : "warning", ` ${c.done.passed}/${c.done.total} passed · ${secs}s`));
+		c.done.rows.forEach((r, i) => lines.push(theme.fg("dim",
+			`  rep ${i + 1}: ${r.passed ? "pass" : "fail"} · ${r.turns} turns · ${Math.round(r.wall)}s`)));
+		lines.push("", theme.fg("dim", " done · type to talk to the model"));
+	} else {
+		lines.push(theme.fg("dim", ` turn ${c.turns} · ${secs}s · the model is building…`), "");
+		const feed = c.calls.slice(-10);
+		if (!feed.length) lines.push(theme.fg("dim", "  waiting for the model’s first move…"));
+		for (const call of feed) lines.push(` ${theme.fg("mdCode", call)}`);
+	}
+	return lines.map((l) => truncate(l, w));
+}
+
 /** Read the in-flight run: the newest trace, how many runs are done, the turn count, and each
  * tool call so far ("bash python app.py"), so the command can stream what the model is doing. */
 function progress(runsDir: string): { trace: string; runsDone: number; turns: number; calls: string[] } {
@@ -269,7 +303,7 @@ async function submitChallenge(ctx: any): Promise<void> {
 }
 
 /** Run a challenge tier through the harness `runs` times on `arm` with `units` loaded, score and record it. */
-function runChallenge(tier: string, units: string[], runs: number, arm: string, ctx: any): void {
+async function runChallenge(tier: string, units: string[], runs: number, arm: string, ctx: any): Promise<void> {
 	if (!existsSync(join(ROOT, "learn", "code", "harness.py"))) {
 		return ctx.ui.notify("/challenge runs from a mellum-worker checkout (no learn/code/harness.py here)", "error");
 	}
@@ -280,6 +314,17 @@ function runChallenge(tier: string, units: string[], runs: number, arm: string, 
 	const base = arm === "worker" ? "worker" : "vanilla Pi";
 	const on = `${base}${units.length ? ` + ${units.length} remed${units.length === 1 ? "y" : "ies"}` : ""}`;
 	ctx.ui?.notify?.(`running the ${tier} challenge — ${on}, n=${runs} — a full suite on the real model, so give it a while.`, "info");
+
+	// A live feed in a pinned panel, in place of the lesson panel while it runs. pi-tui resolves
+	// only in the running Pi, so the truncate helper is loaded here, not imported at the top.
+	const { truncateToWidth } = await import("@earendil-works/pi-tui");
+	challenge = { tier, label: on, runs, runsDone: 0, turns: 0, calls: [], started: Date.now() };
+	(globalThis as Record<string, unknown>).__mellumChallengeActive = true;
+	ctx.ui?.setWidget?.("challenge", (tui: any, theme: any) => {
+		challengeRefresh = () => tui.requestRender();
+		return { render: (width: number) => challenge ? renderFeed(challenge, width, theme, truncateToWidth) : [] };
+	});
+
 	const child = spawn("uv", argv, { cwd: ROOT, stdio: ["ignore", "pipe", "pipe"] });
 	running.add(child);
 	let tail = "";
@@ -287,20 +332,21 @@ function runChallenge(tier: string, units: string[], runs: number, arm: string, 
 	child.stdout?.on("data", keep);
 	child.stderr?.on("data", keep);
 
-	let curTrace = "";
-	let emitted = 0;
 	const tick = setInterval(() => {
-		const { trace, runsDone, turns, calls } = progress(runsDir);
-		if (!trace) return;
-		if (trace !== curTrace) { curTrace = trace; emitted = 0; } // a new run of the batch started
+		const { runsDone, turns, calls } = progress(runsDir);
+		if (challenge) { challenge.runsDone = runsDone; challenge.turns = turns; challenge.calls = calls; }
+		challengeRefresh?.();
 		const where = runs > 1 ? `run ${Math.min(runsDone + 1, runs)}/${runs} ` : "";
-		for (let i = emitted; i < calls.length; i += 1) {
-			ctx.ui?.notify?.(`${tier} ${where}· ${calls[i]}`, "info"); // stream what the model just did
-		}
-		emitted = calls.length;
 		ctx.ui?.setStatus?.("challenge", `${tier}: ${where}turn ${turns}…`);
 	}, 2000);
 	timers.add(tick);
+
+	const clearFeed = () => {
+		(globalThis as Record<string, unknown>).__mellumChallengeActive = false;
+		challenge = undefined;
+		challengeRefresh = undefined;
+		ctx.ui?.setWidget?.("challenge", undefined);
+	};
 
 	child.on("close", () => {
 		clearInterval(tick);
@@ -310,7 +356,7 @@ function runChallenge(tier: string, units: string[], runs: number, arm: string, 
 		const s = scoreRuns(runsDir);
 		if (s.total === 0) {
 			ctx.ui?.notify?.(`the ${tier} challenge produced no result:\n${tail.trim().split("\n").slice(-4).join("\n")}`, "error");
-			return;
+			return clearFeed();
 		}
 		const rows = s.rows.map((r) => ({ passed: r.passed, turns: r.turns, wall: Math.round(r.wall) }));
 		recordChallenge({ tier, arm, remedies: units, runs, passed: s.passed, total: s.total, turns: s.turns, wall: Math.round(s.wall), rows, at: new Date().toISOString() });
@@ -320,6 +366,10 @@ function runChallenge(tier: string, units: string[], runs: number, arm: string, 
 			? s.rows.map((r, i) => `  rep ${i + 1}: ${r.passed ? "pass" : "fail"} · ${r.turns} turns · ${Math.round(r.wall)} s`)
 			: [];
 		ctx.ui?.notify?.([head, summary, ...perRep].join("\n"), s.passed === s.total ? "info" : "warning");
+		// Hold the score on the feed for a moment, then clear it so the lesson panel returns.
+		if (challenge) { challenge.done = { passed: s.passed, total: s.total, rows }; challengeRefresh?.(); }
+		const hold = setTimeout(() => { clearFeed(); timers.delete(hold); }, 15000);
+		timers.add(hold);
 	});
 }
 
@@ -430,6 +480,9 @@ export default async function (pi: any): Promise<void> {
 		running.clear();
 		for (const t of timers) clearInterval(t);
 		timers.clear();
+		(globalThis as Record<string, unknown>).__mellumChallengeActive = false;
+		challenge = undefined;
+		challengeRefresh = undefined;
 	});
 
 	pi.registerCommand("challenge", {
@@ -450,7 +503,8 @@ export default async function (pi: any): Promise<void> {
 			}
 			const vanilla = tierTok.endsWith(":vanilla");
 			const tier = vanilla ? tierTok.slice(0, -":vanilla".length) : tierTok;
-			runChallenge(tier, [...on], runs, vanilla ? "bare" : "worker", ctx);
+			void runChallenge(tier, [...on], runs, vanilla ? "bare" : "worker", ctx)
+				.catch((e) => ctx.ui?.notify?.(`challenge failed to start: ${(e as Error)?.message ?? e}`, "error"));
 		},
 	});
 }
