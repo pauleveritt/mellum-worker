@@ -137,6 +137,49 @@ is kept (it changed the run — the first single-shot was blocked by exactly the
 no freeze or worker guard is added, since the freeze held and the miss is throughput, not
 integrity. n=1, a lead.
 
+### Per-phase delegation (MELLUM_DELEGATE_PHASED=1) — medium hidden 6/18, the first non-zero
+
+Per-phase (`doTaskPhased`): the architect decomposes the spec into ordered phases and writes
+one cumulative acceptance test per phase; each phase gets its OWN fresh worker (a fresh turn
+budget) against the cumulative test, and a passing phase is git-checkpointed so a later phase
+cannot silently break an earlier one. The throughput thesis held at n=1:
+
+- **First non-zero medium.** The bare worker converged **phase 1 (home) and phase 2 (complaints
+  board)**, both git-checkpointed, where single-shot churned a 4-phase spec to a hard 0. Hidden
+  grade at the clean phase-2 checkpoint: **6/18** (phase-1 doctype/lang/tagline; phase-2 heading,
+  seed-complaint listed, **seed count preserved** — the module-level `complaints` contract held).
+  The final on-disk tree graded 8/18 with phase-3 residue (see the revert caveat).
+- **The quote-rule and worker-scoping fixes worked.** All four phase tests compiled on the first
+  authoring pass (no compile-repair needed), versus the two prior runs where the architect's
+  nested-double-quote bug blocked the run. The worker, told to work only inside its own directory,
+  stopped `find`-ing sibling workspaces (which had wasted a run).
+
+What capped it at 6/18, each a known lever rather than a per-phase flaw:
+
+1. **In-loop vs hidden completeness, per phase.** The architect's phase tests are looser than the
+   hidden grader's: the worker's home page passed the in-loop phase 1 yet failed the hidden
+   `nav_links` check; phase 2 passed in-loop yet failed the hidden shared-layout, seed-detail and
+   model-contract checks. Same completeness gap as easy/medium single-shot, now per phase.
+2. **A frozen-test RUNTIME bug the compile-check cannot catch.** The phase-3 test called
+   `client.post(..., allow_redirects=False)` — removed from current starlette/httpx (it is
+   `follow_redirects`). It compiles, so the guard passed it, but it errors at run time, so phase 3
+   could not pass. Phase 4 was never reached; the loop reverted to the phase-2 checkpoint and
+   stopped at 2/4.
+3. **The freeze (chmod 0444) is defeated by `chmod +w`.** The worker ran `chmod +w` then `write`
+   to edit the frozen phase-3 test (here to fix the `allow_redirects` bug — but it could as easily
+   weaken a real check). `edit`/`write` alone were blocked; the explicit chmod was not. A real
+   freeze needs a read-only directory or tamper-detection that re-fails on any change to a test.
+4. **Revert-on-failure races the worker's trailing writes.** After phase 3 failed, `git reset
+   --hard` ran, but the tree ended `M app.py` / `M test_phase3` — the spawned worker's last writes
+   landed after the revert. So grade the committed checkpoint (6/18), not the dirty tree (8/18);
+   the revert must wait for the child to fully flush.
+
+Decision: per-phase is the right shape for a multi-milestone spec (first non-zero medium at n=1).
+The remaining levers are the architect's per-phase completeness (match the hidden grader's
+strictness), a freeze that a `chmod` cannot defeat, and a deterministic revert. Guards: none added
+on this run — the evidence points at completeness and two harness-robustness bugs, not a worker
+guard. n=1, a lead.
+
 ## What would falsify "we no longer need remedies"
 
 - A tier where the bare arm's **hidden** grade is below the tier preset's on a
