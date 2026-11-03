@@ -52,4 +52,52 @@ stands and this note records why the two are equivalent for this model.
 
 ## Result
 
-_(pending the run)_
+Run 2026-11-03, easy, n=3, local Mellum 2.1 Q4 on llama-server `:8001`,
+`--deadline 600 --stall 180`. Oracle = the hidden grader (`tests_passed`);
+composite = `passed` (oracle plus ruff/no-leak).
+
+| cell | oracle | composite | stalled | turns~ | wall~ |
+|---|---|---|---|---|---|
+| vanilla cold | 1/3 | 1/3 | 3/3 | 20 | 66s |
+| vanilla warm | **3/3** | 2/3 | 1/3 | 21 | 77s |
+| worker cold | 1/3 | 1/3 | 2/3 | 23 | 76s |
+| worker warm | **3/3** | 3/3 | 0/3 | 17 | 60s |
+
+**Warm lifts the oracle 1/3 → 3/3 in both arms, and collapses the foreground
+hang** (cold stalled 3/3 and 2/3; warm 1/3 and 0/3). The margin clears the
+decision rule: **the cold run is the accident.** `worker warm` is the cleanest
+cell of the four — 3/3 on both metrics, no stall, the fewest turns.
+
+Why it moves, from the traces:
+- **Cold does not hide `AGENTS.md`** — every cold session explored (`ls`, `find`)
+  and read `AGENTS.md` and `specs/roadmap.md` itself. So "cold" is "not
+  auto-injected", not "absent".
+- **Auto-injection changes behaviour, not availability.** Warm sessions went
+  straight to `specs/roadmap.md`, and — the load-bearing part — heeded the
+  file's "do not start servers" and "run the test command before reporting". The
+  cold sessions read the same words but started `python app.py` / `uvicorn
+  --reload` and hung anyway. Reading is not obeying; the system slot is.
+
+**Implication.** The easy ladder's prompt remedies were measured against a cold
+baseline an accident had pushed down to 1/3. A warm easy baseline is 3/3, so on
+easy the remedies were largely re-supplying what the suite's own `AGENTS.md`
+gives for free. `name-the-layout` is the clearest case — the cold layout misses
+(`main.py`, a `request` query-param bug, `ModuleNotFoundError: app`) are exactly
+what the auto-injected guide heads off.
+
+**Decision.** Re-baseline the easy ladder warm (the convention-correct and
+real-Pi condition) and re-weigh every easy prompt remedy against the warm floor,
+at the fuller n a default change needs — this screen is the lead, not the rate.
+Whether warm becomes the harness default is that re-baseline's call, not this
+note's.
+
+Two bycatch bugs, logged separately, not fixed here:
+- `uv run uvicorn --reload` leaks a detached process group the workspace sweep
+  cannot kill, so correct code is failed as a leak (vanilla warm session 1).
+- A stalled session is still graded on its files, so a hang can score a pass if
+  the code was finished first (vanilla cold session 3) — the composite catches
+  it, the oracle alone does not.
+
+Raw runs under `runs/agents-md-warmcold/` (git-ignored); promote with traces
+stripped if this screen graduates to a recorded ladder run.
+
