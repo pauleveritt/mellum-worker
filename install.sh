@@ -25,6 +25,10 @@ has() {
 # llama.cpp learned Mellum's architecture in build 9482.
 MIN_BUILD=9482
 
+# Prebuilt Linux releases (LLAMA_TAG, flavor detection, install_llama_release).
+# shellcheck source=scripts/llama-release.sh
+source "$REPO_DIR/scripts/llama-release.sh"
+
 # Newer builds print "version: 0.7.0-dev (build 11829, ...)",
 # older ones "version: 7360 (...)". Prints nothing if neither matches.
 build_of() {
@@ -41,6 +45,17 @@ build_of() {
 # first wins and cannot load Mellum. Homebrew's copy is upgraded, ours in
 # ~/.local/bin is rebuilt, and any other old copy is renamed to .old once a
 # current build is installed.
+# Every llama-server on PATH, once each. PATH can name one directory twice
+# under different spellings (~/.local/bin and ~/.local/share/../bin); without
+# resolving the directory, the same file counts as two copies and the "old"
+# one gets renamed out from under the current one.
+llama_servers_on_path() {
+    local p
+    type -ap llama-server | while IFS= read -r p; do
+        echo "$(cd "$(dirname "$p")" && pwd -P)/$(basename "$p")"
+    done | awk '!seen[$0]++'
+}
+
 build_llama=false
 retire=()
 if ! has llama-server; then
@@ -60,13 +75,13 @@ else
             echo "  $path  [build $build, too old]"
             if has brew && [[ "$path" == "$(brew --prefix)"/* ]]; then
                 brew_old=true
-            elif [[ "$path" == "$HOME/.local/bin/llama-server" ]]; then
+            elif [[ "$path" == "$(cd "$HOME/.local/bin" 2>/dev/null && pwd -P)/llama-server" ]]; then
                 build_llama=true
             else
                 retire+=("$path")
             fi
         fi
-    done < <(type -ap llama-server | awk '!seen[$0]++')
+    done < <(llama_servers_on_path)
 
     if [[ "$brew_old" == true ]]; then
         echo "Upgrading llama.cpp with Homebrew..."
@@ -77,6 +92,16 @@ else
     # Old copies to rename need a current build to take their place.
     if (( ${#retire[@]} > 0 )) && [[ "$have_good" == false ]]; then
         build_llama=true
+    fi
+fi
+
+# On Linux, a prebuilt release is the first choice: it reports its real build
+# number, brings a CUDA or Vulkan backend for the GPU, and needs no compiler.
+# A source build below is the fallback (and the only path on macOS).
+if [[ "$build_llama" == true && "$OS" == Linux && "${MELLUM_LLAMA_SOURCE:-0}" != 1 ]]; then
+    if install_llama_release; then
+        build_llama=false
+        have_good=true
     fi
 fi
 
@@ -112,6 +137,8 @@ node_major() {
 # A missing or old Node.js gets a private LTS in ~/.local, fetched by uv's
 # nodeenv: no sudo, no Homebrew, no shell configuration to edit.
 ensure_node() {
+    # A private Node from an earlier run goes first on PATH, as in run.sh.
+    [[ -x "$NODE_DIR/bin/node" ]] && export PATH="$NODE_DIR/bin:$PATH" && hash -r
     if has node && [[ "$(node_major)" -ge "$MIN_NODE" ]]; then
         echo "[OK] Node.js $(node_major) is new enough."
         return 0
@@ -120,13 +147,22 @@ ensure_node() {
         echo "[OLD] Node.js $(node_major) at $(command -v node) is too old;"
         echo "this repo and Pi need $MIN_NODE or newer."
     fi
+    local had_node=false
+    has node && had_node=true
     echo "Installing a private Node.js LTS into $NODE_DIR..."
     rm -rf -- "$NODE_DIR"
     uv tool run nodeenv --prebuilt --node=lts "$NODE_DIR"
-    mkdir -p "$HOME/.local/bin"
-    for tool in node npm npx; do
-        ln -sf "$NODE_DIR/bin/$tool" "$HOME/.local/bin/$tool"
-    done
+    if [[ "$had_node" == true ]]; then
+        # Leave the user's own node, npm and npx alone: other tools depend on
+        # them. This script and run.sh put the private one first on PATH instead.
+        echo "[INFO] Keeping your Node.js on PATH; run.sh uses $NODE_DIR/bin first."
+    else
+        mkdir -p "$HOME/.local/bin"
+        for tool in node npm npx; do
+            ln -sf "$NODE_DIR/bin/$tool" "$HOME/.local/bin/$tool"
+        done
+    fi
+    export PATH="$NODE_DIR/bin:$PATH"
     hash -r
     if [[ "$(node_major)" -lt "$MIN_NODE" ]]; then
         echo "[ERROR] Node.js is still older than $MIN_NODE: $(command -v node)."
@@ -262,9 +298,22 @@ else
         }
     done
 
-    echo "Downloading llama.cpp..."
-    git clone --depth 1 https://github.com/ggml-org/llama.cpp.git \
-        "$work_dir/llama.cpp"
+    # A blobless clone keeps every commit (but no old file contents), so
+    # llama.cpp's build number — `git rev-list --count HEAD` — is real. A
+    # --depth 1 clone reports "build 1", which backend.py rejects as too old.
+    echo "Downloading llama.cpp $LLAMA_TAG..."
+    git clone --filter=blob:none --branch "$LLAMA_TAG" \
+        https://github.com/ggml-org/llama.cpp.git "$work_dir/llama.cpp"
+
+    # GPU backends when their toolchain is present; CPU otherwise.
+    gpu_flags=()
+    if has nvcc; then
+        gpu_flags+=(-DGGML_CUDA=ON)
+        echo "[INFO] nvcc found: building with CUDA."
+    elif has glslc && llama_has_vulkan; then
+        gpu_flags+=(-DGGML_VULKAN=ON)
+        echo "[INFO] glslc and a Vulkan loader found: building with Vulkan."
+    fi
 
     # uv supplies CMake without a system-wide installation.
     # Static project libraries let us install the server as one executable.
@@ -276,13 +325,15 @@ else
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=OFF \
         -DLLAMA_BUILD_TESTS=OFF \
-        -DLLAMA_BUILD_SERVER=ON
+        -DLLAMA_BUILD_SERVER=ON \
+        ${gpu_flags[@]+"${gpu_flags[@]}"}
 
-    echo "Building llama-server..."
+    jobs="${BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)}"
+    echo "Building llama-server with $jobs jobs (set BUILD_JOBS to change)..."
     uv tool run --from cmake cmake \
         --build "$work_dir/build" \
         --target llama-server \
-        --parallel "${BUILD_JOBS:-2}"
+        --parallel "$jobs"
 
     mkdir -p "$HOME/.local/bin"
     install -m 755 "$work_dir/build/bin/llama-server" \

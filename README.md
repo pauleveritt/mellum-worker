@@ -46,8 +46,8 @@ run it again afterwards. The reasoning is in the
 
 ## Install
 
-macOS or Linux. Clone the repo and run the installer; it checks each tool
-before touching anything:
+**llama.cpp: Linux, macOS, Windows.** Clone the repo and run the installer.
+It sets up `uv`, `llama-server`, a Node.js new enough for Pi, and Pi itself:
 
 ```bash
 git clone https://github.com/andrevanzuydam/mellum-worker
@@ -55,20 +55,36 @@ cd mellum-worker
 bash install.sh
 ```
 
-`install.sh` ensures a current `llama-server` (llama.cpp build 9482 or newer,
-the first to know Mellum's architecture — it upgrades or builds one if yours is
-older), Node.js, `uv` and the pinned Pi, installs the worker into Pi, then hands
-off to `run.sh`. After that, the recurring entry point is just:
+On Linux it downloads llama.cpp's prebuilt release for your hardware: CUDA
+when `nvidia-smi` finds an NVIDIA GPU, Vulkan when a Vulkan loader is
+installed, otherwise CPU. Set `MELLUM_LLAMA_FLAVOR` (`cuda-13.4`,
+`cuda-12.8`, `vulkan`, `cpu`) to choose one yourself, or
+`MELLUM_LLAMA_SOURCE=1` to compile instead. On macOS it keeps a current
+Homebrew llama.cpp, or compiles one. On Windows, follow
+[Base Pi on llama.cpp](learn/getting-started/base-pi-on-llamacpp.md).
+
+Then start the model and Pi:
 
 ```bash
-bash run.sh
+bash run.sh                    # Pi in this repo: the course, /lesson, /remedy
+bash run.sh ~/code/my-project  # Pi in your own project, with /mellum loaded
+MELLUM_REMEDY=preset:easy bash run.sh ~/code/my-project   # with the Easy stack on
 ```
 
-which starts the local server (downloading the ~8 GB Q4_K_M weights once) and
-opens Pi pointed at it. Mellum Worker works once the model is served.
+The first `run.sh` downloads the Q4_K_M weights (about 8 GB) into the
+Hugging Face cache and serves them on `127.0.0.1:8001`. Things the scripts
+change outside this folder:
 
-Already running Pi with a current `llama-server` of your own? Install just the
-worker into Pi and point a `llamacpp` provider at `127.0.0.1:8001`:
+- `install.sh` puts `uv`, `llama-server` and `pi` in `~/.local/bin`, and
+  installs this package into your own Pi (`~/.pi/agent/settings.json`). Undo
+  the package with `pi remove <this folder>`.
+- If your Node.js is older than 24, `install.sh` adds a private one under
+  `~/.local/share/mellum-node`. Only `install.sh` and `run.sh` use it; your own
+  `node` stays as it is.
+- `run.sh` stops any running `llama-server` and anything listening on port
+  8001 before it starts the model.
+
+**oMLX: Apple Silicon only.** The measured setup:
 
 ```bash
 pi install git:github.com/andrevanzuydam/mellum-worker@v0.1.8
@@ -345,8 +361,12 @@ still fails.
 
 ## Requirements
 
-- Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or newer, 9.9 GB for the weights
-- Node 24 or newer; Pi 1.0 or newer
+- llama.cpp path: Linux, macOS or Windows; about 10 GB free for the Q4_K_M
+  weights; a GPU with 8 GB or more helps (it ran on an 8 GB RTX 5050), CPU works
+  but slowly. `install.sh` brings the rest.
+- oMLX path: Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or
+  newer, 9.9 GB for the weights
+- Node 24 or newer (install.sh provides one); Pi 1.0 or newer
 
 Other backends: [docs/backends/llamacpp.md](docs/backends/llamacpp.md) is
 smoke-tested but not ladder-measured, and

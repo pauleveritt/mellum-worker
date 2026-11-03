@@ -12,10 +12,40 @@ Versions match git tags; pin one in both install lines.
   not start" on a build that runs Mellum fine. It now falls back to the newest
   `llama-server` on PATH and lets a genuine mismatch surface as llama.cpp's own
   "unknown model architecture" error — the model load is the real check.
-- **The README now documents the llama.cpp setup, not oMLX.** Install was still
-  pointing new users at `/skill:mellum-setup` and an oMLX server; it now describes
-  the real path — `git clone`, `bash install.sh` (which ensures a current
-  `llama-server`, Node, `uv` and Pi), then `bash run.sh`.
+- **`install.sh` on Linux now installs a llama-server that `run.sh` accepts, on the
+  GPU.** The shallow source clone reported "build 1", so `backend.py` refused the
+  binary install.sh had just built, and the Linux path never started the model. On
+  Linux, install.sh now downloads the pinned prebuilt release (`LLAMA_TAG`, default
+  `b12066`) in the right flavor: CUDA 13.4 or 12.8 from `nvidia-smi`, Vulkan when a
+  loader is present, otherwise CPU. `MELLUM_LLAMA_FLAVOR` forces a flavor, and
+  `MELLUM_LLAMA_SOURCE=1` keeps the source build. The source build is the fallback
+  (and the macOS path); it clones the pinned tag with full history, so the build
+  number is real. It builds with CUDA or Vulkan when `nvcc` or `glslc` is present,
+  and on every core by default (`BUILD_JOBS` still overrides).
+- **`install.sh` no longer repoints your `node`, `npm` and `npx`.** When the system
+  Node.js is older than 24, the private Node goes in `~/.local/share/mellum-node`
+  as before. Only `install.sh` and `run.sh` put it first on PATH; the `~/.local/bin`
+  links are made only when there was no Node at all.
+- **`install.sh` no longer renames the llama-server it just installed.** When
+  `PATH` names `~/.local/bin` twice under different spellings (for example
+  `~/.local/share/../bin`), the one binary counted as two copies, and the "old"
+  copy was renamed to `.old`, which left no llama-server. The scan now resolves
+  each directory before comparing.
+- **`/mellum` now works in your own project: `bash run.sh <project-dir>`.**
+  `run.sh` points Pi at the repo's profile, but `install.sh`'s `pi install` writes
+  to `~/.pi/agent`, so outside the repo `/mellum` was not a command, and the text
+  went to bare Mellum as an ordinary prompt. A project directory argument now
+  starts Pi there with the worker, `/remedy` and think-tag extensions loaded.
+  `MELLUM_REMEDY` (unit names or `preset:<name>`) switches units on from the start,
+  and any further arguments go to Pi.
+- **The README's Install section leads with the llama.cpp path.** It showed only
+  the Apple Silicon + oMLX route, which stops on any other machine, while
+  `install.sh` and `run.sh` already covered Linux and macOS. It now gives the
+  clone, `install.sh` and `run.sh [project-dir]` steps, the hardware flavors, and
+  what the scripts change outside the repo. oMLX stays as the measured
+  Apple Silicon option.
+- **`run.sh` says why the server did not start.** It showed only "did not start";
+  it now prints the end of `backend.py start`'s output, which names the cause.
 
 ### Added
 
