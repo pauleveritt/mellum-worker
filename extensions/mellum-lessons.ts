@@ -37,7 +37,11 @@ export interface Lesson {
 	keyPoints: string[];
 }
 
-const frontMatter = (text: string): Record<string, string> => {
+// A Windows checkout (git core.autocrlf) gives the lessons CRLF line endings; every parser reads LF.
+const lf = (text: string): string => text.replace(/\r\n/g, "\n");
+
+const frontMatter = (raw: string): Record<string, string> => {
+	const text = lf(raw);
 	const block = text.match(/^---\n([\s\S]*?)\n---/);
 	return Object.fromEntries((block?.[1] ?? "").split("\n").map((l) => l.match(/^(\w+): (.*)$/)).filter(Boolean).map((m) => [m![1], m![2].replace(/^(["'])(.*)\1$/, "$2")]));
 };
@@ -87,7 +91,8 @@ function commandsIn(section: string): string[] {
 	return out;
 }
 
-export function parseLesson(text: string): Lesson {
+export function parseLesson(raw: string): Lesson {
+	const text = lf(raw);
 	const fm = frontMatter(text);
 	const body = text.replace(/^---\n[\s\S]*?\n---\n/, "");
 	const h1 = body.match(/^# (\S+) · (.+)$/m);

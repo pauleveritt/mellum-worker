@@ -53,6 +53,10 @@ Versions match git tags; pin one in both install lines.
   the model leaves behind is still found and ended; Pi's npm `.cmd` shim is run
   straight through node, so cmd.exe cannot mangle a multi-line prompt; and the
   harness reruns itself in UTF-8 mode, so it can read the model's trace.
+- **Lessons open on a Windows checkout.** With git's `core.autocrlf` on, the
+  lesson pages have CRLF line endings, so `/start` and `/lesson` crashed reading
+  their front matter (and would have lost each step's commands). The lesson
+  parser now reads CRLF and LF pages alike.
 - **A current llama-server that reads as too old no longer refuses to start.**
   `backend.py` parsed some Linux `llama-server --version` strings as a build
   below the 9482 minimum and then blocked, so `run.sh` failed with "server did

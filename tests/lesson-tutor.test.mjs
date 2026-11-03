@@ -219,3 +219,22 @@ test("remedyCode reads the remedy unit's source for the Solution step, and refus
 	assert.equal(remedyCode(ROOT, "../etc/passwd"), undefined, "a non-unit slug is refused");
 	assert.equal(remedyCode(ROOT, "prompt/does-not-exist"), undefined, "a missing unit is undefined");
 });
+
+// A Windows checkout (git core.autocrlf=true) gives the lessons CRLF line endings.
+test("lessonIndex reads lessons checked out with Windows line endings", async () => {
+	const { lessonIndex } = await tutor();
+	const root = mkdtempSync(join(tmpdir(), "crlf-"));
+	mkdirSync(join(root, "learn", "lessons", "easy"), { recursive: true });
+	writeFileSync(join(root, "learn", "lessons", "easy", "a.md"),
+		"---\r\ntitle: A Lesson\r\nnumber: E1\r\n---\r\n\r\n# E1 · A Lesson\r\n");
+	const [entry] = lessonIndex(root);
+	assert.equal(entry.number, "E1");
+	assert.equal(entry.title, "A Lesson");
+});
+
+test("parseLesson reads a CRLF lesson exactly as its LF original", async () => {
+	const { parseLesson } = await tutor();
+	const lf = readFileSync(new URL("../learn/lessons/easy/developer-frame.md", import.meta.url), "utf8")
+		.replace(/\r\n/g, "\n");
+	assert.deepEqual(parseLesson(lf.replace(/\n/g, "\r\n")), parseLesson(lf));
+});
