@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.31
 cycle: 1
-lifecycle: active
+lifecycle: closed
 ---
 
 # Trusted Vanilla Easy baseline implementation plan
@@ -20,7 +20,7 @@ diagnostic traces and existing legacy evidence tables.
 **Tech stack:** Python 3.14 via uv, Node's test runner, pinned Pi 1.4.0,
 the existing local llama.cpp backend and Q4_K_M model. No new runtime dependency.
 
-**Spec:** [Approved design](../specs/2026-11-03-trusted-vanilla-easy-design.md).
+**Spec:** [Approved design](../../specs/2026-11-03-trusted-vanilla-easy-design.md).
 
 ## Delta from Andre's current implementation
 
@@ -223,25 +223,25 @@ If collection happens on a later date, use its actual date for the evidence path
   `uv run --with pytest python -m pytest learn/code/tests -q`. Diagnose failures;
   record pre-existing failures explicitly rather than claiming a clean suite.
   Qualify Easy using the existing harness qualify command. Do not alter the oracle.
-- [ ] Commit/checkpoint the verified instrument before counted runs. Print the
+- [x] Commit/checkpoint the verified instrument before counted runs. Print the
   baseline dry-run and inspect the resolved Pi, profile, Vanilla extension list,
   limits and grading. Preflight must pass; if the port holds another service,
   stop and explain instead of replacing it. Start backend.py only if needed and
   compatible with the user's active local services.
-- [ ] Run the documented baseline command visibly, with the Mac kept awake.
+- [x] Run the documented baseline command visibly, with the Mac kept awake.
   Give progress at least once per minute; inspect live trace when a call stalls.
   Count six valid model sessions regardless of success; stop on infrastructure
   failure, retain evidence, diagnose and resume explicitly. No speculative reruns.
-- [ ] Verify six counted IDs, all exclusions/reasons, grader absence during
+- [x] Verify six counted IDs, all exclusions/reasons, grader absence during
   execution, runtime identities, grade results, and no remaining owned processes.
   Generate the compact scorecard; preserve passing artifacts with stalled/error
   completion as two separate facts. Summaries must not substitute cheap failures
   or a single best pass for the whole sample.
-- [ ] Promote compact evidence to evals and preserve raw directories under runs/;
+- [x] Promote compact evidence to evals and preserve raw directories under runs/;
   follow existing research-release rules for raw evidence promotion. State six
   local sessions, coverage limits, configuration identity and reuse conditions.
   Add no claim that the worker is better/worse; it has not been measured here.
-- [ ] Update FIXES with implemented changes, verification and baseline location.
+- [x] Update FIXES with implemented changes, verification and baseline location.
   Add glossary/pathology entries only for concepts/findings actually introduced;
   reconcile CHANGELOG with commits since the last release tag. Update LC.31/Now,
   add plan Result, archive this plan, rerun docs caps and npm test after doc edits,
@@ -254,3 +254,27 @@ interfaces; one implementer avoids repeated context setup, with one fresh
 whole-branch review before closing. User approval of this plan and execution
 method precedes product edits and collection. FIXES.md is updated as fixes land,
 not marked implemented merely because this plan names them.
+
+## Result
+
+Closed 2026-11-03. Shipped the pinned, resumable collector and trustworthy
+quality/budget records, ownership recovery and explicit error classification.
+One fresh whole-instrument review found five Important issues; all were
+reproduced red and fixed, with no deferred minors. The verified instrument was
+committed at `e54b6f1` before collection.
+
+[Six counted Easy Vanilla sessions](../../../../evals/2026-11-03-vanilla-easy/README.md)
+ran sequentially, with Mellum inference on the qualified Runpod GPU and Pi,
+apps and grading on the Mac. No replacements: four artifacts passed all hidden
+checks, all six passed code health, two settled and four stalled. Only one
+session both passed and settled. Two recovered-error attempts retain unknown
+output totals. All 91 requests match native Pi's context-dependent output
+ceiling; no worker/remedy change or comparison ran.
+
+All six runtime identities, recorder-only launches, profiles, sampling and
+cleanup were verified; the hidden grader followed execution and cleanup.
+The retained reference carries full checker output, shared provenance, raw
+research-release retrieval and reuse limits. Easy known-good passed and
+known-broken failed; the instrument passed npm 635/635, with docs caps and
+documentation build verified at close. FIXES was updated locally while
+preserving its user-owned, untracked status.

@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "/Users/pauleveritt/.local/bin/pi",
+    "-p",
+    "--no-approve",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--provider",
+    "llamacpp",
+    "--model",
+    "Mellum2.1-12B-A2.5B-Thinking",
+    "--session-id",
+    "64b42246-8623-4260-9912-f58e5cd89ed4",
+    "--session-dir",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261103T223608Z-f0d0ce/attempt-03/20261103T224231Z-easy-874a37/sessions",
+    "-e",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261103T223608Z-f0d0ce/attempt-03/20261103T224231Z-easy-874a37/record-pi.mjs",
+    "Implement Phase 1 \u2014 Home Page."
+  ],
+  "arm": "vanilla",
+  "extras": [],
+  "context_files": false
+}

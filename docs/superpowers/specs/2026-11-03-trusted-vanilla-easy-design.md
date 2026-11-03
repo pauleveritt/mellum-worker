@@ -1,6 +1,11 @@
 # Trusted Vanilla Pi baseline on Easy
 
-**Date:** 2026-11-03. **Status:** approved by Paul; no baseline collected.
+**Date:** 2026-11-03. **Approval-time status:** approved by Paul; no baseline collected.
+
+**Completion (later 2026-11-03):** six counted sessions retained in the
+[reference record](../../../evals/2026-11-03-vanilla-easy/README.md); no replacements.
+Native Pi clamps the configured output ceiling as context grows; the retained
+record verifies that policy against all 91 requests. No worker comparison ran.
 
 ## Intent and agreed scope
 

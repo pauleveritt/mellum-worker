@@ -1,0 +1,24 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-03",
+  "asset": "trusted-vanilla-easy-20261103T223608Z-f0d0ce.tar.gz",
+  "source_commit": "e54b6f1f40a9dceca6b35081428dbf43a57ce6d4",
+  "scope": [
+    "complete retained batch, including traces, sessions, profiles, checker output and final workspaces",
+    "full collection console",
+    "Runpod qualification evidence",
+    "instrument verification logs and execution ledger"
+  ],
+  "archive_policy": "Tar preserves symlinks; no model weights, SSH private keys or user credential stores are included.",
+  "sha256": "d7579fc0cc464759e1311bd98b1811d3081e95350604a6d2c2b6e946c0aaf386",
+  "size_bytes": 86159538,
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-03/trusted-vanilla-easy-20261103T223608Z-f0d0ce.tar.gz",
+  "archive_integrity": {
+    "members": 18121,
+    "symlinks_preserved": 18,
+    "critical_files_byte_verified": 39
+  },
+  "download_command": "gh release download research-2026-11-03 --repo pauleveritt/mellum-worker --pattern trusted-vanilla-easy-20261103T223608Z-f0d0ce.tar.gz --dir raw",
+  "published_download_verified": true,
+  "download_verified_at": "2026-11-03T23:04:04.224955+00:00",
+  "release_target_commit": "e54b6f1f40a9dceca6b35081428dbf43a57ce6d4"
+}

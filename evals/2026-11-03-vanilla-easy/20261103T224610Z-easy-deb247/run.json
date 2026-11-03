@@ -1,0 +1,76 @@
+{
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": {
+    "seconds": 181.0,
+    "limit": 180,
+    "command": "uv run --frozen python app.py"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 15,
+  "turns": 15,
+  "tool_calls": 15,
+  "tool_errors": 1,
+  "context": 1594,
+  "output_tokens": 4295,
+  "wall": 206.803,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 9534,
+      "pgid": null,
+      "command": "uv run --frozen python app.py"
+    },
+    {
+      "pid": 9536,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261103T223608Z-f0d0ce/attempt-05/20261103T224610Z-easy-deb247/workspace/.venv/bin/python3 app.py"
+    },
+    {
+      "pid": 9537,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261103T223608Z-f0d0ce/attempt-05/20261103T224610Z-easy-deb247/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 9538,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261103T223608Z-f0d0ce/attempt-05/20261103T224610Z-easy-deb247/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": [],
+  "completion": "stalled",
+  "elapsed_seconds": 206.803,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": -9
+}

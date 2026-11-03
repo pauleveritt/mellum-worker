@@ -20,12 +20,11 @@ container — there a copied binary keeps its name as `comm` and `pgrep -x`
 matches, and the production path (`pgrep -x <name>`) is proven correct — so the
 test is skipped when `GITHUB_ACTIONS=true` rather than left red. *Reopens when*
 the failure reproduces off the hosted runner (e.g. under parallel `node --test`
-load) and the cause is pinned. Dated note 2026-11-03: it does fail on macOS 27.2
-— the test's `copyFileSync("/bin/sleep")` is SIGKILLed at exec (exit 137,
-`Killed: 9`) in `$HOME` as well as `/tmp`, while the copy still verifies
-(`com.apple.sleep`, platform binary). So the fixture, not `pgrep`, breaks on a
-current macOS: a non-platform binary, or a child that renames itself, is the
-fix to measure.
+load) and the cause is pinned. Dated correction 2026-11-03: the separate macOS copied-`sleep`
+fixture failure was diagnosed and fixed with ad hoc signing of the temporary
+copy; backend lifecycle tests pass locally. See the [LC.31 verification
+record](evals/2026-11-03-vanilla-easy/README.md). The hosted-runner skip and its
+original cause remain unresolved; the Mac result does not establish a CI fix.
 
 **Grounded knowledge / docs lookup for the coder.** The model fails exact-API
 contracts it cannot know — FastAPI's `RedirectResponse` default (307, so a POST
@@ -78,19 +77,6 @@ from "the checks never ran" without the tail. LC.19A-adjacent work added
 that shows it wherever a record reports missing checks.
 *Reopens when* a lesson table quotes a full set of missing checks without
 saying whether they ran.
-
-**The leak sweep misses a foreground server that made its own process group.**
-`pi`'s bash tool runs each command in a new session, so a model-started server
-lands in its own group; `run_suite` kills and sweeps `child.pid`'s group, which
-is `pi`'s, so `leaked.json` reports nothing. LC.19's attempt 2 hung on
-`uv run python -m uvicorn app:app --reload` in its own group, and a
-`uv run uvicorn app:app --port 9000` from run `20261025T112212Z-medium-31816b`
-was still alive 1 day 7 h later, holding its port
-([preregistration](docs/superpowers/research/2026-10-25-lesson10-preregistration.md#amendment-2026-10-26-attempt-1-aborted-before-any-session-completed)).
-A censored session therefore leaves a server behind and the next session
-inherits the port. The fix is to sweep children by ppid as well as by group.
-*Reopens when* a censored session's `leaked.json` is empty while a server
-survived, or the sweep is next changed.
 
 **The deadline is counted on a clock that stops when the Mac sleeps.**
 `run_suite` bounds each child with `child.wait(timeout=remaining)` from

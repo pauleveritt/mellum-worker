@@ -48,6 +48,7 @@ entries below.
 | 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
 | 16 | A skipped rule | none — a fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
+| 18 | Recovered connection errors leave token usage unknown | none — retain errors and report unknown totals rather than partial usage |
 
 ## It says it is done and it is not
 
@@ -217,9 +218,23 @@ entries below.
     `guard/foreground-server` removes the server-start that stands in for a check,
     forcing a different verification, and a verify lever is being measured.
 
+## The measurement loses part of the budget
+
+18. **Recovered connection errors leave token usage unknown.** Pi can recover
+    from a provider error and settle with a correct artifact, while the error
+    responses lack trustworthy usage. Summing only the successful responses
+    understates the session's output budget. **Seen:** attempt 1 of the
+    [2026-11-03 Vanilla Easy reference](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-03-vanilla-easy/README.md)
+    recovered from two `Connection error.` responses, settled, and passed all
+    four hidden checks; its total output usage remains unknown. The exact
+    transport cause was not established. **Answer:** retain the attempt and
+    error evidence, report unknown total usage, and keep artifact correctness,
+    completion and budget separate. Do not silently substitute a partial sum
+    or replace a substantive model attempt to obtain a cleaner budget.
+
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–16 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–18 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*

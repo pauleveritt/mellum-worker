@@ -6,6 +6,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The retained [six-session Vanilla Easy reference](evals/2026-11-03-vanilla-easy/README.md)
+  includes every outcome, frozen Runpod inference configuration, complete checker
+  output and raw-evidence provenance for later worker comparisons. Recovered
+  connection errors leave token totals explicitly unknown; native Pi output
+  clamping is recorded alongside the configured ceiling.
+
 - `uv run python learn/code/harness.py baseline` collects a pinned, resumable
   six-session Vanilla Easy reference with a compact quality/budget scorecard,
   strict backend preflight and shared provenance. Infrastructure failures pause

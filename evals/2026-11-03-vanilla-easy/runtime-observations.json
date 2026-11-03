@@ -1,0 +1,12 @@
+{
+  "pi_runtime": {
+    "piVersion": "1.4.0",
+    "entryPath": "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js",
+    "execPath": "/Users/pauleveritt/Library/Caches/JetBrains/PyCharm2026.3/acp-agents/.runtimes/node/24.22.1/bin/node",
+    "cwd": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261103T223608Z-f0d0ce/attempt-01/20261103T223611Z-easy-7e3179/workspace"
+  },
+  "node_version": "v24.22.1",
+  "transport": "Mac loopback8002 SSH -> Pod loopback18001",
+  "local_port8001_used": false,
+  "first_attempt_connection_errors": "Requests6and16 emitted Connection error with missing usage; native Pi recovered; no server error observed; exact transport cause unproven."
+}
