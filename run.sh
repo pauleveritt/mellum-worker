@@ -9,6 +9,8 @@ set -uo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 export PATH="$HOME/.local/bin:$PATH"
+# install.sh keeps a private Node.js here when the system one is too old for Pi.
+[ -x "$HOME/.local/share/mellum-node/bin/node" ] && export PATH="$HOME/.local/share/mellum-node/bin:$PATH"
 
 # llama.cpp's -hf downloads the GGUF into the Hugging Face hub cache; the blob
 # grows there while it downloads. TOTAL_MB is the Q4_K_M size, so the bar is
@@ -59,7 +61,8 @@ start_server() {
     # --wait-seconds is generous: the first run must cover the whole download
     # plus the model load, not just the load (the default is too short and the
     # start would "fail" while the server kept downloading in the background).
-    uv run scripts/backend.py start --wait-seconds 1800 >/dev/null 2>&1 &
+    START_LOG="$(mktemp)"
+    uv run scripts/backend.py start --wait-seconds 1800 >"$START_LOG" 2>&1 &
     local pid=$! mb
     while kill -0 "$pid" 2>/dev/null; do
         mb="$(blob_mb)"
@@ -77,6 +80,8 @@ start_server() {
 }
 
 if ! start_server; then
+    # Say why: backend.py names the cause (an old llama-server, a busy port...).
+    [ -s "${START_LOG:-}" ] && tail -n 15 "$START_LOG" >&2
     echo "[ERROR] the server did not start; see learn/getting-started/troubleshoot." >&2
     exit 1
 fi

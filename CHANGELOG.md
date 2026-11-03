@@ -11,6 +11,24 @@ Versions match git tags; pin one in both install lines.
   strips it). It exists to measure what the suite's `AGENTS.md` is worth, since
   the isolation bundle was dropping the one context file the suite ships to be
   read.
+### Fixed
+
+- **`install.sh` on Linux now installs a llama-server that `run.sh` accepts, on the
+  GPU.** The shallow source clone reported "build 1", so `backend.py` refused the
+  binary install.sh had just built, and the Linux path never started the model. On
+  Linux, install.sh now downloads the pinned prebuilt release (`LLAMA_TAG`, default
+  `b12066`) in the right flavor: CUDA 13.4 or 12.8 from `nvidia-smi`, Vulkan when a
+  loader is present, otherwise CPU. `MELLUM_LLAMA_FLAVOR` forces a flavor, and
+  `MELLUM_LLAMA_SOURCE=1` keeps the source build. The source build is the fallback
+  (and the macOS path); it clones the pinned tag with full history, so the build
+  number is real. It builds with CUDA or Vulkan when `nvcc` or `glslc` is present,
+  and on every core by default (`BUILD_JOBS` still overrides).
+- **`install.sh` no longer repoints your `node`, `npm` and `npx`.** When the system
+  Node.js is older than 24, the private Node goes in `~/.local/share/mellum-node`
+  as before. Only `install.sh` and `run.sh` put it first on PATH; the `~/.local/bin`
+  links are made only when there was no Node at all.
+- **`run.sh` says why the server did not start.** It showed only "did not start";
+  it now prints the end of `backend.py start`'s output, which names the cause.
 
 ### Changed
 
