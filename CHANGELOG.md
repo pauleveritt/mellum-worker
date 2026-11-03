@@ -30,6 +30,17 @@ Versions match git tags; pin one in both install lines.
   shown inline. The loop reports a `turns/wall` line per stage (architect ·
   worker · acceptance · total) from the run records and parent timing.
 
+- **The delegation architect pins exact named contracts, and a broken oracle is
+  repaired before it freezes.** The architect prompt now asks it to assert the
+  spec's **literal names** directly — import the module and check the attribute,
+  its type, its count, its verbatim seed strings — not only probe behaviour
+  through a route, so a build on the wrong name or shape can't pass. And `doTask`
+  now compile-checks the authored `tests/test_acceptance.py`; if it does not parse
+  (the model occasionally writes nested-quote assertions), the architect is asked
+  to fix the **syntax only**, keeping every assertion, before the oracle is frozen
+  and the worker starts (`MAX_ORACLE_REPAIRS` attempts). This stops a single
+  malformed assertion from blocking the whole run.
+
 - **A lesson's Solution step shows the remedy's own code.** The `/lesson` panel
   now reads the remedy unit's source (e.g. `remedies/prompt/name-the-layout.ts`)
   and shows it inline under the Solution header, and each easy lesson page links

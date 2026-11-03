@@ -137,12 +137,33 @@ export function authorPrompt(task: string): string {
 		"requirement is missing or wrong. Be exhaustive, not representative — do NOT settle for one or two " +
 		"smoke checks (a 200 and a bit of text is not enough). It must FAIL now, because the implementation " +
 		"does not exist yet.\n" +
+		"Pin EXACT NAMED CONTRACTS, not just behaviour. Wherever the spec names something concrete — a " +
+		"module, a module-level variable or attribute, a class, a function, a collection or field name, an " +
+		"exact count, or a verbatim seed string or literal — assert that named thing DIRECTLY (import the " +
+		"module and check the attribute, its type, its length/count, and the exact seed values), in addition " +
+		"to probing behaviour through any route or output. A behaviour that looks right through a route can " +
+		"still be built on the wrong name or shape; the named contract is what a stricter grader checks, so " +
+		"assert the spec's literal names, counts and strings exactly as written.\n" +
 		`2. BRIEF.md — 2 to 4 sentences: what to build, which files, and this exact command to make pass:\n` +
 		`   ${ACCEPTANCE_CMD}\n` +
 		"Before you stop, re-read the spec and confirm every requirement has a matching assertion; add any " +
 		"you missed. Do NOT create, edit or stub any implementation file. Stop only once both files are " +
 		"written and the test covers the whole spec.\n\n" +
 		`Task: ${task}`
+	);
+}
+
+/** Repair prompt: the authored oracle does not parse. The architect fixes ONLY the syntax, keeping
+ * every assertion, so an authored-but-broken test (finding 1) can't block the whole run. */
+export function repairPrompt(error: string): string {
+	return (
+		`The acceptance test ${ACCEPTANCE_TEST} you just wrote does not parse — Python reports a syntax ` +
+		"error, so pytest cannot even collect it. Fix ONLY the syntax so the file compiles cleanly. Do " +
+		"NOT remove, weaken or change the meaning of any assertion — keep every check exactly as it is, " +
+		"just make it valid Python. A common cause is nested double-quotes inside a double-quoted string " +
+		`(for example asserting a literal that itself contains "); use single quotes for the inner ` +
+		"literal, or escape it. Rewrite the whole file correctly, then stop.\n\n" +
+		`Syntax error:\n${error}`
 	);
 }
 
@@ -232,6 +253,30 @@ export function spawnWorker(brief: string): Promise<string> {
 	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`], "worker: implementing to pass");
 }
 
+/** The repair pass: the architect fixes the syntax of the oracle it just wrote. */
+export function spawnRepair(error: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${repairPrompt(error)}`], "architect: repairing the oracle's syntax");
+}
+
+/** Check that a Python file parses. Resolves undefined when it compiles, else the syntax error.
+ * A pure syntax check needs only a parser, so bare python3 is fine here (the uv rule is for
+ * reproducible measured runs, not a lint) and it works for a generic task with no uv project. */
+export function compileTest(path: string): Promise<string | undefined> {
+	return new Promise((resolve) => {
+		let out = "";
+		let child;
+		try {
+			child = spawn("python3", ["-m", "py_compile", path], { cwd: process.cwd(), env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+		} catch (e) {
+			return resolve(undefined); // no python3 to check with — don't block the loop
+		}
+		child.stdout?.on("data", (b) => { out += b.toString(); });
+		child.stderr?.on("data", (b) => { out += b.toString(); });
+		child.on("error", () => resolve(undefined));
+		child.on("close", (code) => resolve(code === 0 ? undefined : (out.trim().slice(-1500) || "py_compile failed")));
+	});
+}
+
 /** Run a shell command in the cwd; resolve whether it exited 0 and its trimmed output. */
 export function runAcceptance(cmd: string): Promise<{ passed: boolean; output: string }> {
 	return new Promise((resolve) => {
@@ -253,7 +298,12 @@ export interface DoTaskDeps {
 	author?: (task: string) => Promise<string>;
 	worker?: (brief: string) => Promise<string>;
 	acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }>;
+	compile?: (path: string) => Promise<string | undefined>;
+	repair?: (error: string) => Promise<string>;
 }
+
+/** How many times the architect is asked to repair an oracle that does not parse before giving up. */
+export const MAX_ORACLE_REPAIRS = 2;
 
 /** The newest worker/architect run record for `cwd` (turns = requests, wall seconds, and an id to
  * tell two spans apart), read from the mode-runs file. Best-effort: undefined if none was written. */
@@ -284,16 +334,32 @@ export async function doTask(task: string, deps: DoTaskDeps = {}): Promise<strin
 	const author = deps.author ?? spawnAuthor;
 	const worker = deps.worker ?? spawnWorker;
 	const acceptance = deps.acceptance ?? runAcceptance;
+	const compile = deps.compile ?? compileTest;
+	const repair = deps.repair ?? spawnRepair;
 	const cwd = process.cwd();
 	const testPath = resolve(cwd, ACCEPTANCE_TEST);
 	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
 
 	const t0 = Date.now();
-	const authorReport = await author(task);
+	let authorReport = await author(task);
+	if (!existsSync(testPath)) {
+		const authorWall = secs(t0);
+		return `delegate: the architect did not write ${ACCEPTANCE_TEST}, so there is no handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	}
+	// A handover whose test does not even parse blocks the whole run (the worker can't make a
+	// non-compiling, frozen test pass). Validate it and re-dispatch to the architect to fix the
+	// SYNTAX — keeping every assertion — before freezing. Agnostic: it names no suite value.
+	let compileErr = await compile(testPath);
+	for (let i = 0; compileErr && i < MAX_ORACLE_REPAIRS; i++) {
+		if (verbose()) process.stdout.write(`\n[handover] the authored ${ACCEPTANCE_TEST} does not parse — asking the architect to fix the syntax (attempt ${i + 1}/${MAX_ORACLE_REPAIRS}):\n${compileErr}\n`);
+		authorReport = await repair(compileErr);
+		if (!existsSync(testPath)) break;
+		compileErr = await compile(testPath);
+	}
 	const authorWall = secs(t0);
 	const authorStats = latestRunStats(cwd);
-	if (!existsSync(testPath)) {
-		return `delegate: the architect did not write ${ACCEPTANCE_TEST}, so there is no handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	if (compileErr || !existsSync(testPath)) {
+		return `delegate: the architect's ${ACCEPTANCE_TEST} does not parse after ${MAX_ORACLE_REPAIRS} repair attempts, so it cannot be frozen or run.\n\n--- syntax error ---\n${compileErr ?? "(test missing)"}\n\n--- architect output (tail) ---\n${authorReport.slice(-1200)}`;
 	}
 	// When verbose, show the handover the architect wrote — the test and the brief it hands over.
 	if (verbose()) {

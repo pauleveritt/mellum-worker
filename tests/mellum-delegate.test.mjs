@@ -105,6 +105,50 @@ test("doTask refuses when the architect writes no acceptance test", async () => 
 	});
 });
 
+test("doTask asks the architect to repair an oracle that does not parse, then runs the worker", async () => {
+	const { doTask, ACCEPTANCE_TEST } = await load();
+	await inTempCwd(async () => {
+		let repairs = 0, workerRan = false, parses = false;
+		const author = async () => { mkdirSync("tests", { recursive: true }); writeFileSync(ACCEPTANCE_TEST, "broken\n"); return "wrote a broken test"; };
+		const compile = async () => (parses ? undefined : 'SyntaxError: invalid syntax');
+		const repair = async (err) => { repairs++; assert.match(err, /SyntaxError/); parses = true; writeFileSync(ACCEPTANCE_TEST, "def t():\n    assert False\n"); return "fixed the syntax"; };
+		const worker = async () => { workerRan = true; return "worker: 1 passed"; };
+		const acceptance = async () => ({ passed: true, output: "1 passed" });
+		const r = await doTask("build it", { author, compile, repair, worker, acceptance });
+		assert.equal(repairs, 1, "the architect was asked to repair once");
+		assert.equal(workerRan, true, "the worker ran after the oracle was made to parse");
+		assert.match(r, /PASS/);
+	});
+});
+
+test("doTask refuses (no worker) when the oracle still does not parse after repairs", async () => {
+	const { doTask, ACCEPTANCE_TEST, MAX_ORACLE_REPAIRS } = await load();
+	await inTempCwd(async () => {
+		let repairs = 0, workerRan = false;
+		const author = async () => { mkdirSync("tests", { recursive: true }); writeFileSync(ACCEPTANCE_TEST, "broken\n"); return "wrote a broken test"; };
+		const compile = async () => 'SyntaxError: invalid syntax';
+		const repair = async () => { repairs++; return "tried"; };
+		const worker = async () => { workerRan = true; return "w"; };
+		const r = await doTask("x", { author, compile, repair, worker, acceptance: async () => ({ passed: true, output: "" }) });
+		assert.equal(repairs, MAX_ORACLE_REPAIRS, "it gives up after the cap");
+		assert.equal(workerRan, false, "no worker runs behind an unparseable oracle");
+		assert.match(r, /does not parse/i);
+	});
+});
+
+test("compileTest resolves undefined on valid Python and an error string on a syntax error", async () => {
+	const { compileTest } = await load();
+	await inTempCwd(async (dir) => {
+		const ok = join(dir, "ok.py");
+		writeFileSync(ok, "x = 1\n");
+		assert.equal(await compileTest(ok), undefined, "valid file compiles");
+		const bad = join(dir, "bad.py");
+		writeFileSync(bad, 'assert "a "b"" in c\n');
+		const err = await compileTest(bad);
+		assert.match(String(err), /SyntaxError|py_compile/, "broken file reports the error");
+	});
+});
+
 test("in the primary, /mellum <task> authors a handover then runs the worker, no model switch", async () => {
 	delete process.env.MELLUM_WORKER_CHILD;
 	await inTempCwd(async () => {
@@ -174,6 +218,16 @@ test("streamTurn is silent when not verbose", async () => {
 	try { streamTurn({ role: "assistant", content: [{ type: "text", text: "x" }] }); }
 	finally { process.stdout.write = orig; }
 	assert.equal(buf, "");
+});
+
+test("authorPrompt tells the architect to pin exact named contracts, not just behaviour", async () => {
+	const { authorPrompt } = await load();
+	const p = authorPrompt("build a complaints board");
+	assert.match(p, /named contracts/i, "names the contract discipline");
+	assert.match(p, /module-level variable or attribute/i, "pins module-level names");
+	assert.match(p, /exact count/i, "pins counts");
+	assert.match(p, /verbatim seed string/i, "pins verbatim seed values");
+	assert.match(p, /import the module and check the attribute/i, "asserts the named thing directly, not only via a route");
 });
 
 test("withDelegateNudge appends the nudge to user messages only", async () => {

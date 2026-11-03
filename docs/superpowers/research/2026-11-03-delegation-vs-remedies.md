@@ -100,6 +100,43 @@ and attribute names, collection names, counts, and verbatim seed strings the spe
 gives — or delegate medium **per phase** (as the flow does), pinning each phase's
 conventions before the next. Single-shot, bare, on medium is a lead at n=1.
 
+### Medium re-run (named-contracts architect + compile-repair guard) — still hidden 0/18, new bottleneck
+
+Two changes landed and were both exercised: the architect prompt now tells it to
+assert **exact named contracts** directly (import the module, check the attribute,
+its type, its length, the verbatim seed strings), and `doTask` now compile-checks
+the authored oracle and re-dispatches to the architect to fix the **syntax** before
+freezing (bounded, `MAX_ORACLE_REPAIRS`). What the re-run showed, n=1:
+
+- **The named-contracts lever works and steers the worker.** The oracle pinned
+  `hasattr(models, "complaints")`, `3 <= len <= 5` and the verbatim seed. The bare
+  worker then built `complaints` as a **module-level `List[Complaint]` with 5 seeds**
+  including `Scope creep never ends.` — exactly the contract the first single-shot
+  missed (it had used a class attribute `Complaint.complaints`, seeded once). The miss
+  the earlier screen root-caused is closed at the handover.
+- **The compile-repair guard works, and finding 1 is reliable.** The architect again
+  emitted a non-parsing test — nested double-quotes, `response.text.count("<div class="card"")`,
+  the same shape as easy's `href="/""`. The guard caught it (`py_compile`), re-dispatched,
+  and the architect fixed the quoting while keeping every assertion; the run then reached
+  the worker, which the first single-shot never did (it looped on the frozen-but-broken test).
+  The leaky freeze is now moot for this shape: the oracle parses before it is frozen.
+- **Still hidden 0/18 — a different, third root cause.** The bare worker ran out of its
+  turn budget while churning on **exact-match edits to `app.py`** (repeated read/edit cycles
+  fixing indentation it had itself introduced), left `app.py` with an `IndentationError`
+  on its final edit, and exited mid-fix. The grader errors at collection → 0/18. A read-only
+  probe minutes earlier caught a transient `5 passed / 6 failed`, so the implementation was
+  partway, not absent — the budget ran out before it converged.
+
+So on single-shot medium the bottleneck has moved off the architect (completeness and
+now syntactic validity are handled) and onto **worker throughput**: a bare worker holding
+all four phases in one turn budget spends it on edit-precision churn and does not converge.
+This is the case **per-phase delegation** is for — hand the worker one phase, checkpoint a
+green phase, then the next — right-sizing each bite so no single turn budget has to carry
+four phases. Not the model's ceiling; the bite is too big. Guards: the compile-repair guard
+is kept (it changed the run — the first single-shot was blocked by exactly the bug it fixes);
+no freeze or worker guard is added, since the freeze held and the miss is throughput, not
+integrity. n=1, a lead.
+
 ## What would falsify "we no longer need remedies"
 
 - A tier where the bare arm's **hidden** grade is below the tier preset's on a
