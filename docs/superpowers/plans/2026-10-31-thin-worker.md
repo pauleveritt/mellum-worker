@@ -53,7 +53,7 @@ worker never used). A parity run (Step-2/4 gate) proves equivalence; the
   `acceptance/app-boots-and-routes`, `acceptance/page-renders`,
   `acceptance/named-nav-links`, `acceptance/redirect-contract`,
   `acceptance/required-text`.
-- Make these and the verify/redispatch gate (`mellum-ncm`) loadable as remedy
+- Make these and the verify/redispatch gate (`mellum-verify`) loadable as remedy
   units so a preset can name them.
 - Each deriver: dry-run green on the done fixture, red on its own miss (the
   redirect deriver red on the Phase-4 id-in-route-only build), per AGENTS.md §6.
@@ -62,7 +62,7 @@ worker never used). A parity run (Step-2/4 gate) proves equivalence; the
 
 - `baseline-worker` = thin worker (± `delegate/*`, per Step 0).
 - `easy` = baseline + the units the recorded easy win used
-  (`tool/background-long-commands`, the acceptance derivers it needed, `mellum-ncm`).
+  (`tool/background-long-commands`, the acceptance derivers it needed, `mellum-verify`).
 - `medium` = easy + the redirect deriver (the recorded medium win's addition).
 - `hard` = medium + its units.
 - Each preset cites the `evals/` record it encodes. Nesting is enforced by a

@@ -459,12 +459,12 @@ To upgrade:
 **Mode and the frozen test.**
 - Shipped Mode with v7 on rung 9 scored **0/3**: v7 looks for a failing
   test that Mode never places.
-- `--acceptance-test` in Mode plus `mellum-ncm` scored **3/3**, with NCM
+- `--acceptance-test` in Mode plus `mellum-verify` scored **3/3**, with NCM
   firing **0 times**. Credit goes to the test by name, not to
   "mediation" (`cited`).
 
 **Gates and model size.**
-- `mellum-ncm` (Andre): a next-concept verify gate that re-runs the test
+- `mellum-verify` (Andre): a next-concept verify gate that re-runs the test
   at settle and names the failing concepts.
 - **3-bit halving: 3/8** (`cited`, a negative result). Quantization damage
   shows up as lost edit precision.
@@ -660,7 +660,7 @@ This is ready material for LC.7A (`learn/pathologies.md`).
 | Mon 12, Paul | `mellum-last` | Model-free run table | not a measured change | 168 |
 | Mon 19, Andre | `content-tool-call-assist` | Tiny models write tool calls as text | `screen` | 450 (**no tests**) |
 | Tue 20, Paul | `mellum-worker` (renamed from mode) | One vehicle; nothing Mellum receives changes | `cited` | 620 |
-| Wed 21 02:07 | `mellum-ncm` | Verify and re-dispatch inside any Pi session | `cited`: 0 fires | 95 |
+| Wed 21 02:07 | `mellum-verify` | Verify and re-dispatch inside any Pi session | `cited`: 0 fires | 95 |
 | Wed 21 11:29 | `mellum-feed`, `-replay`, `-control`, dashboard | Watch and steer a live worker | `conjecture` | 113 / 90 / 51 |
 | Wed 21 12:01 | `mellum-context` | Retrieve, don't load, large files | `conjecture` (T1–T4) | 229 |
 | Wed 21 12:06 | `mellum-rethink` | "The human can be wrong, or lying" | `conjecture` (T5) | 179 |
@@ -834,7 +834,7 @@ test. Paul's own digests badge each piece within his method
 | Temperature and seed ramp on retry | `conjecture` | Default off; existing records unaffected | Nothing shows a retry passing because of it; the kind of knob the 13 Oct triage cut |
 | `--effort-ramp` | `screen` (deadline re-dispatch) | Spends compute in proportion to measured difficulty | The v7 ablation found fixed-high budget fastest (163 s), so the ramp is the wrong default on hard rungs |
 | `--backend mlx-lm`, `--model-id`, `--temperature`/`--top-p` | runs on mlx-lm stay `screen` | Defaults leave oMLX runs unchanged | Overlaps Paul's LC.3B `--provider`, `--base-url`, `--model`, which do the same job |
-| `--pi-extension`, `--model-spec` | — | Lets an extension such as `mellum-ncm` be measured without shipping it | — |
+| `--pi-extension`, `--model-spec` | — | Lets an extension such as `mellum-verify` be measured without shipping it | — |
 | `--acceptance-test` in `--mode mode` (`faaed7e`) | `screen` | Measures the shipped worker, as "measure what ships" asks: Mode 0/3 → 3/3 | n = 3, recorded only on the fork |
 
 **Against Paul's rules as a whole:**
@@ -932,7 +932,7 @@ fits, and otherwise into Andre's track (LC.5).
 | E6 | Write only what you list | surgical, `confineToWorkspace`, write-list, `plan/` | **LC.15** | `conjecture` / `cited` | suite with and without |
 | E7 | Self-narrowing, two forms | v8; v9 + v11 | Andre | `screen` | preregistered v11 vs v7 |
 | E8 | Don't trust the exit: freeze an external test | `--acceptance-test`, `--redispatch` | Andre (mediated-test backlog) | `cited` 12/12 + ablation | Mode arm B |
-| E9 | A gate makes it try, not able (negative) | `mellum-ncm`; 3-bit; 1.5B | Andre | `cited` | — |
+| E9 | A gate makes it try, not able (negative) | `mellum-verify`; 3-bit; 1.5B | Andre | `cited` | — |
 | E10 | Who holds the loop: in-session gates regress | plan (regression) → loop → flow | **LC.16** | `screen` | flow vs worker, n=3 |
 | E11 | One spec file per phase: decomposition | `flow_run.py` split, north star | **LC.19** | `screen` | — |
 | E12 | The examiner, a spec-derived definition of done (**how medium was cracked**) | examine, frozen accumulating gates, identity rule | Andre | `screen` | `--mode flow`, rungs 6–12, n=3 |

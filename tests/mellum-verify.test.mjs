@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { parsePytest, gateMessage, verifyCommand, verifyEnv, gateConfig } from "../extensions/mellum-ncm.ts";
+import { parsePytest, gateMessage, verifyCommand, verifyEnv, gateConfig } from "../extensions/mellum-verify.ts";
 
 test("parsePytest: exit 0 is passed, no unmet concepts", () => {
 	const v = parsePytest(0, "2 passed in 0.12s");
@@ -41,16 +41,16 @@ test("verifyCommand: a named test runs just that file; empty runs the whole suit
 	assert.ok(!/pytest\s+\S*\.py/.test(all), "no file path in the whole-suite command");
 });
 
-test("gateConfig reads NCM_TEST at call time, so acceptance's late session_start set is seen (not inert)", () => {
-	// The inert-gate pathology: ncm read NCM_TEST once at load, before acceptance's
+test("gateConfig reads VERIFY_TEST at call time, so acceptance's late session_start set is seen (not inert)", () => {
+	// The inert-gate pathology: the gate read VERIFY_TEST once at load, before acceptance's
 	// session_start set it, so the gate never fired. gateConfig must read it per call.
-	const prev = process.env.NCM_TEST;
-	delete process.env.NCM_TEST;
+	const prev = process.env.VERIFY_TEST;
+	delete process.env.VERIFY_TEST;
 	assert.equal(gateConfig().test, "", "empty at load, before acceptance runs");
-	process.env.NCM_TEST = "/w/contract/test_contract.py"; // acceptance sets it at session_start
+	process.env.VERIFY_TEST = "/w/contract/test_contract.py"; // acceptance sets it at session_start
 	assert.equal(gateConfig().test, "/w/contract/test_contract.py", "seen at settle time");
-	if (prev === undefined) delete process.env.NCM_TEST;
-	else process.env.NCM_TEST = prev;
+	if (prev === undefined) delete process.env.VERIFY_TEST;
+	else process.env.VERIFY_TEST = prev;
 });
 
 test("verifyEnv: worker cwd on PYTHONPATH, VIRTUAL_ENV stripped (so a held-out contract can import the app)", () => {

@@ -18,7 +18,7 @@ def _run_dir(tmp, name, **over):
         "extensions": [
             {"path": "/x/remedies/tool/background-long-commands.ts", "sha256": "a"},
             {"path": "/x/extensions/mellum-acceptance.ts", "sha256": "b"},
-            {"path": "/x/extensions/mellum-ncm.ts", "sha256": "c"},
+            {"path": "/x/extensions/mellum-verify.ts", "sha256": "c"},
             {"path": "/x/extensions/mellum-recorder.ts", "sha256": "d"},
         ],
         "machine": "Apple M3 Max, 48 GiB",
@@ -43,7 +43,7 @@ def test_entry_from_run_pulls_the_fields_and_a_sorted_stack(tmp_path):
     # the stack is the remedies + mellum extension names, recorder dropped, sorted (stable key)
     assert e["stack"] == sorted(e["stack"]), "stack must be sorted for a stable group key"
     assert "tool/background-long-commands" in e["stack"]
-    assert "mellum-acceptance" in e["stack"] and "mellum-ncm" in e["stack"]
+    assert "mellum-acceptance" in e["stack"] and "mellum-verify" in e["stack"]
     assert not any("recorder" in s for s in e["stack"]), "the recorder is harness plumbing, not a remedy"
 
 

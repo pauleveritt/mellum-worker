@@ -6,6 +6,14 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
+  name "next-concept modelling" from an unrelated text-generation paper
+  (HazyResearch/ncm) but only re-runs an acceptance test until it passes, so it
+  is now named for what it does. The env vars follow: `NCM_TEST` → `VERIFY_TEST`,
+  `NCM_ALL` → `VERIFY_ALL`, `NCM_MAX` → `VERIFY_MAX`, `NCM_PYTEST` →
+  `VERIFY_PYTEST`. Load it with `-e extensions/mellum-verify.ts`. Raw run records
+  keep the old name, since they record what actually ran.
+
 - **`/challenge` shows a live feed panel.** The model's turns and tool calls
   streamed as scattered chat notifications that were easy to miss, with only a
   one-line status in the footer. A run now pins a feed panel — the tier and
@@ -251,7 +259,7 @@ Versions match git tags; pin one in both install lines.
   moved to dated `evals/<date>-<name>/` directories. Repointed all of them (and
   the two bare `evals/` directory links), so the recipe's evidence trail is
   clickable again.
-- `mellum-ncm` was silently inert whenever `mellum-acceptance` derived its test:
+- `mellum-verify` was silently inert whenever `mellum-acceptance` derived its test:
   ncm read `NCM_TEST` once at extension-load, before acceptance set it at
   `session_start`, so the verify/redispatch gate never fired and a worker could
   self-exit with the work incomplete. ncm now reads its config at settle time,
@@ -764,7 +772,7 @@ Versions match git tags; pin one in both install lines.
   attempt's level and budget. On a known-hard rung a fixed high budget was faster
   (v7 ablation), so it is not a default.
 - `run_ladder --pi-extension <path>` (direct or `--mode mode`, repeatable) loads an
-  extra Pi extension with `-e`, so an extension such as `extensions/mellum-ncm.ts`
+  extra Pi extension with `-e`, so an extension such as `extensions/mellum-verify.ts`
   can be measured without shipping it.
 - `run_ladder --temperature` / `--top-p` (direct) override the greedy request
   values for sampling screens, not measured claims. A server other than oMLX is
@@ -907,7 +915,7 @@ Versions match git tags; pin one in both install lines.
 - A `mellum-acceptance` extension (`extensions/mellum-acceptance.ts`): Tier-1
   dynamic mediation. It derives a structural acceptance test straight from the
   task spec — the app module and every route the spec names — and writes a
-  pytest the `mellum-ncm` gate can enforce (`NCM_TEST`), with no per-task
+  pytest the `mellum-verify` gate can enforce (`NCM_TEST`), with no per-task
   authoring. It checks the app boots and that each named route is registered
   (path params normalised). For a GET route the spec describes as a rendered
   page it also checks the response — 200, HTML, and the page-layout hygiene the
@@ -937,7 +945,7 @@ Versions match git tags; pin one in both install lines.
   `TODO.md` itself is always allowed; reads/greps/shell never gated); once it
   exists, the worker is free to implement and follow it. Applies even to simple
   tasks — a plan curbs flailing. BOUNDED: it fails open after `max` blocks
-  (default 2) so it can never deadlock the build. Pairs with `mellum-ncm` for the
+  (default 2) so it can never deadlock the build. Pairs with `mellum-verify` for the
   re-run-until-green pressure. Load with `-e extensions/mellum-plan.ts`; tune with
   `MELLUM_PLAN` (e.g. `{"max":1}`, or `{"max":0}` to disable).
 
@@ -1482,7 +1490,7 @@ Versions match git tags; pin one in both install lines.
   shows the rung grid, the prompts fed to the model, and the live feed. Pure
   cores are unit-tested; the live Pi-driving is verified separately.
 
-- `extensions/mellum-ncm.ts` — a next-concept-modelling verify gate, loaded
+- `extensions/mellum-verify.ts` — a next-concept-modelling verify gate, loaded
   with Pi's `-e` (not shipped by default). At settle it re-runs the named
   acceptance test and, while it is red, sends the worker back naming the **unmet
   concepts** (the failing test functions), up to `NCM_MAX`. It brings the
@@ -1562,7 +1570,7 @@ Versions match git tags; pin one in both install lines.
   than alphabetical, so a slow hard suite never blocks the quicker ones;
   unknown suites keep alphabetical order after the known tiers.
 
-- `mellum-ncm` gains a whole-suite verify mode: set `NCM_ALL=1` to run the
+- `mellum-verify` gains a whole-suite verify mode: set `NCM_ALL=1` to run the
   entire visible test suite at settle and refuse "done" until it is green — the
   agnostic developer-loop gate (the worker isn't done until it has run the whole
   thing and seen it pass), beside the existing named acceptance test (`NCM_TEST`,

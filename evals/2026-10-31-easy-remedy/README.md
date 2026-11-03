@@ -24,7 +24,7 @@ the `cap-turns` × `ncm` deadlock that started the search is in the
   to the phase the prompt names** and asserting the **spec-named nav links** as
   real anchors (fixed in `41c9fbd`; was demanding later phases and accepting any
   `<a href>`).
-- `mellum-ncm` — re-runs that contract when the worker tries to settle and sends
+- `mellum-verify` — re-runs that contract when the worker tries to settle and sends
   it back with the unmet concept until the contract is green.
 
 No turn cap, so no `cap-turns` × `ncm` deadlock. The pass rate is the stack, not

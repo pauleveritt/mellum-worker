@@ -33,7 +33,7 @@ hidden pass.
 | `mellum-knowledge` / docs lookup | INT.2 dependency | The examiner uses `lookup`; do not ship it as a separate lesson. |
 | `mellum-plan`, `mellum-loop` | Dropped from this extraction | Flow supersedes the external plan/review loop. |
 | `mellum-surgical`, `mellum-nonblock` | Defer as guard candidates | They protect writes/blocks; each needs its own pathology screen, like confinement. |
-| `mellum-quality`, `mellum-ncm` | Defer | Finish/next-concept checks; not required by Flow and not measured on the suites. |
+| `mellum-quality`, `mellum-verify` | Defer | Finish/next-concept checks; not required by Flow and not measured on the suites. |
 | `mellum-context`, `mellum-rethink`, `mellum-files`, `mellum-vision` | Defer / advanced | Single tools, not an intermediate workflow. |
 | Dashboard, feed, replay, pause | Defer / advanced | Operator UI, not a worker baseline. |
 | Prompt v8–v11 | Not Intermediate | Test-driven ladder prompt; see the prompt triage. |

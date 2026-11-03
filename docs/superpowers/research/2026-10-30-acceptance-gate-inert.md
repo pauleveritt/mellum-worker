@@ -13,13 +13,13 @@
 
 The last stack is the important one. The two fails missed the four Phase-1 home
 checks (`tests=False`, `missing=4`) at only 17 and 20 turns — too few for a
-redispatch loop. The trace confirms it: `[mellum-ncm]` appears **0 times**, one
+redispatch loop. The trace confirms it: `[mellum-verify]` appears **0 times**, one
 `agent_settled`, no redispatch. The worker wrote `main.py` six times and never
 `app.py` (the spec says *"`app.py` holds the FastAPI application as `app`"*), so
 the app could not be imported — a wrong-module-name miss the acceptance contract
 is meant to catch.
 
-**Root cause (measured).** `mellum-ncm` read its `NCM_TEST` config **once at
+**Root cause (measured).** `mellum-verify` read its `NCM_TEST` config **once at
 extension-load**, inside the default export body — before `mellum-acceptance`'s
 `session_start` handler set `NCM_TEST`. Extensions initialise before any
 `session_start` fires, so `ncm` captured an empty `NCM_TEST`, its settle guard
@@ -48,7 +48,7 @@ efficiency observation at small n, not a pass-rate claim.
 
 ## What would falsify this / Risks
 
-- **Re-run still 1/3 with the gate firing.** If `[mellum-ncm]` now appears but
+- **Re-run still 1/3 with the gate firing.** If `[mellum-verify]` now appears but
   pass rate does not move, the redispatch *message* is too opaque for a small
   model to act on (e.g. it cannot infer "rename `main.py` to `app.py`" from a
   traceback) — a different remedy problem, not a wiring one.
@@ -60,5 +60,5 @@ efficiency observation at small n, not a pass-rate claim.
   different module must be parsed for it, or the gate false-fails.
 - **No smoke test that the gate fires.** This whole class hid because nothing
   asserted `ncm` actually redispatches end-to-end. A cheap smoke run (a build
-  known to miss a check must produce a `[mellum-ncm]` redispatch) would catch a
+  known to miss a check must produce a `[mellum-verify]` redispatch) would catch a
   future regression; owed as follow-up.

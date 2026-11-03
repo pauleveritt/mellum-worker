@@ -15,7 +15,7 @@
  * of every step to satisfy the whole spec. Writing the `TODO.md` is always
  * allowed; once it exists the worker is free to implement and FOLLOW it. The
  * reason tells the worker to amend the TODO.md from the test failures and loop
- * (the `mellum-ncm` gate supplies the re-run-until-green pressure). Bounded: it
+ * (the `mellum-verify` gate supplies the re-run-until-green pressure). Bounded: it
  * fails open after `max` blocks, so it can never deadlock the build.
  */
 import { existsSync, readFileSync } from "node:fs";

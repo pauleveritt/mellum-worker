@@ -99,7 +99,7 @@ win needs, and so each is testable alone:
 - `acceptance/redirect-contract`
 - `acceptance/required-text`
 
-These, plus the verify/redispatch gate (`mellum-ncm`), become loadable remedy
+These, plus the verify/redispatch gate (`mellum-verify`), become loadable remedy
 units so the **measured** easy win (nonblock + acceptance + ncm) and the medium
 win (+ the redirect check) can be expressed as presets — which they cannot be
 today.

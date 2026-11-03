@@ -37,7 +37,7 @@ test("promptFields: extracts the system prompt and the latest task/injected mess
 	const messages = [
 		{ role: "system", content: "You make one failing test pass." },
 		{ role: "user", content: "Make tests/test_phase4.py pass." },
-		{ role: "custom", content: [{ type: "text", text: "[mellum-ncm] unmet concepts: test_ids" }] },
+		{ role: "custom", content: [{ type: "text", text: "[mellum-verify] unmet concepts: test_ids" }] },
 	];
 	const { system, task } = promptFields(messages);
 	assert.match(system, /failing test pass/);

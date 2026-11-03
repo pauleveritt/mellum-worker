@@ -95,7 +95,7 @@ carry hypothesis:
   to carry. The fail→pass pattern (iters 1–2 fail, 3–5 pass) is run-to-run variance of the
   gate, not learning: the carried facts never changed between reps.
 - **Forcing the facts channel degrades the gate.** The stack scores **6/6** on `--arm bare`
-  but only **3/5** here on `--arm worker`. The gate fired (iter 1's trace shows ~5 `mellum-ncm`
+  but only **3/5** here on `--arm worker`. The gate fired (iter 1's trace shows ~5 `mellum-verify`
   redispatches, the `NCM_MAX` ceiling) yet the worker still settled at `miss=4` — on the worker
   arm it could not build the home page even across five redispatches, where the bare worker
   could. The carry channel (worker/facts) and the best gate performance (bare) are in tension.

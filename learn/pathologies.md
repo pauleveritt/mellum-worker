@@ -130,9 +130,9 @@ entries below.
    that should refuse a premature "done" was switched off the whole session, so
    the worker self-exited with the work incomplete and nothing sent it back — a
    harness fault that reads from the outside as the model stopping early.
-   **Seen:** the 2026-10-30 easy remedy screen, where `mellum-ncm` read `NCM_TEST`
+   **Seen:** the 2026-10-30 easy remedy screen, where `mellum-verify` read `NCM_TEST`
    at extension-load — before `mellum-acceptance` set it at `session_start` — so
-   `[mellum-ncm]` fired zero times and a 17-turn session settled with the app
+   `[mellum-verify]` fired zero times and a 17-turn session settled with the app
    built as `main.py` and the Phase-1 home checks unmet
    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-30-acceptance-gate-inert.md)).
    **Answer:** read the gate's config at settle time, not at load, and run the
@@ -143,7 +143,7 @@ entries below.
    refuses the next call ("budget reached — stop") while a verify gate refuses
    the settle ("tests still fail — keep going"), so the worker can neither act
    nor finish and churns text turns to the deadline. **Seen:** the 2026-10-31
-   easy screen, a `turn-cap(120)` + `mellum-ncm` rep that ran 296 turns to the
+   easy screen, a `turn-cap(120)` + `mellum-verify` rep that ran 296 turns to the
    1800 s wall with `tool_calls` pinned at 120, `agent_settled` zero times, 349
    budget blocks against 193 gate refusals; the one rep where the cap barely bit
    (5 blocks) passed at 125 turns

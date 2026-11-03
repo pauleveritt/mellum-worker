@@ -28,7 +28,7 @@ This is a **design mismatch, not a broken worker.** The worker assumes *test-dri
 (its home is the ladder, where a failing test is always provided); the prose suites are
 *prompt-driven greenfield*. It is being measured off-design here. It also explains why the gate
 stack wins on easy: `mellum-acceptance` **synthesises the missing test** (the derived contract)
-and `mellum-ncm` makes the model pass it — handing the worker back the anchor its prompt was
+and `mellum-verify` makes the model pass it — handing the worker back the anchor its prompt was
 written around.
 
 ## What would falsify this / Risks

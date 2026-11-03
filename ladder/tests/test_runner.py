@@ -1451,10 +1451,10 @@ def test_mode_args_load_extra_extensions_and_keep_sentence_last():
 
     from ladder.run_ladder import build_pi_mode_args
 
-    args = build_pi_mode_args("do it", extra_extensions=(Path("/x/mellum-ncm.ts"),))
+    args = build_pi_mode_args("do it", extra_extensions=(Path("/x/mellum-verify.ts"),))
     assert args[-1] == "do it"
-    assert "/x/mellum-ncm.ts" in args
-    assert args.index("/x/mellum-ncm.ts") < args.index("do it")
+    assert "/x/mellum-verify.ts" in args
+    assert args.index("/x/mellum-verify.ts") < args.index("do it")
 
 
 def test_primary_mode_mirrors_the_agent_dir_it_is_given(monkeypatch, tmp_path):

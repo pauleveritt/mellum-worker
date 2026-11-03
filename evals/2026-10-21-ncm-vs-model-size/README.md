@@ -1,6 +1,6 @@
 # 2026-10-21: the NCM gate × model size — it makes a worker try, not able
 
-**What is measured.** `extensions/mellum-ncm.ts` (the NCM verify gate — re-runs
+**What is measured.** `extensions/mellum-verify.ts` (the NCM verify gate — re-runs
 the frozen test at settle and, while red, sends the worker back on the unmet
 concepts) against three model sizes on rung 9, n=1 each, frozen `test_phase4.py`
 placed, guards on. The 1.5B also loads `content-tool-call-assist` (it cannot
@@ -16,7 +16,7 @@ Result (`table.md`):
 - **1.5B Qwen + assist: FAIL** (62s) — tool-calls via the assist plugin but
   loops running `pytest` without editing; the gate forces it back, still no fix.
 
-**The finding.** `mellum-ncm.ts` is a verify/exit gate: it forces a worker to
+**The finding.** `mellum-verify.ts` is a verify/exit gate: it forces a worker to
 keep going until the frozen test is green. It **cannot supply capability** — on
 both small models it fires and they still fail, each at its own wall (3-bit:
 edit precision; 1.5B: can run the test, can't fix the code). The only pass is

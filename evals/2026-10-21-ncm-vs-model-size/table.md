@@ -1,6 +1,6 @@
-# `mellum-ncm.ts` (NCM verify gate) × model size — rung 9
+# `mellum-verify.ts` (NCM verify gate) × model size — rung 9
 
-All with the frozen `test_phase4.py` placed and `mellum-ncm.ts` loaded via
+All with the frozen `test_phase4.py` placed and `mellum-verify.ts` loaded via
 `--pi-extension`; guards on. The 1.5B also carries `content-tool-call-assist`
 (it cannot tool-call otherwise).
 

@@ -294,7 +294,7 @@ def build_pi_mode_args(sentence: str, extra_extensions: tuple[Path, ...] = ()) -
     worker prompt and only the messages since the mode began. The shipped mode
     runs the guard set itself, so no guards file is passed; the recorder loads
     after the mode so the trace shows what was sent. `extra_extensions`
-    (--pi-extension) load alongside — e.g. the NCM verify gate, so the mediation
+    (--pi-extension) load alongside — e.g. the verify gate, so the mediation
     reaches Mode.
     """
     args = [
@@ -1008,7 +1008,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--pi-extension",
         action="append",
         default=[],
-        help="direct or mode: an extra Pi extension to load with -e (repeatable), e.g. extensions/mellum-ncm.ts, so an extension can be measured without shipping it",
+        help="direct or mode: an extra Pi extension to load with -e (repeatable), e.g. extensions/mellum-verify.ts, so an extension can be measured without shipping it",
     )
     return parser
 

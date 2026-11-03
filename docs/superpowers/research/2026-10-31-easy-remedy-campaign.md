@@ -26,7 +26,7 @@ n=6) is next, since a single 3/3 at n=3 is a strong lead, not yet a rate.
 
 **The remedy for easy, stated:** `tool/background-long-commands` (survive the
 server the worker launches to check its work) + `mellum-acceptance`
-(phase-scoped, nav-complete contract) + `mellum-ncm` (re-run the contract at
+(phase-scoped, nav-complete contract) + `mellum-verify` (re-run the contract at
 settle and redispatch the unmet concept). No cap — so no `cap-turns` × `ncm`
 deadlock. Each piece earns its place: drop nonblock and 2/3 stall (arm 1); leave
 the contract whole-roadmap/lax-nav and the gate demands the wrong thing (arm 2).

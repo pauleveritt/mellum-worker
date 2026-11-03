@@ -9,9 +9,9 @@ Everything that changes how the worker behaves is one of two things.
 
 - An **extension** lives in `extensions/mellum-*.ts`. It hooks Pi's events — `session_start`,
   `agent_before_settle` — and does its work there. `mellum-acceptance` derives a contract from
-  the spec at `session_start`; `mellum-ncm` re-runs that contract when the worker tries to
+  the spec at `session_start`; `mellum-verify` re-runs that contract when the worker tries to
   settle and sends it back while it is red. An extension is self-contained Node, so it loads
-  with `-e extensions/mellum-ncm.ts` and needs no patch into Pi.
+  with `-e extensions/mellum-verify.ts` and needs no patch into Pi.
 - A **remedy unit** lives in `remedies/<category>/<verb-noun>.ts`. It is a thin, named wrapper
   the course can switch on one at a time — `guard/cap-turns`, `tool/background-long-commands`.
   Most re-export an extension unchanged; the name is what a lesson teaches.
@@ -27,7 +27,7 @@ units to stack on top:
 ```bash
 uv run python learn/code/harness.py run --suite easy --suites-dir learn/code/suites \
   --arm bare --remedy tool/background-long-commands \
-  --extension extensions/mellum-acceptance.ts --extension extensions/mellum-ncm.ts \
+  --extension extensions/mellum-acceptance.ts --extension extensions/mellum-verify.ts \
   --grade --repeat 3 --deadline 1800 --stall 120 --profile <profile> --runs-dir runs/<name>
 ```
 

@@ -3,7 +3,7 @@
 ## What is measured / What is conjecture
 
 **Measured.** On the local M3 (Metal, cached Q4, `llama-server`, the same rig as
-the 2026-10-30 vanilla baselines), easy n=3, with the fixed `mellum-ncm` gate
+the 2026-10-30 vanilla baselines), easy n=3, with the fixed `mellum-verify` gate
 plus the full remedy stack including `guard/cap-turns(120)`:
 
 | rep | pass | miss | turns | tool_calls | wall | budget blocks | ncm refusals | settled |
@@ -17,19 +17,19 @@ exactly 120 — the cap's ceiling — while the trace shows `agent_settled` **ze
 times across 296 turns: it never once settled before the 1800 s deadline cut it
 off. The two remedies gave opposite orders. `guard/cap-turns` refused the
 worker's tool calls 349 times (*"Tool-call budget reached — stop"*), and in the
-same session `mellum-ncm` refused the worker's settle 193 times (*"the tests
+same session `mellum-verify` refused the worker's settle 193 times (*"the tests
 still fail, so you are not done — keep going"*). Capped, it could not act; gated,
 it could not stop; so it churned text turns to the wall and timed out with three
 Phase-1 home checks still unmet.
 
 **The contrast is the proof.** The one rep that passed (11b28f) took only **5**
-budget blocks — the cap barely bit — so `mellum-ncm`'s 87 refusals could drive
+budget blocks — the cap barely bit — so `mellum-verify`'s 87 refusals could drive
 the build to green at 125 turns. The deadlock is not that the two remedies
 coexist; it is that the cap binding *hard* (349 blocks at the ceiling) and the
 gate refusing to settle are a contradiction with no exit. The budget says the
 run is over; the gate says the work is not done; neither yields to the other.
 
-**Root cause (measured).** `guard/cap-turns` and `mellum-ncm` each own one half
+**Root cause (measured).** `guard/cap-turns` and `mellum-verify` each own one half
 of the stop/go decision and neither knows about the other. The cap caps
 *tool calls*. The gate blocks *settle*. Once the cap is exhausted the worker's
 only remaining move is a text turn, and a text turn cannot make a failing test
@@ -38,7 +38,7 @@ another text turn it cannot use. There is no state where both are satisfied
 short of the deadline.
 
 **Conjecture.** That reconciling the two removes the churn without losing the
-pass: if `mellum-ncm` stands down once the step budget is exhausted — lets the
+pass: if `mellum-verify` stands down once the step budget is exhausted — lets the
 run settle red rather than refusing a settle the worker can no longer act on —
 the deadline rep would end at its cap instead of the wall, scored on its real
 (incomplete) state, and the pass rep is untouched because its cap never bound.
@@ -61,7 +61,7 @@ next step; this note records the confound that forced it.
   redispatch message is too opaque for the model to act on, a remedy problem,
   not a wiring one (the same risk the inert-gate note named).
 - **The deadlock reproduces without the cap.** If a no-cap acceptance + ncm run
-  also churns to the deadline, then `mellum-ncm` alone can trap a worker that
+  also churns to the deadline, then `mellum-verify` alone can trap a worker that
   cannot fix the failing concept — the gate needs its own give-up-after-N exit,
   independent of any cap. `NCM_MAX` (default 5) is meant to be that exit; if it
   is not bounding the loop, that is the real bug.
@@ -77,7 +77,7 @@ next step; this note records the confound that forced it.
 
 The deadlock forced the run this note's first falsification bullet named: the
 gate measured without the cap, the quality check, or the non-block tool. Same
-rig, easy n=3, **bare + `mellum-acceptance` + `mellum-ncm` only**.
+rig, easy n=3, **bare + `mellum-acceptance` + `mellum-verify` only**.
 
 | rep | pass | miss | turns | tool_calls | wall | gate fired | exit |
 |---|---|---|---|---|---|---|---|
@@ -90,7 +90,7 @@ opaque (the bullet's guess). It is that **the gate acts only at settle, and two
 of three reps never reached settle.** Both stalled reps were killed at the 120 s
 stall limit running a foreground server — the `stalled` marker reads
 `{"command": ". .venv/bin/activate && python main.py"}` — so `agent_before_settle`
-never fired and `mellum-ncm` appeared zero times. This is pathology #8, a server
+never fired and `mellum-verify` appeared zero times. This is pathology #8, a server
 nobody can stop, upstream of the gate; it also built `main.py`, not `app.py`.
 
 The one rep that reached settle (001917) is the gate working as designed: it

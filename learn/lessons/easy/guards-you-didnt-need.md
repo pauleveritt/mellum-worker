@@ -47,7 +47,7 @@ machinery takes the credit the prompts earned.
 **The condition:** the Easy set that passes 6/6 — `preset:easy`. **The guard:**
 `guard/foreground-server`, in the set, refusing a foreground server start. **The
 gate:** the mediated acceptance gate (`mellum-acceptance` derives a structural
-test from the spec; `mellum-ncm` re-runs it at settle and re-dispatches a red
+test from the spec; `mellum-verify` re-runs it at settle and re-dispatches a red
 one), loaded on top with `--extension`. The grader is the Easy hidden tests;
 `run.json` records `guard_blocks` and each gate firing.
 
@@ -106,7 +106,7 @@ The 6/6 set, then the same with the NCM gate stacked on:
 
 ```bash
 uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --grade --repeat 6 --deadline 600
-uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --extension extensions/mellum-acceptance.ts --extension extensions/mellum-ncm.ts --grade --repeat 6 --deadline 600
+uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --extension extensions/mellum-acceptance.ts --extension extensions/mellum-verify.ts --grade --repeat 6 --deadline 600
 ```
 
 !!! success "Key points"

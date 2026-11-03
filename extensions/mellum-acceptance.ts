@@ -3,10 +3,10 @@
  * test from the task spec, with no per-task authoring and no model.
  *
  * Mediation forces the worker to meet a contract it cannot see, redispatching
- * until it does (mellum-ncm). A hand-written frozen test per phase does not
+ * until it does (mellum-verify). A hand-written frozen test per phase does not
  * scale; this derives a shallow-but-real contract straight from the spec's own
  * nouns — the app module it names, and every route it names — and emits a
- * pytest the ncm gate can run (point NCM_TEST at it). It checks the app boots
+ * pytest the verify gate can run (point VERIFY_TEST at it). It checks the app boots
  * and that each named route is actually registered (param-normalized, so
  * {id} vs {complaint_id} does not matter).
  *
@@ -348,8 +348,8 @@ export default function (
 			// a real Pi session that sets nothing falls back to the whole spec.
 			const prompt = process.env.ACCEPTANCE_PROMPT ?? "";
 			const path = writeContractTest(cwd, outDir, prompt);
-			// The ncm gate reads NCM_TEST when it verifies; point it at the derived contract.
-			process.env.NCM_TEST = path;
+			// The verify gate reads VERIFY_TEST when it verifies; point it at the derived contract.
+			process.env.VERIFY_TEST = path;
 		} catch {
 			// never break the session over contract derivation
 		}

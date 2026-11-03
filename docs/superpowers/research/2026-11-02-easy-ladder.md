@@ -28,7 +28,7 @@ bundle.
 | `vanilla + name-the-layout + prompt/python-developer` (**n=6**) | **4/6** | median 18 (15–28) |
 | `vanilla + name-the-layout + python-developer + guard/foreground-server` (**n=6**) | **5/6** | blocking the server-start that stood in for a check moved one more rep across; within n=6 variance, a lead |
 | `+ prompt/verify-the-spec` (**n=6**) | **6/6** | the dropped-requirement failure closed — every rep green, 0 failed checks; median 25 turns (22–44). `guard/foreground-server` fired **0×** in all six, so the lever is the verify prompt, not the guard |
-| `+ NCM` (`mellum-acceptance` + `mellum-ncm`, **n=6**) | **5/6** | the gate fired **0×** in every rep — on Easy the prompts already pass its derived contract before it checks. The one loss spun **66 turns to the 600 s deadline with zero settle attempts**, so the gate never ran |
+| `+ NCM` (`mellum-acceptance` + `mellum-verify`, **n=6**) | **5/6** | the gate fired **0×** in every rep — on Easy the prompts already pass its derived contract before it checks. The one loss spun **66 turns to the 600 s deadline with zero settle attempts**, so the gate never ran |
 
 **Reading:** on Easy the lever is **guidance, not guards**. Two agnostic prompt
 lines on Vanilla Pi reach a fast pass with no guards and nothing coded to the eval.
@@ -62,7 +62,7 @@ guard. The next rung drops the guard to confirm the minimal stack —
 
 **NCM on Easy — a settle-time gate can't catch a spin.** Adding the mediated
 acceptance gate (`mellum-acceptance` derives a structural contract from the spec;
-`mellum-ncm` re-runs it at settle and re-dispatches a red one) on top of the 6/6
+`mellum-verify` re-runs it at settle and re-dispatches a red one) on top of the 6/6
 stack gave **5/6**, not better. The gate fired **0× in all six reps**: on Easy the
 three prompts already satisfy the derived contract before the worker settles, so
 there is nothing to re-dispatch. The single loss (rep `3b3820`) is the telling

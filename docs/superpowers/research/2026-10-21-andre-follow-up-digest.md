@@ -182,7 +182,7 @@ Each entry is one idea, six steps, with a badge on steps 1–5.
 
 - **Problem.** A worker can pass one test function and still miss the
   concept behind it.
-- **Eval case.** `mellum-ncm`, an opt-in verify gate: re-dispatch on the
+- **Eval case.** `mellum-verify`, an opt-in verify gate: re-dispatch on the
   specific failing test functions until a budget runs out. Record
   `2026-10-21-mode-ncm-rung9`.
 - **Evidence of the problem.** The rung-9 miss is the motivating case.
