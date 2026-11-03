@@ -5,6 +5,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import urllib.request
@@ -170,7 +171,21 @@ def preflight(pi_binary: Path, profile: Path) -> dict:
             "profile_settings": json.loads((profile / "settings.json").read_text())}
 
 
-def create_manifest(repo: Path, preflight: dict) -> dict:
+def worker_hashes(repo: Path) -> dict:
+    """Freeze the worker and its local import closure, including type imports."""
+    pending = [repo / "extensions/mellum-worker.ts"]
+    hashes = {}
+    while pending:
+        path = pending.pop().resolve()
+        name = str(path.relative_to(repo.resolve()))
+        if name in hashes:
+            continue
+        hashes[name] = sha256(path)
+        pending.extend(path.parent / rel for rel in re.findall(r'from\s+[\"\'](\.[^\"\']+)[\"\']', path.read_text()))
+    return hashes
+
+
+def create_manifest(repo: Path, preflight: dict, *, arm: str = "vanilla") -> dict:
     from harness import file_hashes, machine_label
     hashes = {}
     for name in ("learn/code/harness.py", "learn/code/baseline.py", "extensions/mellum-recorder.ts",
@@ -182,16 +197,73 @@ def create_manifest(repo: Path, preflight: dict) -> dict:
     material = {**preflight, "hashes": hashes, "machine": machine_label(),
                 "pi_entry_sha256": sha256(Path(preflight["pi"]["entry_path"])),
                 "limits": {"deadline":600,"stall":180,"target":6,"concurrency":1},
-                "arm":"vanilla", "extensions":["extensions/mellum-recorder.ts"],
+                "arm":arm, "extensions":["extensions/mellum-recorder.ts"],
                 "context_files":False, "cold_context":True}
+    if arm == "worker":
+        material.update(extensions=["extensions/mellum-worker.ts", "extensions/mellum-recorder.ts"],
+                        arm_env={"MELLUM_MODE":"1"}, worker_hashes=worker_hashes(repo))
     return {"schema":1, "created_at":datetime.now(UTC).isoformat(),
             "command":"uv run python learn/code/harness.py baseline",
             "source_commit":subprocess.check_output(["git","rev-parse","HEAD"],cwd=repo,text=True).strip(),
             "material":material, "attempts":[]}
 
 
+def attach_reference(current: dict, path: Path) -> None:
+    """Fail closed on shared-input drift; preserve the reviewed instrument delta."""
+    saved = json.loads(path.read_text())
+    reference = saved["material"]
+    if (saved.get("status") != "complete" or reference.get("arm") != "vanilla"
+            or counted_attempts(saved["attempts"]) != 6
+            or any(a["state"] == "pending-review" for a in saved["attempts"])):
+        raise SystemExit("reference must be a complete six-counted Vanilla batch")
+    shared = {k:v for k,v in current["material"].items()
+              if k not in {"arm", "extensions", "arm_env", "worker_hashes"}}
+    expected = {k:v for k,v in reference.items() if k not in {"arm", "extensions"}}
+    if reference.get("extensions") != ["extensions/mellum-recorder.ts"]:
+        raise SystemExit("reference must have recorder-only extensions")
+    instruments = {"learn/code/harness.py", "learn/code/baseline.py"}
+    delta = {name:{"reference":expected["hashes"][name], "current":shared["hashes"][name]}
+             for name in instruments}
+    shared["hashes"] = {k:v for k,v in shared["hashes"].items() if k not in instruments}
+    expected["hashes"] = {k:v for k,v in expected["hashes"].items() if k not in instruments}
+    if shared != expected:
+        differing = sorted(k for k in set(shared) | set(expected) if shared.get(k) != expected.get(k))
+        raise SystemExit(f"shared reference inputs mismatch: {differing}")
+    proof_path = path.parent / "native-max-tokens-verification.json"
+    observations_path = path.parent / "runtime-observations.json"
+    proof = json.loads(proof_path.read_text())
+    observations = json.loads(observations_path.read_text())
+    runtime = observations["pi_runtime"]
+    pi = current["material"]["pi"]
+    if runtime["entryPath"] != pi["entry_path"] or runtime["piVersion"] != pi["version"]:
+        raise SystemExit("reference Pi runtime identity mismatch")
+    package = Path(pi["entry_path"]).parents[2]
+    hashes = {str(package / name):digest for name,digest in proof["runtime_sha256"].items()}
+    if not hashes or any(not Path(p).is_file() or sha256(Path(p)) != digest for p,digest in hashes.items()):
+        raise SystemExit("reference runtime hashes changed")
+    node = runtime["execPath"]
+    version = subprocess.check_output([node, "--version"], text=True).strip()
+    if observations.get("node_version", version) != version:
+        raise SystemExit("reference Node runtime version changed")
+    hashes[node] = sha256(Path(node))
+    current["material"]["runtime"] = {"exec_path":node, "node_version":version, "hashes":hashes}
+    current["reference"] = {"path":str(path.resolve()), "sha256":sha256(path),
+        "supplement_sha256":sha256(proof_path), "observations_sha256":sha256(observations_path),
+        "instrument_delta":delta,
+        "scope":"Bundle hashes are post-Vanilla supplements; Node binary hash is pinned prospectively."}
+    current["command"] += f" --arm worker --reference {path}"
+
+
+def verify_collection_inputs(repo: Path, material: dict) -> None:
+    hashes = {**material["hashes"], **material.get("worker_hashes", {})}
+    if any(sha256(repo / name) != digest for name,digest in hashes.items()):
+        raise SystemExit("collection source inputs changed")
+    if any(sha256(Path(name)) != digest for name,digest in material.get("runtime", {}).get("hashes", {}).items()):
+        raise SystemExit("collection runtime inputs changed")
+
+
 def validate_resume(saved: dict, current: dict) -> None:
-    if saved["material"] != current["material"]:
+    if saved["material"] != current["material"] or saved.get("reference") != current.get("reference"):
         raise SystemExit("material collection inputs changed; refusing to resume")
 
 
@@ -239,7 +311,7 @@ def verify_private_profile(batch: Path, material: dict) -> None:
         raise SystemExit("unexpected private profile inputs; refusing changed configuration")
 
 
-def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict) -> None:
+def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict, *, arm: str = "vanilla", exec_path: str | None = None) -> None:
     """Recover durable results left between record persistence and ledger commit."""
     for attempt in attempts:
         if attempt["state"] != "pending-review" or attempt.get("path"):
@@ -252,23 +324,50 @@ def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict) -> None:
         run = records[0].parent
         record = json.loads(records[0].read_text())
         attempt.update(run_id=run.name, path=str(run.relative_to(batch)),
-                       identity_ok=verify_trace_identity(run, pi), cleanup_ok=record.get("cleanup_ok"),
+                       identity_ok=verify_trace_identity(run, pi, arm=arm, exec_path=exec_path), cleanup_ok=record.get("cleanup_ok"),
                        reason="completed run record recovered after interruption; explicit classification required")
 
 
-def verify_trace_identity(run: Path, pi: dict) -> bool:
+def worker_activation(run: Path) -> bool:
+    """Native Pi persists a second model_change when headless activate calls setModel.
+
+    With the pinned runtime and exact worker/recorder launch, this read-only
+    evidence distinguishes successful startup from a worker that stayed off.
+    """
+    sessions = list((run / "sessions").glob("*.jsonl"))
+    if len(sessions) != 1:
+        return False
+    rows = [json.loads(line) for line in sessions[0].read_text().splitlines() if line.strip()]
+    before_user = []
+    for row in rows:
+        if row.get("type") == "message" and row.get("message", {}).get("role") == "user":
+            break
+        if row.get("type") == "model_change":
+            before_user.append((row.get("provider"), row.get("modelId")))
+    return before_user == [("llamacpp", "Mellum2.1-12B-A2.5B-Thinking")] * 2
+
+
+def verify_trace_identity(run: Path, pi: dict, *, arm: str = "vanilla", exec_path: str | None = None) -> bool:
     try:
         launch = json.loads((run / "launch.json").read_text())
         argv = launch["argv"]
         extensions = [argv[i+1] for i, arg in enumerate(argv) if arg == "-e"]
         rows = [json.loads(line) for line in (run / "trace.jsonl").read_text().splitlines() if line.strip()]
         starts = [row for row in rows if row.get("type") == "instance_start"]
-        return (launch["arm"] == "vanilla" and not launch["extras"] and not launch["context_files"]
-                and extensions == [str(run / "record-pi.mjs")]
+        expected = [str(run / "record-pi.mjs")]
+        if arm == "worker":
+            expected.insert(0, str(REPO / "extensions/mellum-worker.ts"))
+            if (launch.get("arm_env") != {"MELLUM_MODE":"1"}
+                    or launch.get("mode_runs_file") != str(run / "mellum-mode-runs.jsonl")
+                    or not worker_activation(run)):
+                return False
+        return (launch["arm"] == arm and not launch["extras"] and not launch["context_files"]
+                and extensions == expected
                 and all(flag in argv for flag in ("--no-context-files","--no-skills","--no-extensions"))
                 and bool(starts) and all(row.get("runId") == run.name
                     and row.get("runtime", {}).get("piVersion") == pi["version"]
-                    and row.get("runtime", {}).get("entryPath") == pi["entry_path"] for row in starts))
+                    and row.get("runtime", {}).get("entryPath") == pi["entry_path"]
+                    and (exec_path is None or row.get("runtime", {}).get("execPath") == exec_path) for row in starts))
     except (OSError, ValueError, KeyError, IndexError):
         return False
 

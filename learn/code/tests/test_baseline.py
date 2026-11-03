@@ -112,8 +112,8 @@ def test_baseline_resolves_pin_and_fixed_arguments(tmp_path):
         baseline.resolve_pinned_pi(harness.CODE.parents[1], candidates=[old])
     args = harness.build_parser().parse_args(['baseline','--dry-run'])
     assert args.dry_run
-    with pytest.raises(SystemExit):
-        harness.build_parser().parse_args(['baseline','--arm','worker'])
+    args = harness.build_parser().parse_args(['baseline','--arm','worker','--reference','saved/batch.json'])
+    assert args.arm == 'worker' and args.reference == Path('saved/batch.json')
 
 
 def _flight_fixture(monkeypatch):
@@ -310,3 +310,104 @@ def test_resume_discovers_record_written_before_manifest_update(tmp_path, monkey
     assert len(calls) == 6
     assert manifest['attempts'][0]['run_id'] == retained
     assert manifest['attempts'][0]['state'] == 'counted'
+
+
+def _reference(tmp_path, monkeypatch):
+    _flight_fixture(monkeypatch)
+    flight = baseline.preflight(Path(sys.executable), PROFILE)
+    saved = baseline.create_manifest(harness.CODE.parents[1], flight)
+    saved.update(status='complete', attempts=[{'state':'counted','run_id':str(i)} for i in range(6)])
+    (tmp_path/'batch.json').write_text(json.dumps(saved))
+    # Use one real installed file to exercise runtime drift without a Pi install in tests.
+    runtime_file = Path(sys.executable).resolve()
+    (tmp_path/'native-max-tokens-verification.json').write_text(json.dumps({
+        'runtime_sha256':{str(runtime_file):baseline.sha256(runtime_file)}}))
+    (tmp_path/'runtime-observations.json').write_text(json.dumps({
+        'pi_runtime':{'execPath':str(runtime_file), 'piVersion':'1.4.0','entryPath':str(runtime_file)}}))
+    return tmp_path/'batch.json', flight
+
+
+def test_worker_reference_and_source_provenance(tmp_path, monkeypatch):
+    reference, flight = _reference(tmp_path, monkeypatch)
+    current = baseline.create_manifest(harness.CODE.parents[1], flight, arm='worker')
+    baseline.attach_reference(current, reference)
+    m = current['material']
+    assert m['arm'] == 'worker'
+    assert m['extensions'] == ['extensions/mellum-worker.ts','extensions/mellum-recorder.ts']
+    assert m['arm_env'] == {'MELLUM_MODE':'1'}
+    assert 'extensions/mellum-commands.ts' in m['worker_hashes']
+    assert current['reference']['sha256'] == baseline.sha256(reference)
+    baseline.verify_collection_inputs(harness.CODE.parents[1], m)
+    m['worker_hashes']['extensions/mellum-commands.ts'] = 'changed'
+    with pytest.raises(SystemExit, match='changed|source'):
+        baseline.verify_collection_inputs(harness.CODE.parents[1], m)
+
+
+@pytest.mark.parametrize('bad', ['arm','status','n','suite','profile','recorder','runtime'])
+def test_worker_reference_rejects_mismatches(tmp_path, monkeypatch, bad):
+    reference, flight = _reference(tmp_path, monkeypatch)
+    saved = json.loads(reference.read_text())
+    if bad == 'arm': saved['material']['arm'] = 'worker'
+    if bad == 'status': saved['status'] = 'partial'
+    if bad == 'n': saved['attempts'].pop()
+    if bad == 'suite': saved['material']['hashes']['learn/code/suites/easy/task/PROMPT.md'] = 'other'
+    if bad == 'profile': saved['material']['profile_settings']['injected'] = True
+    if bad == 'recorder': saved['material']['hashes']['extensions/mellum-recorder.ts'] = 'other'
+    reference.write_text(json.dumps(saved))
+    if bad == 'runtime':
+        runtime = json.loads((tmp_path/'native-max-tokens-verification.json').read_text())
+        runtime['runtime_sha256'][str(Path(sys.executable).resolve())] = 'other'
+        (tmp_path/'native-max-tokens-verification.json').write_text(json.dumps(runtime))
+    current = baseline.create_manifest(harness.CODE.parents[1], flight, arm='worker')
+    with pytest.raises(SystemExit, match='reference|runtime|shared'):
+        baseline.attach_reference(current, reference)
+
+
+def _worker_identity(run):
+    pi = {'version':'1.4.0','entry_path':'/pinned/pi.js'}
+    model = {'type':'model_change','provider':'llamacpp','modelId':'Mellum2.1-12B-A2.5B-Thinking'}
+    (run/'sessions').mkdir()
+    (run/'sessions/session.jsonl').write_text('\n'.join(map(json.dumps,[model,model,
+        {'type':'message','message':{'role':'user','content':'task'}}])))
+    launch = {'argv':['pi','--no-context-files','--no-skills','--no-extensions',
+        '-e',str(harness.EXTENSION),'-e',str(run/'record-pi.mjs')],
+        'arm':'worker','extras':[],'context_files':False,'arm_env':{'MELLUM_MODE':'1'},
+        'mode_runs_file':str(run/'mellum-mode-runs.jsonl')}
+    (run/'launch.json').write_text(json.dumps(launch))
+    (run/'trace.jsonl').write_text(json.dumps({'type':'instance_start','runId':run.name,
+        'runtime':{'piVersion':'1.4.0','entryPath':'/pinned/pi.js','execPath':'/node'}})+'\n')
+    return pi, launch
+
+
+@pytest.mark.parametrize('bad', [None,'order','inactive','late','env','global-record','runtime','wrong-arm'])
+def test_worker_identity_requires_activation_and_exact_launch(tmp_path, bad):
+    pi, launch = _worker_identity(tmp_path)
+    if bad == 'order': launch['argv'][-3], launch['argv'][-1] = launch['argv'][-1],launch['argv'][-3]
+    if bad == 'env': launch['arm_env'] = {}
+    if bad == 'global-record': launch['mode_runs_file'] = '/home/records.jsonl'
+    if bad == 'inactive':
+        p = tmp_path/'sessions/session.jsonl'; p.write_text('\n'.join(p.read_text().splitlines()[1:]))
+    if bad == 'late':
+        p = tmp_path/'sessions/session.jsonl'; rows=p.read_text().splitlines(); p.write_text('\n'.join([rows[0],rows[2],rows[1]]))
+    (tmp_path/'launch.json').write_text(json.dumps(launch))
+    assert baseline.verify_trace_identity(tmp_path, pi, arm='vanilla' if bad=='wrong-arm' else 'worker',
+        exec_path='/wrong-node' if bad=='runtime' else '/node') is (bad is None)
+
+
+def test_worker_runner_keeps_mode_records_private(tmp_path):
+    binary = tmp_path/'env-pi'
+    binary.write_text('#!/bin/sh\nprintf "%s" "$MELLUM_MODE_RUNS" > mode-destination\n')
+    binary.chmod(0o755)
+    result = harness.run_suite(harness.load_suite(SUITES,'add'), runs_dir=tmp_path/'runs',
+        pi_binary=str(binary), profile=PROFILE, arm='worker')
+    run = result
+    launch = json.loads((run/'launch.json').read_text())
+    assert launch['arm_env'] == {'MELLUM_MODE':'1'}
+    assert (run/'workspace/mode-destination').read_text() == str(run/'mellum-mode-runs.jsonl')
+
+
+def test_worker_collector_requires_reference_before_launch(tmp_path, monkeypatch):
+    calls = _standin_collector(tmp_path, monkeypatch)
+    with pytest.raises(SystemExit, match='reference'):
+        harness.collect_baseline(arm='worker')
+    assert not calls

@@ -496,6 +496,8 @@ def run_suite(
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
+    # Keep worker bookkeeping inside this attempt, regardless of inherited env.
+    env["MELLUM_MODE_RUNS"] = str(run / "mellum-mode-runs.jsonl")
     started = time.monotonic()
     groups: list[int] = []
     leaked: list[dict] = []
@@ -524,7 +526,8 @@ def run_suite(
                 context_files=context_files,
             )
             write_json(run / "launch.json", {"argv": argv, "arm": arm,
-                       "extras": list(map(str, extras)), "context_files": context_files})
+                       "extras": list(map(str, extras)), "context_files": context_files,
+                       "arm_env":settings["env"], "mode_runs_file":env["MELLUM_MODE_RUNS"]})
             print(f"Run {run.name}: {workspace}", flush=True)
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
@@ -1118,8 +1121,11 @@ def _print_grades(grades: list[tuple[str, bool, str]]) -> None:
 
 def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
                      exclude: str | None = None, count: str | None = None,
-                     reason: str | None = None) -> int:
+                     reason: str | None = None, arm: str = "vanilla",
+                     reference: Path | None = None) -> int:
     import baseline
+    if arm not in {"vanilla", "worker"} or (arm == "worker") != (reference is not None):
+        raise SystemExit("worker collection requires --reference; Vanilla collection uses no reference")
     if (exclude or count or reason) and resume is None:
         raise SystemExit("classification requires --resume and an explicit --reason")
     repo = CODE.parents[1]
@@ -1129,7 +1135,8 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
         effective = json.loads((PROFILE / "models.json").read_text())
         effective["providers"]["llamacpp"]["baseUrl"] = config["client"]["collection_base_url"]
         print(json.dumps({"command":"uv run python learn/code/harness.py baseline", "pi":pi,
-            "arm":"vanilla", "extensions":[str(RECORDER)], "profile":effective,
+            "arm":arm, "extensions":([str(EXTENSION)] if arm == "worker" else []) + [str(RECORDER)],
+            "arm_env":arm_settings(arm)["env"], "reference":str(reference) if reference else None, "profile":effective,
             "deadline":600,"stall":180,"target":6,"concurrency":1,
             "grade":True,"context_files":False,"extras":[]}, indent=2), flush=True)
         return 0
@@ -1140,16 +1147,19 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             print(f"Recovered {len(recovered)} stale owned runs", flush=True)
         print("Checking pinned runtime, backend, weight hashes and checker versions", flush=True)
         flight = baseline.preflight(Path(pi["path"]), PROFILE)
-        current = baseline.create_manifest(repo, flight)
+        current = baseline.create_manifest(repo, flight, arm=arm)
+        if reference is not None:
+            baseline.attach_reference(current, reference)
+        exec_path = current["material"].get("runtime", {}).get("exec_path")
         if resume is not None:
             batch = resume.resolve()
-            if batch.parent != root or not batch.name.startswith("vanilla-easy-"):
+            if batch.parent != root or not batch.name.startswith(f"{arm}-easy-"):
                 raise SystemExit("resume must name a baseline batch directly under this repository's runs/")
             saved = json.loads((batch / "batch.json").read_text())
             baseline.validate_resume(saved, current)
         else:
             stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-            batch = root / f"vanilla-easy-{stamp}-{uuid.uuid4().hex[:6]}"
+            batch = root / f"{arm}-easy-{stamp}-{uuid.uuid4().hex[:6]}"
             batch.mkdir()
             saved = current
             (batch / "profile").mkdir()
@@ -1157,7 +1167,7 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             (batch / "profile/settings.json").write_text(json.dumps(flight["profile_settings"], indent=2)+"\n")
         attempts = saved["attempts"]
         baseline.verify_private_profile(batch, saved["material"])
-        baseline.reconcile_attempts(batch, attempts, pi)
+        baseline.reconcile_attempts(batch, attempts, pi, arm=arm, exec_path=exec_path)
         if exclude or count:
             baseline.resolve_attempt(attempts, exclude or count, "excluded" if exclude else "counted", reason or "")
         baseline.write_json(batch / "batch.json", saved)
@@ -1171,6 +1181,7 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
         print(f"Batch {batch}: {baseline.counted_attempts(attempts)}/6 counted", flush=True)
         while baseline.counted_attempts(attempts) < 6:
             baseline.verify_private_profile(batch, saved["material"])
+            baseline.verify_collection_inputs(repo, saved["material"])
             number = len(attempts) + 1
             directory = f"attempt-{number:02d}"
             attempt = {"run_id":directory, "directory":directory, "state":"pending-review",
@@ -1178,11 +1189,11 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             attempts.append(attempt)
             baseline.write_json(batch / "batch.json", saved)
             results = _run_sessions(suite, runs_dir=batch / directory, pi_binary=pi["path"],
-                repeat=1, grade_run=True, deadline=600, stall=180, arm="vanilla",
+                repeat=1, grade_run=True, deadline=600, stall=180, arm=arm,
                 profile=batch / "profile", grade_versions=flight["checkers"])
             run = results[0][0]
             record = json.loads((run / "run.json").read_text())
-            identity_ok = baseline.verify_trace_identity(run, pi)
+            identity_ok = baseline.verify_trace_identity(run, pi, arm=arm, exec_path=exec_path)
             state, explanation = baseline.classify_attempt(record, identity_ok=identity_ok)
             attempt.update(run_id=run.name, path=str(run.relative_to(batch)), state=state,
                            reason=explanation, identity_ok=identity_ok, cleanup_ok=record.get("cleanup_ok"))
@@ -1208,7 +1219,9 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    baseline_parser = sub.add_parser("baseline", help="collect the pinned six-session Easy Vanilla reference")
+    baseline_parser = sub.add_parser("baseline", help="collect a pinned six-session Easy reference or worker comparison")
+    baseline_parser.add_argument("--arm", choices=("vanilla","worker"), default="vanilla")
+    baseline_parser.add_argument("--reference", type=Path)
     baseline_parser.add_argument("--dry-run", action="store_true")
     baseline_parser.add_argument("--resume", type=Path)
     decisions = baseline_parser.add_mutually_exclusive_group()
@@ -1257,7 +1270,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "baseline":
         return collect_baseline(resume=args.resume, dry_run=args.dry_run,
-                                exclude=args.exclude, count=args.count, reason=args.reason)
+                                exclude=args.exclude, count=args.count, reason=args.reason,
+                                arm=args.arm, reference=args.reference)
 
     if args.command == "qualify":
         suite = load_suite(args.suites_dir, args.suite)

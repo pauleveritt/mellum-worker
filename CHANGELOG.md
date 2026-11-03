@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- `harness.py baseline --arm worker --reference PATH` collects the thin worker
+  against a retained Vanilla batch. It rejects shared-input drift, verifies
+  native worker activation and runtime hashes, and keeps mode records private.
+
 - The retained [six-session Vanilla Easy reference](evals/2026-11-03-vanilla-easy/README.md)
   includes every outcome, frozen Runpod inference configuration, complete checker
   output and raw-evidence provenance for later worker comparisons. Recovered
