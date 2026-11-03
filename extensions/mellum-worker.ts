@@ -2,9 +2,11 @@
  * Mellum mode: run the small model inside the main session with the worker's prompt
  * and tools, and show it nothing from before the mode began.
  *
- *   /mellum <task>  – one shot: switch to Mellum, run the task, switch back when settled.
- *                     One shot under `pi -p` or `--mode json` (no UI): the command waits for
- *                     the run, switches back and writes the run record before it returns.
+ *   /mellum <task>  – (in the primary) the full delegation loop: an architect pass writes the
+ *                     handover — a failing acceptance test + a brief — then the bare worker runs
+ *                     it to pass, and the frozen acceptance test is the verdict. In a spawned
+ *                     worker child (MELLUM_WORKER_CHILD=1) it is instead the in-session one shot:
+ *                     switch to Mellum, run the task, switch back when settled.
  *   /mellum on      – stay on for several turns (switch model, tools, mark the start)
  *   /mellum off     – restore the previous model and tools
  *   /mellum check   – compare the oMLX server and the Pi provider entry with the measured
@@ -39,7 +41,7 @@
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
  */
 import { spawn } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -117,22 +119,114 @@ export function registerDelegate(pi: any, run: typeof spawnWorker = spawnWorker)
 	});
 }
 
-/** Spawn this extension as a headless worker running `/mellum <brief>`; resolve its trimmed report. */
-export function spawnWorker(brief: string): Promise<string> {
-	const argv = ["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`];
+// The frozen oracle the author writes and the worker must make pass. One fixed path and command
+// so the orchestration can author it, freeze it, and run it without guessing — agnostic to the task.
+export const ACCEPTANCE_TEST = "tests/test_acceptance.py";
+export const ACCEPTANCE_CMD = "uv run --with pytest python -m pytest tests/test_acceptance.py -q";
+
+/** The architect prompt: write the handover (a failing acceptance test + a brief), never the code. */
+export function authorPrompt(task: string): string {
+	return (
+		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code.\n" +
+		"Read the task below and any spec or files already in this directory, decide the layout, then " +
+		"write EXACTLY two files and nothing else:\n" +
+		`1. ${ACCEPTANCE_TEST} — ONE acceptance test that defines "done" for this task. It must FAIL now, ` +
+		"because the implementation does not exist yet, and it must cover what the task actually requires.\n" +
+		`2. BRIEF.md — 2 to 4 sentences: what to build, which files, and this exact command to make pass:\n` +
+		`   ${ACCEPTANCE_CMD}\n` +
+		"Do NOT create, edit or stub any implementation file. Stop once both files are written.\n\n" +
+		`Task: ${task}`
+	);
+}
+
+/** What the worker is told: make the frozen acceptance test pass, without touching it. */
+export const WORKER_BRIEF =
+	`Read BRIEF.md and ${ACCEPTANCE_TEST} in this directory, then implement the solution until the ` +
+	`command \`${ACCEPTANCE_CMD}\` passes. Do NOT edit ${ACCEPTANCE_TEST} — it is the frozen oracle. ` +
+	"Run the command yourself until every test passes, then stop.";
+
+/** Spawn `pi` headless as a worker child (no nested delegation), capturing its trimmed output. */
+function runPi(argv: string[]): Promise<string> {
 	return new Promise((resolve) => {
 		let out = "";
 		let child;
 		try {
 			child = spawn("pi", argv, { cwd: process.cwd(), env: { ...process.env, [CHILD_ENV]: "1" }, stdio: ["ignore", "pipe", "pipe"] });
 		} catch (e) {
-			return resolve(`delegate: could not start the worker — ${(e as Error).message}`);
+			return resolve(`could not start pi — ${(e as Error).message}`);
 		}
 		child.stdout?.on("data", (b) => { out += b.toString(); });
 		child.stderr?.on("data", (b) => { out += b.toString(); });
-		child.on("error", (e) => resolve(`delegate: could not start the worker — ${e.message}`));
-		child.on("close", () => resolve(out.trim().slice(-4000) || "delegate: the worker finished but produced no report"));
+		child.on("error", (e) => resolve(`could not start pi — ${e.message}`));
+		child.on("close", () => resolve(out.trim().slice(-4000) || "(pi finished but produced no output)"));
 	});
+}
+
+/** The architect pass: a plain headless agent that writes the handover, not the code. */
+export function spawnAuthor(task: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", authorPrompt(task)]);
+}
+
+/** The worker pass: this extension headless, running `/mellum <brief>` to implement to green. */
+export function spawnWorker(brief: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`]);
+}
+
+/** Run a shell command in the cwd; resolve whether it exited 0 and its trimmed output. */
+export function runAcceptance(cmd: string): Promise<{ passed: boolean; output: string }> {
+	return new Promise((resolve) => {
+		let out = "";
+		let child;
+		try {
+			child = spawn("bash", ["-lc", cmd], { cwd: process.cwd(), env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+		} catch (e) {
+			return resolve({ passed: false, output: `could not run the acceptance test — ${(e as Error).message}` });
+		}
+		child.stdout?.on("data", (b) => { out += b.toString(); });
+		child.stderr?.on("data", (b) => { out += b.toString(); });
+		child.on("error", (e) => resolve({ passed: false, output: `could not run the acceptance test — ${e.message}` }));
+		child.on("close", (code) => resolve({ passed: code === 0, output: out.trim() }));
+	});
+}
+
+export interface DoTaskDeps {
+	author?: (task: string) => Promise<string>;
+	worker?: (brief: string) => Promise<string>;
+	acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }>;
+}
+
+/**
+ * The delegation loop for a whole task: the architect writes the handover (a failing acceptance
+ * test + a brief), the oracle is frozen read-only so the worker cannot weaken it, the bare worker
+ * implements to pass, and the acceptance test is the verdict. This is `/mellum <task>` for a
+ * primary — it ADDS the handover-writing the bare `delegate` tool leaves to the caller.
+ */
+export async function doTask(task: string, deps: DoTaskDeps = {}): Promise<string> {
+	const author = deps.author ?? spawnAuthor;
+	const worker = deps.worker ?? spawnWorker;
+	const acceptance = deps.acceptance ?? runAcceptance;
+	const testPath = resolve(process.cwd(), ACCEPTANCE_TEST);
+
+	const authorReport = await author(task);
+	if (!existsSync(testPath)) {
+		return `delegate: the architect did not write ${ACCEPTANCE_TEST}, so there is no handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	}
+	// Freeze the oracle: the worker must not edit or weaken the acceptance test.
+	let froze = false;
+	try { chmodSync(testPath, 0o444); froze = true; } catch {}
+	let workerReport: string;
+	try {
+		workerReport = await worker(WORKER_BRIEF);
+	} finally {
+		if (froze) try { chmodSync(testPath, 0o644); } catch {}
+	}
+	const { passed, output } = await acceptance(ACCEPTANCE_CMD);
+	return [
+		`handover: ${ACCEPTANCE_TEST} + BRIEF.md written by the architect (the worker did not author the test).`,
+		`acceptance: ${passed ? "PASS ✅" : "FAIL ❌"}  (${ACCEPTANCE_CMD})`,
+		passed ? "" : `--- acceptance output (tail) ---\n${output.slice(-1200)}`,
+		`--- worker report (tail) ---\n${workerReport.slice(-1200)}`,
+	].filter(Boolean).join("\n");
 }
 
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
@@ -386,9 +480,11 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
 /**
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
-export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string> } = {}) {
+export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
 	// How the primary farms a brief to a fresh worker: the real spawn, or a test's stand-in.
 	const runWorker = options.spawnWorker ?? spawnWorker;
+	// The full task-delegation loop (author the handover, then run the worker to pass) and its deps.
+	const doTaskDeps: DoTaskDeps = { author: options.author, worker: runWorker, acceptance: options.acceptance };
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;
@@ -596,12 +692,13 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			if (sub.cmd === "learn") return runLearn(ctx, sub.n);
 			if (sub.cmd === "last") return runLast(ctx);
 			const want = sub.task ?? "";
-			// In the primary, /mellum <task> runs the delegate tool: spawn a fresh worker for the
-			// brief and show its report, the same path the autonomous `delegate` tool takes. Only a
-			// spawned child (CHILD_ENV) runs the task in this session, below — so no recursion.
+			// In the primary, /mellum <task> runs the full delegation loop: an architect pass writes
+			// the handover (a failing acceptance test + a brief), then the bare worker runs it to pass,
+			// and the frozen acceptance test is the verdict. Only a spawned child (CHILD_ENV) runs the
+			// task in this session, below — so no recursion.
 			if (process.env[CHILD_ENV] !== "1") {
-				say(ctx, "mellum: delegating to a local worker…");
-				say(ctx, await runWorker(want));
+				say(ctx, "mellum: writing the handover (failing test + brief), then running the worker to pass…");
+				say(ctx, await doTask(want, doTaskDeps));
 				return;
 			}
 			// One shot (the worker child): the task runs under the mode and the mode ends when the agent settles.

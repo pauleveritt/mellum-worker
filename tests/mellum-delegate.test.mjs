@@ -1,7 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const load = () => import("../extensions/mellum-worker.ts");
+
+// Run `body()` with the cwd on a fresh temp dir, restoring it afterwards (doTask reads cwd).
+async function inTempCwd(body) {
+	const dir = mkdtempSync(join(tmpdir(), "mellum-dotask-"));
+	const cwd = process.cwd();
+	process.chdir(dir);
+	try { return await body(dir); } finally { process.chdir(cwd); }
+}
 
 function fakePi() {
 	const tools = [];
@@ -58,20 +69,62 @@ test("delegate with a brief runs the worker and returns its report", async () =>
 	assert.match(r.content[0].text, /1 passed/);
 });
 
-test("in the primary, /mellum <task> runs the tool: delegates to a worker, no model switch", async () => {
+test("doTask authors the handover, runs the worker, and reports the acceptance verdict", async () => {
+	const { doTask, ACCEPTANCE_TEST, ACCEPTANCE_CMD } = await load();
+	await inTempCwd(async () => {
+		let authoredTask = "", workerBrief = "", ranCmd = "";
+		const author = async (task) => {
+			authoredTask = task;
+			mkdirSync("tests", { recursive: true });
+			writeFileSync(ACCEPTANCE_TEST, "def test_x():\n    assert False\n");
+			return `wrote ${ACCEPTANCE_TEST} + BRIEF.md`;
+		};
+		const worker = async (b) => { workerBrief = b; return "worker: implemented, 1 passed"; };
+		const acceptance = async (cmd) => { ranCmd = cmd; return { passed: true, output: "1 passed" }; };
+		const r = await doTask("build a slugify utility", { author, worker, acceptance });
+		assert.equal(authoredTask, "build a slugify utility");
+		assert.match(workerBrief, /test_acceptance\.py/, "worker told to pass the authored test");
+		assert.match(workerBrief, /do not edit/i, "worker told not to touch the oracle");
+		assert.equal(ranCmd, ACCEPTANCE_CMD);
+		assert.match(r, /handover:/);
+		assert.match(r, /PASS/);
+	});
+});
+
+test("doTask refuses when the architect writes no acceptance test", async () => {
+	const { doTask } = await load();
+	await inTempCwd(async () => {
+		let workerCalled = false;
+		const r = await doTask("x", {
+			author: async () => "I refuse to write it",
+			worker: async () => { workerCalled = true; return "w"; },
+			acceptance: async () => ({ passed: true, output: "" }),
+		});
+		assert.match(r, /did not write/i);
+		assert.equal(workerCalled, false, "no worker runs without a handover");
+	});
+});
+
+test("in the primary, /mellum <task> authors a handover then runs the worker, no model switch", async () => {
 	delete process.env.MELLUM_WORKER_CHILD;
-	const pi = fakePi();
-	let setModelCalled = false;
-	pi.setModel = async () => { setModelCalled = true; return true; };
-	pi.getActiveTools = () => [];
-	let briefSeen = "";
-	(await load()).default(pi, { spawnWorker: async (b) => { briefSeen = b; return "report: 1 passed"; } });
-	const cmd = pi.commands.find((c) => c.name === "mellum");
-	const notes = [];
-	await cmd.def.handler("build calc.py so pytest passes", { hasUI: true, ui: { notify: (m) => notes.push(m) } });
-	assert.equal(briefSeen, "build calc.py so pytest passes");
-	assert.equal(setModelCalled, false);
-	assert.ok(notes.some((n) => /1 passed/.test(n)), "the worker report is shown");
+	await inTempCwd(async () => {
+		const pi = fakePi();
+		let setModelCalled = false;
+		pi.setModel = async () => { setModelCalled = true; return true; };
+		pi.getActiveTools = () => [];
+		let authoredTask = "", workerBrief = "";
+		const author = async (t) => { authoredTask = t; mkdirSync("tests", { recursive: true }); writeFileSync("tests/test_acceptance.py", "def t():\n    assert False\n"); return "wrote handover"; };
+		const worker = async (b) => { workerBrief = b; return "done"; };
+		const acceptance = async () => ({ passed: true, output: "1 passed" });
+		(await load()).default(pi, { author, spawnWorker: worker, acceptance });
+		const cmd = pi.commands.find((c) => c.name === "mellum");
+		const notes = [];
+		await cmd.def.handler("build calc.py", { hasUI: true, ui: { notify: (m) => notes.push(m) } });
+		assert.equal(authoredTask, "build calc.py", "the architect got the task");
+		assert.ok(workerBrief.length > 0, "the worker ran with the brief");
+		assert.equal(setModelCalled, false, "the primary does not switch model");
+		assert.ok(notes.some((n) => /PASS/.test(n)), "the acceptance verdict is shown");
+	});
 });
 
 test("a spawned child does NOT re-delegate on /mellum <task>", async () => {
