@@ -73,10 +73,13 @@ test("names complete from what the learner has typed", async () => {
 	assert.deepEqual(items.map((i) => i.value), ["on guard/repeat-loops"]);
 });
 
-test("bare /remedy opens a picker; choosing a unit toggles it", async () => {
-	const pi = fakePi();
-	await (await host()).default(pi);
-	pi.ui.picks.push((options) => options.find((o) => o.includes("guard/repeat-loops")));
-	await pi.run("remedy", "");
-	assert.equal(pi.ui.status.remedies, "remedies: 1 on");
+test("a picker row shows what the unit does, with its on/off glyph — not the pathology", async () => {
+	const { remedyRow } = await host();
+	// guard/foreground-server's `does`, never its pathology ("Starts a foreground server …").
+	assert.equal(
+		remedyRow("guard/foreground-server", "Blocks a foreground server start and shows the background form", false),
+		"○ guard/foreground-server  Blocks a foreground server start and shows the background form",
+	);
+	assert.equal(remedyRow("guard/repeat-loops", "Blocks a call made 5 times in a row unchanged", true),
+		"● guard/repeat-loops  Blocks a call made 5 times in a row unchanged");
 });

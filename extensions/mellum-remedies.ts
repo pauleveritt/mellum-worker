@@ -25,6 +25,12 @@ const KINDS = ["guard", "nudge", "context", "prompt", "tool", "check", "workflow
 interface Unit {
 	name: string;
 	pathology: string;
+	does: string;
+}
+
+/** A picker row: the on/off glyph, the unit name, and what it does — not the pathology it fixes. */
+export function remedyRow(name: string, does: string, isOn: boolean): string {
+	return `${isOn ? "●" : "○"} ${name}  ${does}`;
 }
 
 /** Every unit name under remedies/, in kind order. */
@@ -341,7 +347,7 @@ export default async function (pi: any): Promise<void> {
 		const tools: unknown[][] = [];
 		pending.set(name, tools);
 		mod.default(gated(pi, () => on.has(name), tools));
-		units.push({ name, pathology: mod.meta?.pathology ?? "" });
+		units.push({ name, pathology: mod.meta?.pathology ?? "", does: mod.meta?.does ?? "" });
 	}
 	const known = new Set(units.map((u) => u.name));
 
@@ -368,6 +374,41 @@ export default async function (pi: any): Promise<void> {
 		refresh(ctx);
 	};
 
+	// The picker: a live list of every unit with what it does, space toggles the highlighted one
+	// on or off at once (the arrows can be claimed by the transcript, so j/k move too).
+	const toggle = (name: string, ctx: any) => {
+		if (on.has(name)) { on.delete(name); ctx.ui.notify?.(`off: ${name}`, "info"); }
+		else { switchOn(name); ctx.ui.notify?.(`on: ${name}`, "info"); }
+		refresh(ctx);
+	};
+	// pi-tui resolves only inside the running Pi process, not the repo, so it is loaded here
+	// (the picker runs only in a live session) rather than imported at the top of the module.
+	const pickRemedies = async (ctx: any): Promise<void> => {
+		const { Key, matchesKey, truncateToWidth } = await import("@earendil-works/pi-tui");
+		return ctx.ui.custom((tui: any, theme: any, _kb: unknown, done: (r: void) => void) => {
+			let cursor = 0;
+			function render(width: number): string[] {
+				const w = Math.max(20, width);
+				const lines = [
+					theme.fg("accent", truncateToWidth(" Remedies — space toggles the highlighted unit", w)),
+					theme.fg("dim", truncateToWidth(" j/k move   space toggle   enter/esc close", w)),
+				];
+				units.forEach((u, i) => {
+					const row = remedyRow(u.name, u.does, on.has(u.name));
+					lines.push(i === cursor ? theme.fg("accent", truncateToWidth(`›${row}`, w)) : theme.fg("dim", truncateToWidth(` ${row}`, w)));
+				});
+				return lines;
+			}
+			function handleInput(data: string) {
+				if (matchesKey(data, Key.escape) || matchesKey(data, Key.enter)) return done();
+				if (data === "k" || matchesKey(data, Key.up)) { cursor = Math.max(0, cursor - 1); tui.requestRender(); return; }
+				if (data === "j" || matchesKey(data, Key.down)) { cursor = Math.min(units.length - 1, cursor + 1); tui.requestRender(); return; }
+				if (data === " ") { toggle(units[cursor].name, ctx); tui.requestRender(); return; }
+			}
+			return { render, invalidate: () => {}, handleInput };
+		});
+	};
+
 	pi.registerCommand("remedy", {
 		description: "Switch remedy units on or off: /remedy, /remedy on <unit>, /remedy off <unit>, /remedy preset:<name>",
 		getArgumentCompletions: (prefix: string) => {
@@ -380,11 +421,7 @@ export default async function (pi: any): Promise<void> {
 		},
 		handler: async (args: string, ctx: any) => {
 			if (args.trim()) return apply(args, ctx);
-			const options = units.map((u) => `${on.has(u.name) ? "●" : "○"} ${u.name}  ${u.pathology}`);
-			const picked = await ctx.ui.select("Remedies: pick one to switch on or off", options);
-			if (!picked) return;
-			const name = units.find((u) => picked.includes(` ${u.name} `))?.name;
-			if (name) apply(`${on.has(name) ? "off" : "on"} ${name}`, ctx);
+			await pickRemedies(ctx);
 		},
 	});
 

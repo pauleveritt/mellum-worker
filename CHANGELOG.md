@@ -6,6 +6,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **`/remedy` lists what each unit does, and space toggles.** The picker showed
+  each unit's pathology — the failure it fixes — so every line read as if the
+  remedy caused the problem (`guard/foreground-server  Starts a foreground server
+  and hangs`). It now shows what the unit does (`Blocks a foreground server start
+  and shows the background form`). The picker stays open: `j`/`k` move, space
+  switches the highlighted unit on or off at once, and enter or esc closes.
 - **The `/lesson` panel scrolls and runs by mouse.** The scroll wheel or `j`/`k`
   (or `↑`/`↓` where the terminal passes them) slide the step's body — the run
   record and the code the model wrote — while the lesson title and the controls
