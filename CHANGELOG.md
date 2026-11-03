@@ -52,6 +52,12 @@ Versions match git tags; pin one in both install lines.
   so the Pi it installed had no `/mellum`. It now installs the pinned version
   and runs `pi install` on the clone, like `install.sh`.
 
+- **The setup skill no longer sends you to OpenCode paths.** It printed
+  `~/.cache/opencode/packages/…` as the package root, offered a
+  `check --host opencode` line and had an `opencode` smoke step, for a host the
+  same skill already calls unsupported. It now points at `pi list` for the
+  resolved package path and has one Pi smoke step.
+
 - **`/challenge submit` works for contributors, not only the repo owner.** It
   pushed the branch straight to the upstream repo, which a contributor cannot
   do — the push failed with a 403. It now finds your GitHub login, creates your

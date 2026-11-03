@@ -1,6 +1,6 @@
 ---
 name: mellum-setup
-description: Set up Mellum 2.1 as a bounded coding worker in OpenCode or Pi. Use when the user asks to install, configure, or verify Mellum Worker or Mellum Worker, or to get the Mellum model running on oMLX. Walks through weights, server, provider, agent, rules, a smoke test, and optional project facts for Mellum Worker, one checked phase at a time.
+description: Set up Mellum 2.1 as a bounded coding worker in Pi. Use when the user asks to install, configure, or verify Mellum Worker or Mellum Mode, or to get the Mellum model running on oMLX. Walks through weights, server, provider, agent, rules, a smoke test, and optional project facts for Mellum Worker, one checked phase at a time.
 ---
 
 # Mellum setup
@@ -11,10 +11,10 @@ skip the phase when it already passes. Before writing to any file that
 exists, show the user what will change and wait for a yes.
 
 Set `PKG` to the package root: the directory two levels above this SKILL.md.
-Pi shows the skill's path when it lists skills; OpenCode's skill tool prints
-the skill's base directory. Pi clones to
-`~/.pi/agent/git/github.com/andrevanzuydam/mellum-worker`; OpenCode installs under
-`~/.cache/opencode/packages/*/node_modules/mellum-worker`.
+Pi shows the skill's path when it lists skills, and `pi list` prints the
+resolved path of each package. A clone install lands in
+`~/.pi/agent/git/github.com/andrevanzuydam/mellum-worker`; `pi install <folder>`
+of a local clone is that folder itself.
 
 ```bash
 PKG=~/.pi/agent/git/github.com/andrevanzuydam/mellum-worker
