@@ -17,7 +17,7 @@ import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CURRENT_SESSION_VERSION, getMarkdownTheme } from "@earendil-works/pi-coding-agent";
-import { Image, Key, Markdown, matchesKey, truncateToWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
+import { Image, Key, Markdown, matchesKey, truncateToWidth, type TuiMouseEvent, type TuiMouseEventResult, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { cleanProjects, lessonIndex, type Lesson, type LessonEntry, parseLesson, lessonLegend, prepareProject, projectGuide, projectNumber, producedCode, runArgv, styleGuide, sessionIn, sessionProfile, STEPS, summariseRuns, terminalPicture, unitPathology, unwrap } from "./mellum-lessons.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -82,6 +82,8 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 		let page = Math.min(Math.max(startPage, 0), pages.length - 1);
 		let scroll = 0;
 		let cached: string[] | undefined;
+		// Full-array line ranges a left click runs, filled each render (see handleMouse).
+		let clickRuns: { from: number; to: number; key: "before" | "after" }[] = [];
 		// Scroll keeps the two-line header fixed and slides the body. The panel's render gets
 		// only a width, not a height, so the body can always slide until its last line reaches
 		// the top; ↑/↓ move it, and a page change resets it.
@@ -179,8 +181,11 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 			const w = Math.max(20, width);
 			const name = pages[page];
 			const lines: string[] = [];
+			clickRuns = [];
 			const head = ` ${lesson.number} · ${lesson.title}   lesson ${total.index + 1} of ${total.count}   step ${page + 1} of ${pages.length}: ${name}`;
-			lines.push(theme.fg("accent", truncateToWidth(head, w)), theme.fg("dim", "─".repeat(w)));
+			const canRun = name === "Eval case" || name === "Solution";
+			const controls = ` ←/→ step   j/k or wheel scroll${canRun ? "   r / click run   R run the page's n" : ""}   Esc leave`;
+			lines.push(theme.fg("accent", truncateToWidth(head, w)), theme.fg("dim", truncateToWidth(controls, w)));
 			if (name === "Cover") {
 				if (picture) lines.push(...picture.render(w));
 				lines.push("", ...md(`**${lesson.opening}**`).render(w), "");
@@ -191,15 +196,20 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 				lines.push("", theme.fg("muted", total.index + 1 < total.count ? " n  next lesson   Esc  leave" : " That was the last lesson. The Challenge is next: see learn/challenge/index.md"));
 			} else {
 				lines.push(...md(tidy(lesson.steps[name] ?? "")).render(w));
-				if (name === "Eval case") lines.push(...runBlock("before", w), ...projectBlock(w));
+				if (name === "Eval case") {
+					const before = runBlock("before", w);
+					if (before.length) clickRuns.push({ from: lines.length, to: lines.length + before.length, key: "before" });
+					lines.push(...before, ...projectBlock(w));
+				}
 				if (name === "Solution") {
-					lines.push(...runBlock("after", w));
+					const after = runBlock("after", w);
+					if (after.length) clickRuns.push({ from: lines.length, to: lines.length + after.length, key: "after" });
+					lines.push(...after);
 					const unit = lesson.unit.match(/`([a-z]+\/[a-z-]+)`/)?.[1];
 					if (unit) lines.push("", theme.fg("muted", ` By hand: /remedy on ${unit}`));
 					lines.push(...projectBlock(w));
 				}
 			}
-			lines.push("", theme.fg("dim", " ← back   → / Enter next   j/k or ↑/↓ scroll   Esc leave"));
 			cached = lines.map((l) => truncateToWidth(l, w));
 			return view(cached);
 		}
@@ -235,7 +245,23 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 			}
 		}
 
-		return { render, invalidate: () => { cached = undefined; }, handleInput };
+		// The wheel scrolls the body; a left click on a Before/After block runs that arm.
+		// Local y 0–1 is the pinned header; below it, the body is offset by the scroll.
+		function handleMouse(event: TuiMouseEvent): TuiMouseEventResult | undefined {
+			if (event.type === "wheel") {
+				const next = Math.max(0, scroll + (event.wheelDelta ?? 0));
+				if (next !== scroll) { scroll = next; tui.requestRender(); }
+				return { handled: true };
+			}
+			if (event.type === "click" && event.button === "left") {
+				const fi = event.y < 2 ? event.y : event.y + scroll;
+				const hit = clickRuns.find((r) => fi >= r.from && fi < r.to);
+				if (hit) { startRun(hit.key, false); return { handled: true }; }
+			}
+			return undefined;
+		}
+
+		return { render, invalidate: () => { cached = undefined; }, handleInput, handleMouse };
 	});
 }
 
