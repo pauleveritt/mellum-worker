@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import platform
+import re
 import hashlib
 import json
 import os
@@ -626,6 +627,22 @@ def grade_env(workspace: Path) -> dict[str, str]:
             if k != "VIRTUAL_ENV"} | {"PYTHONPATH": str(workspace)}
 
 
+def run_checker(command: list[str], workspace: Path, name: str) -> tuple[subprocess.CompletedProcess, bool]:
+    """Observe checker launch separately from uv's environment provisioning."""
+    marker = workspace.parent / f"{name}.started"
+    marker.unlink(missing_ok=True)
+    boundary = 4 if command[0] == "uv" else 3
+    wrapped = [*command[:boundary], "sh", "-c",
+               'printf started > "$1"; shift; exec "$@"', "mellum-check", str(marker),
+               *command[boundary:]]
+    try:
+        result = subprocess.run(wrapped, cwd=workspace, capture_output=True, text=True,
+                                check=False, env=grade_env(workspace))
+    except OSError as error:
+        result = subprocess.CompletedProcess(wrapped, 127, "", str(error))
+    return result, marker.is_file() and result.returncode not in (126, 127)
+
+
 def grade(workspace: Path, *, versions: dict[str, str] | None = None) -> list[tuple[str, bool, str]]:
     workspace = Path(workspace)
     (workspace / "pyrefly.toml").write_text(
@@ -652,9 +669,8 @@ def grade(workspace: Path, *, versions: dict[str, str] | None = None) -> list[tu
                 version_result = subprocess.run(tool(name, "--version"), cwd=workspace,
                     capture_output=True, text=True, check=False, env=grade_env(workspace))
                 version = (version_result.stdout + version_result.stderr).strip()
-            result = subprocess.run(command, cwd=workspace, capture_output=True, text=True,
-                                    check=False, env=grade_env(workspace))
-            status = "pass" if result.returncode == 0 else "fail"
+            result, launched = run_checker(command, workspace, name)
+            status = ("pass" if result.returncode == 0 else "fail") if launched else "not checked"
         except OSError as error:
             result = subprocess.CompletedProcess(command, 127, "", str(error))
             status = "not checked"
@@ -663,7 +679,7 @@ def grade(workspace: Path, *, versions: dict[str, str] | None = None) -> list[tu
                              "stdout": result.stdout, "stderr": result.stderr}
         output = [line for line in (result.stdout + result.stderr).splitlines()
                   if line.strip()]
-        results.append((name, result.returncode == 0, output[0] if output else ""))
+        results.append((name, status == "pass", output[0] if output else ""))
     (workspace.parent / "grade.json").write_text(json.dumps(diagnostics, indent=2) + "\n")
     return results
 
@@ -767,7 +783,7 @@ def report(run: Path) -> dict:
             row.get("type") == "tool_result" and row.get("isError") for row in rows),
         "final_reply": final,
         "context": max(inputs) if inputs else None,
-        "output_tokens": sum(outputs) if outputs else None,
+        "output_tokens": complete_output_total(rows),
         "wall": round((times[-1] - times[0]).total_seconds(), 3) if len(times) > 1 else None,
         "nudges": continued,
         "empty_finals": len(empties) - continued,
@@ -785,6 +801,33 @@ def report(run: Path) -> dict:
     }
 
 
+def complete_output_total(rows: list[dict]) -> int | None:
+    """Only expose a total when every request has terminal usage evidence."""
+    requests = [r for r in rows if r.get("type") == "provider_request"]
+    replies = [r for r in rows if r.get("type") == "message_end"
+               and r.get("message", {}).get("role") == "assistant"]
+    if not requests or len(requests) != len(replies):
+        return None
+    total = 0
+    for request, reply in zip(requests, replies):
+        if request.get("requestId") and request["requestId"] != reply.get("requestId"):
+            return None
+        message = reply["message"]
+        usage = message.get("usage") or {}
+        value = usage.get("output", usage.get("completion_tokens"))
+        if not isinstance(value, (int, float)) or message.get("stopReason") in ("error", "aborted"):
+            return None
+        if value == 0:
+            # Pi initializes missing usage to zero. A real provider zero needs its raw usage row.
+            evidence = [r.get("data", {}).get("usage", {}) for r in rows
+                        if r.get("type") == "provider_stream_event" and request.get("requestId")
+                        and r.get("requestId") == request["requestId"]]
+            if not any(u.get("completion_tokens") == 0 for u in evidence):
+                return None
+        total += value
+    return total
+
+
 def execution_outcome(run: Path) -> dict:
     """Native settlement and process termination are independent of artifact grade."""
     execution = json.loads((run / "execution.json").read_text())
@@ -793,10 +836,16 @@ def execution_outcome(run: Path) -> dict:
     assistants = [m for m in messages if m.get("role") == "assistant"]
     errors = [m for m in assistants if m.get("stopReason") == "error"]
     # A returned tool call or substantive answer is work, even without token accounting.
-    worked = any(m.get("stopReason") not in ("error", "aborted") and
-                 any(b.get("type") in ("text", "toolCall") and (b.get("text") or b.get("name"))
+    worked = any(any(b.get("type") in ("text", "thinking", "toolCall")
+                     and (b.get("text") or b.get("thinking") or b.get("name"))
                      for b in m.get("content", [])) for m in assistants)
-    provider_error = ({"classification": "review" if worked else "infrastructure", "evidence": errors}
+    worked = worked or any(r.get("type") == "provider_stream_event" and
+        any(c.get("delta", {}).get("content") or c.get("delta", {}).get("reasoning_content")
+            or c.get("delta", {}).get("tool_calls") for c in r.get("data", {}).get("choices", [])) for r in rows)
+    confirmed_failure = any(re.search(
+        r"\bHTTP\s+[45]\d\d\b|ECONNREFUSED|ENOTFOUND|ECONNRESET|network is unreachable|fetch failed",
+        str(m.get("errorMessage", "")), re.IGNORECASE) for m in errors)
+    provider_error = ({"classification": "infrastructure" if confirmed_failure and not worked else "review", "evidence": errors}
                       if errors else None)
     settlements = [row for row in rows if row.get("type") == "agent_settled"]
     terminal_error = bool(assistants and assistants[-1].get("stopReason") in ("error", "aborted"))
@@ -845,18 +894,15 @@ def score_workspace_details(
         if (workspace / "pyproject.toml").is_file()
         else ["uvx", "--from", requirement, "pytest", "-q", "-rA", "grader_tests"]
     )
-    result = subprocess.run(
-        command, cwd=workspace, capture_output=True, text=True, check=False,
-        env=grade_env(workspace),
-    )
+    result, launched = run_checker(command, workspace, "hidden-grade")
     (workspace.parent / "hidden-grade.json").write_text(json.dumps({
-        "command": command, "exit_code": result.returncode,
+        "command": result.args, "exit_code": result.returncode, "started": launched,
         "stdout": result.stdout, "stderr": result.stderr}, indent=2) + "\n")
     output = (result.stdout + result.stderr).strip()
     # A collection error (or no tests collected) means the hidden checks never
     # executed -- usually because the workspace lacks a module they import. That
     # is still a failure, but it must not read as "every check failed".
-    checks_ran = result.returncode in (0, 1) and "errors during collection" not in output
+    checks_ran = launched and result.returncode in (0, 1) and "errors during collection" not in output
     missing = sorted(test for test in suite.expected if f"PASSED {test}" not in output)
     lines = output.splitlines()[-20:]
     if missing:
@@ -912,6 +958,9 @@ def _run_sessions(
             diagnostics = json.loads((run_dir / "grade.json").read_text())
             if any(diagnostics[name]["status"] == "not checked" for name in ("ruff", "complexipy")):
                 health_status = "not checked"
+        grading_error = bool(grade_run and health_status == "not checked")
+        if (run_dir / "hidden-grade.json").is_file():
+            grading_error = grading_error or not json.loads((run_dir / "hidden-grade.json").read_text()).get("started")
         contaminated = (run_dir / "contaminated").exists()
         metrics = report(run_dir)
         over = record_failures(metrics, suite.record)
@@ -941,6 +990,7 @@ def _run_sessions(
             "tests_passed": tests_passed,
             "quality_ok": quality_ok,
             "code_health": health_status,
+            "grading_infrastructure_error": grading_error,
             "contaminated": contaminated,
             "failed_checks": failed_checks,
             "checks_ran": checks_ran,
@@ -1106,6 +1156,8 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             (batch / "profile/models.json").write_text(json.dumps(flight["effective_profile"], indent=2)+"\n")
             (batch / "profile/settings.json").write_text(json.dumps(flight["profile_settings"], indent=2)+"\n")
         attempts = saved["attempts"]
+        baseline.verify_private_profile(batch, saved["material"])
+        baseline.reconcile_attempts(batch, attempts, pi)
         if exclude or count:
             baseline.resolve_attempt(attempts, exclude or count, "excluded" if exclude else "counted", reason or "")
         baseline.write_json(batch / "batch.json", saved)
@@ -1118,6 +1170,7 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             raise SystemExit("Easy grader did not qualify; no model sessions launched")
         print(f"Batch {batch}: {baseline.counted_attempts(attempts)}/6 counted", flush=True)
         while baseline.counted_attempts(attempts) < 6:
+            baseline.verify_private_profile(batch, saved["material"])
             number = len(attempts) + 1
             directory = f"attempt-{number:02d}"
             attempt = {"run_id":directory, "directory":directory, "state":"pending-review",

@@ -1274,3 +1274,53 @@ def test_provider_error_preserves_work_evidence(tmp_path, worked, want):
     _, record = _observed_record(tmp_path, rows)
     assert record['provider_error']['classification'] == want
     assert record['provider_error']['evidence'][0]['errorMessage'] == 'HTTP 503 unavailable'
+
+
+def test_output_total_is_unknown_when_a_later_request_has_no_usage(tmp_path):
+    _write_trace(tmp_path, [
+        {'type':'provider_request','requestId':'one'},
+        {'type':'message_end','requestId':'one','message':{'role':'assistant',
+            'usage':{'output':42},'content':[{'type':'text','text':'working'}]}},
+        {'type':'provider_request','requestId':'two'},
+    ])
+    assert harness.report(tmp_path)['output_tokens'] is None
+
+
+def test_checker_start_failure_is_not_a_model_quality_failure(tmp_path, monkeypatch):
+    workspace = _workspace(tmp_path, 'def add(a,b):\n    return a+b\n')
+    monkeypatch.setattr(harness.subprocess, 'run', lambda command, **kwargs:
+        subprocess.CompletedProcess(command, 1, '', 'Failed to fetch pinned package: network is unreachable'))
+    harness.grade(workspace, versions={k:'1.2.3' for k in ('ruff','complexipy','pyrefly')})
+    diagnostics = json.loads((workspace.parent/'grade.json').read_text())
+    assert all(result['status']=='not checked' for result in diagnostics.values())
+    _, _, _, checks_ran = harness.score_workspace_details(workspace, harness.load_suite(SUITES,'add'))
+    assert checks_ran is False
+
+
+def test_partial_content_before_stream_error_requires_review(tmp_path):
+    _, record = _observed_record(tmp_path, [
+        {'type':'provider_request'},
+        {'type':'message_end','message':{'role':'assistant','stopReason':'error',
+            'errorMessage':'connection lost','usage':{'output':0},
+            'content':[{'type':'text','text':'Here is the implementation so far'}]}}
+    ])
+    assert record['provider_error']['classification'] == 'review'
+    assert record['output_tokens'] is None
+
+
+def test_placeholder_zero_usage_on_provider_error_is_unknown(tmp_path):
+    _, record = _observed_record(tmp_path, [
+        {'type':'provider_request'},
+        {'type':'message_end','message':{'role':'assistant','stopReason':'error',
+            'errorMessage':'HTTP 503','usage':{'output':0},'content':[]}}
+    ])
+    assert record['output_tokens'] is None
+
+
+def test_unconfirmed_empty_runtime_error_requires_review(tmp_path):
+    _, record = _observed_record(tmp_path, [
+        {'type':'provider_request'},
+        {'type':'message_end','message':{'role':'assistant','stopReason':'error',
+            'errorMessage':'Unable to parse generated tool arguments','content':[]}}
+    ])
+    assert record['provider_error']['classification'] == 'review'

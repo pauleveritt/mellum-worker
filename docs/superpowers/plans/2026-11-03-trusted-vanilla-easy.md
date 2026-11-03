@@ -92,42 +92,42 @@ checks_passed, checks_total and provider_error; retains existing fields.
 `_run_sessions(...)` accepts optional `grade_versions: dict[str, str] | None`
 and passes it to grade; the new collector supplies the frozen batch versions.
 
-- [ ] Add failing regression tests: `test_elapsed_includes_silent_tail` asserts
+- [x] Add failing regression tests: `test_elapsed_includes_silent_tail` asserts
   elapsed includes sleep after the last trace row, excludes grading, and agrees
   with recorded process lifetime; `test_artifact_pass_can_stall` asserts hidden
   pass and completion stalled coexist; `test_settlement_requires_native_evidence`
   covers absent/aborted settlement, nonzero exit, terminal error and recovered
   error followed by clean settlement. Extend fake-Pi fixtures only as needed.
-- [ ] Add `test_code_health_not_checked_is_explicit` asserting code_health is
+- [x] Add `test_code_health_not_checked_is_explicit` asserting code_health is
   not checked and quality_ok is null without --grade; a missing checker cannot
   pass. `test_checker_outputs_are_retained` asserts status, tool version and
   stdout/stderr survive in a diagnostic grade.json, outside the compact report.
   `test_collection_error_is_not_four_executed_failures` pins the displayed label.
-- [ ] Show each new test red with `uv run --with pytest python -m pytest
+- [x] Show each new test red with `uv run --with pytest python -m pytest
   learn/code/tests/test_harness.py -q -k 'elapsed_includes_silent_tail or
   artifact_pass_can_stall or settlement_requires_native_evidence or
   code_health_not_checked or checker_outputs or collection_error'`.
-- [ ] Record execution timing/status around Pi launch/wait, always persist it
+- [x] Record execution timing/status around Pi launch/wait, always persist it
   through interruption/finally, and derive completion from termination plus
   native events. Set new run.json wall to actual execution elapsed; standalone
   legacy trace analysis remains available and is not relabeled authoritative.
-- [ ] Preserve checker results/full output; retain the existing advisory type
+- [x] Preserve checker results/full output; retain the existing advisory type
   policy. Extend `grade(workspace: Path, *, versions: dict[str, str] | None = None)`
   to accept versions resolved once for the batch; use exact --with package==version
   requirements during collection. Generic grading keeps its existing behavior.
   Preserve unknown token usage as null. Persist provider error evidence;
   zero valid work plus confirmed provider failure is infrastructure, while an
   error after work is flagged for review, not silently excluded.
-- [ ] Add `render_scorecard(records: list[dict]) -> str` in baseline.py. Tests
+- [x] Add `render_scorecard(records: list[dict]) -> str` in baseline.py. Tests
   assert exactly six score fields plus run ID, explicit unknown/not-checked,
   and correct labels for hidden checks not executed. Keep evidence.py's legacy
   means and scoreboard ranking unchanged. Add concise start/completion output
   before/after each session; diagnostic output stays available in retained logs.
-- [ ] Add the controlled request-rewrite test using installRecorder and ordered
+- [x] Add the controlled request-rewrite test using installRecorder and ordered
   handler composition. Audit local Pi's runner.ts emitBeforeProviderRequest;
   document that later handlers receive currentPayload. Do not change the
   recorder if this confirms its existing ordering.
-- [ ] Run relevant Python tests, recorder tests and CLI tests; update FIXES
+- [x] Run relevant Python tests, recorder tests and CLI tests; update FIXES
   F.1/F.4 with dated findings/verification and CHANGELOG Unreleased; commit
   `fix(harness): record execution outcome and compact quality budget metrics`.
 
@@ -142,20 +142,20 @@ run_suite. This local collection path targets macOS/Linux like the current rig.
 The lock root is the shared repository runs/ directory, not each timestamped
 batch; concurrent baseline invocations therefore contend for the same lock.
 
-- [ ] Add failing `test_sigkill_then_resume_reaps_only_owned_processes`: SIGKILL
+- [x] Add failing `test_sigkill_then_resume_reaps_only_owned_processes`: SIGKILL
   a fixture runner after its detached child starts, resume, assert the stale
   child exits, an unrelated child survives, and recovery is recorded.
   `test_live_collection_is_not_reaped` asserts a second owner refuses access;
   `test_reused_pid_is_not_trusted` covers stale owner identity validation.
-- [ ] Add `test_cleanup_failure_stops_before_grading`: a failed verified sweep
+- [x] Add `test_cleanup_failure_stops_before_grading`: a failed verified sweep
   produces error/cleanup_ok false and no hidden-grade invocation while a writer
   could still mutate the workspace. Test graceful SIGTERM as well as SIGKILL.
-- [ ] Run those tests red using uv run --with pytest python -m pytest.
-- [ ] Implement owner records and lock; only reap stale runs with ownership
+- [x] Run those tests red using uv run --with pytest python -m pytest.
+- [x] Implement owner records and lock; only reap stale runs with ownership
   evidence. Verify group/workspace sweeps left no owned process. Refuse an
   unverifiable ownership/cleanup state instead of killing broadly or continuing.
   A crash leaves a readable incomplete attempt for recovery, not a counted pass.
-- [ ] Run cleanup regressions on this Mac; run the existing interruption tests.
+- [x] Run cleanup regressions on this Mac; run the existing interruption tests.
   Update FIXES F.5 and CHANGELOG, then commit
   `fix(harness): recover owned processes after interrupted collections`.
 
@@ -177,22 +177,22 @@ exclude: str | None = None, reason: str | None = None) -> int` qualifies the
 suite and invokes _run_sessions
 with repeat=1 for each attempt; it never implements a second Pi launch/grade path.
 
-- [ ] Add failing `test_baseline_resolves_pin_and_fixed_arguments`: resolve
+- [x] Add failing `test_baseline_resolves_pin_and_fixed_arguments`: resolve
   explicit installed Pi candidates (including ~/.local/bin/pi and PATH) against
   scripts/pi-pin.env; an old PATH Pi cannot win silently. A missing pin match
   fails with the existing install guidance, never installs/upgrades on its own.
   Fake binaries remain usable in generic run tests; collection preflight is strict.
-- [ ] Add `test_preflight_rejects_wrong_backend_or_model`: fake HTTP responses
+- [x] Add `test_preflight_rejects_wrong_backend_or_model`: fake HTTP responses
   for unhealthy server, oMLX-shaped health, wrong model, mismatched model/config
   identity and incomplete provenance all fail before Pi launches. Reuse backend.py
   settings/version/model-identity helpers where applicable; extend read-only
   probes only where needed. No stop/start/restart side effect in preflight.
-- [ ] Add `test_manifest_freezes_shared_inputs`: capture command, resolved Pi,
+- [x] Add `test_manifest_freezes_shared_inputs`: capture command, resolved Pi,
   running backend build, model file/quantization identity, machine, effective
   profile, checker versions and hashes of harness/recorder/suite/grader.
   Distinguish the running server's identity from an arbitrary binary on PATH.
   Hash model contents once per batch if no verified immutable identity is available.
-- [ ] Add `test_resume_rejects_changed_inputs`, `test_six_counts_failures_and_stalls`,
+- [x] Add `test_resume_rejects_changed_inputs`, `test_six_counts_failures_and_stalls`,
   `test_infrastructure_stops_and_requires_exclusion_reason`, and
   `test_resume_never_repeats_a_counted_attempt`. Store all attempt IDs plus
   counted/excluded/pending-review state and explicit reasons. Exit on an
@@ -201,12 +201,12 @@ with repeat=1 for each attempt; it never implements a second Pi launch/grade pat
   Incomplete crash attempts remain visible and require classification.
   Compare material input fingerprints on resume, not timestamps, run IDs, or
   a git commit changed only by documentation/evidence updates.
-- [ ] Run every new test red, implement the subcommand/helper, then run them green.
+- [x] Run every new test red, implement the subcommand/helper, then run them green.
   Before counting, verify trace instance identity and expected recorder-only
   launch arguments; invalid/missing identity pauses collection for diagnosis.
   Flush a start notice and compact result after each attempt. Redirect/copy full
   child and checker output to durable per-attempt files without grep/tail loss.
-- [ ] Document the canonical command, server-start prerequisite, dry-run/resume,
+- [x] Document the canonical command, server-start prerequisite, dry-run/resume,
   exact cutoff meaning, and six-field scorecard in the harness page. Update FIXES
   F.2/F.3/F.6/F.8/F.9 only to the extent implemented; oMLX and worker fixes remain
   deferred. Reconcile CHANGELOG; run relevant tests and commit
@@ -219,7 +219,7 @@ and scorecard.md. Curated `evals/2026-11-03-vanilla-easy/` contains the compact
 scorecard, manifest and exclusion/provenance notes, never raw trace/stdout/diff.
 If collection happens on a later date, use its actual date for the evidence path.
 
-- [ ] Run `node --test tests/docs-caps.test.mjs`, `npm test` and
+- [x] Run `node --test tests/docs-caps.test.mjs`, `npm test` and
   `uv run --with pytest python -m pytest learn/code/tests -q`. Diagnose failures;
   record pre-existing failures explicitly rather than claiming a clean suite.
   Qualify Easy using the existing harness qualify command. Do not alter the oracle.

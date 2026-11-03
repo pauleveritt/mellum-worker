@@ -200,6 +200,8 @@ def classify_attempt(record: dict, *, identity_ok: bool) -> tuple[str, str]:
         return "pending-review", "missing or mismatched runtime/launch identity"
     if not record.get("cleanup_ok"):
         return "pending-review", "cleanup failed"
+    if record.get("grading_infrastructure_error"):
+        return "pending-review", "grading infrastructure failed to start"
     if record.get("provider_error"):
         return "pending-review", "provider error: " + record["provider_error"]["classification"]
     if not record.get("requests"):
@@ -222,6 +224,36 @@ def resolve_attempt(attempts: list[dict], run_id: str, state: str, reason: str) 
         raise SystemExit("incomplete attempt has no verified record/identity/cleanup; cannot count it")
     attempt["state"] = state
     attempt["reason"] = reason
+
+
+def verify_private_profile(batch: Path, material: dict) -> None:
+    for name, expected in (("models.json", material["effective_profile"]),
+                           ("settings.json", material["profile_settings"])):
+        try:
+            actual = json.loads((batch / "profile" / name).read_text())
+        except (OSError, ValueError) as error:
+            raise SystemExit(f"private profile unreadable: {error}") from error
+        if actual != expected:
+            raise SystemExit(f"private profile changed: {name}")
+    if {p.name for p in (batch / "profile").iterdir()} != {"models.json", "settings.json"}:
+        raise SystemExit("unexpected private profile inputs; refusing changed configuration")
+
+
+def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict) -> None:
+    """Recover durable results left between record persistence and ledger commit."""
+    for attempt in attempts:
+        if attempt["state"] != "pending-review" or attempt.get("path"):
+            continue
+        records = list((batch / attempt["directory"]).glob("*/run.json"))
+        if len(records) > 1:
+            raise SystemExit("ambiguous retained attempt records; refusing replacement")
+        if not records:
+            continue
+        run = records[0].parent
+        record = json.loads(records[0].read_text())
+        attempt.update(run_id=run.name, path=str(run.relative_to(batch)),
+                       identity_ok=verify_trace_identity(run, pi), cleanup_ok=record.get("cleanup_ok"),
+                       reason="completed run record recovered after interruption; explicit classification required")
 
 
 def verify_trace_identity(run: Path, pi: dict) -> bool:

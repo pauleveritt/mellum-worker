@@ -19,7 +19,7 @@ uv run python learn/code/harness.py baseline --dry-run
 uv run python learn/code/harness.py baseline
 ```
 
-This command selects Pi 1.4.0, Easy, Vanilla plus the recorder only, six counted
+The trusted baseline command selects Pi 1.4.0, Easy, Vanilla plus the recorder only, six counted
 sessions in sequence, fresh workspaces/profiles, grading, a 600-second deadline
 and a 180-second open-tool-call cutoff. The cutoff measures the age of one
 unfinished call, even if it keeps producing output. It does not resume a stalled
@@ -41,7 +41,7 @@ mismatch stops before Pi launches. It never starts or stops another backend.
 The existing Easy grader must pass known-good and reject known-broken fixtures.
 
 Results live under ignored `runs/vanilla-easy-<timestamp>-<id>/`: `batch.json`
-holds shared provenance and all attempt classifications; `scorecard.md` has one
+holds shared provenance and all attempt classifications. The scorecard in `scorecard.md` has one
 row per attempt with hidden checks passed/total, code health, completion, model
 turns/provider requests, output tokens and launch-to-exit elapsed seconds.
 Elapsed excludes grading. A correct artifact can still be stalled. Checks that

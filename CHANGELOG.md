@@ -59,6 +59,10 @@ Versions match git tags; pin one in both install lines.
   next invocation. A shared lock protects live collections, and failed cleanup
   blocks grading rather than scoring a workspace that may still change.
 
+- Baseline resume validates the retained profile and recovers completed records
+  after interruptions. Missing checker execution and incomplete token usage stay
+  explicit; partial streaming output is retained for provider-error review.
+
 - **The Windows installer installs the pinned Pi and the harness.**
   `install.bat` ran `npm install -g` with no version, so a fresh clone got
   whatever npm's `latest` happened to be, and it never registered the package,

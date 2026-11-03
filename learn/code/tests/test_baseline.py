@@ -255,3 +255,58 @@ def test_incomplete_attempt_cannot_be_counted_from_a_reason_alone():
     with pytest.raises(SystemExit, match='identity|record|incomplete'):
         baseline.resolve_attempt(attempts, 'attempt-01', 'counted', 'looks okay')
     assert baseline.counted_attempts(attempts) == 0
+
+
+def _standin_collector(tmp_path, monkeypatch):
+    _flight_fixture(monkeypatch)
+    monkeypatch.setattr(harness, 'BASELINE_RUNS', tmp_path / 'runs', raising=False)
+    monkeypatch.setattr(harness, 'qualify', lambda _: (True, {'known-good':True,'known-broken':False}))
+    calls = []
+    def sessions(suite, **kwargs):
+        calls.append(kwargs)
+        run = harness.new_run(kwargs['runs_dir'], 'easy')
+        record = {'completion':'stalled','cleanup_ok':True,'requests':2,'turns':2,
+            'provider_error':None,'tests_passed':True,'passed':True,'checks_ran':True,
+            'checks_passed':4,'checks_total':4,'code_health':'pass','output_tokens':20,'elapsed_seconds':181}
+        (run/'run.json').write_text(json.dumps(record))
+        (run/'trace.jsonl').write_text(json.dumps({'type':'instance_start','runId':run.name,
+            'runtime':{'piVersion':'1.4.0','entryPath':str(Path(sys.executable).resolve())}})+'\n')
+        (run/'launch.json').write_text(json.dumps({'argv':['pi','--no-context-files','--no-skills',
+            '--no-extensions','-e',str(run/'record-pi.mjs')], 'arm':'vanilla','extras':[],'context_files':False}))
+        return [(run,)]
+    monkeypatch.setattr(harness, '_run_sessions', sessions)
+    return calls
+
+
+def test_resume_rejects_modified_private_profile(tmp_path, monkeypatch):
+    calls = _standin_collector(tmp_path, monkeypatch)
+    assert harness.collect_baseline() == 0
+    batch = next((tmp_path/'runs').glob('vanilla-easy-*'))
+    p = batch/'profile/models.json'
+    data = json.loads(p.read_text())
+    data['providers']['llamacpp']['models'][0]['samplingParams']['temperature'] = 0
+    p.write_text(json.dumps(data))
+    with pytest.raises(SystemExit, match='profile|changed'):
+        harness.collect_baseline(resume=batch)
+    assert len(calls) == 6
+
+
+def test_resume_discovers_record_written_before_manifest_update(tmp_path, monkeypatch):
+    calls = _standin_collector(tmp_path, monkeypatch)
+    write = baseline.write_json
+    def interrupted(path, data):
+        if path.name == 'batch.json' and any(a.get('path') for a in data.get('attempts', [])):
+            raise KeyboardInterrupt('simulated crash before manifest commit')
+        return write(path, data)
+    monkeypatch.setattr(baseline, 'write_json', interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        harness.collect_baseline()
+    batch = next((tmp_path/'runs').glob('vanilla-easy-*'))
+    retained = next(batch.glob('attempt-01/*/run.json')).parent.name
+    monkeypatch.setattr(baseline, 'write_json', write)
+    assert harness.collect_baseline(resume=batch, count=retained,
+        reason='retained complete model record and runtime identity verified') == 0
+    manifest = json.loads((batch/'batch.json').read_text())
+    assert len(calls) == 6
+    assert manifest['attempts'][0]['run_id'] == retained
+    assert manifest['attempts'][0]['state'] == 'counted'
