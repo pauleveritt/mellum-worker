@@ -56,7 +56,9 @@ Versions match git tags; pin one in both install lines.
 - **Lessons open on a Windows checkout.** With git's `core.autocrlf` on, the
   lesson pages have CRLF line endings, so `/start` and `/lesson` crashed reading
   their front matter (and would have lost each step's commands). The lesson
-  parser now reads CRLF and LF pages alike.
+  parser now reads CRLF and LF pages alike. Inside a lesson's `project/<number>`
+  folder the lesson panel is now found on Windows too (the folder check assumed
+  `/` separators).
 - **A current llama-server that reads as too old no longer refuses to start.**
   `backend.py` parsed some Linux `llama-server --version` strings as a build
   below the 9482 minimum and then blocked, so `run.sh` failed with "server did
