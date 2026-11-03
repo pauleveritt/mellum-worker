@@ -508,7 +508,7 @@ def test_medium_ships_both_spec_variants():
 
 def test_the_split_keeps_the_roadmaps_phases():
     suite = harness.load_suite(harness.SUITES, "medium")
-    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text()
+    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text(encoding="utf-8")
     blocks, current = {}, None
     for line in roadmap.splitlines():
         if line.startswith("## Phase"):
@@ -521,7 +521,7 @@ def test_the_split_keeps_the_roadmaps_phases():
     assert sorted(blocks) == ["phase-1", "phase-2", "phase-3", "phase-4"]
     split = harness.load_variant(suite, "split")
     for name, lines in blocks.items():
-        text = (split / "specs" / f"{name}.md").read_text()
+        text = (split / "specs" / f"{name}.md").read_text(encoding="utf-8")
         for line in lines:
             assert line in text, f"{name} lost: {line}"
 
@@ -549,7 +549,7 @@ def test_medium_base_ships_a_phase1_smoke_test():
 
 def test_medium_asks_for_the_home_page_in_process():
     suite = harness.load_suite(harness.SUITES, "medium")
-    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text()
+    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text(encoding="utf-8")
     assert "TestClient" in roadmap, "the roadmap never asks for an in-process check"
     split = (harness.load_variant(suite, "split") / "specs" / "phase-1.md").read_text()
     assert "TestClient" in split

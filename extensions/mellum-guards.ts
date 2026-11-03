@@ -196,8 +196,19 @@ export function isTreeWalk(command: string): boolean {
 
 /** Absolute-path arguments in a command (whitespace- or start-delimited `/...` tokens).
  * A quoted regex like `sed 's/a/b/'` starts with a quote, not `/`, so it is not matched. */
+const WINDOWS = process.platform === "win32";
+
 export function absolutePathArgs(command: string): string[] {
-	return (command.match(/(?:^|\s)(\/[^\s'";|&]+)/g) ?? []).map((s) => s.trim());
+	// On Windows a drive path (C:\x or C:/x) is absolute too.
+	const pattern = WINDOWS ? /(?:^|\s)((?:\/|[A-Za-z]:[\\/])[^\s'";|&]*)/g : /(?:^|\s)(\/[^\s'";|&]+)/g;
+	return (command.match(pattern) ?? []).map((s) => s.trim());
+}
+
+/** On Windows, one comparable spelling of a path: Git Bash's /c/x is C:/x, "\" is "/", case is ignored. */
+function comparable(p: string): string {
+	const drive = p.match(/^\/([A-Za-z])(?=\/|$)/);
+	const native = drive ? `${drive[1]}:${p.slice(2) || "/"}` : p;
+	return resolve(native).replace(/\\/g, "/").toLowerCase().replace(/\/+$/, "");
 }
 
 /** Block a recursive search that reaches OUTSIDE the workspace. The recorded pathology:
@@ -207,8 +218,8 @@ export function absolutePathArgs(command: string): string[] {
 export function confineSearch(root: string): Guard {
 	const base = resolve(root);
 	const isUnder = (p: string): boolean => {
-		const r = resolve(base, p);
-		return r === base || r.startsWith(`${base}/`);
+		const [r, b] = WINDOWS ? [comparable(p), comparable(base)] : [resolve(base, p), base];
+		return r === b || r.startsWith(`${b}/`);
 	};
 	return (call) => {
 		if (call.toolName !== "bash") return undefined;

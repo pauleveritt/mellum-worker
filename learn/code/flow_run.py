@@ -107,7 +107,11 @@ def reap_group(pid: int) -> None:
     """SIGKILL a child's process group, ignoring the cases where there is nothing to kill.
     ProcessLookupError: the group already exited. PermissionError (EPERM): the child exited
     and its pid was recycled into a group we do not own — killing it is neither possible nor
-    ours to do. Both are safe to ignore; letting EPERM escape crashed a whole best-of-N run."""
+    ours to do. Both are safe to ignore; letting EPERM escape crashed a whole best-of-N run.
+    On Windows (no process groups) it ends the child's job object instead."""
+    if harness.WINDOWS:
+        harness.kill_tree(pid)
+        return
     try:
         os.killpg(pid, signal.SIGKILL)
     except (ProcessLookupError, PermissionError):
@@ -143,7 +147,7 @@ def run_top(task: str, *, workspace: Path, profile: Path, recorder: Path, provid
     subf = threading.Thread(target=tail_feed, args=(subfeed, stop), daemon=True)
     subf.start()
     # No stdin: Pi with -p appends piped stdin to its prompt.
-    child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL, start_new_session=True)
+    child = harness.start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
     try:
         child.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
@@ -261,15 +265,15 @@ def run_orient(titles: str, *, workspace: Path, profile: Path, recorder: Path, p
     ]
     env = {**os.environ, "PI_CODING_AGENT_DIR": str(profile), "MELLUM_TRACE_FILE": str(trace)}
     # No stdin: Pi with -p appends piped stdin to its prompt.
-    child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL, start_new_session=True)
+    child = harness.start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
     try:
         child.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
-        os.killpg(child.pid, signal.SIGKILL)
+        reap_group(child.pid)
         child.wait()
     finally:
         try:
-            os.killpg(child.pid, signal.SIGKILL)
+            reap_group(child.pid)
         except ProcessLookupError:
             pass
     for line in lr.final_text(trace).splitlines():
@@ -672,8 +676,9 @@ def loop(suite_name: str, *, runs_dir: Path, timeout: float, base_url: str, mode
     # for the `lookup` tool. uv sync blocks; the BM25 index builds in the background.
     docs_lookup = Path(__file__).resolve().parent / "docs_lookup.py"
     subprocess.run(["uv", "sync", "--frozen"], cwd=workspace, capture_output=True, timeout=300, check=False)
-    subprocess.Popen(["python3", str(docs_lookup), "--rebuild", "warmup"], cwd=workspace,
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    # sys.executable, not "python3": Windows has no python3 on PATH (only a Store stub).
+    harness.start_child([sys.executable, str(docs_lookup), "--rebuild", "warmup"], cwd=workspace,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     git_init_workspace(workspace)  # checkpoint per passing phase; revert a breaking change, redo
 
     # Decompose into phases and drive ONE at a time over the shared workspace, so each

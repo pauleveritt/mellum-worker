@@ -60,6 +60,11 @@ Versions match git tags; pin one in both install lines.
   no longer shows as a change; stopping a challenge run (a hard kill on Windows)
   now also ends every process its session started; the "unknown remedy" message
   lists unit names with `/`; and a `--pi-binary` shell script runs through bash.
+  `guard/outside-workspace` no longer blocks a search inside your project when
+  the model writes its path the Git Bash way (`/c/...`, `C:/...`), and still
+  blocks one on another drive. The flow runner (`flow_run.py`, Hard's
+  orchestration) and `loop_run.py` start and stop Pi the same Windows-safe way
+  as the harness.
   Text files now check out with LF on every OS (`.gitattributes`), as the docs
   and their parsers expect.
 - **Lessons open on a Windows checkout.** With git's `core.autocrlf` on, the

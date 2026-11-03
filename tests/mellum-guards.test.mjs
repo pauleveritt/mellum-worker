@@ -26,6 +26,16 @@ test("confineSearch allows a tree-walk confined to the workspace", () => {
 	assert.equal(guard({ toolName: "bash", input: { command: "cat /etc/hosts" } }), undefined); // not a tree-walk
 });
 
+// On Windows Pi's bash is Git Bash: one folder can be written C:\ws, C:/ws or /c/ws, in any case.
+test("confineSearch on Windows: every spelling of the workspace is inside, another drive or folder is not", { skip: process.platform !== "win32" }, () => {
+	const guard = confineSearch(String.raw`C:\Work\WS`);
+	const walk = (path) => guard({ toolName: "bash", input: { command: `grep -rl pattern ${path}` } });
+	for (const inside of ["/c/Work/WS/src", "/c/work/ws", "C:/Work/WS/src", String.raw`C:\Work\WS\src`, "c:/work/ws/src"])
+		assert.equal(walk(inside), undefined, inside);
+	for (const outside of ["/c/Users", "C:/Windows", String.raw`D:\data`, "/d/data", "C:/"])
+		assert.equal(walk(outside)?.block, true, outside);
+});
+
 test("isTreeWalk detects find/recursive grep/rg/ls -R, not a plain grep", () => {
 	assert.ok(isTreeWalk("find / -name x"));
 	assert.ok(isTreeWalk("grep -rl x /Users"));
