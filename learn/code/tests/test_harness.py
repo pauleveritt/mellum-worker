@@ -1165,3 +1165,77 @@ def test_relative_runs_dir_and_profile_are_made_absolute_before_pi_runs(tmp_path
     harness.main(["run", "--suites-dir", str(SUITES), "--suite", "add", "--runs-dir", "runs/x", "--profile", "prof"])
     assert seen["runs_dir"] == tmp_path / "runs" / "x"
     assert seen["profile"] == tmp_path / "prof"
+
+
+# Windows: no ps, lsof, killpg or SIGKILL, and Pi is an npm .cmd shim.
+windows_only = pytest.mark.skipif(os.name != "nt", reason="Windows process handling")
+
+SHIM = ('@ECHO off\r\nGOTO start\r\n:start\r\nendLocal & goto #_undefined_# 2>NUL || '
+        r'title %COMSPEC% & "%_prog%"  "%dp0%\node_modules\pkg\dist\cli.js" %*' '\r\n')
+
+
+@windows_only
+def test_an_npm_shim_runs_its_script_with_node_directly(tmp_path, monkeypatch):
+    # cmd.exe would mangle a multi-line prompt holding < > % and quotes.
+    (tmp_path / "pi.cmd").write_text(SHIM)
+    (tmp_path / "node.exe").write_text("")
+    monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
+    argv = harness.native_argv(["pi", "--flag", "a <b>\n%c%"])
+    assert argv == [str(tmp_path / "node.exe"),
+                    str(tmp_path / "node_modules" / "pkg" / "dist" / "cli.js"),
+                    "--flag", "a <b>\n%c%"]
+
+
+def test_native_argv_leaves_other_platforms_alone(monkeypatch):
+    monkeypatch.setattr(harness, "WINDOWS", False)
+    assert harness.native_argv(["pi", "x"]) == ["pi", "x"]
+
+
+def _alive(pid: int) -> bool:
+    return any(row["ProcessId"] == pid for row in harness.windows_processes())
+
+
+@windows_only
+def test_a_windows_workspace_sweep_ends_a_process_left_inside_it(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    child = harness.start_child([sys.executable, "-c", "import time; time.sleep(120)",
+                                 str(workspace / "app.py")], cwd=workspace)
+    try:
+        found = harness.sweep_workspace(workspace)
+        assert child.pid in [pid for pid, _ in found]
+        child.wait(timeout=10)
+    finally:
+        child.kill()
+
+
+@windows_only
+def test_a_windows_group_sweep_ends_a_child_its_parent_left_behind(tmp_path):
+    marker = tmp_path / "orphan.pid"
+    parent = harness.start_child([sys.executable, "-c", textwrap.dedent(f"""
+        import subprocess, sys
+        orphan = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        open({str(marker)!r}, "w").write(str(orphan.pid))
+        """)])
+    parent.wait(timeout=30)
+    orphan = int(marker.read_text())
+    try:
+        found = harness.sweep_group(parent.pid)
+        assert orphan in [pid for pid, _ in found]
+        assert not _alive(orphan)
+    finally:
+        harness.kill_tree(orphan)
+
+
+def test_windows_relaunches_in_utf8_mode(monkeypatch):
+    # Traces are UTF-8; Windows reads files in its ANSI code page by default.
+    monkeypatch.setattr(harness, "WINDOWS", True)
+    argv = harness.utf8_relaunch_argv(["harness.py", "run"], utf8_mode=0)
+    assert argv == [sys.executable, "-X", "utf8", "harness.py", "run"]
+
+
+def test_utf8_mode_or_other_platforms_need_no_relaunch(monkeypatch):
+    monkeypatch.setattr(harness, "WINDOWS", False)
+    assert harness.utf8_relaunch_argv(["harness.py"], utf8_mode=0) is None
+    monkeypatch.setattr(harness, "WINDOWS", True)
+    assert harness.utf8_relaunch_argv(["harness.py"], utf8_mode=1) is None

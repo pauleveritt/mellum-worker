@@ -47,6 +47,12 @@ Versions match git tags; pin one in both install lines.
 - **The scoreboard page has its own illustration.** `scoreboard.webp` was a
   byte-for-byte copy of the pathologies image; it is now the leaderboard-and-
   stopwatch robot its prompt describes.
+- **Challenge runs work on Windows.** The harness used `ps`, `lsof`, `killpg`
+  and `SIGKILL`, so `harness.py run` crashed on Windows before the model did
+  anything. On Windows each Pi session now runs in a job object, so a server
+  the model leaves behind is still found and ended; Pi's npm `.cmd` shim is run
+  straight through node, so cmd.exe cannot mangle a multi-line prompt; and the
+  harness reruns itself in UTF-8 mode, so it can read the model's trace.
 - **A current llama-server that reads as too old no longer refuses to start.**
   `backend.py` parsed some Linux `llama-server --version` strings as a build
   below the 9482 minimum and then blocked, so `run.sh` failed with "server did
