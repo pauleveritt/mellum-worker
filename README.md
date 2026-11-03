@@ -14,8 +14,9 @@ until they pass, and reports. Your main model stays in charge.
   records remain, and the table below marks them as history.
 
 Every setting was measured by the ladder (`ladder/`; records in
-`evals/`). The 6-bit MLX weights (for Apple Silicon, served by oMLX)
-are on [Hugging Face](https://huggingface.co/pauleveritt/Mellum2.1-12B-A2.5B-Thinking-mlx-6bit).
+`evals/`). The model runs locally on llama.cpp: the Q4_K_M GGUF weights
+([Hugging Face](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF))
+download on the first run, served by `llama-server` on `127.0.0.1:8001`.
 
 ## Domain engineering
 
@@ -45,15 +46,33 @@ run it again afterwards. The reasoning is in the
 
 ## Install
 
-Pi:
+macOS or Linux. Clone the repo and run the installer; it checks each tool
+before touching anything:
+
+```bash
+git clone https://github.com/andrevanzuydam/mellum-worker
+cd mellum-worker
+bash install.sh
+```
+
+`install.sh` ensures a current `llama-server` (llama.cpp build 9482 or newer,
+the first to know Mellum's architecture — it upgrades or builds one if yours is
+older), Node.js, `uv` and the pinned Pi, installs the worker into Pi, then hands
+off to `run.sh`. After that, the recurring entry point is just:
+
+```bash
+bash run.sh
+```
+
+which starts the local server (downloading the ~8 GB Q4_K_M weights once) and
+opens Pi pointed at it. Mellum Worker works once the model is served.
+
+Already running Pi with a current `llama-server` of your own? Install just the
+worker into Pi and point a `llamacpp` provider at `127.0.0.1:8001`:
 
 ```bash
 pi install git:github.com/andrevanzuydam/mellum-worker@v0.1.8
 ```
-
-Then `/skill:mellum-setup`: weights, oMLX server, provider entry, optional
-rules, smoke test. It checks each step and asks before writing to your
-files. Mellum Worker works once the model is served.
 
 ## Use it
 

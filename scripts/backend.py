@@ -196,10 +196,18 @@ def choose_server(found: list) -> tuple[str | None, int | None, list[str]]:
             return path, build, notes
         notes.append(f"skipping {path} (build {build}, too old for Mellum); "
                      f"remove {os.path.dirname(path)} from PATH so it stops coming first")
-    first = found[0][1] if found else 0
-    notes = [version_problem(first) or "", "found on PATH:"]
-    notes += [f"  {path} (build {build})" for path, build in found]
-    return None, None, notes
+    if not found:
+        return None, None, notes
+    # Every llama-server on PATH parsed as too old. The parse can be wrong —
+    # version strings differ by platform and build, and a Linux build that reads
+    # as too old still loads Mellum — and the real test is whether the model
+    # loads, which fails loudly with "unknown model architecture" if it truly
+    # cannot. So try the newest one rather than refusing to start.
+    path, build = max(found, key=lambda pb: pb[1] or 0)
+    notes.append(version_problem(build) or "")
+    notes.append(f"no build on PATH passed the {MIN_BUILD} check; trying {path} "
+                 f"(build {build}) anyway — the model load is the real check")
+    return path, build, notes
 
 
 def diagnose(log: str) -> list[str]:

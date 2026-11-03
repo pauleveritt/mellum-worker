@@ -103,13 +103,19 @@ test("start uses the first new-enough llama-server on PATH and names any it skip
   assert.deepEqual(call("choose_server", [["/new/llama-server", 11829]]), ["/new/llama-server", 11829, []]);
 });
 
-test("with only old llama-servers on PATH, none is chosen and each is listed", () => {
-  const [path, , notes] = call("choose_server", [["/a/llama-server", 7360], ["/b/llama-server", 9000]]);
-  assert.equal(path, null);
+test("with only old llama-servers on PATH, the newest is tried anyway with a warning", () => {
+  // The version parse can be wrong on some platforms, and the model load is the
+  // real check — so a too-old reading no longer refuses to start.
+  const [path, build, notes] = call("choose_server", [["/a/llama-server", 7360], ["/b/llama-server", 9000]]);
+  assert.equal(path, "/b/llama-server");  // the newest of the two
+  assert.equal(build, 9000);
   const text = notes.join("\n");
-  assert.match(text, /9482/);
-  assert.match(text, /\/a\/llama-server \(build 7360\)/);
-  assert.match(text, /\/b\/llama-server \(build 9000\)/);
+  assert.match(text, /9482/);               // still names the required build
+  assert.match(text, /trying .*build 9000.* anyway/);
+});
+
+test("with no llama-server on PATH at all, none is chosen", () => {
+  assert.deepEqual(call("choose_server", []), [null, null, []]);
 });
 
 test("a llama-server whose build cannot be read is tried, with a warning", () => {

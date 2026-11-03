@@ -56,14 +56,21 @@ const fake = (path, build) => {
   chmodSync(path, 0o755);
 };
 
-test("start refuses an llama-server older than the build that added mellum", async () => {
+test("start warns about an old llama-server but tries it anyway (the model load is the real check)", async () => {
   fake(SLOW, 7360);
   const r = await run("start", "--port", "1", "--pidfile", PID, "--logfile", LOG,
-    "--server-binary", SLOW);
-  assert.equal(r.status, 2, r.stderr);
+    "--server-binary", SLOW, "--wait-seconds", "1");
+  // It no longer refuses up front — a version parsed as too old can be wrong, and
+  // the real check is whether the model loads. The stub never serves, so start
+  // still fails, but after trying, with the build and the requirement named.
+  assert.notEqual(r.status, 0, r.stderr);
   assert.match(r.stderr, /build 7360/);
   assert.match(r.stderr, /9482/);
-  assert.equal(existsSync(PID), false, "no server started");
+  assert.match(r.stderr, /trying .*anyway|model load is the real check/);
+  // It launched the stub (then failed on health), so stop it and clear the
+  // pidfile — a timed-out start keeps the pidfile for stop by design.
+  await run("stop", "--pidfile", PID);
+  rmSync(PID, { force: true });
   rmSync(SLOW, { force: true });
 });
 

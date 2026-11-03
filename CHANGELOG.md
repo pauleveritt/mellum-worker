@@ -4,6 +4,19 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A current llama-server that reads as too old no longer refuses to start.**
+  `backend.py` parsed some Linux `llama-server --version` strings as a build
+  below the 9482 minimum and then blocked, so `run.sh` failed with "server did
+  not start" on a build that runs Mellum fine. It now falls back to the newest
+  `llama-server` on PATH and lets a genuine mismatch surface as llama.cpp's own
+  "unknown model architecture" error — the model load is the real check.
+- **The README now documents the llama.cpp setup, not oMLX.** Install was still
+  pointing new users at `/skill:mellum-setup` and an oMLX server; it now describes
+  the real path — `git clone`, `bash install.sh` (which ensures a current
+  `llama-server`, Node, `uv` and Pi), then `bash run.sh`.
+
 ### Added
 
 - **`harness.py run --context-files`** keeps the workspace's own `AGENTS.md`
