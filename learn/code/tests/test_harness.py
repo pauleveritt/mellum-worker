@@ -65,6 +65,20 @@ def test_pi_argv_isolates_the_child():
     assert argv[-1] == task.prompt
 
 
+def test_context_files_switch_keeps_or_drops_agents_md():
+    task = harness.load_suite(SUITES, "add")
+    cold = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", task.prompt)
+    warm = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", task.prompt,
+                           context_files=True)
+    # Cold is the default: the workspace's own AGENTS.md is stripped with everything else.
+    assert "--no-context-files" in cold
+    # Warm keeps it, and drops nothing else from the isolation bundle.
+    assert "--no-context-files" not in warm
+    for flag in ("--no-approve", "--no-extensions", "--no-skills",
+                 "--no-prompt-templates", "--no-themes"):
+        assert flag in warm
+
+
 def test_arms_select_the_extension():
     worker = harness.arm_settings("worker")
     assert worker["extension"].name == "mellum-worker.ts"

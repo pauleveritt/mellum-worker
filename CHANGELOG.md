@@ -4,6 +4,14 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Added
+
+- **`harness.py run --context-files`** keeps the workspace's own `AGENTS.md`
+  (warm); off by default the run stays cold, as before (`--no-context-files`
+  strips it). It exists to measure what the suite's `AGENTS.md` is worth, since
+  the isolation bundle was dropping the one context file the suite ships to be
+  read.
+
 ### Changed
 
 - **A lesson's `TASK.md` points at where the detail lives.** The hands-on

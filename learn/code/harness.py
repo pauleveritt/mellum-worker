@@ -366,7 +366,11 @@ def pi_argv(
     session_id: str | None = None,
     session_dir: Path | None = None,
     extras: list[Path] = (),
+    context_files: bool = False,
 ) -> list[str]:
+    # The default run is cold: --no-context-files drops the workspace's own AGENTS.md too.
+    # context_files=True keeps it (warm), so a run can measure what the suite's AGENTS.md is worth.
+    flags = [f for f in FLAGS if f != "--no-context-files"] if context_files else FLAGS
     session = (
         ["--session-id", session_id, "--session-dir", str(session_dir)]
         if session_id and session_dir
@@ -380,7 +384,7 @@ def pi_argv(
     # log the messages before the worker appends its facts block. The cost is
     # that a compaction the worker refuses is not visible from here.
     return [
-        pi_binary, *FLAGS, "--provider", provider, "--model", model,
+        pi_binary, *flags, "--provider", provider, "--model", model,
         *session, *extra, "-e", str(recorder), prompt,
     ]
 
@@ -436,6 +440,7 @@ def run_suite(
     single_prompt: bool = False,
     specs: str | None = None,
     extras: list[Path] = (),
+    context_files: bool = False,
 ) -> Path:
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
@@ -505,6 +510,7 @@ def run_suite(
                 pi_binary, run / "profile", recorder, provider, model, prompt,
                 extension=settings["extension"],
                 session_id=session_id, session_dir=sessions, extras=extras,
+                context_files=context_files,
             )
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
@@ -799,13 +805,15 @@ def _run_sessions(
     stall: float | None = None,
     remedies: list[str] = (),
     extras: list[Path] = (),
+    context_files: bool = False,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
         run_dir = run_suite(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
-                            profile=profile, stall=stall, extras=extras)
+                            profile=profile, stall=stall, extras=extras,
+                            context_files=context_files)
         grades = grade(run_dir / "workspace") if grade_run else []
         tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
         failed_checks = len(missing)
@@ -887,6 +895,7 @@ def run_suites(
     stall: float | None = None,
     remedies: list[str] = (),
     extras: list[Path] = (),
+    context_files: bool = False,
 ) -> tuple[int, int]:
     # Run easiest first and hardest last, so a slow hard suite never blocks the
     # quicker ones; unknown suites keep alphabetical order after the known tiers.
@@ -913,7 +922,7 @@ def run_suites(
             suite, runs_dir=runs_dir, pi_binary=pi_binary,
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
             single_prompt=single_prompt, specs=specs, profile=profile, stall=stall,
-            remedies=remedies, extras=extras,
+            remedies=remedies, extras=extras, context_files=context_files,
         )
         sessions_passed += _print_task(suite, results, repeat)
         sessions_total += len(results)
@@ -988,6 +997,9 @@ def build_parser() -> argparse.ArgumentParser:
                           "default the pinned llama.cpp profile")
     run.add_argument("--single-prompt", action="store_true",
                      help="send the suite's prompts as one brief instead of steps")
+    run.add_argument("--context-files", action="store_true",
+                     help="keep the workspace's own AGENTS.md (warm); off by default the run is "
+                          "cold (--no-context-files strips it)")
     run.add_argument("--specs", metavar="VARIANT", default=None, choices=["joined", "split"],
                      help="use the suite's spec variant: one joined roadmap, or one file per phase")
     return parser
@@ -1021,7 +1033,7 @@ def main(argv: list[str] | None = None) -> int:
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
                    single_prompt=args.single_prompt, specs=args.specs,
                    profile=args.profile, stall=args.stall,
-                   remedies=remedies, extras=extras)
+                   remedies=remedies, extras=extras, context_files=args.context_files)
         return 0
 
     suite = load_suite(args.suites_dir, args.suite)
@@ -1035,14 +1047,15 @@ def main(argv: list[str] | None = None) -> int:
             prompt = suite.prompt
         print(shlex.join(pi_argv(args.pi_binary, args.profile, RECORDER, provider,
                                  model, prompt,
-                                 extension=settings["extension"], extras=extras)))
+                                 extension=settings["extension"], extras=extras,
+                                 context_files=args.context_files)))
         return 0
     results = _run_sessions(
         suite, runs_dir=args.runs_dir, pi_binary=args.pi_binary,
         repeat=args.repeat, grade_run=args.grade, deadline=args.deadline,
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
         profile=args.profile, stall=args.stall,
-        remedies=remedies, extras=extras,
+        remedies=remedies, extras=extras, context_files=args.context_files,
     )
     _print_task(suite, results, args.repeat)
     return 0
