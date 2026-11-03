@@ -1,6 +1,6 @@
 # Trusted Vanilla Pi baseline on Easy
 
-**Date:** 2026-11-03. **Status:** proposed design; no baseline collected.
+**Date:** 2026-11-03. **Status:** approved by Paul; no baseline collected.
 
 ## Intent and agreed scope
 
