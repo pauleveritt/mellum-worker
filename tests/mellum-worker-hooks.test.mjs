@@ -5,6 +5,12 @@ import { tmpdir } from "node:os";
 import install from "../extensions/mellum-worker.ts";
 import { checkSetup, formatFindings, loadExpected } from "../extensions/mellum-check.ts";
 
+// This file exercises the worker ROLE — the mode machinery, run records and the in-session
+// one-shot that `/mellum <task>` runs. In the primary, `/mellum <task>` now delegates to a
+// fresh worker instead; the in-session one-shot lives in the spawned child, which sets this
+// flag. So these tests run as that child. (Each test file runs in its own process.)
+process.env.MELLUM_WORKER_CHILD = "1";
+
 // No test reads or writes the real ~/.pi/agent: activation reads $HOME/.pi/agent/models.json
 // for the server URL, and the run record defaults to $HOME/.pi/agent.
 process.env.HOME = mkdtempSync(`${tmpdir()}/mellum-home-`);

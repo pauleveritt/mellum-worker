@@ -15,6 +15,9 @@ Versions match git tags; pin one in both install lines.
   its own; a small nudge keeps the division of labour (primary thinks, worker
   implements). A spawned worker child sets `MELLUM_WORKER_CHILD=1` and gets
   neither the tool nor the nudge, so it cannot delegate to itself (no recursion).
+  Typing `/mellum <task>` in the primary now runs the same path — it delegates to
+  a fresh worker and shows the report, the manual twin of the `delegate` tool.
+  Only the spawned child runs the task in-session, as before.
 
 - **A lesson's Solution step shows the remedy's own code.** The `/lesson` panel
   now reads the remedy unit's source (e.g. `remedies/prompt/name-the-layout.ts`)

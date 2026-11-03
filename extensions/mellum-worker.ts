@@ -386,7 +386,9 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
 /**
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
-export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch } = {}) {
+export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string> } = {}) {
+	// How the primary farms a brief to a fresh worker: the real spawn, or a test's stand-in.
+	const runWorker = options.spawnWorker ?? spawnWorker;
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;
@@ -594,7 +596,15 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			if (sub.cmd === "learn") return runLearn(ctx, sub.n);
 			if (sub.cmd === "last") return runLast(ctx);
 			const want = sub.task ?? "";
-			// One shot: the task runs under the mode and the mode ends when the agent settles.
+			// In the primary, /mellum <task> runs the delegate tool: spawn a fresh worker for the
+			// brief and show its report, the same path the autonomous `delegate` tool takes. Only a
+			// spawned child (CHILD_ENV) runs the task in this session, below — so no recursion.
+			if (process.env[CHILD_ENV] !== "1") {
+				say(ctx, "mellum: delegating to a local worker…");
+				say(ctx, await runWorker(want));
+				return;
+			}
+			// One shot (the worker child): the task runs under the mode and the mode ends when the agent settles.
 			if (active) {
 				warn(ctx, "mellum-worker is already on; type the task as a normal prompt, or /mellum off first", "warning");
 				return;
@@ -642,7 +652,7 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	// primary can hand generic implementation briefs to a local worker by itself. A spawned
 	// worker child (CHILD_ENV) gets neither the tool nor the nudge, so it cannot delegate again.
 	if (process.env[CHILD_ENV] !== "1" && typeof pi.registerTool === "function") {
-		registerDelegate(pi);
+		registerDelegate(pi, runWorker);
 		pi.on("before_provider_request", (event: any) => (active ? undefined : withDelegateNudge(event.payload)));
 	}
 
