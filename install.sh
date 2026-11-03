@@ -45,6 +45,17 @@ build_of() {
 # first wins and cannot load Mellum. Homebrew's copy is upgraded, ours in
 # ~/.local/bin is rebuilt, and any other old copy is renamed to .old once a
 # current build is installed.
+# Every llama-server on PATH, once each. PATH can name one directory twice
+# under different spellings (~/.local/bin and ~/.local/share/../bin); without
+# resolving the directory, the same file counts as two copies and the "old"
+# one gets renamed out from under the current one.
+llama_servers_on_path() {
+    local p
+    type -ap llama-server | while IFS= read -r p; do
+        echo "$(cd "$(dirname "$p")" && pwd -P)/$(basename "$p")"
+    done | awk '!seen[$0]++'
+}
+
 build_llama=false
 retire=()
 if ! has llama-server; then
@@ -64,13 +75,13 @@ else
             echo "  $path  [build $build, too old]"
             if has brew && [[ "$path" == "$(brew --prefix)"/* ]]; then
                 brew_old=true
-            elif [[ "$path" == "$HOME/.local/bin/llama-server" ]]; then
+            elif [[ "$path" == "$(cd "$HOME/.local/bin" 2>/dev/null && pwd -P)/llama-server" ]]; then
                 build_llama=true
             else
                 retire+=("$path")
             fi
         fi
-    done < <(type -ap llama-server | awk '!seen[$0]++')
+    done < <(llama_servers_on_path)
 
     if [[ "$brew_old" == true ]]; then
         echo "Upgrading llama.cpp with Homebrew..."

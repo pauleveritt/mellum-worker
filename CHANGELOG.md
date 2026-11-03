@@ -27,6 +27,11 @@ Versions match git tags; pin one in both install lines.
   Node.js is older than 24, the private Node goes in `~/.local/share/mellum-node`
   as before. Only `install.sh` and `run.sh` put it first on PATH; the `~/.local/bin`
   links are made only when there was no Node at all.
+- **`install.sh` no longer renames the llama-server it just installed.** When
+  `PATH` names `~/.local/bin` twice under different spellings (for example
+  `~/.local/share/../bin`), the one binary counted as two copies, and the "old"
+  copy was renamed to `.old`, which left no llama-server. The scan now resolves
+  each directory before comparing.
 - **`run.sh` says why the server did not start.** It showed only "did not start";
   it now prints the end of `backend.py start`'s output, which names the cause.
 
