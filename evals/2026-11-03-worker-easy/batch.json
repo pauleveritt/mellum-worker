@@ -1,0 +1,554 @@
+{
+  "schema": 1,
+  "created_at": "2026-11-03T23:24:49.086386+00:00",
+  "command": "uv run python learn/code/harness.py baseline --arm worker --reference evals/2026-11-03-vanilla-easy/batch.json",
+  "source_commit": "378217f0b10b588a702c1ccb409488a7f00531b0",
+  "material": {
+    "pi": {
+      "path": "/Users/pauleveritt/.local/bin/pi",
+      "entry_path": "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js",
+      "version": "1.4.0"
+    },
+    "effective_profile": {
+      "providers": {
+        "llamacpp": {
+          "name": "llama.cpp",
+          "baseUrl": "http://127.0.0.1:8002/v1",
+          "api": "openai-completions",
+          "apiKey": "not-needed",
+          "models": [
+            {
+              "id": "Mellum2.1-12B-A2.5B-Thinking",
+              "name": "Mellum 2.1 12B-A2.5B Thinking (Q4_K_M, llama.cpp)",
+              "reasoning": true,
+              "input": [
+                "text"
+              ],
+              "contextWindow": 50000,
+              "maxTokens": 16384,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "samplingParams": {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0,
+                "presence_penalty": 0,
+                "repetition_penalty": 1
+              },
+              "compat": {
+                "supportsDeveloperRole": false,
+                "supportsReasoningEffort": false,
+                "maxTokensField": "max_tokens",
+                "thinkingFormat": "qwen-chat-template"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "checkers": {
+      "ruff": "0.16.3",
+      "complexipy": "8.3.0",
+      "pyrefly": "1.2.0",
+      "pytest": "8.3.4"
+    },
+    "backend": {
+      "freeze": {
+        "schema": 1,
+        "status": "frozen_infrastructure_screen_passed",
+        "scope": "inference backend shared by Vanilla and Worker",
+        "hardware": {
+          "provider": "Runpod",
+          "cloud": "SECURE",
+          "data_center": "EU-RO-1",
+          "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+          "gpu_count": 1,
+          "vram_mib": 32623,
+          "driver": "595.91.07",
+          "compute_capability": "12.0",
+          "cpu": "AMD EPYC 7713P",
+          "container_disk_gb": 20,
+          "persistent_mount": {
+            "path": "/workspace",
+            "size_gb": 50
+          }
+        },
+        "container": {
+          "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+          "observed_digest": "sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+          "os": "Ubuntu 24.04.3 LTS",
+          "exposed_ports": [
+            "22/tcp"
+          ],
+          "jupyter": false
+        },
+        "backend": {
+          "repository": "https://github.com/ggml-org/llama.cpp",
+          "source_revision": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+          "build_number": 11669,
+          "compiler": "GNU 13.3.0",
+          "cuda_toolkit": "12.8.93",
+          "cmake": "3.28.3",
+          "build_options": {
+            "CMAKE_BUILD_TYPE": "Release",
+            "GGML_CUDA": "ON",
+            "CMAKE_CUDA_ARCHITECTURES": "120a",
+            "GGML_NATIVE": "OFF",
+            "CMAKE_BUILD_RPATH": "$ORIGIN",
+            "LLAMA_BUILD_NUMBER": 11669,
+            "LLAMA_BUILD_COMMIT": "620d2225c",
+            "LLAMA_BUILD_IS_DEV": "OFF"
+          },
+          "runtime_sha256": {
+            "libggml-base.so": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+            "libggml-base.so.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+            "libggml-base.so.0.27.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+            "libggml-cpu.so": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+            "libggml-cpu.so.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+            "libggml-cpu.so.0.27.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+            "libggml-cuda.so": "5703cf3870dda47bd7e8e1f4fc35b77feccbdae4240cdf88fc5df15f478ca3d6",
+            "libggml-cuda.so.0": "5703cf3870dda47bd7e8e1f4fc35b77feccbdae4240cdf88fc5df15f478ca3d6",
+            "libggml-cuda.so.0.27.0": "5703cf3870dda47bd7e8e1f4fc35b77feccbdae4240cdf88fc5df15f478ca3d6",
+            "libggml.so": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+            "libggml.so.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+            "libggml.so.0.27.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+            "libllama-common.so": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+            "libllama-common.so.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+            "libllama-common.so.0.7.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+            "libllama-server-impl.so": "45f355aafb3c0a960f8b58501830be8d16f8e497886fdb23b13851cc764fd577",
+            "libllama.so": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+            "libllama.so.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+            "libllama.so.0.7.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+            "libmtmd.so": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+            "libmtmd.so.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+            "libmtmd.so.0.7.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+            "llama-server": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791"
+          },
+          "requested_cuda_architectures": "120"
+        },
+        "model": {
+          "repository": "JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF",
+          "revision": "4159d684ffdb09ba89dc2a58feb3e75c54eef036",
+          "file": "Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+          "size_bytes": 8071295264,
+          "sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+          "alias": "Mellum2.1-12B-A2.5B-Thinking",
+          "quantization": "Q4_K_M",
+          "mtp": false
+        },
+        "server": {
+          "bind": "127.0.0.1:18001",
+          "parallel_slots": 2,
+          "requested_total_context": 100000,
+          "client_context_per_session": 50000,
+          "kv_unified": false,
+          "cache_type_k": "q8_0",
+          "cache_type_v": "q8_0",
+          "gpu_layers": 999,
+          "jinja": true,
+          "flash_attention": "auto",
+          "continuous_batching": true,
+          "batch": 512,
+          "microbatch": 512,
+          "threads": 16,
+          "batch_threads": 16,
+          "process_manager": "tmux",
+          "llama_cache": "/workspace/mellum/cache",
+          "effective_context_per_slot": 50176,
+          "effective_total_context": 100352,
+          "context_budget": "Input and generated tokens share each slot context; max output is not additional context."
+        },
+        "client": {
+          "pi_version": "1.4.0",
+          "provider": "llamacpp",
+          "api": "openai-completions",
+          "max_output_tokens": 16384,
+          "temperature": 1,
+          "top_p": 0.95,
+          "top_k": 20,
+          "min_p": 0,
+          "presence_penalty": 0,
+          "repetition_penalty": 1,
+          "reasoning": true,
+          "thinking_format": "qwen-chat-template",
+          "qualification_base_url": "http://127.0.0.1:8002/v1",
+          "collection_base_url": "http://127.0.0.1:8002/v1",
+          "profile_sha256": "75504835b567a3d86793bc983edcb8cdb1dd0a069cb65f4bf06e5fd4a191ac80",
+          "frequency_penalty": 0,
+          "collection_endpoint_status": "Use qualified tunnel on Mac 8002 to Pod 18001; preserve unrelated Mac 8001 listener."
+        },
+        "collection": {
+          "status": "not_started",
+          "counted_sessions": 0,
+          "planned_sessions": 6,
+          "arm": "vanilla",
+          "session_concurrency": 1,
+          "concurrency_source": "approved sequential design; two-slot serving pilot is separate",
+          "deadline_seconds": 600,
+          "open_tool_call_cutoff_seconds": 180,
+          "instrument_plan_tasks_1_to_3": "not_implemented"
+        },
+        "qualification": {
+          "status": "passed_synthetic_screen",
+          "completed_at": "2026-11-03T20:51:49.617Z",
+          "counted_evaluation_sessions": 0,
+          "observed_peak_gpu_memory_mib": 9042,
+          "gpu_memory_sampling_seconds": 1,
+          "short_pair": {
+            "simultaneous_slots": 2,
+            "output_tokens": [
+              80,
+              93
+            ],
+            "finish_reasons": [
+              "stop",
+              "stop"
+            ],
+            "elapsed_seconds": 1.34465,
+            "max_output_tokens": 512
+          },
+          "long_pair": {
+            "simultaneous_slots": 2,
+            "prompt_tokens_per_request": 47034,
+            "output_tokens_per_request": 64,
+            "finish_reason": "length",
+            "elapsed_seconds": 10.133563042,
+            "max_output_tokens": 64
+          },
+          "required_tool_call": {
+            "name": "read_file",
+            "arguments": {
+              "path": "README.md"
+            },
+            "finish_reason": "tool_calls"
+          },
+          "health_after": "ok",
+          "slots_after": "both idle",
+          "limits": [
+            "Synthetic protocol and memory screen only; no coding-quality or speedup claim.",
+            "Production output limit 16384 was not exercised; long-context probes generated only 64 tokens.",
+            "Full Pi sessions, streaming, cancellation, and deadline contention are not qualified by these probes."
+          ],
+          "evidence_directory": "runs/2026-11-03-runpod-qualification"
+        },
+        "reuse_rule": "Verify exact hardware class, VRAM, driver, image digest, backend revision/build options and runtime hashes, weight hash, server settings, client settings, concurrency and relevant host load before a comparison. An incompatible change requires requalification and an explicit baseline comparability decision.",
+        "frozen_at": "2026-11-03",
+        "connection": {
+          "host": "213.173.107.13",
+          "port": 43891,
+          "user": "root",
+          "key_path": "~/.ssh/id_rsa",
+          "known_hosts": "runs/2026-11-03-runpod-qualification/known_hosts"
+        }
+      },
+      "live": {
+        "runtime_sha256": {
+          "libggml-base.so": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+          "libggml-base.so.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+          "libggml-base.so.0.27.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+          "libggml-cpu.so": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+          "libggml-cpu.so.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+          "libggml-cpu.so.0.27.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+          "libggml-cuda.so": "5703cf3870dda47bd7e8e1f4fc35b77feccbdae4240cdf88fc5df15f478ca3d6",
+          "libggml-cuda.so.0": "5703cf3870dda47bd7e8e1f4fc35b77feccbdae4240cdf88fc5df15f478ca3d6",
+          "libggml-cuda.so.0.27.0": "5703cf3870dda47bd7e8e1f4fc35b77feccbdae4240cdf88fc5df15f478ca3d6",
+          "libggml.so": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+          "libggml.so.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+          "libggml.so.0.27.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+          "libllama-common.so": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+          "libllama-common.so.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+          "libllama-common.so.0.7.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+          "libllama-server-impl.so": "45f355aafb3c0a960f8b58501830be8d16f8e497886fdb23b13851cc764fd577",
+          "libllama.so": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+          "libllama.so.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+          "libllama.so.0.7.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+          "libmtmd.so": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+          "libmtmd.so.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+          "libmtmd.so.0.7.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+          "llama-server": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791"
+        },
+        "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+        "vram_mib": 32623,
+        "driver": "595.91.07",
+        "gpu_uuid": "GPU-46800b99-ba11-5afe-36b2-cf6bae5e010b",
+        "weight_sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+        "executable_sha256": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791",
+        "cmdline": [
+          "/workspace/mellum/llama.cpp/build/bin/llama-server",
+          "-m",
+          "/workspace/mellum/cache/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+          "-a",
+          "Mellum2.1-12B-A2.5B-Thinking",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          "18001",
+          "-c",
+          "100000",
+          "-np",
+          "2",
+          "--no-kv-unified",
+          "--jinja",
+          "-fa",
+          "auto",
+          "--cont-batching",
+          "-t",
+          "16",
+          "-tb",
+          "16",
+          "-b",
+          "512",
+          "-ub",
+          "512",
+          "-ctk",
+          "q8_0",
+          "-ctv",
+          "q8_0",
+          "-ngl",
+          "999"
+        ]
+      },
+      "props": {
+        "build_info": "b11669-620d2225c",
+        "model_alias": "Mellum2.1-12B-A2.5B-Thinking",
+        "model_ftype": "Q4_K - Medium",
+        "model_path": "/workspace/mellum/cache/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+        "total_slots": 2
+      }
+    },
+    "profile_settings": {
+      "quietStartup": true,
+      "lastChangelogVersion": "1.4.0"
+    },
+    "hashes": {
+      "learn/code/harness.py": "bde7753fd384224e78c9c5b13837bd979daf3f10f918fda1fe00451cdab115b3",
+      "learn/code/baseline.py": "08b49101f8d697b227b02769b801216f77ecf85a5a9d9cdc825addd470e95048",
+      "extensions/mellum-recorder.ts": "77d09bab3d08fd3e53e38c4e52004eab910f329c8736be329e5405958eeb8444",
+      "scripts/pi-pin.env": "eb9b0175add79a606199cda01b04bf9cb746221df679f23a1a6051e17f8ea0a6",
+      "scripts/backend.py": "d5bc84292591f3fe97774101a56f2e97a365df59dc4eafeb5057ab2196268c78",
+      "pyproject.toml": "0baff116be27cc83233601df9e7f9d4dc86b459043fae69796804119ac3067e8",
+      "uv.lock": "8378752dc53be07e9eac86d7a19843dcc3ca4b0300ebe0dabbbccf62a6f7aa29",
+      "learn/code/suites/easy/base/.gitignore": "4409b253ac33acb862192f9cad8583ed3fe0bac938082a6cfa784d7cf0d185ef",
+      "learn/code/suites/easy/base/AGENTS.md": "e1b95ace215013b76cd7043d64df5bf7955453b11516c454b9881676891dd2ca",
+      "learn/code/suites/easy/base/pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+      "learn/code/suites/easy/base/specs/mission.md": "df464c1f7801e38994ebc30a9e01cbc839fe7ff71c422b7c7b83a6c113a9e6fc",
+      "learn/code/suites/easy/base/specs/roadmap.md": "670e36dcb2778e426092d9030c074f01a5015f2e8932868d9764b5fcae24a638",
+      "learn/code/suites/easy/base/specs/tech-stack.md": "321ee9a48f521ad876e18599f883a539ba538c7f1e567e77871427454f0372cd",
+      "learn/code/suites/easy/base/uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884",
+      "learn/code/suites/easy/expected.json": "f921a54346d8cfbe26c1058050e0d0cc0a922863c0d608b644b7031c4b01a2b8",
+      "learn/code/suites/easy/fixtures/known-broken/app.py": "ee8328d4341d6f3c73bf66b85c99523312efd6e43889c1c130bf2513bc5c1867",
+      "learn/code/suites/easy/fixtures/known-broken/models.py": "9c86bda59487d50fab5bfda7c4775e5a1013fe5c8211bed9875474221e7c4cc1",
+      "learn/code/suites/easy/fixtures/known-broken/templates/base.html": "1a0fe07d17aae0c064941b99aa2a647f2783e792b1c242c7ba8b46fe051c6133",
+      "learn/code/suites/easy/fixtures/known-broken/templates/complaints.html": "2987a73da2250b5a1f1df1ef0c04693da7e46a5d35d567bcd070b4ed50c43339",
+      "learn/code/suites/easy/fixtures/known-broken/templates/home.html": "d00fb1e35930ce8fd210b236c21ed253e43d76540c79edfb3f7370f10aaa92d9",
+      "learn/code/suites/easy/fixtures/known-good/app.py": "ee8328d4341d6f3c73bf66b85c99523312efd6e43889c1c130bf2513bc5c1867",
+      "learn/code/suites/easy/fixtures/known-good/models.py": "9c86bda59487d50fab5bfda7c4775e5a1013fe5c8211bed9875474221e7c4cc1",
+      "learn/code/suites/easy/fixtures/known-good/templates/base.html": "eb0f5000246cce70fed561c45d09fda67ccd3b646e7a268ef72576421ca75c4b",
+      "learn/code/suites/easy/fixtures/known-good/templates/complaints.html": "2987a73da2250b5a1f1df1ef0c04693da7e46a5d35d567bcd070b4ed50c43339",
+      "learn/code/suites/easy/fixtures/known-good/templates/home.html": "d00fb1e35930ce8fd210b236c21ed253e43d76540c79edfb3f7370f10aaa92d9",
+      "learn/code/suites/easy/grader/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "learn/code/suites/easy/grader/_contract.py": "082b3b980dff1d94e7ef75362aed0ab1e83d3189fb18244eeafc21099c53bbd6",
+      "learn/code/suites/easy/grader/canary": "18573a419ea3f9d0ac9428c349a82be03e82abbb6df8c981bea859d6ebc7fb66",
+      "learn/code/suites/easy/grader/test_phase1_home.py": "9050acf16e0cc4640fbd0384949153d7194454f4a8acaa5e5662cb3bca6fae48",
+      "learn/code/suites/easy/layout.json": "ba41de4543c51a0eda0f4644bfe1d3fafb5b356cff02761d56cd71802c13acdc",
+      "learn/code/suites/easy/prompts/01.md": "26e4bfb122df8f29f9c24b14a4ee00219ce4340199dcf6e9730b5784075af034"
+    },
+    "machine": "Apple M5 Max, 128 GiB",
+    "pi_entry_sha256": "e79626f2dd6f94aa45d30f3fa63cd84319a6eefcd150b353cfaf274366926774",
+    "limits": {
+      "deadline": 600,
+      "stall": 180,
+      "target": 6,
+      "concurrency": 1
+    },
+    "arm": "worker",
+    "extensions": [
+      "extensions/mellum-worker.ts",
+      "extensions/mellum-recorder.ts"
+    ],
+    "context_files": false,
+    "cold_context": true,
+    "arm_env": {
+      "MELLUM_MODE": "1"
+    },
+    "worker_hashes": {
+      "extensions/mellum-worker.ts": "1a225a9efeede96fb3ff95b7a5dfd6b85c44719c88369b362d2563662081d1d0",
+      "extensions/mellum-last.ts": "45fb1433b18d6ecea7d8a76bdae7fed2dad2ae665e76d488bcc8e49cbb764443",
+      "extensions/mellum-learn.ts": "c19ae60c5dbb3e36f5a6fdd465c1ee8aeb1719dbd64c13438cb6ca41274b1296",
+      "extensions/mellum-record.ts": "2d8968bdb6373216a2b57d16a84355af11f8a68e32f6d48fd962ca11f200a9c4",
+      "extensions/mellum-commands.ts": "d76513d4028f39b278191965e6c0eb568a88aefe608fe74d8b6594bbcc47c15f",
+      "extensions/mellum-check.ts": "5cf00120c2c2ac68d0085b24853228000e8243435f2bf2d9b542fe5eee9f9baa",
+      "extensions/mellum-facts.ts": "b7229631e7978b1b945845410a42e3c0c7952fbf6debe1699c6d762f5533f826"
+    },
+    "runtime": {
+      "exec_path": "/Users/pauleveritt/Library/Caches/JetBrains/PyCharm2026.3/acp-agents/.runtimes/node/24.22.1/bin/node",
+      "node_version": "v24.22.1",
+      "hashes": {
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/anthropic-messages-5FHV3XZG.js": "6bc2c44ea94245b62a7eb249933bbae30d4237ac4af7b77011c1f7bdc0540d9a",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/anthropic.js": "f76fb47980e8fd82a13fc356e420a9a2f554bba0fefd4eb3f5d97812583309a8",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/azure-openai-responses-KLTRI2FU.js": "ba8f3f5a565b4b29cdad06a2eb2f1d7da005b0681454eb287d8ed372ac0f14a3",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/bedrock-converse-stream.js": "4444844370053c1f52b4fe381f4336b1e1a1255791c9fe737931eb6687edaa90",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-3V45WARH.js": "e2a174a541958dcdb9ab1c4e316e2665e014510db64fda1d8e0ebd24def2e628",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-4GGCU36O.js": "375a2f235e159c680f0b44eb4135ed1dc79cf3f51bff3fe0b2cba29ed1be5029",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-5AGIVGSV.js": "5c90a831ae8d5f5aa8e66e2fa3c76b5e2f6046df80429172654385d23c6c9b73",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-6QGV3IWD.js": "8849fd570c6155bcea2df8962b65e6b1b01ed88c5c25a1b29fba535ca07df35a",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-7CBJINYJ.js": "ba573c7e16ac49ca552f399dee4476b7bdc255212fd9a4bfda632158d1f37ef6",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-7DDKXS2Q.js": "b5c1320c3a3648f71ce27577893cb1a538f139dc86f23c8f2669f576478175dc",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-7ZC4UXSL.js": "c5057baea590a53e2534934d8d86fe358705859839f9e393f1482442593f41d2",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-A45IWOC6.js": "b410745b452e8ceb4e510307bd8f2a73851c1860044ec33483322450d4165984",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-BSS6T6KQ.js": "94f5b6195ceca34fbff800fe358e0cbd75c2e1fc7263bd0173f749826eac047f",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-CF5GWZHW.js": "7f9318ab1ffb8790307f100b13710731d409147788ceca33f4a1eed223f17454",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-EGE5YVUM.js": "da27e54f91f5e621a34945ae68322f904bed4331cbe03f61dce5d3017ab1dc0f",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-H76KZMOI.js": "fc670715f9a14f0d5e3a0ee31606457e1babae8183df8b02c44be4e18ebcbfe0",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-INGZIYBC.js": "142d350075157e7d7dbc78b6fb9c5e351003d0cf4fb1027a59f6c1628e3b483d",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-IUWY2KTF.js": "62bf2cc28ace065ee375f8c2a93aaa842cd0a234420886b00be83ca0b28c1752",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-JXWJOIH4.js": "2857397f268829d29c5b22ff366e723ba9c98f2a13fc290ff64ffe921ba1686a",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-L2ZPNLYD.js": "eeac72dce2d349ec26278d12cfc96e666a165e85fd4132a9fb1cdd2b8a893e3f",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-LPXNMA2W.js": "82078b13cabe692e5bb3495c1d1c2bd29b9290a1e5a4065234c507f4b668a8d9",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-LVVZS2NO.js": "536c349d1d8fcc0c0e550fde15978b1db87b45e9cc0ef23b035a485d4b8270f3",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-MM3LKT73.js": "aa4c8b091657bda611f6fd58343561fa44cda1070ae4cd5dbd09ffe1d9a34aab",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-N43LRJ4N.js": "45433285704d27e7c9b261145885133ed8c7c31e887b313947cb50b3fb62c32b",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-NFLURVK3.js": "6401aafb9494851a344e73ce548c7074ca3873cdf4203b2a6257596d70d4b1d1",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-PGXDEOVV.js": "b6187ec855046de0f97de34bc7f4ad8057e9b9d51ff057f65acf6432d2373f37",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-PJACZCIR.js": "5aaa7984c9ef7e2db07b44323b0e21660926302599b1e76820a538a1d7ae538b",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-PMRZO46Y.js": "9e0921ff9785b4ab3c1e0d8d00feb9cea6a6d2b0936b7a0ac7e9d7b0a0e9f58d",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-PRRNXB7S.js": "87fdebf0992e87432f8bfb873e901cdc8eb2b473c5da3444650ef6d933f5f232",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-QSDU2SDK.js": "bbfd268240ff9eaf715cd273dd5b78f00840c90f191526937c03c6e42b95758f",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-RDZVAGPR.js": "657242b8d4b3ab52369ceaf5374ea7e9da241cb64752142855eb99f32be7de81",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-RISAW7OQ.js": "68634b70417a417ea67728534e70aae21b3b113b0aa2535bc43e319ead629e3d",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-RWO6Q3KK.js": "15bb14ad3528c387a3996d9cdd1fdbde705cd4ac682fb0560c2968376c9e5625",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-T726RZZU.js": "b09f9387bb838ee733d15a63d1af07876e0932381c2a9b7d42f74f22cd4d2947",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-TEPMHNKQ.js": "ad6967e374788a68cb111fdc1b8acfed81acbd177bda714f6f2e8dd1aa4708de",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-TMTOQ7H7.js": "23eb2a77f71ee7e42cba6f9cf7557f8f8f2f80c9f3deb5d2ecd6d34bdb2aa5a3",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-TRERZKRC.js": "4421d96c2dd72fd58acda07977d5a39469bacb54029da1988fe7f72b62f218c7",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-UKVNB6C4.js": "2c7346b9cc489160ffc9bf59e36b4016ff28ca1005eb818f2bad5370f1a08941",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-UNXOKDPB.js": "ef2353d54eb96454e176fc552a50f4d7e85fb39212a0b40b34fe221786967b71",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-USJZMAIR.js": "a955b5a2c31941b424157fed43dbbfd8dcc335937bdeff80f6da110043cbc849",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-UTB4DTYQ.js": "956609841588139d975e018004d520ce4eee345fde5f948239a9f72a748fa91c",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-Z6I32PHA.js": "f56f8c416f71382d423c5615973e43fa1ca9dc4f77c92fc18b29e84616598ce2",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/cli-MIMUTM5L.js": "edf529ea0c2f17392f6e0d32be60496908b596ea966612c047604c2ca485e690",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/cloudflare-workers-ai-system-one-7J6REGDV.js": "a3038dc9851bfe8efe93fc6e0f4fccd5b4386c8c4e98489aedbc3a50ac38a7d8",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/codemode-worker.js": "e4c818b0bfd8ded266f2614504c1b14ce4eb82d85f29ee781b096be3fc6c257c",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/easter-egg-3d-RMLF7AC4.js": "987ca283f721e6560ad103f173c77662c6e56d5cde5f4525aec5456d799e2d67",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/execute-MT7QEDSI.js": "3e3016feebe4c918afea99e3392c680aec09928700d56636b998504db8b34599",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/github-copilot.js": "cf9693ca1b0cf482b964c833f7c8acca40650b187b2fa504327eca7fda4f07c5",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/google-generative-ai-VPNFZDHO.js": "5fb5ca504f0f2aeb520c9f0ecb19ac64fc35ed12891741d707b3d8878ecc5a03",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/google-vertex-ZFM23MQ4.js": "b5f7585f592d16edb52a10a8f230726b262d69a8b5cea45eaeb9faea1bb94049",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/https-proxy-agent-LVOO5TPL.js": "6d2593a18653f9f6dfd06af44a9fce0a254981c5fe273f56691f8a7858cecdbc",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/image-resize-worker.js": "e84323cd721ba3db2b74e9109b5340b4eef5be9e5c99f09faaaddef8a456a2eb",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/jiti-loader-GL4HJFAD.js": "be2d0f1bb460e726bf4e1df1c0d20955f673f1ffa192435fd65440aa6073f38f",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/jiti-static-loader-2RCDI6B4.js": "5e088689059655c592551fac8376f9bb9eef58d00b903a07260a8d13e62ed17c",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/kimi-coding.js": "54995243fc82f2f9386268572efdfa088da4b51062e1950bacf6c81bbeaecfc5",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/lib-4AVRLBHM.js": "1ada30d2ddabb60ad5f86e95d7a13d7826ae737a81e8ad2da5efe90994f18c3a",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/llama-cpp-classify-U4EH6TAM.js": "debc89946bc7e42049224fec937c0de03e2f0df9a4f12210c13e58cd428d4378",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/meta.js": "be6e51c01f80832a41c861613cbe6cebef5a4982887d1f252c07620778cea0aa",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/mistral-conversations-WCAJTBXO.js": "682a7b78ddb50ed2ef3f5d75707e1c5c5acde1f1f95d799cd3f9cd546e375028",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/multipart-parser-FMGQ7342.js": "73e0ee9663313882b6146146d8fe18ca677115bb8bd1ca4a8c37aba65bc7308a",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/node-AUOGOBCN.js": "6f5759eda9ea48b430e4c41d59e36d8e27a8b860fa392f82943b44e1feaa47b4",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/node-KCMANYC2.js": "755da427e754c8fff14d7486e36fac29e9c20f777c72d5a648e46d71ebc62c53",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openai-chatgpt.js": "47a5c6b7d31ccbd99c407d388f0453272514219770f1f0e89de3ef0211c70136",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openai-codex-responses-JQR3IK2C.js": "c4ad0deeb305feb114f7f546bbe20db31ef73af6036fdc3d6a763c558c106c67",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openai-codex.js": "c52c5a3ff9088bcbf38e46399f079512d2693f91afc22d6038289dc15d82693d",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openai-completions-27RKPL37.js": "243dd1a344d81e1758b155e58e53a0109bedb2178ae87c5b25481a425ffe965e",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openai-decisions-MJYPUCLX.js": "fe537b9ba91a24af1663ff3dd4fe7f66ef432eee87e84fccc2bf2d3c75153c29",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openai-responses-I2TBW7OL.js": "3b0e4bfe22973f37cc66631d2bef550b1ab17cb1b4b2f2e10417ef13d128a56f",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openrouter-images-WBAVKHHY.js": "2b5ac2e55b45843606308b19d49b91bcf25fa5f87711d71062fc40c2984b1e20",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/openrouter.js": "53a48b9b030a46029f2e0f185cbc01fa43cb88ba6f5f357745e28579a2d87aa6",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/pi-messages-S7RKCD5K.js": "2fa70ce6f10f70c13b409f14f125b8fd3c97dd90546bfe0a99b38564dad89eb8",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/radius.js": "bd4da6782ed5a7e90fcbc93aa976bf56f95e24289008843f9845fbfdb767ca14",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/runtime-GJOZRI5I.js": "950e5d39867b9d8b8fd376a96d7e208f98f9f7b86ec723ff44d4785cb3eaf3cd",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/src-QKGKDFSU.js": "78f9cd0e05f671111ec9d1722d7b7551864c3bd58c8f025d5c305495f288aa42",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/typesafe-system-one-4C7ULOVP.js": "714331b32ca6ebfd99969325b1e412eaba8d1cd89f2a9b0e36bcea25286b4d60",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/virtual-modules-BQKXTZUC.js": "f829c82d856f279e8e930614b2fe2c764127f995f076f3565a8b6c82cd63850d",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/xai.js": "1551bf9d2db9fec7be60b87c72e5b6b7163c828c1e39adfff31b146374332d9b",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli-runtime.js": "754132d2cbb31c33fac5672366f948a7b90ba07b542dbddd20b13adcc62719bd",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js": "e79626f2dd6f94aa45d30f3fa63cd84319a6eefcd150b353cfaf274366926774",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/index.js": "4e30102d8ba2642ffa1615abcaa137ae03c2c74830e9a0cc771c11f98e037e82",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/rpc-entry.js": "eb210a7343ed91d7f6fdb61a6fa411730807d717e5ca7711c1e3dfe4ca7502fc",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/package.json": "df6883685382d6a914e5797232744c26579fe7db5576ea0e9c859d018ca2d54e",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/api/simple-options.js": "ff234becff46a6c25c1e437c86d72fbe7aeb4e107266d1bf6951622d223b0ae0",
+        "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/utils/estimate.js": "b5b606011ab0dce2a5db309dd812c9b8ddd0bbcbc9416de699fb9cd087cc84d6",
+        "/Users/pauleveritt/Library/Caches/JetBrains/PyCharm2026.3/acp-agents/.runtimes/node/24.22.1/bin/node": "6f32069480ec14d52b6d7b1f3c7124cfbbc46203abf5ddf5c65b127435f3f329"
+      }
+    }
+  },
+  "attempts": [
+    {
+      "run_id": "20261103T232453Z-easy-39c844",
+      "directory": "attempt-01",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-01/20261103T232453Z-easy-39c844",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261103T232852Z-easy-b2920a",
+      "directory": "attempt-02",
+      "state": "counted",
+      "reason": "Recovered Connection error after substantive model work (request10); native Pi continued unchanged to non-aborted settlement. All four hidden checks executed and failed; health, cleanup, runtime and worker activation verified. Retain this model attempt with unknown total output usage; exact transport cause unproven.",
+      "path": "attempt-02/20261103T232852Z-easy-b2920a",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261103T233023Z-easy-312b1d",
+      "directory": "attempt-03",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-03/20261103T233023Z-easy-312b1d",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261103T233443Z-easy-a32b6c",
+      "directory": "attempt-04",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-04/20261103T233443Z-easy-a32b6c",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261103T233814Z-easy-73b011",
+      "directory": "attempt-05",
+      "state": "counted",
+      "reason": "Recovered Connection error on request41 after substantive model work. Native Pi continued unchanged through request49, then reached the fixed180s foreground-server cutoff; 4/4 hidden checks and health pass. Cleanup, runtime and worker activation verified. Count this model attempt with unknown total output usage; exact transport cause unproven.",
+      "path": "attempt-05/20261103T233814Z-easy-73b011",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261103T234412Z-easy-ca810c",
+      "directory": "attempt-06",
+      "state": "counted",
+      "reason": "Recovered Connection error on request11 after substantive model work. Native Pi continued unchanged through request18 then reached the fixed180s foreground-server cutoff; 4/4 hidden checks and health pass. Cleanup, runtime and worker activation verified. Retain the sixth model attempt with unknown total output usage; exact transport cause unproven. No replacement.",
+      "path": "attempt-06/20261103T234412Z-easy-ca810c",
+      "identity_ok": true,
+      "cleanup_ok": true
+    }
+  ],
+  "reference": {
+    "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/evals/2026-11-03-vanilla-easy/batch.json",
+    "sha256": "f422fcd767969b7cad5c14881cc38dce4a4ddd1a2202fb5314661e65cecb40e8",
+    "supplement_sha256": "c489b6e2e0b277c04ff5a08031bb81fb9e34c94487afbab200310dc3b04d2e92",
+    "observations_sha256": "a223fccbde2ccdf0dccef705c1923ec7a3a90b300e7eafda8b773b4e30d812c3",
+    "instrument_delta": {
+      "learn/code/harness.py": {
+        "reference": "65143b0ccaea24a210319af5ce88a7c08c4032c2a13307bdaeb315b40e637080",
+        "current": "bde7753fd384224e78c9c5b13837bd979daf3f10f918fda1fe00451cdab115b3"
+      },
+      "learn/code/baseline.py": {
+        "reference": "e5bdb0f18ea03aff3af2035797c806b4e2881a8bd8679a29b316324b2f4c5c92",
+        "current": "08b49101f8d697b227b02769b801216f77ecf85a5a9d9cdc825addd470e95048"
+      }
+    },
+    "scope": "Bundle hashes are post-Vanilla supplements; Node binary hash is pinned prospectively."
+  },
+  "status": "complete"
+}

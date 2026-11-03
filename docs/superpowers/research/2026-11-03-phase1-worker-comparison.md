@@ -1,8 +1,9 @@
 # Phase 1 Vanilla versus thin Baseline Worker
 
-**What is measured:** the retained six-session Vanilla Easy Phase 1 reference.
-**What is not yet measured:** the thin Baseline Worker arm below. This protocol
-is recorded before that collection; no comparative outcome is assumed.
+**At registration:** the retained six-session Vanilla Easy Phase 1 reference was
+measured; the thin worker was not yet measured. The protocol below was recorded
+before collection. **2026-11-03 update:** both six-session arms are now retained;
+[results and limits](../../../evals/2026-11-03-worker-easy/README.md).
 
 ## Authorized comparison
 
@@ -35,6 +36,15 @@ multi-phase collection and remedy experiments are deferred.
 - Preserve raw traces, sessions, workspaces, logs and preflight; publish a unique
   research-release asset without replacing existing evidence. Commit compact
   scorecards, provenance and compatibility limitations. Update FIXES as work lands.
+
+## 2026-11-03 outcome
+
+Six worker attempts counted, no exclusions/replacements:5/6 hidden-all-pass,6/6
+health,1 settled/5 stalled,0 passing-and-settled. Vanilla:4/6 hidden-all-pass,6/6
+health,2 settled/4 stalled,1 passing-and-settled. Worker request median19.5 versus
+15 and elapsed median224.776s versus202.059s. Worker output totals unknown in3/6,
+Vanilla2/6. All 137 worker requests and cleanup/activation audited. No default
+promoted; foreground-server handling remains an explicit next remedy to screen.
 
 ## What would falsify this
 

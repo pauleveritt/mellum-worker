@@ -1,0 +1,101 @@
+{
+  "suite": "easy",
+  "arm": "worker",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": {
+    "seconds": 180.9,
+    "limit": 180,
+    "command": "uvicorn app:app --reload --port 8000"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 49,
+  "turns": 49,
+  "tool_calls": 48,
+  "tool_errors": 14,
+  "context": 6957,
+  "output_tokens": null,
+  "wall": 307.669,
+  "nudges": 1,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 27860,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.venv/bin/python /Users/pauleveritt/projects/pauleveritt/mellum-worker/.venv/bin/uvicorn app:app --reload --port 8000"
+    },
+    {
+      "pid": 27861,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 27862,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": [],
+  "completion": "stalled",
+  "elapsed_seconds": 307.669,
+  "provider_error": {
+    "classification": "review",
+    "evidence": [
+      {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "llamacpp",
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1793749177090,
+        "errorMessage": "Connection error.",
+        "durationMs": 23,
+        "thinkingLevel": "medium"
+      }
+    ]
+  },
+  "cleanup_ok": true,
+  "exit_code": -9
+}

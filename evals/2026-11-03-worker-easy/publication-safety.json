@@ -1,0 +1,5 @@
+{
+  "files_scanned": 102,
+  "credential_pattern_hits": [],
+  "scope": "run metadata, traces, stdout, native sessions and private profiles; no user credential stores or SSH keys included"
+}

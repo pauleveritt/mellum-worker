@@ -1,0 +1,18 @@
+{
+  "npm_tests": {
+    "passed": 635,
+    "failed": 0
+  },
+  "docs_caps": {
+    "passed": 4,
+    "failed": 0
+  },
+  "docs_build": "No issues found",
+  "fresh_review": {
+    "important_found": 1,
+    "fixed_red_green": 1,
+    "deferred_minors": 0
+  },
+  "frozen_inputs_verified_after_collection": true,
+  "raw_download_sha256_verified": "f505d5470ef70f29e3a17ddd7450a4e9fefa074755ffbd4d0c4d9aa344d632aa"
+}

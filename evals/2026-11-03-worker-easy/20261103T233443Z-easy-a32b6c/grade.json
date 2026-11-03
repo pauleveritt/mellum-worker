@@ -1,0 +1,61 @@
+{
+  "ruff": {
+    "status": "pass",
+    "version": "0.16.3",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "ruff==0.16.3",
+      "ruff",
+      "check",
+      "--select",
+      "F,E9",
+      "--extend-exclude",
+      "tests",
+      "--extend-exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": ""
+  },
+  "pyrefly": {
+    "status": "pass",
+    "version": "1.2.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "pyrefly==1.2.0",
+      "pyrefly",
+      "check",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": " WARN PYTHONPATH environment variable is set to `/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-04/20261103T233443Z-easy-a32b6c/workspace`. Checks in other environments may not include these paths.\n INFO 0 errors\n"
+  },
+  "complexipy": {
+    "status": "pass",
+    "version": "8.3.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "complexipy==8.3.0",
+      "complexipy",
+      "--max-complexity-allowed",
+      "10",
+      "--exclude",
+      "tests",
+      "--exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83d\udc19 complexipy \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\napp.py\n    home 0  \u2705  PASSED  \n\nAll functions are within the allowed complexity.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83c\udf89 Analysis completed! \ud83c\udf89 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n",
+    "stderr": ""
+  }
+}

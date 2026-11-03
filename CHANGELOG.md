@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [Phase 1 Vanilla/worker comparison](evals/2026-11-03-worker-easy/README.md)
+  retains six attempts per arm, separate correctness/completion and measured
+  request/time budgets. Failed and recovered-error attempts remain included;
+  missing token totals stay unknown. No product default is promoted.
+
 - `harness.py baseline --arm worker --reference PATH` collects the thin worker
   against a retained Vanilla batch. It rejects shared-input drift, verifies
   native worker activation and runtime hashes, and keeps mode records private.

@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/Users/pauleveritt/.local/bin/pi",
+    "-p",
+    "--no-approve",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--provider",
+    "llamacpp",
+    "--model",
+    "Mellum2.1-12B-A2.5B-Thinking",
+    "--session-id",
+    "a8dc8385-b7a7-4ac2-b410-1d44bd04e282",
+    "--session-dir",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-02/20261103T232852Z-easy-b2920a/sessions",
+    "-e",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/extensions/mellum-worker.ts",
+    "-e",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-02/20261103T232852Z-easy-b2920a/record-pi.mjs",
+    "Implement Phase 1 \u2014 Home Page."
+  ],
+  "arm": "worker",
+  "extras": [],
+  "context_files": false,
+  "arm_env": {
+    "MELLUM_MODE": "1"
+  },
+  "mode_runs_file": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-02/20261103T232852Z-easy-b2920a/mellum-mode-runs.jsonl"
+}

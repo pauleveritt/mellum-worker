@@ -1,0 +1,23 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-03",
+  "asset": "trusted-worker-easy-20261103T232449Z-fa037d.tar.gz",
+  "source_commit": "378217f0b10b588a702c1ccb409488a7f00531b0",
+  "reference_sha256": "f422fcd767969b7cad5c14881cc38dce4a4ddd1a2202fb5314661e65cecb40e8",
+  "sha256": "f505d5470ef70f29e3a17ddd7450a4e9fefa074755ffbd4d0c4d9aa344d632aa",
+  "size_bytes": 87735329,
+  "scope": [
+    "complete worker batch with sessions/traces/profiles/checker output/final workspaces",
+    "full collection console",
+    "model-free native activation qualification",
+    "audit tools and instrument verification/review ledger"
+  ],
+  "archive_policy": "Tar preserves symlinks. No model weights, SSH keys, user credential stores or user-owned FIXES file included. Existing Vanilla asset/tag untouched.",
+  "archive_integrity": {
+    "members": 18198,
+    "symlinks_preserved": 18,
+    "critical_files_byte_verified": 46
+  },
+  "published_download_verified": true,
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-03/trusted-worker-easy-20261103T232449Z-fa037d.tar.gz",
+  "download_command": "gh release download research-2026-11-03 --repo pauleveritt/mellum-worker --pattern trusted-worker-easy-20261103T232449Z-fa037d.tar.gz --dir raw"
+}

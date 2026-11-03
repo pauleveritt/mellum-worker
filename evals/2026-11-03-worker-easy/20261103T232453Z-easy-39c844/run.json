@@ -1,0 +1,76 @@
+{
+  "suite": "easy",
+  "arm": "worker",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": {
+    "seconds": 180.4,
+    "limit": 180,
+    "command": "uv run python -m uvicorn app:app --reload"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 21,
+  "turns": 21,
+  "tool_calls": 21,
+  "tool_errors": 2,
+  "context": 2278,
+  "output_tokens": 9975,
+  "wall": 235.243,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 27184,
+      "pgid": null,
+      "command": "uv run python -m uvicorn app:app --reload"
+    },
+    {
+      "pid": 27186,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-01/20261103T232453Z-easy-39c844/workspace/.venv/bin/python3 -m uvicorn app:app --reload"
+    },
+    {
+      "pid": 27187,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-01/20261103T232453Z-easy-39c844/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 27188,
+      "pgid": null,
+      "command": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261103T232449Z-fa037d/attempt-01/20261103T232453Z-easy-39c844/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": [],
+  "completion": "stalled",
+  "elapsed_seconds": 235.243,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": -9
+}

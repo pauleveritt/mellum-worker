@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.32
 cycle: 1
-lifecycle: active
+lifecycle: closed
 ---
 
 # Phase 1 baseline comparison implementation plan
@@ -17,7 +17,7 @@ baseline.py/harness.py. Shared inputs are checked against the saved reference;
 execution, scoring, limits and failure accounting are reused unchanged.
 
 **Tech stack:** existing Python via uv, Pi 1.4.0, recorder, Runpod llama.cpp.
-**Spec:** [authorized protocol](../research/2026-11-03-phase1-worker-comparison.md).
+**Spec:** [authorized protocol](../../research/2026-11-03-phase1-worker-comparison.md).
 The user approved this scope in chat; no new model/remedy behavior is designed.
 
 ## Global constraints
@@ -38,17 +38,17 @@ collector refactor; accidental global worker-record writes.
 Consumes existing collector, reference manifest and worker implementation.
 Produces arm-aware manifest/identity/reference checks and CLI selection.
 
-- [ ] Add failing tests for worker selection/provenance, mode activation, exact
+- [x] Add failing tests for worker selection/provenance, mode activation, exact
   extension order, wrong-arm resume, shared-input mismatch and reference identity.
   Expected: new cases fail before implementation.
-- [ ] Add baseline --arm worker --reference PATH; default Vanilla unchanged.
+- [x] Add baseline --arm worker --reference PATH; default Vanilla unchanged.
   Validate reference scope/completion/six counted and shared material. Allow only
   reviewed harness/baseline hash changes plus explicit worker arm/source delta.
   Pin supplemental Pi runtime hashes from the retained reference; record launch
   env and keep worker's own mode records private to the run. No score changes.
-- [ ] Run baseline/runner tests and npm test; docs caps; update docs/changelog/FIXES.
+- [x] Run baseline/runner tests and npm test; docs caps; update docs/changelog/FIXES.
   Expected: complete existing and new checks pass; dry-run shows exact arm.
-- [ ] Commit/checkpoint; request one fresh review of only this instrument delta.
+- [x] Commit/checkpoint; request one fresh review of only this instrument delta.
   Reproduce/fix Important issues test-first; no counted runs before it passes.
 
 ## Task 2: Collect, compare and preserve
@@ -56,12 +56,29 @@ Produces arm-aware manifest/identity/reference checks and CLI selection.
 Consumes verified collector, compatibility report and frozen reference.
 Produces six counted worker records and a descriptive Phase 1 comparison.
 
-- [ ] Preflight live backend/runtime/shared inputs, qualify Easy both ways, check
+- [x] Preflight live backend/runtime/shared inputs, qualify Easy both ways, check
   ports/ownership. Print dry-run. Expected: compatible reference; no model call.
-- [ ] Run visibly under caffeinate. Review ambiguous errors explicitly and count
+- [x] Run visibly under caffeinate. Review ambiguous errors explicitly and count
   model failures/stalls. Expected: six counted worker attempts, no cherry-picking.
-- [ ] Audit runtime/activation/extensions/settings, grading order and cleanup.
+- [x] Audit runtime/activation/extensions/settings, grading order and cleanup.
   Compare quality counts and request/elapsed medians; token incompleteness stays
   explicit. Preserve all artifacts/raw evidence with checksums and unique assets.
-- [ ] Update FIXES/changelog/roadmap, add Result and archive plan. Verify docs caps,
+- [x] Update FIXES/changelog/roadmap, add Result and archive plan. Verify docs caps,
   npm test and docs build as appropriate. Commit/push the compact comparison.
+
+## Result
+
+2026-11-03: collector instrument378217f adds strict worker/reference selection,
+native activation/runtime/source provenance and private mode destinations without
+changing model, remedies, scoring or limits. One fresh review found one Important
+post-execution integrity gap, fixed with a sixth-session drift regression
+RED→GREEN; npm635/635 and docs caps passed before collection.
+
+Six worker attempts retained, no exclusions/replacements:5/6 hidden-all-pass,6/6
+health,1settled/5stalled,0passing-and-settled. Vanilla:4/6,6/6,2/4,1 respectively.
+Worker requests137total/19.5median versus91/15; elapsed1246.636s/224.7755s versus
+901.611s/202.0585s. Unknown output totals3worker/2Vanilla; no full token comparison.
+All137 worker requests, native clamp, activation and cleanup audited. No default
+promoted; existing foreground-server/ineffective-self-check pathologies cover the
+observations and no new terminology was introduced. Compact scorecard and raw
+evidence provenance: [retained comparison](../../../../evals/2026-11-03-worker-easy/README.md).
