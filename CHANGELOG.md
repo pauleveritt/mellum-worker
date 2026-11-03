@@ -4,6 +4,15 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Added
+
+- **`prompt/concept-sketch` — coarse-to-fine, the Next-Concept Modeling idea for
+  code.** Switch it on with `/remedy on prompt/concept-sketch`: it tells the
+  model to sketch every file first (signatures and stubs, a plan), then fill the
+  bodies one at a time, instead of finishing one file before the next exists.
+  This is the prose v1, a lead; the enforced version is designed in the
+  next-concept research note.
+
 ### Changed
 
 - **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
