@@ -77,7 +77,10 @@ change outside this folder:
 
 - `install.sh` puts `uv`, `llama-server` and `pi` in `~/.local/bin`, and
   installs this package into your own Pi (`~/.pi/agent/settings.json`). Undo
-  the package with `pi remove <this folder>`.
+  the package with `pi remove <this folder>`. The Pi version is pinned in
+  `scripts/pi-pin.env`, the one place it lives: `install.sh` and `install.bat`
+  install that version, and `run.sh` warns when the `pi` on your `PATH` is a
+  different one.
 - If your Node.js is older than 24, `install.sh` adds a private one under
   `~/.local/share/mellum-node`. Only `install.sh` and `run.sh` use it; your own
   `node` stays as it is.

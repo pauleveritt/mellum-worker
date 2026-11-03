@@ -20,6 +20,14 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The Pi version lives in one file, and `run.sh` says when you are not on
+  it.** `scripts/pi-pin.env` now holds `PI_VERSION` (1.4.0) and `PI_PACKAGE`;
+  `install.sh`, `run.sh` and `install.bat` read it instead of repeating the
+  number, so the three cannot drift apart. `run.sh` prints a warning naming both
+  versions and the `npm install` line when the `pi` on `PATH` is a different
+  one — before, pi 1.1.0 quietly loaded the course's extensions under an API the
+  repo was not measured on, with nothing said.
+
 - **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
   name "next-concept modelling" from an unrelated text-generation paper
   (HazyResearch/ncm) but only re-runs an acceptance test until it passes, so it
@@ -37,6 +45,12 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+
+- **The Windows installer installs the pinned Pi and the harness.**
+  `install.bat` ran `npm install -g` with no version, so a fresh clone got
+  whatever npm's `latest` happened to be, and it never registered the package,
+  so the Pi it installed had no `/mellum`. It now installs the pinned version
+  and runs `pi install` on the clone, like `install.sh`.
 
 - **`/challenge submit` works for contributors, not only the repo owner.** It
   pushed the branch straight to the upstream repo, which a contributor cannot

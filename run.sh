@@ -12,6 +12,11 @@ export PATH="$HOME/.local/bin:$PATH"
 # install.sh keeps a private Node.js here when the system one is too old for Pi.
 [ -x "$HOME/.local/share/mellum-node/bin/node" ] && export PATH="$HOME/.local/share/mellum-node/bin:$PATH"
 
+# Say so when the pi about to load this repo's extensions is not the pinned
+# one, rather than running three minors behind in silence.
+source "$REPO_DIR/scripts/pi-pin.sh"
+warn_unpinned_pi
+
 # llama.cpp's -hf downloads the GGUF into the Hugging Face hub cache; the blob
 # grows there while it downloads. TOTAL_MB is the Q4_K_M size, so the bar is
 # approximate — health, not size, decides when the server is actually ready.
@@ -98,7 +103,7 @@ uv run scripts/backend.py status || true
 # starts Pi in that project with the same extensions, plus the remedy units of
 # MELLUM_REMEDY (unit names or preset:<name>, comma-separated).
 export PI_CODING_AGENT_DIR="$REPO_DIR/learn/code/profile"
-export PI_SKIP_VERSION_CHECK=1   # stay on the pinned 1.4.0; hide the update nag
+export PI_SKIP_VERSION_CHECK=1   # stay on the pinned version (scripts/pi-pin.env)
 
 PROJECT_ARG="${1:-$REPO_DIR}"
 [ $# -gt 0 ] && shift

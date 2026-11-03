@@ -25,6 +25,10 @@ has() {
 # llama.cpp learned Mellum's architecture in build 9482.
 MIN_BUILD=9482
 
+# The Pi pin (PI_PACKAGE, PI_VERSION) and pi_version(); the same file
+# run.sh checks against and install.bat reads.
+source "$REPO_DIR/scripts/pi-pin.sh"
+
 # Prebuilt Linux releases (LLAMA_TAG, flavor detection, install_llama_release).
 # shellcheck source=scripts/llama-release.sh
 source "$REPO_DIR/scripts/llama-release.sh"
@@ -124,8 +128,6 @@ retire_old() {
 # This repo and Pi need Node.js 24 or newer; npm comes with it.
 MIN_NODE=24
 NODE_DIR="$HOME/.local/share/mellum-node"
-PI_PACKAGE="@earendil-works/pi-coding-agent"
-PI_VERSION="1.4.0"   # the Pi version the course ships and develops against
 
 node_major() {
     local version
@@ -172,7 +174,6 @@ ensure_node() {
 }
 
 # Pi is an npm package. --prefix puts it in ~/.local/bin, so it never needs sudo.
-pi_version() { pi --version 2>/dev/null | tr -d '[:space:]'; }
 
 # Pi must be the pinned version this repo is measured against, not just any pi.
 ensure_pi() {

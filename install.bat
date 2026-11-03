@@ -6,7 +6,17 @@ set "MIN_BUILD=9482"
 set "LLAMA_ID=ggml.llamacpp"
 rem This repo and Pi need Node.js 24 or newer; npm comes with it.
 set "MIN_NODE=24"
-set "PI_PACKAGE=@earendil-works/pi-coding-agent"
+rem The Pi pin (scripts/pi-pin.env): one source shared with install.sh and run.sh.
+set "PI_PACKAGE="
+set "PI_VERSION="
+for /f "usebackq tokens=1,* delims==" %%A in ("%~dp0scripts\pi-pin.env") do (
+    if /i "%%A"=="PI_PACKAGE" set "PI_PACKAGE=%%B"
+    if /i "%%A"=="PI_VERSION" set "PI_VERSION=%%B"
+)
+if not defined PI_VERSION (
+    echo [ERROR] Could not read scripts\pi-pin.env.
+    exit /b 1
+)
 
 call :ensure uv.exe astral-sh.uv
 if errorlevel 1 exit /b 1
@@ -24,6 +34,9 @@ call :check_node
 if errorlevel 1 exit /b 1
 
 call :ensure_pi
+if errorlevel 1 exit /b 1
+
+call :ensure_harness
 if errorlevel 1 exit /b 1
 
 echo.
@@ -80,31 +93,64 @@ echo Then open a new terminal and rerun this script.
 exit /b 1
 
 rem Pi is an npm package; npm is a batch file, so it must be run with "call".
+rem It must be the pinned version this repo is measured against, not just any pi.
 :ensure_pi
+set "PI_HAVE="
 where /q pi.cmd
 if not errorlevel 1 (
-    echo [OK] pi is already available.
+    for /f "delims=" %%V in ('pi --version 2^>nul') do set "PI_HAVE=%%V"
+)
+if /i "%PI_HAVE%"=="%PI_VERSION%" (
+    echo [OK] pi %PI_VERSION% already installed.
     exit /b 0
 )
-echo [MISSING] pi was not found on PATH.
+if defined PI_HAVE (
+    echo [CHANGE] pi %PI_HAVE% is not the pinned %PI_VERSION%; installing %PI_VERSION%.
+) else (
+    echo [MISSING] pi was not found on PATH; installing %PI_VERSION%.
+)
 where /q npm.cmd
 if errorlevel 1 (
-    echo [ACTION] Node.js was just installed; open a new terminal and rerun to install Pi.
+    echo [ACTION] Node.js is required to install Pi; open a new terminal and rerun.
     exit /b 1
 )
-echo Installing %PI_PACKAGE%...
-call npm install -g %PI_PACKAGE%
+echo Installing %PI_PACKAGE%@%PI_VERSION%...
+call npm install -g %PI_PACKAGE%@%PI_VERSION%
 if %errorlevel% neq 0 (
-    echo [ERROR] Installation of %PI_PACKAGE% failed.
+    echo [ERROR] Installation of %PI_PACKAGE%@%PI_VERSION% failed.
     echo Review the npm message above.
     exit /b 1
 )
 where /q pi.cmd
 if errorlevel 1 (
-    echo [OK] Installed %PI_PACKAGE%. Open a new terminal before running pi.
+    echo [OK] Installed %PI_PACKAGE%@%PI_VERSION%. Open a new terminal before running pi.
     exit /b 0
 )
-echo [OK] Installation of %PI_PACKAGE% completed.
+set "PI_HAVE="
+for /f "delims=" %%V in ('pi --version 2^>nul') do set "PI_HAVE=%%V"
+if /i "%PI_HAVE%"=="%PI_VERSION%" (
+    echo [OK] Installation of %PI_PACKAGE%@%PI_VERSION% completed.
+) else (
+    echo [WARN] pi reports %PI_HAVE%, expected %PI_VERSION%.
+)
+exit /b 0
+
+rem Give base Pi the mellum-worker harness (/mellum) from this clone, so the Pi
+rem the learner runs is the worker, not bare Pi.
+:ensure_harness
+set "HARNESS="
+for /f "delims=" %%L in ('call pi list 2^>nul ^| findstr /i mellum-worker') do set "HARNESS=1"
+if defined HARNESS (
+    echo [OK] mellum-worker harness already installed in Pi.
+    exit /b 0
+)
+echo Installing the mellum-worker harness into Pi (from this clone)...
+call pi install "%~dp0."
+if errorlevel 1 (
+    echo [WARN] harness install failed; run it yourself: pi install "%~dp0."
+    exit /b 0
+)
+echo [OK] Installed the mellum-worker harness into Pi.
 exit /b 0
 
 rem Every llama-server on PATH must be new enough, or an old one that comes
