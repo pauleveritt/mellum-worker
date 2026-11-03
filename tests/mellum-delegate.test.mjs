@@ -178,6 +178,7 @@ test("phaseCmd is cumulative and phaseWorkerBrief freezes the oracle and warns f
 	assert.match(b0, /phase 1 of 2/);
 	assert.match(b0, /do NOT edit any tests\/test_phase\*\.py/i);
 	assert.doesNotMatch(b0, /do NOT break/i, "phase 1 has no earlier phase to break");
+	assert.match(b0, /only inside this directory/i, "the worker is scoped to its own directory");
 	const b1 = phaseWorkerBrief(paths, 1);
 	assert.match(b1, /phase 2 of 2/);
 	assert.match(b1, /do NOT break them/i);

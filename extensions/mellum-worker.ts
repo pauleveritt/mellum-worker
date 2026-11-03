@@ -222,6 +222,7 @@ export function authorPhasesPrompt(task: string): string {
 export const WORKER_BRIEF =
 	`Read BRIEF.md and ${ACCEPTANCE_TEST} in this directory, then implement the solution until the ` +
 	`command \`${ACCEPTANCE_CMD}\` passes. Do NOT edit ${ACCEPTANCE_TEST} — it is the frozen oracle. ` +
+	"Work only inside this directory — do NOT read, search for, or copy files outside it. " +
 	"Run the command yourself until every test passes, then stop.";
 
 /** Verbose when MELLUM_DELEGATE_VERBOSE=1: each stage is labelled and its child output streamed. */
@@ -481,8 +482,9 @@ export function phaseWorkerBrief(paths: string[], i: number): string {
 		`This is phase ${i + 1} of ${paths.length}. Read BRIEF.md for the overall goal, then implement the ` +
 		`solution so this phase's acceptance test passes:\n  ${paths[i]}\n` +
 		(i > 0 ? "Earlier phases are already built and their tests pass — do NOT break them. " : "") +
-		`Do NOT edit any ${PHASE_TEST_DIR}/test_phase*.py file; they are the frozen oracle. Run this exact ` +
-		`command until every test passes, then stop:\n  ${phaseCmd(paths, i)}`
+		`Do NOT edit any ${PHASE_TEST_DIR}/test_phase*.py file; they are the frozen oracle. ` +
+		"Work only inside this directory — do NOT read, search for, or copy files outside it. " +
+		`Run this exact command until every test passes, then stop:\n  ${phaseCmd(paths, i)}`
 	);
 }
 
