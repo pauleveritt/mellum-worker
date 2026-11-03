@@ -141,6 +141,41 @@ test("a spawned child does NOT re-delegate on /mellum <task>", async () => {
 	delete process.env.MELLUM_WORKER_CHILD;
 });
 
+test("streamTurn renders tool calls and text from content blocks when verbose", async () => {
+	const { streamTurn } = await load();
+	const orig = process.stdout.write.bind(process.stdout);
+	let buf = "";
+	process.stdout.write = (s) => { buf += s; return true; };
+	process.env.MELLUM_DELEGATE_VERBOSE = "1";
+	try {
+		streamTurn({ role: "assistant", content: [
+			{ type: "thinking", text: "I will create app.py" },
+			{ type: "toolCall", name: "write", arguments: { path: "app.py" } },
+			{ type: "toolCall", name: "bash", arguments: { command: "uv run pytest -q" } },
+			{ type: "text", text: "done" },
+		] });
+	} finally {
+		process.stdout.write = orig;
+		delete process.env.MELLUM_DELEGATE_VERBOSE;
+	}
+	assert.match(buf, /💭 I will create app\.py/);
+	assert.match(buf, /→ write app\.py/);
+	assert.match(buf, /→ bash uv run pytest -q/);
+	assert.match(buf, /done/);
+	assert.doesNotMatch(buf, /· \(turn\)/, "has real content, so no bare-turn fallback");
+});
+
+test("streamTurn is silent when not verbose", async () => {
+	const { streamTurn } = await load();
+	const orig = process.stdout.write.bind(process.stdout);
+	let buf = "";
+	process.stdout.write = (s) => { buf += s; return true; };
+	delete process.env.MELLUM_DELEGATE_VERBOSE;
+	try { streamTurn({ role: "assistant", content: [{ type: "text", text: "x" }] }); }
+	finally { process.stdout.write = orig; }
+	assert.equal(buf, "");
+});
+
 test("withDelegateNudge appends the nudge to user messages only", async () => {
 	const { withDelegateNudge } = await load();
 	const out = withDelegateNudge({

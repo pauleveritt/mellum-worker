@@ -16,13 +16,19 @@ Versions match git tags; pin one in both install lines.
   implements). A spawned worker child sets `MELLUM_WORKER_CHILD=1` and gets
   neither the tool nor the nudge, so it cannot delegate to itself (no recursion).
   Typing `/mellum <task>` in the primary now runs the **full delegation loop**:
-  an architect pass writes the handover — a failing acceptance test
-  (`tests/test_acceptance.py`) and a `BRIEF.md` — from the task alone, that test
+  an architect pass writes the handover — a **complete** failing acceptance test
+  (`tests/test_acceptance.py`, asserting every requirement in the spec, not a
+  200-and-a-tagline smoke check) and a `BRIEF.md` — from the task alone, that test
   is frozen read-only (the worker cannot weaken its own oracle), the bare worker
   runs it to pass, and the acceptance test is the verdict. So `/mellum do the
   task` generates the handover and runs it to green on its own; the `delegate`
   tool stays the bare run-this-brief path for a primary that already wrote the
   test. Only the spawned child runs the task in-session, as before.
+  `MELLUM_DELEGATE_VERBOSE=1` makes the loop watchable: each stage is labelled,
+  the spawned architect and worker inherit the terminal and stream every turn
+  live (💭 thinking, `→` tool calls, replies), and the authored handover is
+  shown inline. The loop reports a `turns/wall` line per stage (architect ·
+  worker · acceptance · total) from the run records and parent timing.
 
 - **A lesson's Solution step shows the remedy's own code.** The `/lesson` panel
   now reads the remedy unit's source (e.g. `remedies/prompt/name-the-layout.ts`)

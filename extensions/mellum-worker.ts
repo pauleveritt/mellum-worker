@@ -124,17 +124,24 @@ export function registerDelegate(pi: any, run: typeof spawnWorker = spawnWorker)
 export const ACCEPTANCE_TEST = "tests/test_acceptance.py";
 export const ACCEPTANCE_CMD = "uv run --with pytest python -m pytest tests/test_acceptance.py -q";
 
-/** The architect prompt: write the handover (a failing acceptance test + a brief), never the code. */
+/** The architect prompt: write the handover (a COMPLETE failing acceptance test + a brief), never the code. */
 export function authorPrompt(task: string): string {
 	return (
 		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code.\n" +
-		"Read the task below and any spec or files already in this directory, decide the layout, then " +
-		"write EXACTLY two files and nothing else:\n" +
-		`1. ${ACCEPTANCE_TEST} — ONE acceptance test that defines "done" for this task. It must FAIL now, ` +
-		"because the implementation does not exist yet, and it must cover what the task actually requires.\n" +
+		"Read the task below AND every spec or notes file already in this directory (for example a " +
+		"specs/ folder and AGENTS.md). Enumerate EVERY concrete requirement the spec states — every " +
+		"bullet, attribute, exact value, route, element, header and behaviour it calls for. Then write " +
+		"EXACTLY two files and nothing else:\n" +
+		`1. ${ACCEPTANCE_TEST} — a COMPLETE acceptance test that defines "done". Assert EVERY requirement ` +
+		"you enumerated, each as its own explicit check, so the test cannot pass while any stated " +
+		"requirement is missing or wrong. Be exhaustive, not representative — do NOT settle for one or two " +
+		"smoke checks (a 200 and a bit of text is not enough). It must FAIL now, because the implementation " +
+		"does not exist yet.\n" +
 		`2. BRIEF.md — 2 to 4 sentences: what to build, which files, and this exact command to make pass:\n` +
 		`   ${ACCEPTANCE_CMD}\n` +
-		"Do NOT create, edit or stub any implementation file. Stop once both files are written.\n\n" +
+		"Before you stop, re-read the spec and confirm every requirement has a matching assertion; add any " +
+		"you missed. Do NOT create, edit or stub any implementation file. Stop only once both files are " +
+		"written and the test covers the whole spec.\n\n" +
 		`Task: ${task}`
 	);
 }
@@ -145,31 +152,84 @@ export const WORKER_BRIEF =
 	`command \`${ACCEPTANCE_CMD}\` passes. Do NOT edit ${ACCEPTANCE_TEST} — it is the frozen oracle. ` +
 	"Run the command yourself until every test passes, then stop.";
 
-/** Spawn `pi` headless as a worker child (no nested delegation), capturing its trimmed output. */
-function runPi(argv: string[]): Promise<string> {
+/** Verbose when MELLUM_DELEGATE_VERBOSE=1: each stage is labelled and its child output streamed. */
+const verbose = () => process.env.MELLUM_DELEGATE_VERBOSE === "1";
+
+/** When verbose, stream one assistant turn — a thinking snippet, its tool calls, any reply text —
+ * to stdout, so a spawned architect/worker child shows its work live through the parent's tee. */
+export function streamTurn(message: any): void {
+	if (!verbose() || !message || message.role !== "assistant") return;
+	const one = (s: any) => String(s ?? "").replace(/\s+/g, " ").trim();
+	const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + "…" : s);
+	let printed = false;
+	const line = (s: string) => { process.stdout.write(s + "\n"); printed = true; };
+	// Thinking carried on the message itself (string form).
+	const think = one(message.reasoning_content ?? message.reasoning);
+	if (think) line(`  💭 ${clip(think, 220)}`);
+	// Pi carries tool calls, text and thinking as CONTENT BLOCKS on the assistant message
+	// ({type:"toolCall", name, arguments}, {type:"text", text}, {type:"thinking"/"reasoning"}).
+	const blocks: any[] = Array.isArray(message.content) ? message.content : [];
+	for (const b of blocks) {
+		if (!b || typeof b !== "object") continue;
+		const type = String(b.type ?? "").toLowerCase();
+		if (type.includes("toolcall")) {
+			const name = b.name ?? b.function?.name ?? "tool";
+			const a = b.arguments ?? b.input ?? {};
+			const detail = a?.path ?? a?.command ?? (typeof a === "string" ? a : Object.values(a ?? {})[0] ?? "");
+			line(`  → ${name} ${clip(one(detail), 100)}`);
+		} else if (type.includes("think") || type.includes("reason")) {
+			const t = one(b.text ?? b.thinking ?? b.content);
+			if (t) line(`  💭 ${clip(t, 220)}`);
+		} else if (type === "text" && typeof b.text === "string") {
+			const t = one(b.text);
+			if (t) line(`  ${clip(t, 240)}`);
+		}
+	}
+	if (!blocks.length && typeof message.content === "string") {
+		const t = one(message.content);
+		if (t) line(`  ${clip(t, 240)}`);
+	}
+	if (!printed) line("  · (turn)");
+}
+
+/** Spawn `pi` headless as a worker child (no nested delegation).
+ * Default: capture the child's output (piped) and return its trimmed tail.
+ * Verbose: the child INHERITS this process's stdout/stderr (the terminal), so its per-turn
+ * streaming flushes live instead of block-buffering behind a pipe; the report then comes from
+ * the run records and the acceptance test, not captured text. */
+function runPi(argv: string[], label = ""): Promise<string> {
 	return new Promise((resolve) => {
-		let out = "";
+		const v = verbose();
+		if (v && label) process.stdout.write(`\n━━━ ${label} ━━━\n`);
 		let child;
 		try {
-			child = spawn("pi", argv, { cwd: process.cwd(), env: { ...process.env, [CHILD_ENV]: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+			child = spawn("pi", argv, {
+				cwd: process.cwd(),
+				env: { ...process.env, [CHILD_ENV]: "1" },
+				stdio: v ? ["ignore", "inherit", "inherit"] : ["ignore", "pipe", "pipe"],
+			});
 		} catch (e) {
 			return resolve(`could not start pi — ${(e as Error).message}`);
 		}
-		child.stdout?.on("data", (b) => { out += b.toString(); });
-		child.stderr?.on("data", (b) => { out += b.toString(); });
+		let out = "";
+		if (!v) {
+			child.stdout?.on("data", (b) => { out += b.toString(); });
+			child.stderr?.on("data", (b) => { out += b.toString(); });
+		}
 		child.on("error", (e) => resolve(`could not start pi — ${e.message}`));
-		child.on("close", () => resolve(out.trim().slice(-4000) || "(pi finished but produced no output)"));
+		child.on("close", () => resolve(v ? "(streamed live to the terminal above)" : (out.trim().slice(-4000) || "(pi finished but produced no output)")));
 	});
 }
 
-/** The architect pass: a plain headless agent that writes the handover, not the code. */
+/** The architect pass: this extension headless running `/mellum <architect prompt>`, so its span is
+ * recorded (turns, wall) like the worker's. It still only writes the handover, never the code. */
 export function spawnAuthor(task: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", authorPrompt(task)]);
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPrompt(task)}`], "architect: writing the handover (failing test + brief)");
 }
 
 /** The worker pass: this extension headless, running `/mellum <brief>` to implement to green. */
 export function spawnWorker(brief: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`]);
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`], "worker: implementing to pass");
 }
 
 /** Run a shell command in the cwd; resolve whether it exited 0 and its trimmed output. */
@@ -195,6 +255,25 @@ export interface DoTaskDeps {
 	acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }>;
 }
 
+/** The newest worker/architect run record for `cwd` (turns = requests, wall seconds, and an id to
+ * tell two spans apart), read from the mode-runs file. Best-effort: undefined if none was written. */
+function latestRunStats(cwd: string): { turns: number; wall?: number; id: string } | undefined {
+	try {
+		const file = modeRunsFile(process.env, process.env.HOME || homedir());
+		if (!file || !existsSync(file)) return undefined;
+		const lines = readFileSync(file, "utf8").trim().split("\n");
+		for (let i = lines.length - 1; i >= 0; i--) {
+			let r: any;
+			try { r = JSON.parse(lines[i]); } catch { continue; }
+			if (r?.cwd && resolve(r.cwd) === resolve(cwd)) {
+				const wall = r.wallSeconds ?? (r.endedAt && r.startedAt ? Math.round((r.endedAt - r.startedAt) / 1000) : undefined);
+				return { turns: r.requests, wall, id: String(r.startedAt ?? r.endedAt ?? i) };
+			}
+		}
+	} catch {}
+	return undefined;
+}
+
 /**
  * The delegation loop for a whole task: the architect writes the handover (a failing acceptance
  * test + a brief), the oracle is frozen read-only so the worker cannot weaken it, the bare worker
@@ -205,27 +284,51 @@ export async function doTask(task: string, deps: DoTaskDeps = {}): Promise<strin
 	const author = deps.author ?? spawnAuthor;
 	const worker = deps.worker ?? spawnWorker;
 	const acceptance = deps.acceptance ?? runAcceptance;
-	const testPath = resolve(process.cwd(), ACCEPTANCE_TEST);
+	const cwd = process.cwd();
+	const testPath = resolve(cwd, ACCEPTANCE_TEST);
+	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
 
+	const t0 = Date.now();
 	const authorReport = await author(task);
+	const authorWall = secs(t0);
+	const authorStats = latestRunStats(cwd);
 	if (!existsSync(testPath)) {
 		return `delegate: the architect did not write ${ACCEPTANCE_TEST}, so there is no handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	}
+	// When verbose, show the handover the architect wrote — the test and the brief it hands over.
+	if (verbose()) {
+		const show = (p: string, title: string) => { try { process.stdout.write(`\n──── ${title} ────\n${readFileSync(resolve(cwd, p), "utf8")}\n`); } catch {} };
+		show(ACCEPTANCE_TEST, ACCEPTANCE_TEST);
+		show("BRIEF.md", "BRIEF.md");
 	}
 	// Freeze the oracle: the worker must not edit or weaken the acceptance test.
 	let froze = false;
 	try { chmodSync(testPath, 0o444); froze = true; } catch {}
+	const t1 = Date.now();
 	let workerReport: string;
 	try {
 		workerReport = await worker(WORKER_BRIEF);
 	} finally {
 		if (froze) try { chmodSync(testPath, 0o644); } catch {}
 	}
+	const workerWall = secs(t1);
+	// The worker's record is the newest for cwd only if it differs from the architect's span.
+	const ws = latestRunStats(cwd);
+	const workerStats = ws && ws.id !== authorStats?.id ? ws : undefined;
+	const t2 = Date.now();
 	const { passed, output } = await acceptance(ACCEPTANCE_CMD);
+	const acceptWall = secs(t2);
+	const totalWall = secs(t0);
+
+	const stage = (name: string, stats: { turns: number } | undefined, wall: number) =>
+		`${name} ${stats?.turns != null ? `${stats.turns} turns` : "turns n/a"}/${wall}s`;
+	const clip = verbose() ? (s: string) => s : (s: string) => s.slice(-1200);
 	return [
 		`handover: ${ACCEPTANCE_TEST} + BRIEF.md written by the architect (the worker did not author the test).`,
 		`acceptance: ${passed ? "PASS ✅" : "FAIL ❌"}  (${ACCEPTANCE_CMD})`,
-		passed ? "" : `--- acceptance output (tail) ---\n${output.slice(-1200)}`,
-		`--- worker report (tail) ---\n${workerReport.slice(-1200)}`,
+		`turns/wall: ${stage("architect", authorStats, authorWall)} · ${stage("worker", workerStats, workerWall)} · acceptance ${acceptWall}s · total ${totalWall}s`,
+		passed && !verbose() ? "" : `--- acceptance output ---\n${clip(output)}`,
+		`--- worker report ---\n${clip(workerReport)}`,
 	].filter(Boolean).join("\n");
 }
 
@@ -810,6 +913,7 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		if (event?.message?.role === "assistant") {
 			if (typeof out === "number") span.outputTokens += out;
 			turnsSinceContext.push(event.message);
+			streamTurn(event.message); // live turn stream for a verbose delegation child
 		}
 		return undefined;
 	});
