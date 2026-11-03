@@ -10,6 +10,65 @@ backends: [llamacpp]
 
 # The Harness
 
+## Collect the trusted Vanilla Easy reference
+
+From the repository, inspect the fixed configuration, then collect:
+
+```bash
+uv run python learn/code/harness.py baseline --dry-run
+uv run python learn/code/harness.py baseline
+```
+
+This command selects Pi 1.4.0, Easy, Vanilla plus the recorder only, six counted
+sessions in sequence, fresh workspaces/profiles, grading, a 600-second deadline
+and a 180-second open-tool-call cutoff. The cutoff measures the age of one
+unfinished call, even if it keeps producing output. It does not resume a stalled
+session or add worker remedies.
+
+The inference server must already be running. This collection uses the qualified
+Runpod backend in the shared configuration at
+`docs/superpowers/research/2026-11-03-runpod-qualification/config.json`.
+Its SSH tunnel maps Mac `127.0.0.1:8002` to Pod `127.0.0.1:18001`.
+The private profile copies the default model/sampling settings and changes only
+the transport URL to that frozen endpoint. The exploratory `run` command still
+uses the default profile's local port 8001; `scripts/backend.py start` starts
+that local backend, not the Runpod Pod. Do not replace an unrelated listener.
+Neither command automatically stops a running Pod or its billing.
+
+Preflight checks the live server and model, remote hardware, executable/library
+and weight hashes, resolved Pi and checker versions. A missing tunnel or identity
+mismatch stops before Pi launches. It never starts or stops another backend.
+The existing Easy grader must pass known-good and reject known-broken fixtures.
+
+Results live under ignored `runs/vanilla-easy-<timestamp>-<id>/`: `batch.json`
+holds shared provenance and all attempt classifications; `scorecard.md` has one
+row per attempt with hidden checks passed/total, code health, completion, model
+turns/provider requests, output tokens and launch-to-exit elapsed seconds.
+Elapsed excludes grading. A correct artifact can still be stalled. Checks that
+never executed say so; unknown usage and unchecked health remain explicit.
+Full traces, stdout, grader/checker output and final workspaces stay beside it.
+
+Resume a retained batch with:
+
+```bash
+uv run python learn/code/harness.py baseline --resume runs/vanilla-easy-<timestamp>-<id>
+```
+
+Resume rejects changed material inputs and never repeats a counted model failure.
+An infrastructure error, ambiguous provider error, identity failure or interrupted
+attempt pauses collection. Inspect its retained evidence, then classify the
+pending attempt with `--resume DIR --exclude RUN_ID --reason "evidence"` for a
+proven infrastructure failure, or `--resume DIR --count RUN_ID --reason "evidence"`
+for a valid model attempt. Stalls, deadlines and wrong artifacts count; they are
+not grounds for replacement. Recovery uses a shared lock and recorded ownership
+to reap abandoned processes. Failed cleanup blocks grading and further runs.
+
+The six-session reference applies only to its recorded task, grader, runtime and
+configuration. Historical GPU/parallel scripts and exploratory commands produce
+different measurements. Raw traces, stdout and patches do not belong in git.
+
+## Build a small harness
+
 Every Easy lesson ran one command and trusted the score it printed. Here you
 build a small harness of your own, a fresh directory, one Pi run and a score,
 to see what the provided one does for you.

@@ -117,10 +117,10 @@
     "reasoning": true,
     "thinking_format": "qwen-chat-template",
     "qualification_base_url": "http://127.0.0.1:8002/v1",
-    "collection_base_url": "http://127.0.0.1:8001/v1",
+    "collection_base_url": "http://127.0.0.1:8002/v1",
     "profile_sha256": "75504835b567a3d86793bc983edcb8cdb1dd0a069cb65f4bf06e5fd4a191ac80",
     "frequency_penalty": 0,
-    "collection_endpoint_status": "pending: Mac port 8001 has an unrelated local server; verify tunnel target before collection"
+    "collection_endpoint_status": "Use qualified tunnel on Mac 8002 to Pod 18001; preserve unrelated Mac 8001 listener."
   },
   "collection": {
     "status": "not_started",
@@ -177,5 +177,12 @@
     "evidence_directory": "runs/2026-11-03-runpod-qualification"
   },
   "reuse_rule": "Verify exact hardware class, VRAM, driver, image digest, backend revision/build options and runtime hashes, weight hash, server settings, client settings, concurrency and relevant host load before a comparison. An incompatible change requires requalification and an explicit baseline comparability decision.",
-  "frozen_at": "2026-11-03"
+  "frozen_at": "2026-11-03",
+  "connection": {
+    "host": "213.173.107.13",
+    "port": 43891,
+    "user": "root",
+    "key_path": "~/.ssh/id_rsa",
+    "known_hosts": "runs/2026-11-03-runpod-qualification/known_hosts"
+  }
 }

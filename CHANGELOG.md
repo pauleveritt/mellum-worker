@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- `uv run python learn/code/harness.py baseline` collects a pinned, resumable
+  six-session Vanilla Easy reference with a compact quality/budget scorecard,
+  strict backend preflight and shared provenance. Infrastructure failures pause
+  collection for explicit classification; model failures remain counted.
+
 - **A lesson's Solution step shows the remedy's own code.** The `/lesson` panel
   now reads the remedy unit's source (e.g. `remedies/prompt/name-the-layout.ts`)
   and shows it inline under the Solution header, and each easy lesson page links

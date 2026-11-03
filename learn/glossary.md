@@ -452,3 +452,17 @@ The process of adjusting a model’s weights using data.
 ### Vector
 
 A list of numbers used to represent information mathematically.
+
+### Trusted baseline
+
+A retained reference collection made only after the measuring instrument and
+hidden grader pass qualification. Its counted attempts share pinned inputs;
+model failures count, while proven infrastructure failures remain visible and
+are replaced. The Easy Vanilla protocol specifies six sequential cold sessions.
+
+### Scorecard
+
+The compact per-attempt report: hidden checks passed/total, code health,
+completion, model turns/provider requests, output tokens and execution elapsed
+time. Artifact correctness and completion are independent; diagnostics and shared
+provenance stay in the underlying records.

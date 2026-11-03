@@ -93,3 +93,165 @@ def test_cleanup_failure_stops_before_grading(tmp_path, monkeypatch):
     assert record['completion'] == 'error'
     assert record['checks_ran'] is False
     assert record['code_health'] == 'not checked'
+
+
+def _version_binary(tmp_path, name, version):
+    p = tmp_path / name
+    p.write_text(f'#!/bin/sh\necho {version}\n')
+    p.chmod(0o755)
+    return p
+
+
+def test_baseline_resolves_pin_and_fixed_arguments(tmp_path):
+    old = _version_binary(tmp_path, 'old-pi', '1.1.0')
+    pinned = _version_binary(tmp_path, 'pinned-pi', '1.4.0')
+    resolved = baseline.resolve_pinned_pi(harness.CODE.parents[1], candidates=[old, pinned])
+    assert resolved['path'] == str(pinned)
+    assert resolved['version'] == '1.4.0'
+    with pytest.raises(SystemExit, match='1.4.0|install'):
+        baseline.resolve_pinned_pi(harness.CODE.parents[1], candidates=[old])
+    args = harness.build_parser().parse_args(['baseline','--dry-run'])
+    assert args.dry_run
+    with pytest.raises(SystemExit):
+        harness.build_parser().parse_args(['baseline','--arm','worker'])
+
+
+def _flight_fixture(monkeypatch):
+    freeze = json.loads(baseline.FREEZE.read_text())
+    raw = harness.CODE.parents[1] / 'runs/2026-11-03-runpod-qualification'
+    # Complete HTTP fixture saved by qualification; not a model response oracle.
+    props = {'build_info':'b11669-620d2225c','total_slots':2,
+        'default_generation_settings':{'n_ctx':50176},'model_alias':freeze['model']['alias'],
+        'model_ftype':'Q4_K - Medium',
+        'model_path':'/workspace/mellum/cache/'+freeze['model']['file']}
+    responses = {'/health':{'status':'ok'}, '/props':props,
+        '/v1/models':{'data':[{'id':freeze['model']['alias'],'owned_by':'llamacpp'}]},
+        '/slots':[{'id':i,'n_ctx':50176,'is_processing':False} for i in range(2)]}
+    monkeypatch.setattr(baseline, 'read_json_url', lambda base, route: responses[route])
+    monkeypatch.setattr(baseline, 'verify_remote', lambda config: {
+        'gpu':freeze['hardware']['gpu'], 'vram_mib':32623, 'driver':'595.91.07',
+        'weight_sha256':freeze['model']['sha256'],
+        'runtime_sha256':freeze['backend']['runtime_sha256'],
+        'cmdline':baseline.expected_server_argv(config), 'gpu_uuid':'GPU-fixture'})
+    monkeypatch.setattr(baseline, 'checker_versions', lambda: {'ruff':'0.14.2','complexipy':'5.1.0','pyrefly':'0.38.0','pytest':'8.4.2'})
+    monkeypatch.setattr(baseline, 'resolve_pinned_pi', lambda *a, **k: {
+        'path':str(Path(sys.executable)), 'entry_path':str(Path(sys.executable).resolve()), 'version':'1.4.0'})
+    return responses
+
+
+@pytest.mark.parametrize('bad', ['health','omlx','model','build','slots','provenance'])
+def test_preflight_rejects_wrong_backend_or_model(monkeypatch, bad):
+    responses = _flight_fixture(monkeypatch)
+    if bad == 'health': responses['/health'] = {'status':'loading model'}
+    if bad == 'omlx': responses['/props'] = {'status':'ok'}
+    if bad == 'model': responses['/v1/models']['data'][0]['id'] = 'another-model'
+    if bad == 'build': responses['/props']['build_info'] = 'b99999-unknown'
+    if bad == 'slots': responses['/slots'][0]['n_ctx'] = 25088
+    if bad == 'provenance': monkeypatch.setattr(baseline, 'verify_remote', lambda _: {})
+    with pytest.raises(SystemExit, match='backend|identity|model|context|provenance|health|slot'):
+        baseline.preflight(Path(sys.executable), PROFILE)
+
+
+def test_manifest_freezes_shared_inputs(monkeypatch):
+    _flight_fixture(monkeypatch)
+    flight = baseline.preflight(Path(sys.executable), PROFILE)
+    manifest = baseline.create_manifest(harness.CODE.parents[1], flight)
+    material = manifest['material']
+    assert material['limits'] == {'deadline':600,'stall':180,'target':6,'concurrency':1}
+    assert material['pi']['version'] == '1.4.0'
+    assert material['backend']['props']['build_info'] == 'b11669-620d2225c'
+    assert material['effective_profile']['providers']['llamacpp']['models'][0]['samplingParams']['top_k'] == 20
+    assert material['effective_profile']['providers']['llamacpp']['baseUrl'] == 'http://127.0.0.1:8002/v1'
+    assert material['checkers']['pytest'] == '8.4.2'
+    assert material['hashes']['extensions/mellum-recorder.ts']
+    assert any('grader/' in key for key in material['hashes'])
+
+
+def test_resume_rejects_changed_inputs():
+    import copy
+    saved = {'material':{'limits':{'deadline':600},'hashes':{'recorder':'a'}},'created_at':'yesterday'}
+    current = copy.deepcopy(saved)
+    current['created_at'] = 'today'
+    baseline.validate_resume(saved, current)
+    current['material']['hashes']['recorder'] = 'b'
+    with pytest.raises(SystemExit, match='changed|mismatch'):
+        baseline.validate_resume(saved, current)
+
+
+def test_six_counts_failures_and_stalls():
+    attempts = []
+    for i, completion in enumerate(['settled','stalled','deadline','error','settled','stalled']):
+        record = {'completion':completion,'passed':False,'cleanup_ok':True,'requests':2,'provider_error':None}
+        state, reason = baseline.classify_attempt(record, identity_ok=True)
+        attempts.append({'run_id':str(i),'state':state,'reason':reason})
+    assert baseline.counted_attempts(attempts) == 6
+
+
+def test_infrastructure_stops_and_requires_exclusion_reason():
+    record = {'completion':'error','cleanup_ok':True,'requests':1,
+              'provider_error':{'classification':'infrastructure'}}
+    state, reason = baseline.classify_attempt(record, identity_ok=True)
+    attempts = [{'run_id':'r','state':state,'reason':reason}]
+    assert state == 'pending-review'
+    with pytest.raises(SystemExit, match='reason'):
+        baseline.resolve_attempt(attempts, 'r', 'excluded', '')
+    baseline.resolve_attempt(attempts, 'r', 'excluded', 'Confirmed HTTP 503 before model work')
+    assert baseline.counted_attempts(attempts) == 0
+    assert attempts[0]['reason'] == 'Confirmed HTTP 503 before model work'
+
+
+def test_resume_never_repeats_a_counted_attempt():
+    attempts = [{'run_id':'r','state':'counted','reason':'model stall'}]
+    with pytest.raises(SystemExit, match='counted|pending'):
+        baseline.resolve_attempt(attempts, 'r', 'excluded', 'want another try')
+    assert baseline.counted_attempts(attempts) == 1
+
+
+def test_trace_identity_and_recorder_only_launch(tmp_path):
+    pi = {'version':'1.4.0','entry_path':'/pinned/pi.js'}
+    launch = {'argv':['/pi','--no-context-files','--no-skills','--no-extensions','-e',str(tmp_path/'record-pi.mjs')],
+              'arm':'vanilla','extras':[],'context_files':False}
+    (tmp_path/'launch.json').write_text(json.dumps(launch))
+    (tmp_path/'trace.jsonl').write_text(json.dumps({'type':'instance_start','runId':tmp_path.name,
+        'runtime':{'piVersion':'1.4.0','entryPath':'/pinned/pi.js'}})+'\n')
+    assert baseline.verify_trace_identity(tmp_path, pi)
+    launch['argv'] += ['-e','worker.ts']
+    (tmp_path/'launch.json').write_text(json.dumps(launch))
+    assert not baseline.verify_trace_identity(tmp_path, pi)
+
+
+def test_collector_resumes_without_rerunning_completed_sessions(tmp_path, monkeypatch):
+    _flight_fixture(monkeypatch)
+    monkeypatch.setattr(harness, 'BASELINE_RUNS', tmp_path / 'runs', raising=False)
+    monkeypatch.setattr(harness, 'qualify', lambda _: (True, {'known-good':True,'known-broken':False}))
+    calls = []
+    def sessions(suite, **kwargs):
+        calls.append(kwargs)
+        run = harness.new_run(kwargs['runs_dir'], 'easy')
+        record = {'completion':'stalled','cleanup_ok':True,'requests':2,'turns':2,
+            'provider_error':None,'tests_passed':True,'passed':True,'checks_ran':True,
+            'checks_passed':4,'checks_total':4,'code_health':'pass','output_tokens':20,'elapsed_seconds':181}
+        (run/'run.json').write_text(json.dumps(record))
+        (run/'trace.jsonl').write_text(json.dumps({'type':'instance_start','runId':run.name,
+            'runtime':{'piVersion':'1.4.0','entryPath':str(Path(sys.executable).resolve())}})+'\n')
+        (run/'launch.json').write_text(json.dumps({'argv':['pi','--no-context-files','--no-skills',
+            '--no-extensions','-e',str(run/'record-pi.mjs')], 'arm':'vanilla','extras':[],'context_files':False}))
+        return [(run,)]
+    monkeypatch.setattr(harness, '_run_sessions', sessions)
+    assert harness.collect_baseline() == 0
+    batch = next((tmp_path/'runs').glob('vanilla-easy-*'))
+    manifest = json.loads((batch/'batch.json').read_text())
+    assert len(calls) == 6
+    assert all(c['arm']=='vanilla' and c['repeat']==1 and c['grade_run'] and c['stall']==180
+               and c['deadline']==600 for c in calls)
+    assert baseline.counted_attempts(manifest['attempts']) == 6
+    assert '4/4' in (batch/'scorecard.md').read_text()
+    assert harness.collect_baseline(resume=batch) == 0
+    assert len(calls) == 6
+
+
+def test_incomplete_attempt_cannot_be_counted_from_a_reason_alone():
+    attempts = [{'run_id':'attempt-01','state':'pending-review','reason':'runner killed'}]
+    with pytest.raises(SystemExit, match='identity|record|incomplete'):
+        baseline.resolve_attempt(attempts, 'attempt-01', 'counted', 'looks okay')
+    assert baseline.counted_attempts(attempts) == 0

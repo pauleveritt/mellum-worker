@@ -31,6 +31,7 @@ RUNS = Path(tempfile.gettempdir()) / "mellum-eval-runs"
 SUITES = CODE / "suites"
 RECORDER = CODE.parent.parent / "extensions" / "mellum-recorder.ts"
 PROFILE = CODE / "profile"
+BASELINE_RUNS = CODE.parents[1] / "runs"
 EXTENSION = CODE.parents[1] / "extensions" / "mellum-worker.ts"
 # The think-tag repair (a no-op on a correctly served reply). The flow loads it in every session; in
 # the harness it is the remedy unit context/repair-think-tags, listed by the lines that want it.
@@ -488,6 +489,7 @@ def run_suite(
         **os.environ,
         "PI_CODING_AGENT_DIR": str(run / "profile"),
         "MELLUM_TRACE_FILE": str(trace),
+        "MELLUM_TRACE_RUN_ID": run.name,
     }
     env.pop("VIRTUAL_ENV", None)   # else uv warns in the workspace venv
     for key in ARM_ENV_KEYS:
@@ -520,6 +522,9 @@ def run_suite(
                 session_id=session_id, session_dir=sessions, extras=extras,
                 context_files=context_files,
             )
+            write_json(run / "launch.json", {"argv": argv, "arm": arm,
+                       "extras": list(map(str, extras)), "context_files": context_files})
+            print(f"Run {run.name}: {workspace}", flush=True)
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
                 if execution_started is None:
@@ -810,8 +815,8 @@ def score(run: Path, suite: Suite) -> tuple[bool, str]:
     return score_workspace(Path(run) / "workspace", suite)
 
 
-def score_details(run: Path, suite: Suite) -> tuple[bool, str, list[str], bool]:
-    return score_workspace_details(Path(run) / "workspace", suite)
+def score_details(run: Path, suite: Suite, *, versions: dict[str, str] | None = None) -> tuple[bool, str, list[str], bool]:
+    return score_workspace_details(Path(run) / "workspace", suite, versions=versions)
 
 
 def check_groups(expected, missing) -> dict[str, dict[str, int]]:
@@ -827,17 +832,18 @@ def check_groups(expected, missing) -> dict[str, dict[str, int]]:
 
 
 def score_workspace_details(
-    workspace: Path, suite: Suite
+    workspace: Path, suite: Suite, *, versions: dict[str, str] | None = None
 ) -> tuple[bool, str, list[str], bool]:
     workspace = Path(workspace)
     target = workspace / "grader_tests"
     if target.exists():
         shutil.rmtree(target)
     shutil.copytree(suite.tests, target)
+    requirement = f"pytest=={versions['pytest']}" if versions else "pytest"
     command = (
-        ["uv", "run", "--with", "pytest", "pytest", "-q", "-rA", "grader_tests"]
+        ["uv", "run", "--with", requirement, "pytest", "-q", "-rA", "grader_tests"]
         if (workspace / "pyproject.toml").is_file()
-        else ["uvx", "pytest", "-q", "-rA", "grader_tests"]
+        else ["uvx", "--from", requirement, "pytest", "-q", "-rA", "grader_tests"]
     )
     result = subprocess.run(
         command, cwd=workspace, capture_output=True, text=True, check=False,
@@ -893,7 +899,9 @@ def _run_sessions(
         can_grade = execution["cleanup_ok"]
         grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
                   grade(run_dir / "workspace")) if grade_run and can_grade else []
-        tests_passed, tail, missing, checks_ran = (score_details(run_dir, suite) if can_grade else
+        scored = (score_details(run_dir, suite, versions=grade_versions) if grade_versions else
+                  score_details(run_dir, suite)) if can_grade else None
+        tests_passed, tail, missing, checks_ran = (scored if scored is not None else
             (False, "cleanup failed; grading withheld", list(suite.expected), False))
         failed_checks = len(missing)
         quality_ok = all(
@@ -1058,9 +1066,102 @@ def _print_grades(grades: list[tuple[str, bool, str]]) -> None:
         print(f"{label}: {'PASS' if ok else 'FAIL'}" + (f" ({detail})" if not ok else ""))
 
 
+def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
+                     exclude: str | None = None, count: str | None = None,
+                     reason: str | None = None) -> int:
+    import baseline
+    if (exclude or count or reason) and resume is None:
+        raise SystemExit("classification requires --resume and an explicit --reason")
+    repo = CODE.parents[1]
+    pi = baseline.resolve_pinned_pi(repo)
+    config = json.loads(baseline.FREEZE.read_text())
+    if dry_run:
+        effective = json.loads((PROFILE / "models.json").read_text())
+        effective["providers"]["llamacpp"]["baseUrl"] = config["client"]["collection_base_url"]
+        print(json.dumps({"command":"uv run python learn/code/harness.py baseline", "pi":pi,
+            "arm":"vanilla", "extensions":[str(RECORDER)], "profile":effective,
+            "deadline":600,"stall":180,"target":6,"concurrency":1,
+            "grade":True,"context_files":False,"extras":[]}, indent=2), flush=True)
+        return 0
+    root = BASELINE_RUNS.resolve()
+    with baseline.collection_lock(root):
+        recovered = baseline.reap_stale_runs(root)
+        if recovered:
+            print(f"Recovered {len(recovered)} stale owned runs", flush=True)
+        print("Checking pinned runtime, backend, weight hashes and checker versions", flush=True)
+        flight = baseline.preflight(Path(pi["path"]), PROFILE)
+        current = baseline.create_manifest(repo, flight)
+        if resume is not None:
+            batch = resume.resolve()
+            if batch.parent != root or not batch.name.startswith("vanilla-easy-"):
+                raise SystemExit("resume must name a baseline batch directly under this repository's runs/")
+            saved = json.loads((batch / "batch.json").read_text())
+            baseline.validate_resume(saved, current)
+        else:
+            stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+            batch = root / f"vanilla-easy-{stamp}-{uuid.uuid4().hex[:6]}"
+            batch.mkdir()
+            saved = current
+            (batch / "profile").mkdir()
+            (batch / "profile/models.json").write_text(json.dumps(flight["effective_profile"], indent=2)+"\n")
+            (batch / "profile/settings.json").write_text(json.dumps(flight["profile_settings"], indent=2)+"\n")
+        attempts = saved["attempts"]
+        if exclude or count:
+            baseline.resolve_attempt(attempts, exclude or count, "excluded" if exclude else "counted", reason or "")
+        baseline.write_json(batch / "batch.json", saved)
+        if any(a["state"] == "pending-review" for a in attempts):
+            raise SystemExit(f"unclassified attempt retained in {batch}; inspect evidence, then --resume with --count/--exclude and --reason")
+        suite = load_suite(SUITES, "easy")
+        ok, qualification = qualify(suite)
+        baseline.write_json(batch / "qualification.json", {"qualified":ok,"results":qualification})
+        if not ok:
+            raise SystemExit("Easy grader did not qualify; no model sessions launched")
+        print(f"Batch {batch}: {baseline.counted_attempts(attempts)}/6 counted", flush=True)
+        while baseline.counted_attempts(attempts) < 6:
+            number = len(attempts) + 1
+            directory = f"attempt-{number:02d}"
+            attempt = {"run_id":directory, "directory":directory, "state":"pending-review",
+                       "reason":"incomplete attempt; runner may have been interrupted"}
+            attempts.append(attempt)
+            baseline.write_json(batch / "batch.json", saved)
+            results = _run_sessions(suite, runs_dir=batch / directory, pi_binary=pi["path"],
+                repeat=1, grade_run=True, deadline=600, stall=180, arm="vanilla",
+                profile=batch / "profile", grade_versions=flight["checkers"])
+            run = results[0][0]
+            record = json.loads((run / "run.json").read_text())
+            identity_ok = baseline.verify_trace_identity(run, pi)
+            state, explanation = baseline.classify_attempt(record, identity_ok=identity_ok)
+            attempt.update(run_id=run.name, path=str(run.relative_to(batch)), state=state,
+                           reason=explanation, identity_ok=identity_ok, cleanup_ok=record.get("cleanup_ok"))
+            baseline.write_json(batch / "batch.json", saved)
+            records = []
+            for entry in attempts:
+                if entry.get("path"):
+                    result = json.loads((batch / entry["path"] / "run.json").read_text())
+                    records.append({**result, "run_id":entry["run_id"]})
+                else:
+                    records.append({"run_id":entry["run_id"],"checks_total":len(suite.expected)})
+            (batch / "scorecard.md").write_text(baseline.render_scorecard(records))
+            if state != "counted":
+                print(f"Collection paused: {explanation}; evidence retained at {run}", flush=True)
+                return 2
+            print(f"Counted {baseline.counted_attempts(attempts)}/6", flush=True)
+        saved["status"] = "complete"
+        baseline.write_json(batch / "batch.json", saved)
+        print(f"Six counted sessions retained: {batch / 'scorecard.md'}", flush=True)
+        return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
+    baseline_parser = sub.add_parser("baseline", help="collect the pinned six-session Easy Vanilla reference")
+    baseline_parser.add_argument("--dry-run", action="store_true")
+    baseline_parser.add_argument("--resume", type=Path)
+    decisions = baseline_parser.add_mutually_exclusive_group()
+    decisions.add_argument("--exclude", metavar="RUN_ID")
+    decisions.add_argument("--count", metavar="RUN_ID")
+    baseline_parser.add_argument("--reason")
     run = sub.add_parser("run", help="run one eval suite or all of them")
     qualify_p = sub.add_parser("qualify", help="prove a suite's grader both ways")
     qualify_p.add_argument("--suite", required=True)
@@ -1100,6 +1201,10 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command == "baseline":
+        return collect_baseline(resume=args.resume, dry_run=args.dry_run,
+                                exclude=args.exclude, count=args.count, reason=args.reason)
 
     if args.command == "qualify":
         suite = load_suite(args.suites_dir, args.suite)
