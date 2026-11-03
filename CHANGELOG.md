@@ -32,6 +32,13 @@ Versions match git tags; pin one in both install lines.
   `~/.local/share/../bin`), the one binary counted as two copies, and the "old"
   copy was renamed to `.old`, which left no llama-server. The scan now resolves
   each directory before comparing.
+- **`/mellum` now works in your own project: `bash run.sh <project-dir>`.**
+  `run.sh` points Pi at the repo's profile, but `install.sh`'s `pi install` writes
+  to `~/.pi/agent`, so outside the repo `/mellum` was not a command, and the text
+  went to bare Mellum as an ordinary prompt. A project directory argument now
+  starts Pi there with the worker, `/remedy` and think-tag extensions loaded.
+  `MELLUM_REMEDY` (unit names or `preset:<name>`) switches units on from the start,
+  and any further arguments go to Pi.
 - **`run.sh` says why the server did not start.** It showed only "did not start";
   it now prints the end of `backend.py start`'s output, which names the cause.
 

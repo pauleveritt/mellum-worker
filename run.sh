@@ -87,13 +87,45 @@ if ! start_server; then
 fi
 uv run scripts/backend.py status || true
 
-# Pi, pointed at this repo's profile (which targets the local server). The
-# mellum-worker harness (/mellum) comes from the plugin install.sh set up.
+# Pi, pointed at this repo's profile (which targets the local server).
 # --no-skills keeps the author's own ~/.agents/skills out of the learner's run,
 # so the course runs on the repo's extensions alone (lessons, remedies,
 # think-tags) and nobody's global skills leak in. Extensions and AGENTS.md stay.
+#
+# The profile has no packages: `pi install` (install.sh) writes to ~/.pi/agent,
+# not to this profile. In the repo, /mellum and /remedy come from .pi/extensions.
+# Anywhere else they must be loaded by hand, so `bash run.sh <project-dir>`
+# starts Pi in that project with the same extensions, plus the remedy units of
+# MELLUM_REMEDY (unit names or preset:<name>, comma-separated).
 export PI_CODING_AGENT_DIR="$REPO_DIR/learn/code/profile"
 export PI_SKIP_VERSION_CHECK=1   # stay on the pinned 1.4.0; hide the update nag
+
+PROJECT_ARG="${1:-$REPO_DIR}"
+[ $# -gt 0 ] && shift
+PROJECT_DIR="$(cd "$PROJECT_ARG" 2>/dev/null && pwd -P)" || { echo "[ERROR] no such directory: $PROJECT_ARG" >&2; exit 1; }
+PI_ARGS=(--no-skills)
+if [ "$PROJECT_DIR" != "$(pwd -P)" ]; then
+    for ext in mellum-worker mellum-remedies mellum-think-tags; do
+        PI_ARGS+=(-e "$REPO_DIR/extensions/$ext.ts")
+    done
+fi
+IFS=',' read -r -a WANT <<< "${MELLUM_REMEDY:-}"
+for item in ${WANT[@]+"${WANT[@]}"}; do
+    if [[ "$item" == preset:* ]]; then
+        preset="$REPO_DIR/remedies/presets/${item#preset:}.json"
+        [ -f "$preset" ] || { echo "[ERROR] no preset $item" >&2; exit 1; }
+        units="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).join("\n"))' "$preset")"
+    else
+        units="$item"
+    fi
+    while IFS= read -r unit; do
+        [ -n "$unit" ] || continue
+        [ -f "$REPO_DIR/remedies/$unit.ts" ] || { echo "[ERROR] no remedy unit $unit" >&2; exit 1; }
+        PI_ARGS+=(-e "$REPO_DIR/remedies/$unit.ts")
+    done <<< "$units"
+done
+
+cd "$PROJECT_DIR"
 echo
-echo "Starting Pi. Put the worker on a job with:  /mellum <task>"
-exec pi --no-skills
+echo "Starting Pi in $PROJECT_DIR. Put the worker on a job with:  /mellum <task>"
+exec pi "${PI_ARGS[@]}" "$@"
