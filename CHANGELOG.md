@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **A lesson's Solution step shows the remedy's own code.** The `/lesson` panel
+  now reads the remedy unit's source (e.g. `remedies/prompt/name-the-layout.ts`)
+  and shows it inline under the Solution header, and each easy lesson page links
+  to the file — so you see the few lines that make the fix, not only the prose.
+
 - **`prompt/concept-sketch` — coarse-to-fine, the Next-Concept Modeling idea for
   code.** Switch it on with `/remedy on prompt/concept-sketch`: it tells the
   model to sketch every file first (signatures and stubs, a plan), then fill the

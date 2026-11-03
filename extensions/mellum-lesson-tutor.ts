@@ -18,7 +18,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CURRENT_SESSION_VERSION, getMarkdownTheme } from "@earendil-works/pi-coding-agent";
 import { Image, Key, Markdown, matchesKey, truncateToWidth, type TuiMouseEvent, type TuiMouseEventResult, wrapTextWithAnsi } from "@earendil-works/pi-tui";
-import { cleanProjects, lessonIndex, type Lesson, type LessonEntry, parseLesson, lessonLegend, prepareProject, projectGuide, projectNumber, producedCode, runArgv, styleGuide, sessionIn, sessionProfile, STEPS, summariseRuns, terminalPicture, unitPathology, unwrap } from "./mellum-lessons.ts";
+import { cleanProjects, lessonIndex, type Lesson, type LessonEntry, parseLesson, lessonLegend, prepareProject, projectGuide, projectNumber, producedCode, remedyCode, runArgv, styleGuide, sessionIn, sessionProfile, STEPS, summariseRuns, terminalPicture, unitPathology, unwrap } from "./mellum-lessons.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -213,6 +213,12 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 						lines.push("");
 						clickCmd = { from: lines.length, to: lines.length + 1, cmd: `/remedy on ${unit}` };
 						lines.push(theme.fg("muted", ` By hand: /remedy on ${unit}   (click to stage it at the prompt)`));
+						// The remedy's own source — our solution to the pathology — under the Solution step.
+						const rc = remedyCode(root, unit);
+						if (rc) {
+							lines.push("", theme.fg("accent", `   the remedy's code · ${rc.name}`));
+							for (const l of rc.text.replace(/\n+$/, "").split("\n")) lines.push(theme.fg("mdCode", `   ${l}`));
+						}
 					}
 					lines.push(...projectBlock(w));
 				}

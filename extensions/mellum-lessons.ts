@@ -205,6 +205,18 @@ export function producedCode(runsDir: string): { name: string; text: string } | 
 	return undefined;
 }
 
+/** The remedy unit's own source, shown under a lesson's Solution step. `unit` is e.g.
+ * `prompt/name-the-layout`; returns its path (for the reference) and the file's text. */
+export function remedyCode(root: string, unit: string): { name: string; text: string } | undefined {
+	if (!/^[a-z]+\/[a-z-]+$/.test(unit)) return undefined;
+	const name = `remedies/${unit}.ts`;
+	try {
+		return { name, text: readFileSync(join(root, name), "utf8") };
+	} catch {
+		return undefined;
+	}
+}
+
 export function unitPathology(root: string, unitLine: string): string | undefined {
 	const unit = unitLine.match(/`([a-z]+\/[a-z-]+)`/)?.[1];
 	const file = unit && join(root, "remedies", `${unit}.ts`);

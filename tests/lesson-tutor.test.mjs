@@ -210,3 +210,12 @@ test("the worker is always loaded when Pi runs in the repo: .pi/extensions shims
 	const src = readFileSync(join(ROOT, ".pi", "extensions", "worker.ts"), "utf8");
 	assert.match(src, /extensions\/mellum-worker\.ts/, "repo .pi/extensions/worker.ts must re-export the worker");
 });
+
+test("remedyCode reads the remedy unit's source for the Solution step, and refuses a bad slug", async () => {
+	const { remedyCode } = await tutor();
+	const got = remedyCode(ROOT, "prompt/name-the-layout");
+	assert.equal(got.name, "remedies/prompt/name-the-layout.ts");
+	assert.match(got.text, /export const meta/, "returns the unit's actual source");
+	assert.equal(remedyCode(ROOT, "../etc/passwd"), undefined, "a non-unit slug is refused");
+	assert.equal(remedyCode(ROOT, "prompt/does-not-exist"), undefined, "a missing unit is undefined");
+});

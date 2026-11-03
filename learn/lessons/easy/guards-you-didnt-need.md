@@ -69,6 +69,8 @@ turn, and the run shipped without the HTML5 doctype its own contract checks for.
 
 **Remedy unit:** `guard/foreground-server`; switch it on live in Pi with `/remedy on guard/foreground-server`, then read its firing in the run record — `--remedy preset:easy` versus the same with the gate's two extensions.
 
+**Remedy code:** [`remedies/guard/foreground-server.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/guard/foreground-server.ts) — the unit wires the guard; the block itself is `serverGuard` in [`extensions/mellum-guards.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/extensions/mellum-guards.ts). In Pi the `/lesson` panel shows the unit file inline under this step.
+
 **Lesson check:** guard 0× across six reps; NCM 5/6 with the gate at 0×
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 

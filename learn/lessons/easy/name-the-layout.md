@@ -67,6 +67,8 @@ actions; they do not tell the model where a file goes.
 
 **Remedy unit:** `prompt/name-the-layout`; switch it on live in Pi with `/remedy on prompt/name-the-layout`, or pass `--remedy prompt/name-the-layout` to a graded run.
 
+**Remedy code:** [`remedies/prompt/name-the-layout.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/prompt/name-the-layout.ts) — the few lines that make the fix. In Pi the `/lesson` panel shows the file inline under this step.
+
 **Lesson check:** 2 of 3 on the local host, the fastest pass at 15 turns
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 

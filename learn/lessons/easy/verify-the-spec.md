@@ -67,6 +67,8 @@ model did one of those and called it checked.
 
 **Remedy unit:** `prompt/verify-the-spec`; switch it on live in Pi with `/remedy on prompt/verify-the-spec`, or pass `--remedy prompt/verify-the-spec` to a graded run.
 
+**Remedy code:** [`remedies/prompt/verify-the-spec.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/prompt/verify-the-spec.ts) — the few lines that make the fix. In Pi the `/lesson` panel shows the file inline under this step.
+
 **Lesson check:** 5/6 rose to **6/6** at n=6 on the local host, every rep with 0
 failed checks
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
