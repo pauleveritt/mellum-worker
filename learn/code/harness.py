@@ -500,6 +500,10 @@ def run_suite(
     execution_started = None
     execution_ended = None
     termination_reason = "error"
+    from baseline import process_identity, write_json
+    ownership = {"owner": process_identity(os.getpid()), "children": [],
+                 "workspace": str(workspace.resolve())}
+    write_json(run / "owner.json", ownership)
     # The sweep runs however the loop ends, including a SIGTERM (main turns it
     # into SystemExit): a stopped run must still end the servers it started.
     try:
@@ -525,6 +529,10 @@ def run_suite(
                                              stdout=output, stderr=subprocess.STDOUT,
                                              start_new_session=True)
                 groups.append(child.pid)
+                identity = process_identity(child.pid)
+                if identity is not None:
+                    ownership["children"].append(identity)
+                write_json(run / "owner.json", ownership)
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
             ended = wait_or_stall(child, run, trace, remaining, stall)
@@ -881,9 +889,12 @@ def _run_sessions(
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
                             context_files=context_files)
+        execution = json.loads((run_dir / "execution.json").read_text())
+        can_grade = execution["cleanup_ok"]
         grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
-                  grade(run_dir / "workspace")) if grade_run else []
-        tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
+                  grade(run_dir / "workspace")) if grade_run and can_grade else []
+        tests_passed, tail, missing, checks_ran = (score_details(run_dir, suite) if can_grade else
+            (False, "cleanup failed; grading withheld", list(suite.expected), False))
         failed_checks = len(missing)
         quality_ok = all(
             ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
