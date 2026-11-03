@@ -74,7 +74,31 @@ clean runs (deleg3, deleg4, live3). The earlier one-off 0/4 was a grading race
    not just the file mode. **Candidate guard — add only if medium's evidence shows
    it changes the hidden grade** (per "only add guards if needed").
 
-Still open: medium and hard, and repeats — a single pass each is a lead.
+### Medium (single-shot, all 4 phases, bare) — hidden 0/18
+
+Fed the committed medium spec (prompts 01–04 + specs/roadmap.md) as one task. The
+architect wrote a 148-line acceptance test; the worker built app.py, models.py and
+three templates. The home page is correct (200 + tagline + doctype + lang pass on
+a direct probe), but the **hidden grade is 0/18** — and it's not a guard problem:
+
+- **Root cause (handover completeness, not a guard).** The spec requires a
+  **module-level `complaints` list** in models.py, seeded with 3–5 gripes (one
+  exactly `Scope creep never ends.`). The worker instead used a class attribute
+  `Complaint.complaints`, seeded one complaint, and never saved it. The grader's
+  shared `_seed.py` does `tuple(models.complaints)` → `AttributeError` → the whole
+  grader errors at collection → 0/18. One missed contract sinks every check.
+- The architect's oracle was complete on routes/behaviour but **did not pin the
+  exact named contract** (module-level `complaints`, the count, the exact seed
+  string), so the worker passed the proxy while missing the real requirement —
+  the same lever as easy (oracle completeness/accuracy), one level stricter.
+- **No guard added.** The freeze-the-oracle leak (finding 2) never changed a grade,
+  and the medium miss is completeness, not integrity. Per "only add guards if
+  needed," none is warranted on this evidence.
+
+Next lever to try: make the architect assert **exact named contracts** — module
+and attribute names, collection names, counts, and verbatim seed strings the spec
+gives — or delegate medium **per phase** (as the flow does), pinning each phase's
+conventions before the next. Single-shot, bare, on medium is a lead at n=1.
 
 ## What would falsify "we no longer need remedies"
 
