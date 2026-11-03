@@ -39,6 +39,12 @@ Versions match git tags; pin one in both install lines.
   starts Pi there with the worker, `/remedy` and think-tag extensions loaded.
   `MELLUM_REMEDY` (unit names or `preset:<name>`) switches units on from the start,
   and any further arguments go to Pi.
+- **The README's Install section leads with the llama.cpp path.** It showed only
+  the Apple Silicon + oMLX route, which stops on any other machine, while
+  `install.sh` and `run.sh` already covered Linux and macOS. It now gives the
+  clone, `install.sh` and `run.sh [project-dir]` steps, the hardware flavors, and
+  what the scripts change outside the repo. oMLX stays as the measured
+  Apple Silicon option.
 - **`run.sh` says why the server did not start.** It showed only "did not start";
   it now prints the end of `backend.py start`'s output, which names the cause.
 
