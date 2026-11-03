@@ -411,3 +411,32 @@ def test_worker_collector_requires_reference_before_launch(tmp_path, monkeypatch
     with pytest.raises(SystemExit, match='reference'):
         harness.collect_baseline(arm='worker')
     assert not calls
+
+
+def test_worker_source_drift_during_last_attempt_cannot_complete_batch(tmp_path, monkeypatch):
+    reference_dir = tmp_path/'reference'; reference_dir.mkdir()
+    reference, _ = _reference(reference_dir, monkeypatch)
+    calls = _standin_collector(tmp_path, monkeypatch)
+    sessions = harness._run_sessions
+    def worker_sessions(suite, **kwargs):
+        results = sessions(suite, **kwargs)
+        run = results[0][0]
+        _worker_identity(run)
+        trace = json.loads((run/'trace.jsonl').read_text())
+        trace['runtime'].update(entryPath=str(Path(sys.executable).resolve()),
+                                execPath=str(Path(sys.executable).resolve()))
+        (run/'trace.jsonl').write_text(json.dumps(trace)+'\n')
+        return results
+    monkeypatch.setattr(harness, '_run_sessions', worker_sessions)
+    digest = baseline.sha256
+    def drift(path):
+        if len(calls) == 6 and path == harness.EXTENSION:
+            return 'modified-during-final-session'
+        return digest(path)
+    monkeypatch.setattr(baseline, 'sha256', drift)
+    with pytest.raises(SystemExit, match='source|changed'):
+        harness.collect_baseline(arm='worker', reference=reference)
+    batch = next((tmp_path/'runs').glob('worker-easy-*'))
+    saved = json.loads((batch/'batch.json').read_text())
+    assert saved.get('status') != 'complete'
+    assert baseline.counted_attempts(saved['attempts']) == 5

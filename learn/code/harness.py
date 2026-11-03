@@ -1193,6 +1193,14 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
                 profile=batch / "profile", grade_versions=flight["checkers"])
             run = results[0][0]
             record = json.loads((run / "run.json").read_text())
+            try:
+                baseline.verify_collection_inputs(repo, saved["material"])
+            except SystemExit as error:
+                attempt.update(run_id=run.name, path=str(run.relative_to(batch)),
+                               identity_ok=False, cleanup_ok=record.get("cleanup_ok"),
+                               reason=f"post-execution integrity failed: {error}")
+                baseline.write_json(batch / "batch.json", saved)
+                raise
             identity_ok = baseline.verify_trace_identity(run, pi, arm=arm, exec_path=exec_path)
             state, explanation = baseline.classify_attempt(record, identity_ok=identity_ok)
             attempt.update(run_id=run.name, path=str(run.relative_to(batch)), state=state,
@@ -1210,6 +1218,7 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
                 print(f"Collection paused: {explanation}; evidence retained at {run}", flush=True)
                 return 2
             print(f"Counted {baseline.counted_attempts(attempts)}/6", flush=True)
+        baseline.verify_collection_inputs(repo, saved["material"])
         saved["status"] = "complete"
         baseline.write_json(batch / "batch.json", saved)
         print(f"Six counted sessions retained: {batch / 'scorecard.md'}", flush=True)
