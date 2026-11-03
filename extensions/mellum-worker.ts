@@ -23,18 +23,26 @@
  * Earlier turns' reasoning_content is left in place: removing it made runs 60% slower
  * (ladder A12). The session keeps everything.
  *
- * This is the thin worker: mode machinery and the /mellum commands only — it bundles NOTHING.
- * The prompt, tool-narrowing, project facts, the loop breaker and empty-turn nudge and the
- * rest, and the handoff collapse, are all remedy units under remedies/ now, combined through
- * a preset; the worker adds none of them itself. It keeps only the pre-marker history drop,
- * which protects the mode's own on-marker (mode-integrity, not remediation).
+ * This is the thin worker: mode machinery and the /mellum commands only — it bundles NOTHING
+ * into the worker's own span. The prompt, tool-narrowing, project facts, the loop breaker and
+ * empty-turn nudge and the rest, and the handoff collapse, are all remedy units under remedies/
+ * now, combined through a preset; the worker adds none of them itself. It keeps only the
+ * pre-marker history drop, which protects the mode's own on-marker (mode-integrity, not remediation).
+ *
+ * It also registers one PRIMARY-side tool, `delegate`: load this extension and the primary model
+ * can hand a bounded, generic implementation brief to a fresh local worker (this same file,
+ * spawned headless with `/mellum <brief>`) without the human typing /mellum. The primary explores
+ * and decides; the worker implements. The tool and its nudge are present only in the primary — a
+ * spawned child sets MELLUM_WORKER_CHILD=1 and gets neither, so the worker cannot delegate again.
  *
  * Headless: MELLUM_MODE=1 activates at session start (the ladder's "mode" runner).
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
  */
+import { spawn } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { adminBaseOf, checkSetup, fetchJson, formatFindings, gatherInputs, loadExpected, readProvider, serverCheck, type ServerCheck } from "./mellum-check.ts";
 import { type ProjectFacts } from "./mellum-facts.ts";
 import { type Activation, type Msg, runRecord, textOf, spanStats, type SpanStats } from "./mellum-record.ts";
@@ -46,6 +54,86 @@ export const MARK_OFF = "[mellum-worker off]";
 export const BOOTSTRAP_MARKER = "superpowers:using-superpowers bootstrap for pi";
 export const WORKER_TOOLS = ["read", "grep", "find", "ls", "bash", "edit", "write"];
 const DEFAULT_MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
+
+// Set in the environment of a worker this extension spawns for `delegate`, so the spawned
+// child does not offer `delegate` itself (no recursion) and does not append the primary nudge.
+const CHILD_ENV = "MELLUM_WORKER_CHILD";
+// This file, re-loaded by the spawned worker with `-e <self> /mellum <brief>`.
+const SELF = fileURLToPath(import.meta.url);
+
+// The primary nudge, appended to each user message so the model delegates the implementation
+// instead of writing it. Agnostic: it names no suite, file or command — the brief is the primary's.
+const DELEGATE_NUDGE =
+	"You are the primary. Explore, decide the layout, and pin the goal with a check or a failing " +
+	"test yourself — but hand the implementation to the `delegate` tool, do not write it. The brief " +
+	"must stand on its own: what to build, which files, and the exact command that proves it done. " +
+	"Then read the worker's report and verify by running that command; delegate a fix if it is not done yet.";
+
+/** A copy of `payload` with the delegate nudge appended to every user message. Never mutates. */
+export function withDelegateNudge(payload: any): any {
+	if (!payload || !Array.isArray(payload.messages)) return payload;
+	const add = (c: any): any =>
+		typeof c === "string"
+			? `${c}\n\n${DELEGATE_NUDGE}`
+			: Array.isArray(c)
+				? [...c, { type: "text", text: `\n\n${DELEGATE_NUDGE}` }]
+				: c;
+	return { ...payload, messages: payload.messages.map((m: any) => (m.role === "user" ? { ...m, content: add(m.content) } : m)) };
+}
+
+/**
+ * The `delegate` tool: the primary hands ONE bounded, generic implementation task to a fresh
+ * local worker — this same extension, spawned headless with `/mellum <brief>`. The worker edits
+ * files in this project, runs the tests, and returns its report. It is absent from a spawned
+ * child (CHILD_ENV), so the worker cannot delegate to itself.
+ */
+export function registerDelegate(pi: any, run: typeof spawnWorker = spawnWorker): void {
+	pi.registerTool({
+		name: "delegate",
+		label: "Delegate to the worker",
+		description:
+			"Hand ONE bounded, test-driven implementation task to the local coding worker. It edits " +
+			"files in THIS project, runs the tests, and returns a report. Use it for implementation " +
+			"grunt-work AFTER you have decided the layout and pinned the goal with a check or failing " +
+			"test: the brief must name what to build, which files, and the exact command to make pass. " +
+			"Do NOT use it for exploration, design, or deciding the layout — that is your job as the " +
+			"primary. One narrow task per call; read the report, verify, and delegate the next piece or a fix.",
+		parameters: {
+			type: "object",
+			properties: {
+				brief: {
+					type: "string",
+					description: "the narrow implementation task: what to build, which files, and the command to make pass",
+				},
+			},
+			required: ["brief"],
+			additionalProperties: false,
+		},
+		async execute(_id: string, params: any) {
+			const brief = String(params?.brief ?? "").trim();
+			if (!brief) return { content: [{ type: "text", text: "delegate: the brief was empty" }] };
+			return { content: [{ type: "text", text: await run(brief) }] };
+		},
+	});
+}
+
+/** Spawn this extension as a headless worker running `/mellum <brief>`; resolve its trimmed report. */
+export function spawnWorker(brief: string): Promise<string> {
+	const argv = ["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`];
+	return new Promise((resolve) => {
+		let out = "";
+		let child;
+		try {
+			child = spawn("pi", argv, { cwd: process.cwd(), env: { ...process.env, [CHILD_ENV]: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+		} catch (e) {
+			return resolve(`delegate: could not start the worker — ${(e as Error).message}`);
+		}
+		child.stdout?.on("data", (b) => { out += b.toString(); });
+		child.stderr?.on("data", (b) => { out += b.toString(); });
+		child.on("error", (e) => resolve(`delegate: could not start the worker — ${e.message}`));
+		child.on("close", () => resolve(out.trim().slice(-4000) || "delegate: the worker finished but produced no report"));
+	});
+}
 
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
 
@@ -549,6 +637,14 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			else if (active && oneShot) await settle(ctx);
 		},
 	});
+
+	// The delegate tool makes this extension the thing the primary loads: load it, and the
+	// primary can hand generic implementation briefs to a local worker by itself. A spawned
+	// worker child (CHILD_ENV) gets neither the tool nor the nudge, so it cannot delegate again.
+	if (process.env[CHILD_ENV] !== "1" && typeof pi.registerTool === "function") {
+		registerDelegate(pi);
+		pi.on("before_provider_request", (event: any) => (active ? undefined : withDelegateNudge(event.payload)));
+	}
 
 	pi.on("agent_start", () => {
 		if (oneShot) onRunStart?.();

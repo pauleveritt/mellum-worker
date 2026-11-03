@@ -6,6 +6,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **`delegate` — the primary hands a brief to a local worker by itself.** Loading
+  `extensions/mellum-worker.ts` now also gives the primary model one tool,
+  `delegate`: it explores and decides, pins the goal with a failing test, then
+  hands the implementation to a fresh local worker (this same extension, spawned
+  headless with `/mellum <brief>`) and verifies the result. Any generic brief —
+  the tool names no suite, file or command. Load it and the primary delegates on
+  its own; a small nudge keeps the division of labour (primary thinks, worker
+  implements). A spawned worker child sets `MELLUM_WORKER_CHILD=1` and gets
+  neither the tool nor the nudge, so it cannot delegate to itself (no recursion).
+
 - **A lesson's Solution step shows the remedy's own code.** The `/lesson` panel
   now reads the remedy unit's source (e.g. `remedies/prompt/name-the-layout.ts`)
   and shows it inline under the Solution header, and each easy lesson page links
