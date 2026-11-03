@@ -10,9 +10,10 @@ Versions match git tags; pin one in both install lines.
   (or `↑`/`↓` where the terminal passes them) slide the step's body — the run
   record and the code the model wrote — while the lesson title and the controls
   line stay pinned at the top; a left click on a Before/After block runs that arm
-  (the same as `r`). `←`/`→` still page between steps, and moving to another step
-  resets the scroll. A long Before/After run is no longer clipped with no way to
-  read the rest.
+  (the same as `r`), and a click on the `/remedy on <unit>` line stages that
+  command at the prompt. `←`/`→` still page between steps, and moving to another
+  step resets the scroll. A long Before/After run is no longer clipped with no way
+  to read the rest.
 - **The harness arms are now `vanilla`, `bare`, `worker`, `strip-thinking`.** The
   six ablation arms (`no-prompt`, `no-nudge`, `no-loop`, `no-facts`,
   `server-guard`, `no-facts-guard`) went inert when the worker was decoupled — it

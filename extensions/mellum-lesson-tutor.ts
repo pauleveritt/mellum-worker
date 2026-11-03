@@ -82,8 +82,10 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 		let page = Math.min(Math.max(startPage, 0), pages.length - 1);
 		let scroll = 0;
 		let cached: string[] | undefined;
-		// Full-array line ranges a left click runs, filled each render (see handleMouse).
+		// Full-array line ranges a left click acts on, filled each render (see handleMouse):
+		// a Before/After block runs that arm; the /remedy line stages the command at the prompt.
 		let clickRuns: { from: number; to: number; key: "before" | "after" }[] = [];
+		let clickCmd: { from: number; to: number; cmd: string } | undefined;
 		// Scroll keeps the two-line header fixed and slides the body. The panel's render gets
 		// only a width, not a height, so the body can always slide until its last line reaches
 		// the top; ↑/↓ move it, and a page change resets it.
@@ -182,6 +184,7 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 			const name = pages[page];
 			const lines: string[] = [];
 			clickRuns = [];
+			clickCmd = undefined;
 			const head = ` ${lesson.number} · ${lesson.title}   lesson ${total.index + 1} of ${total.count}   step ${page + 1} of ${pages.length}: ${name}`;
 			const canRun = name === "Eval case" || name === "Solution";
 			const controls = ` ←/→ step   j/k or wheel scroll${canRun ? "   r / click run   R run the page's n" : ""}   Esc leave`;
@@ -206,7 +209,11 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 					if (after.length) clickRuns.push({ from: lines.length, to: lines.length + after.length, key: "after" });
 					lines.push(...after);
 					const unit = lesson.unit.match(/`([a-z]+\/[a-z-]+)`/)?.[1];
-					if (unit) lines.push("", theme.fg("muted", ` By hand: /remedy on ${unit}`));
+					if (unit) {
+						lines.push("");
+						clickCmd = { from: lines.length, to: lines.length + 1, cmd: `/remedy on ${unit}` };
+						lines.push(theme.fg("muted", ` By hand: /remedy on ${unit}   (click to stage it at the prompt)`));
+					}
 					lines.push(...projectBlock(w));
 				}
 			}
@@ -255,6 +262,12 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 			}
 			if (event.type === "click" && event.button === "left") {
 				const fi = event.y < 2 ? event.y : event.y + scroll;
+				if (clickCmd && fi >= clickCmd.from && fi < clickCmd.to) {
+					ctx.ui.setEditorText?.(`${clickCmd.cmd} `);
+					ctx.ui.notify?.(`Staged: ${clickCmd.cmd} — press Enter to run it.`, "info");
+					leave("leave");
+					return { handled: true };
+				}
 				const hit = clickRuns.find((r) => fi >= r.from && fi < r.to);
 				if (hit) { startRun(hit.key, false); return { handled: true }; }
 			}
