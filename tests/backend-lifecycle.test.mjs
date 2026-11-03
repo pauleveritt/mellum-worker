@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { chmodSync, copyFileSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -112,6 +112,12 @@ test("kill ends every process with the server's name, whatever started it", {
     : ["/bin/sleep", "/usr/bin/sleep"].find((p) => existsSync(p));
   copyFileSync(src, exe);
   chmodSync(exe, 0o755);
+  if (process.platform === "darwin") {
+    // macOS may SIGKILL a relocated system executable before it can run.
+    // Sign only this temporary fixture, preserving the real process-name test.
+    const signed = spawnSync("codesign", ["--force", "--sign", "-", exe], { encoding: "utf8" });
+    assert.equal(signed.status, 0, signed.stderr);
+  }
   const args = WIN ? ["-e", "setTimeout(() => {}, 60000)"] : ["60"];
   const sleepers = [1, 2].map(() => spawn(exe, args, { stdio: "ignore" }));
   const exited = sleepers.map((c) => new Promise((ok) => c.on("exit", ok)));
