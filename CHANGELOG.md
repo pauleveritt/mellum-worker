@@ -6,6 +6,9 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **The scoreboard page has its own illustration.** `scoreboard.webp` was a
+  byte-for-byte copy of the pathologies image; it is now the leaderboard-and-
+  stopwatch robot its prompt describes.
 - **A current llama-server that reads as too old no longer refuses to start.**
   `backend.py` parsed some Linux `llama-server --version` strings as a build
   below the 9482 minimum and then blocked, so `run.sh` failed with "server did
