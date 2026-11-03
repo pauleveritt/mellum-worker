@@ -282,23 +282,41 @@ async function submitChallenge(ctx: any): Promise<void> {
 	const bodyFile = join(tmpdir(), `${branch}.md`);
 	writeFileSync(bodyFile, body);
 
-	const steps: [string, string[]][] = [
-		["git", ["checkout", "-b", branch]],
-		["git", ["add", ...files]],
-		["git", ["commit", "-m", title]],
-		["git", ["push", "-u", "origin", branch]],
-		["gh", ["pr", "create", "--repo", REPO, "--base", "main", "--head", branch, "--title", title, "--body-file", bodyFile]],
-	];
-	let prUrl = "";
-	for (const [cmd, args] of steps) {
+	const owner = REPO.split("/")[0];
+	const repoName = REPO.split("/")[1];
+	const tail = (o: string) => o.split("\n").filter(Boolean).slice(-4).join("\n");
+	const back = () => sh("git", ["checkout", "-"], ROOT);
+
+	// The commit is local, so it always works; the branch name is unique per submit.
+	for (const [cmd, args] of [["git", ["checkout", "-b", branch]], ["git", ["add", ...files]], ["git", ["commit", "-m", title]]] as [string, string[]][]) {
 		const { code, out } = await sh(cmd, args, ROOT);
-		if (cmd === "gh") prUrl = out.split("\n").find((l) => l.startsWith("http")) ?? out;
-		if (code !== 0) {
-			await sh("git", ["checkout", "-"], ROOT);
-			return ctx.ui.notify(`submit stopped at \`${cmd} ${args[0]}\`:\n${out.split("\n").slice(-4).join("\n")}`, "error");
-		}
+		if (code !== 0) { await back(); return ctx.ui.notify(`submit stopped at \`${cmd} ${args[0]}\`:\n${tail(out)}`, "error"); }
 	}
-	await sh("git", ["checkout", "-"], ROOT);
+
+	// Who is pushing? A contributor cannot push to the upstream repo, so they push to
+	// their own fork (created here if they only cloned) and the PR comes from the fork.
+	const who = await sh("gh", ["api", "user", "--jq", ".login"], ROOT);
+	if (who.code !== 0) { await back(); return ctx.ui.notify("submit needs GitHub access — run `gh auth login`, then /challenge submit again.", "error"); }
+	const login = who.out.trim();
+
+	let head = branch;
+	if (login && login !== owner) {
+		// Idempotent: creates <login>/<repo> if missing, succeeds (0) when it already exists.
+		const fork = await sh("gh", ["repo", "fork", REPO, "--clone=false", "--remote=false"], ROOT);
+		if (fork.code !== 0) { await back(); return ctx.ui.notify(`submit could not prepare your fork of ${REPO}:\n${tail(fork.out)}`, "error"); }
+		const push = await sh("git", ["push", `https://github.com/${login}/${repoName}.git`, `${branch}:${branch}`], ROOT);
+		if (push.code !== 0) { await back(); return ctx.ui.notify(`submit could not push to your fork (${login}/${repoName}):\n${tail(push.out)}`, "error"); }
+		head = `${login}:${branch}`;
+	} else {
+		const push = await sh("git", ["push", "-u", "origin", branch], ROOT);
+		if (push.code !== 0) { await back(); return ctx.ui.notify(`submit could not push the branch:\n${tail(push.out)}`, "error"); }
+	}
+
+	// Open the PR from the branch (on the fork, or on the repo for the owner) to upstream main.
+	const pr = await sh("gh", ["pr", "create", "--repo", REPO, "--base", "main", "--head", head, "--title", title, "--body-file", bodyFile], ROOT);
+	await back();
+	if (pr.code !== 0) return ctx.ui.notify(`submit pushed your runs but could not open the PR:\n${tail(pr.out)}\nOpen it by hand from ${login || "your fork"}.`, "error");
+	const prUrl = pr.out.split("\n").find((l) => l.startsWith("http")) ?? pr.out.trim();
 	ctx.ui.notify(`submitted ${picked.length} run${picked.length === 1 ? "" : "s"} — ${prUrl}`, "info");
 }
 

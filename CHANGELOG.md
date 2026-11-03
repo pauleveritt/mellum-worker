@@ -15,6 +15,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **`/challenge submit` works for contributors, not only the repo owner.** It
+  pushed the branch straight to the upstream repo, which a contributor cannot
+  do — the push failed with a 403. It now finds your GitHub login, creates your
+  fork if you only cloned (`gh repo fork`), pushes the branch there, and opens
+  the pull request from your fork to upstream. Each step fails with a clear
+  message instead of a raw git error.
 - **The scoreboard page has its own illustration.** `scoreboard.webp` was a
   byte-for-byte copy of the pathologies image; it is now the leaderboard-and-
   stopwatch robot its prompt describes.
