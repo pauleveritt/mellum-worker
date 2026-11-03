@@ -199,8 +199,7 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 					lines.push(...projectBlock(w));
 				}
 			}
-			const scrollable = lines.length > 24;
-			lines.push("", theme.fg("dim", ` ← back   → / Enter next   Esc leave${scrollable ? "   ↑↓ scroll" : ""}`));
+			lines.push("", theme.fg("dim", " ← back   → / Enter next   j/k or ↑/↓ scroll   Esc leave"));
 			cached = lines.map((l) => truncateToWidth(l, w));
 			return view(cached);
 		}
@@ -216,11 +215,13 @@ function walk(ctx: any, root: string, lesson: Lesson, entry: LessonEntry, total:
 				if (page > 0) { page -= 1; scroll = 0; }
 				return refresh();
 			}
-			if (matchesKey(data, Key.up)) {
+			// j/k scroll because the host TUI claims ↑/↓ for the transcript before a
+			// focused panel sees them; the arrows are kept for terminals that do pass them.
+			if (data === "k" || matchesKey(data, Key.up)) {
 				if (scroll > 0) { scroll -= 1; tui.requestRender(); }
 				return;
 			}
-			if (matchesKey(data, Key.down)) {
+			if (data === "j" || matchesKey(data, Key.down)) {
 				scroll += 1; tui.requestRender();
 				return;
 			}
