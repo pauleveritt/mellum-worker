@@ -135,10 +135,11 @@ test("the challenge feed shows the live turns and tool calls, then the final sco
 	// Running: header names tier and label; body streams turns and the recent tool calls.
 	const live = renderFeed(
 		{ tier: "easy", label: "worker + 2 remedies", runs: 3, runsDone: 0, turns: 7,
-		  calls: ['read app.py', 'bash {"command":"pytest"}'], started: Date.now() - 5000 },
+		  calls: ['read app.py', 'bash {"command":"pytest"}'], thinking: "I need to read the spec first", started: Date.now() - 5000 },
 		80, theme, cut).join("\n");
 	assert.match(live, /Challenge · easy · worker \+ 2 remedies · run 1\/3/);
 	assert.match(live, /turn 7/);
+	assert.match(live, /💭.*read the spec/);
 	assert.match(live, /read app\.py/);
 	assert.match(live, /bash .*pytest/);
 	// Done: the score and per-rep lines replace the feed.

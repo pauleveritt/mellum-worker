@@ -79,7 +79,7 @@ const timers = new Set<ReturnType<typeof setInterval>>();
 // A global flag lets the lesson panel step aside so the feed has the space.
 type ChallengeFeed = {
 	tier: string; label: string; runs: number;
-	runsDone: number; turns: number; calls: string[]; started: number;
+	runsDone: number; turns: number; calls: string[]; started: number; thinking?: string;
 	done?: { passed: number; total: number; rows: { passed: boolean; turns: number; wall: number }[] };
 };
 let challenge: ChallengeFeed | undefined;
@@ -101,8 +101,16 @@ export function renderFeed(c: ChallengeFeed, width: number, theme: any, truncate
 			`  rep ${i + 1}: ${r.passed ? "pass" : "fail"} · ${r.turns} turns · ${Math.round(r.wall)}s`)));
 		lines.push("", theme.fg("dim", " done · type to talk to the model"));
 	} else {
-		lines.push(theme.fg("dim", ` turn ${c.turns} · ${secs}s · the model is building…`), "");
-		const feed = c.calls.slice(-10);
+		lines.push(theme.fg("dim", ` turn ${c.turns} · ${secs}s · the model is building…`));
+		// The current turn's thinking, tail first, as two lines at most.
+		if (c.thinking) {
+			const cw = Math.max(10, w - 4);
+			let t = c.thinking.length > cw * 2 ? `…${c.thinking.slice(-(cw * 2 - 1))}` : c.thinking;
+			for (let i = 0, n = 0; i < t.length && n < 2; i += cw, n += 1)
+				lines.push(theme.fg("muted", ` ${n === 0 ? "💭" : "  "} ${t.slice(i, i + cw)}`));
+		}
+		lines.push("");
+		const feed = c.calls.slice(-8);
 		if (!feed.length) lines.push(theme.fg("dim", "  waiting for the model’s first move…"));
 		for (const call of feed) lines.push(` ${theme.fg("mdCode", call)}`);
 	}
@@ -111,12 +119,12 @@ export function renderFeed(c: ChallengeFeed, width: number, theme: any, truncate
 
 /** Read the in-flight run: the newest trace, how many runs are done, the turn count, and each
  * tool call so far ("bash python app.py"), so the command can stream what the model is doing. */
-function progress(runsDir: string): { trace: string; runsDone: number; turns: number; calls: string[] } {
+function progress(runsDir: string): { trace: string; runsDone: number; turns: number; calls: string[]; thinking: string } {
 	let subs: string[] = [];
 	try {
 		subs = readdirSync(runsDir);
 	} catch {
-		return { trace: "", runsDone: 0, turns: 0, calls: [] };
+		return { trace: "", runsDone: 0, turns: 0, calls: [], thinking: "" };
 	}
 	let runsDone = 0;
 	let trace = "";
@@ -133,16 +141,20 @@ function progress(runsDir: string): { trace: string; runsDone: number; turns: nu
 	}
 	let turns = 0;
 	const calls: string[] = [];
+	// The model's reasoning streams as reasoning_content deltas; keep the current turn's,
+	// reset each provider_request, so the feed shows what it is thinking right now.
+	let think = "";
 	if (trace) {
 		let txt = "";
 		try {
 			txt = readFileSync(trace, "utf8");
 		} catch {
-			return { trace, runsDone, turns, calls };
+			return { trace, runsDone, turns, calls, thinking: "" };
 		}
 		for (const line of txt.split("\n")) {
 			if (line.includes('"provider_request"')) {
 				turns += 1;
+				think = "";
 			} else if (line.includes('"tool_call"')) {
 				try {
 					const ev = JSON.parse(line);
@@ -152,10 +164,13 @@ function progress(runsDir: string): { trace: string; runsDone: number; turns: nu
 				} catch {
 					// a line still being written
 				}
+			} else if (line.includes('"reasoning_content"')) {
+				const m = line.match(/"reasoning_content"\s*:\s*("(?:[^"\\]|\\.)*")/);
+				if (m) { try { think += JSON.parse(m[1]); } catch { /* a partial line */ } }
 			}
 		}
 	}
-	return { trace, runsDone, turns, calls };
+	return { trace, runsDone, turns, calls, thinking: think.replace(/\s+/g, " ").trim() };
 }
 
 export interface RunRow { passed: boolean; turns: number; wall: number; }
@@ -351,8 +366,8 @@ async function runChallenge(tier: string, units: string[], runs: number, arm: st
 	child.stderr?.on("data", keep);
 
 	const tick = setInterval(() => {
-		const { runsDone, turns, calls } = progress(runsDir);
-		if (challenge) { challenge.runsDone = runsDone; challenge.turns = turns; challenge.calls = calls; }
+		const { runsDone, turns, calls, thinking } = progress(runsDir);
+		if (challenge) { challenge.runsDone = runsDone; challenge.turns = turns; challenge.calls = calls; challenge.thinking = thinking; }
 		challengeRefresh?.();
 		const where = runs > 1 ? `run ${Math.min(runsDone + 1, runs)}/${runs} ` : "";
 		ctx.ui?.setStatus?.("challenge", `${tier}: ${where}turn ${turns}…`);

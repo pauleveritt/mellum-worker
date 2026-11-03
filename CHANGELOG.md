@@ -11,7 +11,8 @@ Versions match git tags; pin one in both install lines.
   one-line status in the footer. A run now pins a feed panel — the tier and
   remedy label, the current run and turn, the last tool calls as they happen, and
   the score with per-rep lines when it finishes — and the lesson panel steps
-  aside while it runs so the feed has the space.
+  aside while it runs so the feed has the space. It also streams the model's
+  current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
 
