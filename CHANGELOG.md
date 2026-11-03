@@ -6,6 +6,13 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **A lesson's `TASK.md` points at where the detail lives.** The hands-on
+  sandbox (`/lesson E1`) wrote the task as the suite's one-line prompt alone, so
+  it looked self-contained when it is not. It now keeps that line verbatim and
+  adds, when the base ships them, "read specs/roadmap.md for this phase" and "the
+  test command and what not to do are in AGENTS.md" — so pointing the model at
+  `TASK.md` leads it to the requirements, not a dead end. The measured eval is
+  untouched; it reads the suite's prompt, never `TASK.md`.
 - **`/remedy` lists what each unit does, and space toggles.** The picker showed
   each unit's pathology — the failure it fixes — so every line read as if the
   remedy caused the problem (`guard/foreground-server  Starts a foreground server

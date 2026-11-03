@@ -90,6 +90,22 @@ test("prepareProject sets up project/<number> with the lesson's starting files, 
 	assert.equal(existsSync(join(dir, "stray.py")), false, "a second prepare starts fresh");
 });
 
+test("TASK.md points at the specs folder and AGENTS.md when the base ships them", async () => {
+	const { prepareProject } = await tutor();
+	const root = mkdtempSync(join(tmpdir(), "repo-"));
+	const suite = join(root, "learn/code/suites/demo");
+	mkdirSync(join(suite, "base", "specs"), { recursive: true });
+	mkdirSync(join(suite, "prompts"), { recursive: true });
+	writeFileSync(join(suite, "base", "specs", "roadmap.md"), "# Phase 1\n");
+	writeFileSync(join(suite, "base", "AGENTS.md"), "# notes\n");
+	writeFileSync(join(suite, "prompts", "01.md"), "Implement Phase 1 — Home Page.\n");
+	const dir = prepareProject(root, { number: "E6", before: "uv run python learn/code/harness.py run --suite demo --repeat 3" });
+	const task = readFileSync(join(dir, "TASK.md"), "utf8");
+	assert.match(task, /^Implement Phase 1 — Home Page\./, "keeps the measured prompt verbatim at the top");
+	assert.match(task, /specs\/roadmap\.md for this phase/);
+	assert.match(task, /constraints are in AGENTS\.md|not to do are in AGENTS\.md/);
+});
+
 test("a lesson's suites folder comes from --suites-dir when the page gives one", async () => {
 	const { lessonSuite } = await tutor();
 	assert.deepEqual(lessonSuite("/r", "harness.py run --suites-dir learn/challenges --suite e6 --repeat 3"), "/r/learn/challenges/e6");

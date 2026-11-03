@@ -305,6 +305,14 @@ export function prepareProject(root: string, lesson: Pick<Lesson, "number" | "be
 	}
 	// A command lesson (the Start tier) has no suite; give it a small task to try the worker on.
 	if (!task && !suite) task = "Create `add.py` with a function `add(a, b)` that returns their sum, and a\ntest `test_add.py` that checks it. Run the whole test file.\n";
+	// A suite task is deliberately terse — the detail lives in the project, as it would in real work —
+	// so TASK.md points at where to read it: the specs folder and AGENTS.md (whichever the base ships).
+	if (suite && task) {
+		const refs: string[] = [];
+		if (existsSync(join(dir, "specs", "roadmap.md"))) refs.push("Your instructions are in the specs folder: read specs/roadmap.md for this phase.");
+		if (existsSync(join(dir, "AGENTS.md"))) refs.push("The test command and what not to do are in AGENTS.md.");
+		if (refs.length) task = `${task.trimEnd()}\n\n${refs.join("\n")}\n`;
+	}
 	if (task) writeFileSync(join(dir, "TASK.md"), task);
 	mkdirSync(join(dir, ".pi", "extensions"), { recursive: true });
 	writeFileSync(join(dir, ".pi", "extensions", "remedies.ts"),
