@@ -41,7 +41,7 @@
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
  */
 import { spawn } from "node:child_process";
-import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -124,6 +124,13 @@ export function registerDelegate(pi: any, run: typeof spawnWorker = spawnWorker)
 export const ACCEPTANCE_TEST = "tests/test_acceptance.py";
 export const ACCEPTANCE_CMD = "uv run --with pytest python -m pytest tests/test_acceptance.py -q";
 
+/** Keep the authored test valid Python: the model's recurring bug is nested double-quotes. */
+export const QUOTING_RULE =
+	"Write valid Python: when a string literal you assert contains a double-quote (for example an " +
+	`HTML attribute like class="card" or charset="UTF-8"), make that Python string SINGLE-quoted ` +
+	`('...') so the inner double-quotes need no escaping. Never nest unescaped double-quotes inside a ` +
+	"double-quoted string — that is a syntax error.";
+
 /** The architect prompt: write the handover (a COMPLETE failing acceptance test + a brief), never the code. */
 export function authorPrompt(task: string): string {
 	return (
@@ -144,6 +151,7 @@ export function authorPrompt(task: string): string {
 		"to probing behaviour through any route or output. A behaviour that looks right through a route can " +
 		"still be built on the wrong name or shape; the named contract is what a stricter grader checks, so " +
 		"assert the spec's literal names, counts and strings exactly as written.\n" +
+		QUOTING_RULE + "\n" +
 		`2. BRIEF.md — 2 to 4 sentences: what to build, which files, and this exact command to make pass:\n` +
 		`   ${ACCEPTANCE_CMD}\n` +
 		"Before you stop, re-read the spec and confirm every requirement has a matching assertion; add any " +
@@ -153,17 +161,60 @@ export function authorPrompt(task: string): string {
 	);
 }
 
-/** Repair prompt: the authored oracle does not parse. The architect fixes ONLY the syntax, keeping
+/** Repair prompt: an authored oracle does not parse. The architect fixes ONLY the syntax, keeping
  * every assertion, so an authored-but-broken test (finding 1) can't block the whole run. */
-export function repairPrompt(error: string): string {
+export function repairPrompt(error: string, path: string = ACCEPTANCE_TEST): string {
 	return (
-		`The acceptance test ${ACCEPTANCE_TEST} you just wrote does not parse — Python reports a syntax ` +
+		`The acceptance test ${path} you just wrote does not parse — Python reports a syntax ` +
 		"error, so pytest cannot even collect it. Fix ONLY the syntax so the file compiles cleanly. Do " +
 		"NOT remove, weaken or change the meaning of any assertion — keep every check exactly as it is, " +
 		"just make it valid Python. A common cause is nested double-quotes inside a double-quoted string " +
-		`(for example asserting a literal that itself contains "); use single quotes for the inner ` +
-		"literal, or escape it. Rewrite the whole file correctly, then stop.\n\n" +
+		`(for example asserting a literal that itself contains "): fix it by making the OUTER string a ` +
+		"single-quoted Python string, so the inner double-quotes need no escaping — do NOT turn the " +
+		"checked value into a string that is always true. Use the WRITE tool to replace the ENTIRE file " +
+		"with one corrected version in a single write; do NOT make piecemeal edits (they are slow and " +
+		"error-prone here). Then stop.\n\n" +
 		`Syntax error:\n${error}`
+	);
+}
+
+// ── Per-phase delegation (MELLUM_DELEGATE_PHASED=1) ─────────────────────────────
+// The throughput wall on a multi-phase spec is one worker invocation spending a finite
+// turn budget on edit churn. Per-phase gives each phase its OWN fresh worker (fresh budget)
+// against a smaller, cumulative-safe oracle, and git-checkpoints a passing phase so a later
+// phase cannot silently break an earlier one. The architect derives the phases from the
+// spec (it names no suite phase), so this stays agnostic.
+
+/** Phase test files the architect writes, ordered: tests/test_phase1_*.py, test_phase2_*.py, … */
+export const PHASE_TEST_DIR = "tests";
+export const PHASE_TEST_RE = /^test_phase(\d+)[_.].*\.py$/;
+/** One fresh-budget retry per phase before it is declared failed. */
+export const MAX_PHASE_RETRIES = 1;
+
+/** The phased architect prompt: decompose the spec into ordered phases and write one cumulative,
+ * complete acceptance test per phase, each pinning exact named contracts. Never the code. */
+export function authorPhasesPrompt(task: string): string {
+	return (
+		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code.\n" +
+		"Read the task below AND every spec or notes file already in this directory (a specs/ folder, " +
+		"AGENTS.md, a roadmap). The spec is built in MILESTONES that build on each other. Break it into " +
+		"ORDERED PHASES (phase 1 is the first working slice; each later phase adds the next milestone). " +
+		"For each phase N, write ONE test file:\n" +
+		`  ${PHASE_TEST_DIR}/test_phaseN_<slug>.py  (N starts at 1, contiguous — 1, 2, 3, …)\n` +
+		"Each phase file is a COMPLETE acceptance test for THAT phase's requirements — assert every " +
+		"requirement the phase adds, each as its own explicit check — and it must stay green once later " +
+		"phases are built (test only what exists by the end of its own phase, never a later phase). It " +
+		"must FAIL now, before any implementation.\n" +
+		"Pin EXACT NAMED CONTRACTS, not just behaviour. Wherever the spec names something concrete — a " +
+		"module, a module-level variable or attribute, a class, a function, a collection or field name, an " +
+		"exact count, or a verbatim seed string or literal — assert that named thing DIRECTLY (import the " +
+		"module and check the attribute, its type, its length/count, and the exact seed values), as well as " +
+		"probing behaviour through any route or output.\n" +
+		QUOTING_RULE + "\n" +
+		"Then write BRIEF.md — 2 to 4 sentences on what to build overall and which files. Write ONLY the " +
+		"phase test files and BRIEF.md, nothing else; do NOT create, edit or stub any implementation file. " +
+		"Before you stop, confirm the phases are contiguous from 1 and together cover the whole spec.\n\n" +
+		`Task: ${task}`
 	);
 }
 
@@ -256,6 +307,11 @@ export function spawnWorker(brief: string): Promise<string> {
 /** The repair pass: the architect fixes the syntax of the oracle it just wrote. */
 export function spawnRepair(error: string): Promise<string> {
 	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${repairPrompt(error)}`], "architect: repairing the oracle's syntax");
+}
+
+/** The phased architect pass: decompose the spec and write one cumulative test per phase. */
+export function spawnAuthorPhases(task: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPhasesPrompt(task)}`], "architect: decomposing the spec into phases");
 }
 
 /** Check that a Python file parses. Resolves undefined when it compiles, else the syntax error.
@@ -396,6 +452,130 @@ export async function doTask(task: string, deps: DoTaskDeps = {}): Promise<strin
 		passed && !verbose() ? "" : `--- acceptance output ---\n${clip(output)}`,
 		`--- worker report ---\n${clip(workerReport)}`,
 	].filter(Boolean).join("\n");
+}
+
+export interface DoTaskPhasedDeps extends DoTaskDeps {
+	authorPhases?: (task: string) => Promise<string>;
+	shell?: (cmd: string) => Promise<{ passed: boolean; output: string }>;
+}
+
+/** The phase test files the architect wrote, ordered by phase number: tests/test_phase1_*.py … */
+export function listPhaseTests(cwd: string): string[] {
+	let files: string[] = [];
+	try { files = readdirSync(resolve(cwd, PHASE_TEST_DIR)); } catch { return []; }
+	return files
+		.map((f) => ({ f, m: PHASE_TEST_RE.exec(f) }))
+		.filter((x) => x.m)
+		.sort((a, b) => Number(a.m![1]) - Number(b.m![1]) || a.f.localeCompare(b.f))
+		.map((x) => `${PHASE_TEST_DIR}/${x.f}`);
+}
+
+/** The cumulative pytest command for phases 0..i (every phase so far must stay green). */
+export function phaseCmd(paths: string[], upto: number): string {
+	return `uv run --with pytest python -m pytest ${paths.slice(0, upto + 1).join(" ")} -q`;
+}
+
+/** What the per-phase worker is told: pass THIS phase's test without breaking earlier phases. */
+export function phaseWorkerBrief(paths: string[], i: number): string {
+	return (
+		`This is phase ${i + 1} of ${paths.length}. Read BRIEF.md for the overall goal, then implement the ` +
+		`solution so this phase's acceptance test passes:\n  ${paths[i]}\n` +
+		(i > 0 ? "Earlier phases are already built and their tests pass — do NOT break them. " : "") +
+		`Do NOT edit any ${PHASE_TEST_DIR}/test_phase*.py file; they are the frozen oracle. Run this exact ` +
+		`command until every test passes, then stop:\n  ${phaseCmd(paths, i)}`
+	);
+}
+
+/**
+ * Per-phase delegation (MELLUM_DELEGATE_PHASED=1): the architect decomposes the spec into ordered
+ * phases (one cumulative test file each); then each phase gets its OWN fresh worker against the
+ * cumulative test, and a passing phase is git-checkpointed so a later phase cannot silently break
+ * an earlier one. Fresh budget per phase is what single-shot lacked.
+ */
+export async function doTaskPhased(task: string, deps: DoTaskPhasedDeps = {}): Promise<string> {
+	const authorPhases = deps.authorPhases ?? spawnAuthorPhases;
+	const worker = deps.worker ?? spawnWorker;
+	const acceptance = deps.acceptance ?? runAcceptance;
+	const compile = deps.compile ?? compileTest;
+	const repair = deps.repair ?? spawnRepair;
+	const shell = deps.shell ?? runAcceptance;
+	const cwd = process.cwd();
+	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
+
+	const t0 = Date.now();
+	let authorReport = await authorPhases(task);
+	let paths = listPhaseTests(cwd);
+	if (!paths.length) {
+		return `delegate(phased): the architect wrote no ${PHASE_TEST_DIR}/test_phaseN_*.py files, so there is no phased handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	}
+	// Every phase test must parse before we freeze or run anything (finding 1 recurs per file).
+	for (const p of paths) {
+		let err = await compile(resolve(cwd, p));
+		for (let i = 0; err && i < MAX_ORACLE_REPAIRS; i++) {
+			if (verbose()) process.stdout.write(`\n[handover] ${p} does not parse — asking the architect to fix the syntax (attempt ${i + 1}/${MAX_ORACLE_REPAIRS}):\n${err}\n`);
+			authorReport = await repair(err, p);
+			err = existsSync(resolve(cwd, p)) ? await compile(resolve(cwd, p)) : "(test missing)";
+		}
+		if (err) return `delegate(phased): ${p} does not parse after ${MAX_ORACLE_REPAIRS} repair attempts, so it cannot be frozen or run.\n\n--- syntax error ---\n${err}\n\n--- architect output (tail) ---\n${authorReport.slice(-1200)}`;
+	}
+	const authorWall = secs(t0);
+	const authorStats = latestRunStats(cwd);
+	if (verbose()) {
+		for (const p of paths) { try { process.stdout.write(`\n──── ${p} ────\n${readFileSync(resolve(cwd, p), "utf8")}\n`); } catch {} }
+		try { process.stdout.write(`\n──── BRIEF.md ────\n${readFileSync(resolve(cwd, "BRIEF.md"), "utf8")}\n`); } catch {}
+	}
+
+	// Git checkpointing (best-effort): a clean slate, then a commit per passing phase, so a later
+	// phase that breaks an earlier one is reverted to the last good phase, not carried forward.
+	const haveGit = (await shell("command -v git >/dev/null 2>&1")).passed;
+	if (haveGit) {
+		// Keep heavy/irrelevant paths out of the checkpoints so `git clean` on a revert is safe.
+		try {
+			const gi = resolve(cwd, ".gitignore");
+			const have = existsSync(gi) ? readFileSync(gi, "utf8") : "";
+			const add = [".venv/", "__pycache__/", "*.pyc", "grader_tests/"].filter((l) => !have.includes(l));
+			if (add.length) writeFileSync(gi, (have && !have.endsWith("\n") ? have + "\n" : have) + add.join("\n") + "\n");
+		} catch {}
+		await shell('git init -q && git add -A && git -c user.email=w@w -c user.name=w commit -q -m handover --no-verify || true');
+	}
+
+	const stage = (name: string, stats: { turns: number } | undefined, wall: number) =>
+		`${name} ${stats?.turns != null ? `${stats.turns} turns` : "turns n/a"}/${wall}s`;
+	const freeze = (p: string, ro: boolean) => { try { chmodSync(resolve(cwd, p), ro ? 0o444 : 0o644); } catch {} };
+	const lines: string[] = [];
+	let passedCount = 0;
+	let prevId = authorStats?.id;
+	for (let i = 0; i < paths.length; i++) {
+		for (let j = 0; j <= i; j++) freeze(paths[j], true); // the worker cannot weaken any oracle so far
+		const cmd = phaseCmd(paths, i);
+		const tPhase = Date.now();
+		let passed = false, output = "";
+		for (let attempt = 0; attempt <= MAX_PHASE_RETRIES && !passed; attempt++) {
+			await worker(phaseWorkerBrief(paths, i)); // a fresh worker (fresh turn budget) each attempt
+			({ passed, output } = await acceptance(cmd));
+		}
+		const phaseWall = secs(tPhase);
+		const ws = latestRunStats(cwd);
+		const wStats = ws && ws.id !== prevId ? ws : undefined;
+		prevId = ws?.id ?? prevId;
+		lines.push(`phase ${i + 1}/${paths.length} (${paths[i]}): ${passed ? "PASS ✅" : "FAIL ❌"} · ${stage("worker", wStats, phaseWall)}`);
+		if (passed) {
+			passedCount++;
+			if (haveGit) await shell(`git add -A && git -c user.email=w@w -c user.name=w commit -q -m "phase ${i + 1}" --no-verify || true`);
+		} else {
+			if (verbose()) lines.push(`--- phase ${i + 1} acceptance output ---\n${output.slice(-1200)}`);
+			if (haveGit) { for (let j = 0; j <= i; j++) freeze(paths[j], false); await shell("git reset --hard -q && git clean -fdq || true"); }
+			break; // a later phase cannot build on a broken one
+		}
+	}
+	for (const p of paths) freeze(p, false);
+	const totalWall = secs(t0);
+	return [
+		`handover (phased): ${paths.length} phase test${paths.length === 1 ? "" : "s"} + BRIEF.md written by the architect.`,
+		`phases passed: ${passedCount}/${paths.length}${passedCount < paths.length ? " (stopped at the first failing phase)" : " — full pass ✅"}`,
+		...lines,
+		`turns/wall: ${stage("architect", authorStats, authorWall)} · total ${totalWall}s`,
+	].join("\n");
 }
 
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
@@ -649,11 +829,12 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
 /**
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
-export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
+export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
 	// How the primary farms a brief to a fresh worker: the real spawn, or a test's stand-in.
 	const runWorker = options.spawnWorker ?? spawnWorker;
 	// The full task-delegation loop (author the handover, then run the worker to pass) and its deps.
 	const doTaskDeps: DoTaskDeps = { author: options.author, worker: runWorker, acceptance: options.acceptance };
+	const doTaskPhasedDeps: DoTaskPhasedDeps = { authorPhases: options.authorPhases, worker: runWorker, acceptance: options.acceptance };
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;
@@ -866,6 +1047,13 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			// and the frozen acceptance test is the verdict. Only a spawned child (CHILD_ENV) runs the
 			// task in this session, below — so no recursion.
 			if (process.env[CHILD_ENV] !== "1") {
+				// MELLUM_DELEGATE_PHASED=1 runs the per-phase loop: the architect splits the spec into
+				// ordered phases and each phase gets its own fresh worker, checkpointed as it passes.
+				if (process.env.MELLUM_DELEGATE_PHASED === "1") {
+					say(ctx, "mellum: decomposing the spec into phases, then running a fresh worker per phase…");
+					say(ctx, await doTaskPhased(want, doTaskPhasedDeps));
+					return;
+				}
 				say(ctx, "mellum: writing the handover (failing test + brief), then running the worker to pass…");
 				say(ctx, await doTask(want, doTaskDeps));
 				return;

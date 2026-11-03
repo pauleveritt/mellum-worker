@@ -149,6 +149,87 @@ test("compileTest resolves undefined on valid Python and an error string on a sy
 	});
 });
 
+test("authorPhasesPrompt tells the architect to split into ordered phases and pin named contracts", async () => {
+	const { authorPhasesPrompt } = await load();
+	const p = authorPhasesPrompt("build a board");
+	assert.match(p, /ORDERED PHASES/i);
+	assert.match(p, /test_phaseN_<slug>\.py/);
+	assert.match(p, /contiguous/i);
+	assert.match(p, /NAMED CONTRACTS/i);
+	assert.match(p, /stay green once later\s+phases are built/i, "phase tests are cumulative-safe");
+	assert.match(p, /SINGLE-quoted/i, "warns against nested double-quotes");
+});
+
+test("listPhaseTests returns the phase files ordered by phase number", async () => {
+	const { listPhaseTests } = await load();
+	await inTempCwd(async (dir) => {
+		mkdirSync(join(dir, "tests"), { recursive: true });
+		for (const f of ["test_phase2_board.py", "test_phase10_last.py", "test_phase1_home.py", "test_helpers.py"]) writeFileSync(join(dir, "tests", f), "x = 1\n");
+		assert.deepEqual(listPhaseTests(dir), ["tests/test_phase1_home.py", "tests/test_phase2_board.py", "tests/test_phase10_last.py"]);
+	});
+});
+
+test("phaseCmd is cumulative and phaseWorkerBrief freezes the oracle and warns from phase 2", async () => {
+	const { phaseCmd, phaseWorkerBrief } = await load();
+	const paths = ["tests/test_phase1_a.py", "tests/test_phase2_b.py"];
+	assert.equal(phaseCmd(paths, 0), "uv run --with pytest python -m pytest tests/test_phase1_a.py -q");
+	assert.equal(phaseCmd(paths, 1), "uv run --with pytest python -m pytest tests/test_phase1_a.py tests/test_phase2_b.py -q");
+	const b0 = phaseWorkerBrief(paths, 0);
+	assert.match(b0, /phase 1 of 2/);
+	assert.match(b0, /do NOT edit any tests\/test_phase\*\.py/i);
+	assert.doesNotMatch(b0, /do NOT break/i, "phase 1 has no earlier phase to break");
+	const b1 = phaseWorkerBrief(paths, 1);
+	assert.match(b1, /phase 2 of 2/);
+	assert.match(b1, /do NOT break them/i);
+});
+
+test("doTaskPhased runs one fresh worker per phase against the cumulative test and reports a full pass", async () => {
+	const { doTaskPhased } = await load();
+	await inTempCwd(async () => {
+		const workerBriefs = [], ran = [];
+		const authorPhases = async () => { mkdirSync("tests", { recursive: true }); writeFileSync("tests/test_phase1_a.py", "def t():\n    assert True\n"); writeFileSync("tests/test_phase2_b.py", "def t():\n    assert True\n"); return "wrote 2 phases"; };
+		const worker = async (b) => { workerBriefs.push(b); return "impl"; };
+		const acceptance = async (cmd) => { ran.push(cmd); return { passed: true, output: "ok" }; };
+		const compile = async () => undefined;
+		const shell = async () => ({ passed: false, output: "" }); // report no git, so no checkpoint side effects
+		const r = await doTaskPhased("build it", { authorPhases, worker, acceptance, compile, shell });
+		assert.equal(workerBriefs.length, 2, "one worker per phase");
+		assert.match(ran[0], /test_phase1_a\.py -q$/);
+		assert.match(ran[1], /test_phase1_a\.py tests\/test_phase2_b\.py -q$/, "phase 2 runs the cumulative command");
+		assert.match(r, /phases passed: 2\/2/);
+		assert.match(r, /full pass/);
+	});
+});
+
+test("doTaskPhased stops at the first failing phase and does not run later phases", async () => {
+	const { doTaskPhased, MAX_PHASE_RETRIES } = await load();
+	await inTempCwd(async () => {
+		let workerCalls = 0;
+		const authorPhases = async () => { mkdirSync("tests", { recursive: true }); for (const n of [1, 2, 3]) writeFileSync(`tests/test_phase${n}_x.py`, "def t():\n    assert True\n"); return "wrote 3 phases"; };
+		const worker = async () => { workerCalls++; return "impl"; };
+		const acceptance = async (cmd) => ({ passed: !cmd.includes("test_phase2"), output: "boom" }); // phase 2 never passes
+		const r = await doTaskPhased("x", { authorPhases, worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(workerCalls, 1 + (MAX_PHASE_RETRIES + 1), "phase 1 once, phase 2 retried then given up, phase 3 never");
+		assert.match(r, /phases passed: 1\/3/);
+		assert.match(r, /stopped at the first failing phase/);
+	});
+});
+
+test("doTaskPhased repairs a phase test that does not parse before running the worker", async () => {
+	const { doTaskPhased } = await load();
+	await inTempCwd(async () => {
+		let repairedPath = "", parses = false, workerRan = false;
+		const authorPhases = async () => { mkdirSync("tests", { recursive: true }); writeFileSync("tests/test_phase1_a.py", "broken\n"); return "wrote 1 phase"; };
+		const compile = async (p) => (parses ? undefined : (p.includes("test_phase1_a.py") ? "SyntaxError: invalid syntax" : undefined));
+		const repair = async (err, p) => { repairedPath = p; parses = true; writeFileSync("tests/test_phase1_a.py", "def t():\n    assert True\n"); return "fixed"; };
+		const worker = async () => { workerRan = true; return "impl"; };
+		const r = await doTaskPhased("x", { authorPhases, worker, compile, repair, acceptance: async () => ({ passed: true, output: "ok" }), shell: async () => ({ passed: false, output: "" }) });
+		assert.match(repairedPath, /tests\/test_phase1_a\.py/, "repair was called with the phase test path");
+		assert.equal(workerRan, true, "the worker ran after the phase test was made to parse");
+		assert.match(r, /phases passed: 1\/1/);
+	});
+});
+
 test("in the primary, /mellum <task> authors a handover then runs the worker, no model switch", async () => {
 	delete process.env.MELLUM_WORKER_CHILD;
 	await inTempCwd(async () => {
@@ -228,6 +309,16 @@ test("authorPrompt tells the architect to pin exact named contracts, not just be
 	assert.match(p, /exact count/i, "pins counts");
 	assert.match(p, /verbatim seed string/i, "pins verbatim seed values");
 	assert.match(p, /import the module and check the attribute/i, "asserts the named thing directly, not only via a route");
+	assert.match(p, /SINGLE-quoted/i, "warns against nested double-quotes");
+});
+
+test("repairPrompt names a path, forbids weakening, and tells the architect to rewrite via write", async () => {
+	const { repairPrompt } = await load();
+	const p = repairPrompt("SyntaxError: x", "tests/test_phase1_home.py");
+	assert.match(p, /tests\/test_phase1_home\.py/, "names the broken file");
+	assert.match(p, /do NOT.*weaken|weaken.*meaning/i, "keeps the assertions");
+	assert.match(p, /always true/i, "forbids turning a check into a tautology");
+	assert.match(p, /WRITE tool to replace the ENTIRE file/i, "rewrite, not piecemeal edits");
 });
 
 test("withDelegateNudge appends the nudge to user messages only", async () => {

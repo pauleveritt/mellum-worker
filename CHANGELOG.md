@@ -30,6 +30,20 @@ Versions match git tags; pin one in both install lines.
   shown inline. The loop reports a `turns/wall` line per stage (architect ·
   worker · acceptance · total) from the run records and parent timing.
 
+- **Per-phase delegation (`MELLUM_DELEGATE_PHASED=1`).** For a multi-milestone
+  spec, one worker holding every phase in a single turn budget spends it on edit
+  churn and does not converge. With this on, `/mellum <task>` runs a phased loop:
+  the architect decomposes the spec into ordered phases and writes one cumulative
+  acceptance test per phase (`tests/test_phase1_*.py`, `test_phase2_*.py`, …), then
+  each phase gets its OWN fresh worker (a fresh turn budget) against the cumulative
+  test, and a passing phase is git-checkpointed so a later phase that breaks an
+  earlier one is reverted to the last good phase rather than carried forward. The
+  architect derives the phases from the spec, so it stays agnostic. The report
+  gives a per-phase PASS/FAIL line and how many phases passed. Default (unset) is
+  the single-shot loop, unchanged. The repair prompt now tells the architect to
+  rewrite a non-parsing test with a single `write` (not piecemeal edits) and to
+  single-quote any string literal containing a double-quote.
+
 - **The delegation architect pins exact named contracts, and a broken oracle is
   repaired before it freezes.** The architect prompt now asks it to assert the
   spec's **literal names** directly — import the module and check the attribute,
