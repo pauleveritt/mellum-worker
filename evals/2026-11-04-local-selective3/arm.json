@@ -1,0 +1,11 @@
+{
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output"
+  ],
+  "n": 3,
+  "purpose": "five-unit selective task-injection local Metal Phase 1 exploratory screen"
+}

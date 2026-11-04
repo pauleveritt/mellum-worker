@@ -491,3 +491,10 @@ Replacing older conversation context with a generated summary to make room for
 later work. Summarization can make additional inference requests outside normal
 agent turns. Include those requests and tokens in a whole-session budget; a
 summary can also quote an injected instruction after its original entry is gone.
+
+### Guard false positive
+
+A guard refusing an allowed action because its detection rule mistakes it for
+forbidden behavior. A command that merely inspects a server library can trigger
+a broad server-name matcher. Count the refusal, but do not count it as evidence
+that the guard prevented a real server start or hang.

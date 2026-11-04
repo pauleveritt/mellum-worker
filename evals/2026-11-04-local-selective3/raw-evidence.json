@@ -1,0 +1,20 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "local-selective3-20261104T223643Z.tar.gz",
+  "sha256": "786848a691bbc9488817d2e0d8ca3409461346609aef8b0f4e4630f69b405a82",
+  "size_bytes": 2907426,
+  "source_commit": "7b70d099c7d549cc87feb41db1e3b2f686e7f698",
+  "archive_integrity": {
+    "members": 484,
+    "critical_files_byte_verified": 30
+  },
+  "scope": [
+    "three fresh local Metal five-unit selective-injection Phase 1 sessions",
+    "raw provider/session/workspace/checker/relay evidence",
+    "backend qualification/freeze and pre/post identity",
+    "independent local server shutdown readback"
+  ],
+  "archive_policy": "No weights, private keys, credential stores or FIXES.md. Credential-like scan passed. No existing asset replaced.",
+  "publication_status": "held by user; retained locally, not uploaded",
+  "published_download_verified": false
+}

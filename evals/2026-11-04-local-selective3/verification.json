@@ -1,0 +1,37 @@
+{
+  "implementation_commit": "7b70d09",
+  "full_suite": {
+    "passed": 653,
+    "failed": 0,
+    "duration_ms": 113780.875959,
+    "raw_log": "runs/2026-11-04-local-selective3/npm-test-final.log"
+  },
+  "focused_checks_passed": 47,
+  "new_regressions_observed_failing_before_fix": 8,
+  "actual_pi": {
+    "pi_version": "1.4.0",
+    "scope": "actual Pi RPC, deterministic local provider, only read fixture; no GPU or counted coding run",
+    "checks": {
+      "V1": true,
+      "V2": true,
+      "PARENT1": true,
+      "W1": true,
+      "W1-CONTINUE": true,
+      "DISABLED": true,
+      "REENABLED": true,
+      "PARENT2": true,
+      "W2": true,
+      "mid_run_enable_next_request": true,
+      "vanilla_visible_injections": true,
+      "worker_visible_injections": true
+    },
+    "requests": 20,
+    "qualified": true
+  },
+  "contained_boundary_checks_passed": 27,
+  "contained_interaction_checks_passed": 10,
+  "independent_review": "no findings; 44 focused checks independently passed",
+  "docs_checks_passed": 21,
+  "site_build": "No issues found",
+  "scope": "Implementation suite preceded collection. Final evidence-only docs checks and build passed afterward."
+}

@@ -1,0 +1,6 @@
+{
+  "backend": "temporary-docker",
+  "image": "sha256:85acd0a47e68c71fab65df785cc410e0dde9ddc70fe772f83e4eedb08aab138e",
+  "control": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-selective3/remedy/.container-210e8ab662c041248c89a9c5c9638c83",
+  "container_removed": true
+}

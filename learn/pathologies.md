@@ -51,6 +51,7 @@ entries below.
 | 18 | Recovered connection errors leave token usage unknown | none — retain errors and report unknown totals rather than partial usage |
 | 19 | Verifies against another app and signals its server | none implemented — qualify filesystem/process/network run isolation before further unattended or parallel collection |
 | 20 | Compaction bypasses the agent budget recorder | none — reconcile all provider traffic with an independent backend/relay counter |
+| 21 | A guard blocks a harmless check | none — repair classification and verify allowed diagnostics alongside real forbidden operations |
 
 ## It says it is done and it is not
 
@@ -248,7 +249,7 @@ entries below.
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–20 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–21 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
 
@@ -267,3 +268,16 @@ it is not a rate.*
     passed real host/sibling probes and isolated grading with a fake provider
     ([qualification](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/docs/superpowers/research/2026-11-03-contained-measurement.md)).
     This qualifies the runner boundary; no new model comparison was collected.
+
+## The guard mistakes a mention for execution
+
+21. **A guard blocks a harmless check.** A guard false positive interrupts an
+    allowed diagnostic because its text mentions a forbidden operation.
+    **Seen:** local selective-injection attempt 3 tried
+    `python -c "import uvicorn, sys; print(uvicorn.__file__)"`; the foreground guard
+    claimed it started a server and blocked it. The session continued and passed
+    its hidden grade, but no server start was prevented
+    ([record](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-04-local-selective3/README.md)).
+    **Answer:** distinguish diagnostic inspection from execution, test allowed
+    diagnostics alongside real server launches, and retain the misclassification
+    instead of interpreting every refusal as a safety benefit.

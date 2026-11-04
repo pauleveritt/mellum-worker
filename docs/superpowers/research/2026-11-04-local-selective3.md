@@ -52,3 +52,43 @@ Three repetitions do not establish reliability. Four hidden checks are narrower
 than whole-phase acceptance. Compaction payloads can bypass the agent recorder;
 independent server timing counters are a supplement, not retroactively captured
 API usage. The 16,384-token response ceiling shares each slot's context.
+
+## Outcome — 2026-11-04
+
+The three planned sessions passed hidden checks (4/4 each), health and completion.
+No replacements, provider/relay errors, stalls or compactions. Backend/relay and
+native records reconcile to 80 requests and 33,131 output tokens. Actual execution
+was 104.164/77.700/104.570 seconds, total 286.434 seconds (4m46s); medians 24
+requests, 10,538 output tokens and 104.164 seconds. Setup/grading are excluded.
+
+Both task instructions were separately visible once per session and tagged once
+per agent request; user briefs and the developer system role remained intact.
+Two oversized results were visibly trimmed. Run 3 verified endpoints in process
+but finished without creating tests; pytest exited 5 (no tests). The hidden grade
+still passed. Run 1 created an extra models.py for later phases, recorded as
+outside this phase's layout. Thus the conjunction is narrower than complete
+phase acceptance or compliance with a test-first workflow.
+
+The one native guard refusal was a diagnostic import that printed a module path,
+not a server start. This is a new observed false positive, not prevented-hang
+evidence. It explains an ordinary/native tool-hook difference: 77 native attempts
+and 13 errors versus 76 calls / 12 errors in the ordinary hooks, plus one guard
+refusal. All events and the misleading refusal advice remain in evidence.
+The comment during collection calling it a blocked foreground start was corrected
+once the actual command was read. Repair this guard classification before more
+remedy screens; no source was changed during this cohort.
+
+The new stack matches the hosted screen's observed 3/3 conjunction with more
+recorded requests (80 vs 67; median 24 vs 17). Hosted total output remains unknown, and
+backend/delivery changed, so neither token savings nor a causal quality effect is
+established. The local screen supports continued M5 Max iteration with moderate
+confidence; it selects no default. A delivery comparison needs old/new versions
+of the same local stack. The compaction accounting backlog remains unresolved;
+zero compaction here is not a fix.
+
+The [compact record](../../../evals/2026-11-04-local-selective3/README.md) contains
+all results, native-feed observations, independent budget counters, pre/post
+identity and shutdown proofs. Sources were implementation `7b70d09`; tests 653/653,
+docs caps and site build passed. The server/guardian stopped and no owned
+container/volume remains. No Runpod GPU was started. Raw evidence stays local
+under the user's upload hold.

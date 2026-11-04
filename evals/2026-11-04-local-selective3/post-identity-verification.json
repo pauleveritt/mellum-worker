@@ -1,0 +1,22 @@
+{
+  "source_image_and_runtime_unchanged": true,
+  "weight_hash_reverified_after_collection": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+  "server_identity_absent": {
+    "pid": 61148,
+    "start": "Wed Nov  4 17:24:10 2026"
+  },
+  "listener_8002": null,
+  "previous_local_backend_comparison": {
+    "model_and_hash_match": true,
+    "backend_and_runtime_match": true,
+    "server_argv_match": true,
+    "hardware_os_match": true,
+    "effective_profile_match": true,
+    "profile_settings_match": true,
+    "checker_versions_match": true
+  },
+  "notes": [
+    "Containment image and remedy sources intentionally changed; no claim that the arms are identical.",
+    "The legacy descriptive server.llama_cache field is unused for this explicit -m launch. The identical recorded argv loads the prior local GGUF path; the field is not evidence of an environment setting."
+  ]
+}

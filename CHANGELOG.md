@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [local selective-injection remedy screen](evals/2026-11-04-local-selective3/README.md)
+  records three hidden/health/completion passes, complete inference budgets and
+  verified shutdown. It retains a harmless diagnostic blocked by the foreground
+  guard, separating the observed false positive from prevented-hang claims.
+
 - The [local M5 Max layout-only screen](evals/2026-11-04-local-layout3/README.md)
   records three fresh Phase 1 sessions, two hidden/health/completion passes,
   a retained failure, and verified shutdown. Backend reconciliation preserves
