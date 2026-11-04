@@ -60,3 +60,18 @@ drift, unexpected modules, changed scoring or unverified cleanup invalidates cla
 
 Capacity/startup may fail; setup consumes the time bound. One five-unit session
 cannot attribute an effect, establish repeatability or establish comparative rates.
+
+## Outcome
+
+[Retained repeat](../../../evals/2026-11-04-guard-repair/README.md): hidden4/4,
+healthpass, settled39.932s,19requests,9078output, peak full prompt13558.
+All19requests sent16384; no provider error or unknown usage. No server/help
+command attempted, no refusal, no trim note. These behaviors were exercised
+only in the separate actual-Pi interaction qualification. Model wrote one test
+and passed it after an initial absent-tests error. All failures remain retained.
+
+Actual hardware: H10081559MiB, driver595.91.07, CUDA12.8.93, AMD EPYC9554;
+new host qualified/frozen at15:21:41UTC. Source/image identity reverified before
+and after collection. Pod stopped automatically on completion; independent MCP
+readback EXITED. No owned Docker containers/volumes or tunnel remain. Earlier
+records unchanged; no rate, causal timing or default-promotion claim.

@@ -420,15 +420,3 @@ unit and has no arm, since the delegated child was retired
 ([note](docs/superpowers/research/2026-10-29-lessons-left-the-track.md)).
 *Reopens when* the handoff block is a remedy unit and a challenge shows a
 session that fails on context without it and passes with it.
-
-**Foreground guard help queries and refusal accounting.** The H100 five-remedy
-screen passed its observed checks but blocked harmless
-`uv run --frozen uvicorn --help`. Its raw `guard_blocks` counter remained0 while
-the actual provider payload contained one refusal. Preserve the raw record;
-the payload audit records the discrepancy. Two distinct fixes are owed: exempt
-terminating help/version queries without opening real foreground launches, and
-count refusals even when an earlier hook stops the recorder's event chain.
-Neither changes the retained run or establishes that a hang was prevented.
-*Reopens when* preparing the next registered guard/remedy contrast; reproduce
-each defect separately before changing measured behavior or instrumentation.
-[Evidence](evals/2026-11-04-contained-h100/remedy-observations.json).

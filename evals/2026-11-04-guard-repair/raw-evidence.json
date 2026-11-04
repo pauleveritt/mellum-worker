@@ -1,0 +1,20 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "guard-repair-remedy-20261104T152354Z.tar.gz",
+  "sha256": "a4cde4b78da90e7184a91e1bd106feeb7fbe36b6d89682172f1f33cf07920d04",
+  "size_bytes": 973866,
+  "source_commit": "1f6627acf7b95d1743152d6b85f9639d5a3eca00",
+  "archive_integrity": {
+    "members": 367,
+    "critical_files_byte_verified": 15
+  },
+  "scope": [
+    "single repaired-remedy screen, no replacements",
+    "raw trace/session/workspace/checker/transport evidence",
+    "red regressions, boundary/interaction qualification, pinned Pod backend build/probes/freeze",
+    "stopped Pod readback"
+  ],
+  "archive_policy": "No weights, private keys, user credential stores or FIXES.md. Credential-like content scan passed; no existing release asset replaced.",
+  "published_download_verified": true,
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/guard-repair-remedy-20261104T152354Z.tar.gz"
+}

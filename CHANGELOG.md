@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [guard-repair repeat screen](evals/2026-11-04-guard-repair/README.md)
+  preserves the same five-remedy arm after the help-query and refusal-count
+  fixes: four hidden checks, health and completion passed. It includes targeted
+  interaction qualification and verified Pod shutdown; no default is promoted.
+
 - The [completed contained H100 comparison](evals/2026-11-04-contained-h100/README.md)
   retains six Vanilla attempts, six thin Worker attempts and the five-remedy
   screen on one frozen backend, with quality/completion budgets and verified

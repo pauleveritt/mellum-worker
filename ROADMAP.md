@@ -12,7 +12,7 @@ current cycle.
 **Next:** LC.13B (lesson 4's firing task), LC.26 (the pass floor behind lessons 2, 5 and 10), then LC.5 and LC.20–LC.23.
 **After:** LC.20–LC.23 in their listing order. Context/input workflows are INT.3 candidates. The M series is closed ([archive](ROADMAP-M.md)).
 **Parked:** OpenCode, Ollama, execution bounds, versioned assessments, the mediated test, one worker, INT.1, INT.2 and the PR #1 prompt/guard extraction are [backlog entries](BACKLOG.md) with reopen conditions.
-**Latest contained collection:** the shared H100 Vanilla6/Worker6 comparison and five-remedy single screen are complete; repeated remedy contrasts remain next ([record](evals/2026-11-04-contained-h100/README.md)).
+**Latest contained collection:** shared H100 Vanilla6/Worker6 comparison retained; guard defects repaired and the five-remedy repeat screen passed its observed checks ([record](evals/2026-11-04-guard-repair/README.md)). Repeated remedy contrasts remain next.
 
 ## Feature cycles
 

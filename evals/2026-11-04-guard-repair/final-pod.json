@@ -1,0 +1,86 @@
+{
+  "readback_at": "2026-11-04 15:23:04 UTC",
+  "pod": {
+    "actions": [
+      "start",
+      "terminate"
+    ],
+    "args": "",
+    "cloud": "SECURE",
+    "cost": 3.99,
+    "createdAt": "2026-11-04T15:15:27.423Z",
+    "cudaVersion": "13.2",
+    "dataCenterId": "EU-FR-1",
+    "disk": 20,
+    "globalNetworking": {
+      "enabled": false
+    },
+    "gpu": {
+      "count": 1,
+      "id": "NVIDIA H100 80GB HBM3",
+      "memory": 188,
+      "vcpuCount": 32
+    },
+    "id": "dnjioygj7izxh0",
+    "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+    "locked": false,
+    "mounts": {
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    "name": "mellum-guard-repair-rerun",
+    "ports": [
+      "22/tcp"
+    ],
+    "registry": null,
+    "runtime": {
+      "cpu": {
+        "util": 0
+      },
+      "gpus": [
+        {
+          "memoryUtil": 0,
+          "util": 0
+        }
+      ],
+      "memory": {
+        "util": 1
+      },
+      "ports": [
+        {
+          "ip": "100.65.28.163",
+          "private": 19123,
+          "public": 60050,
+          "type": "http"
+        },
+        {
+          "ip": "31.24.80.44",
+          "private": 22,
+          "public": 15445,
+          "type": "tcp"
+        }
+      ],
+      "uptime": 424
+    },
+    "ssh": {
+      "direct": {
+        "command": "ssh root@31.24.80.44 -p 15445",
+        "host": "31.24.80.44",
+        "port": 15445,
+        "username": "root"
+      },
+      "proxy": {
+        "command": "ssh dnjioygj7izxh0-64411ca3@ssh.runpod.io",
+        "host": "ssh.runpod.io",
+        "port": 22,
+        "username": "dnjioygj7izxh0-64411ca3"
+      }
+    },
+    "startedAt": "2026-11-04T15:15:27.418Z",
+    "status": "EXITED",
+    "tags": [],
+    "template": null
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "repository_tests": {"command": "npm test", "passed": 641, "failed": 0, "duration_ms": 118083.84075},
+  "docs_caps": {"command": "node --test tests/docs-caps.test.mjs", "passed": 4, "failed": 0},
+  "source_and_boundary_reverified_before_and_after": true,
+  "raw_archive_download_sha256_verified": true,
+  "pod_read_back": "EXITED",
+  "controller_and_tunnel_exited": true,
+  "local_inference_processes_remaining": [],
+  "owned_containers_remaining": [],
+  "owned_volumes_remaining": [],
+  "limits": ["One repeat screen, no success rate or individual remedy attribution", "Different H100 host, no causal timing comparison", "No real-run server/help attempt or trimming; targeted interaction proof is separate", "Four hidden checks cover less than whole-phase acceptance"]
+}
