@@ -220,6 +220,48 @@ def _write_trace(run, rows):
     (run / "trace.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
 
 
+def test_context_counts_cached_input_without_double_counting_raw_usage(tmp_path):
+    rows = [
+        {"type": "provider_request", "requestId": "r1"},
+        {"type": "provider_stream_event", "requestId": "r1",
+         "data": {"usage": {"prompt_tokens": 8120}}},
+        {"type": "message_end", "requestId": "r1", "message": {
+            "role": "assistant", "usage": {"input": 1596, "cacheRead": 6524, "cacheWrite": 0}}},
+        {"type": "provider_request", "requestId": "r2"},
+        {"type": "message_end", "requestId": "r2", "message": {
+            "role": "assistant", "usage": {"input": 100, "cacheRead": 9000, "cacheWrite": 2}}},
+    ]
+    _write_trace(tmp_path, rows)
+    result = harness.report(tmp_path)
+    assert result["context"] == 9102
+    assert result["context_uncached"] == 1596
+
+
+def test_context_does_not_invent_error_usage_or_mix_requests(tmp_path):
+    _write_trace(tmp_path, [
+        {"type": "provider_request", "requestId": "r1"},
+        {"type": "provider_stream_event", "requestId": "unrelated",
+         "data": {"usage": {"prompt_tokens": 99999}}},
+        {"type": "message_end", "requestId": "r1", "message": {
+            "role": "assistant", "stopReason": "error", "usage": {
+                "input": 0, "cacheRead": 0, "cacheWrite": 0}}},
+    ])
+    result = harness.report(tmp_path)
+    assert result["context"] is None
+    assert result["context_uncached"] is None
+
+
+def test_context_prefers_raw_prompt_usage_and_keeps_native_uncached(tmp_path):
+    _write_trace(tmp_path, [
+        {"type": "provider_request", "requestId": "r1"},
+        {"type": "provider_stream_event", "requestId": "r1",
+         "data": {"usage": {"prompt_tokens": 8120}}},
+        {"type": "message_end", "requestId": "r1", "message": {
+            "role": "assistant", "usage": {"input": 1596, "cacheRead": 6500}}},
+    ])
+    assert harness.report(tmp_path)["context"] == 8120
+
+
 def test_report_counts_the_trace(tmp_path):
     run_dir = tmp_path / "r"
     run_dir.mkdir()
@@ -241,7 +283,8 @@ def test_report_counts_the_trace(tmp_path):
     ])
     assert harness.report(run_dir) == {
         "requests": 2, "turns": 2, "tool_calls": 1, "tool_errors": 1,
-        "final_reply": "done", "context": 1500, "output_tokens": 30,
+        "final_reply": "done", "context": 1500, "context_uncached": 1500,
+        "output_tokens": 30,
         "wall": 2.0, "nudges": 0, "empty_finals": 0, "guard_blocks": 0,
         "reasoning_as_text": 0, "compactions": 0,
     }
@@ -304,7 +347,8 @@ def test_report_without_text(tmp_path):
     _write_trace(run_dir, [{"type": "instance_start"}])
     assert harness.report(run_dir) == {
         "requests": 0, "turns": 0, "tool_calls": 0, "tool_errors": 0,
-        "final_reply": "", "context": None, "output_tokens": None, "wall": None,
+        "final_reply": "", "context": None, "context_uncached": None,
+        "output_tokens": None, "wall": None,
         "nudges": 0, "empty_finals": 0, "guard_blocks": 0, "reasoning_as_text": 0,
         "compactions": 0,
     }

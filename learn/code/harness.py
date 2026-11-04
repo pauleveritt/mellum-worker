@@ -14,6 +14,7 @@ import platform
 import re
 import hashlib
 import json
+import math
 import os
 import shlex
 import shutil
@@ -722,6 +723,41 @@ def _trace_time(value):
 SERVER_REFUSAL = "starts a server in the foreground"
 
 
+def context_usage(rows: list[dict]) -> dict:
+    """Full prompt maximum is unknown when any observed dispatch lacks usage."""
+    def token(value):
+        return (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and math.isfinite(value) and value >= 0)
+
+    raw = {}
+    for row in rows:
+        if row.get("type") == "provider_stream_event" and row.get("requestId"):
+            value = (row.get("data", {}).get("usage") or {}).get("prompt_tokens")
+            if token(value):
+                raw[row["requestId"]] = value
+    full, uncached = [], []
+    replies = [r for r in rows if r.get("type") == "message_end"
+               and r.get("message", {}).get("role") == "assistant"]
+    for row in replies:
+        message = row["message"]
+        usage = message.get("usage") or {}
+        value = raw.get(row.get("requestId"))
+        failed = message.get("stopReason") in {"error", "aborted"}
+        native = usage.get("input")
+        if token(native) and not failed:
+            uncached.append(native)
+        if value is None and not failed:
+            if "prompt_tokens" in usage:
+                value = usage["prompt_tokens"]
+            elif token(native) and all(token(usage.get(k, 0)) for k in ("cacheRead", "cacheWrite")):
+                value = native + usage.get("cacheRead", 0) + usage.get("cacheWrite", 0)
+        full.append(value if token(value) else None)
+    requests = [r for r in rows if r.get("type") == "provider_request"]
+    complete = bool(full) and all(v is not None for v in full) and len(full) == len(requests)
+    return {"context": max(full) if complete else None,
+            "context_uncached": max(uncached) if uncached else None}
+
+
 def report(run: Path) -> dict:
     rows = [
         json.loads(line)
@@ -785,7 +821,7 @@ def report(run: Path) -> dict:
         "tool_errors": sum(
             row.get("type") == "tool_result" and row.get("isError") for row in rows),
         "final_reply": final,
-        "context": max(inputs) if inputs else None,
+        **context_usage(rows),
         "output_tokens": complete_output_total(rows),
         "wall": round((times[-1] - times[0]).total_seconds(), 3) if len(times) > 1 else None,
         "nudges": continued,

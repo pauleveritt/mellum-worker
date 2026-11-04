@@ -14,6 +14,56 @@ import { appendFileSync, readFileSync, realpathSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { channel } from 'node:diagnostics_channel';
+
+/** Subscribe without replacing fetch, consuming bodies, or mutating requests. */
+export function installTransportObserver({ write, requestId = () => null,
+  diagnose = text => process.stderr.write(text + '\n') }) {
+  const requests = new WeakMap(), subscriptions = [];
+  function causes(error) {
+    const result = [], seen = new Set();
+    while (error && typeof error === 'object' && !seen.has(error) && result.length < 8) {
+      seen.add(error);
+      const item = { name: ['Error', 'TypeError', 'AggregateError', 'AbortError', 'TimeoutError',
+        'DOMException'].includes(error.name) ? error.name : 'Error' };
+      if (typeof error.code === 'string' && /^(?:E[A-Z0-9_]+|UND_ERR_[A-Z0-9_]+|ERR_[A-Z0-9_]+)$/.test(error.code)) item.code = error.code;
+      if (Number.isInteger(error.errno)) item.errno = error.errno;
+      if (['connect', 'read', 'write', 'recv', 'send'].includes(error.syscall)) item.syscall = error.syscall;
+      result.push(item);
+      error = error.cause;
+    }
+    return result;
+  }
+  for (const [name, boundary] of [['create', 'created'], ['headers', 'headers'],
+    ['trailers', 'complete'], ['error', 'error']]) {
+    const c = channel(`undici:request:${name}`);
+    const handler = event => {
+      try {
+        const request = event.request;
+        if (!request || typeof request !== 'object') return;
+        if (name === 'create') requests.set(request, {transportId: randomUUID(), requestId: requestId(),
+          started: performance.now()});
+        const identity = requests.get(request);
+        if (!identity) return;
+        const row = {type:'transport', boundary, transportId:identity.transportId,
+          requestId:identity.requestId, durationMs:performance.now()-identity.started};
+        if (name === 'headers') {
+          row.status = event.response?.statusCode;
+          const headers = event.response?.headers ?? [];
+          for (let i = 0; i + 1 < headers.length; i += 2) {
+            if (String(headers[i]).toLowerCase() === 'x-mellum-transport-id'
+                && /^[a-zA-Z0-9_-]{1,100}$/.test(String(headers[i + 1]))) row.relayId = String(headers[i + 1]);
+          }
+        }
+        if (name === 'error') row.causes = causes(event.error);
+        write(row);
+      } catch { try { diagnose('mellum-trace: transport diagnostic not written'); } catch { /* Never affect fetch. */ } }
+    };
+    c.subscribe(handler);
+    subscriptions.push([c, handler]);
+  }
+  return () => { for (const [c, handler] of subscriptions) c.unsubscribe(handler); };
+}
 
 function runtimeIdentity() {
   let entryPath = process.argv[1] ?? null;
@@ -54,6 +104,9 @@ export function installRecorder(pi, options = {}) {
       ...(requestId === null ? {associationIssue:'tool request association unavailable'} : {}) };
   }
   record({type:'instance_start', runtime}, null);
+  const stopTransport = installTransportObserver({write: fields => record(fields, fields.requestId),
+    requestId: () => activeRequest, diagnose});
+  pi.on('session_shutdown', stopTransport);
   pi.on('before_provider_request', event => {
     activeRequest = `${instanceId}:${++requests}`;
     record({type:'provider_request', request:requests, payload:event.payload});

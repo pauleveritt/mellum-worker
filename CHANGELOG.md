@@ -66,6 +66,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- New harness reports count cached prompt input in full context usage, keep
+  uncached input separately and leave incomplete maxima unknown. The recorder
+  passively retains redacted native HTTP boundaries and cause codes so connection
+  errors can be diagnosed without changing requests or retry behavior.
+
 - The Phase 1 comparison now carries a dated isolation correction: a worker
   contacted and signaled a pre-existing host server. Raw grades remain preserved;
   the analysis distinguishes wrapper equivalence, incomplete acceptance coverage
