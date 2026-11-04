@@ -16,6 +16,27 @@ test("isForegroundServer: foreground server commands that would block", () => {
 	assert.equal(isForegroundServer("python manage.py runserver"), true);
 });
 
+test("serverGuard limits help exemptions to known terminating queries", () => {
+	for (const command of [
+		"uv run --frozen uvicorn --help",
+		"uvicorn --version",
+		"uv run --offline --frozen python -m uvicorn --help",
+		"python3 -m http.server -h",
+		"gunicorn --help",
+	]) {
+		assert.equal(serverGuard({ toolName: "bash", input: { command } }), undefined, command);
+	}
+	for (const command of [
+		"uvicorn --help && uvicorn app:app",
+		"uvicorn --version; uvicorn app:app",
+		"uvicorn --help\nuvicorn app:app",
+		"uvicorn $(touch marker) --help",
+		"uv run python app.py --help",
+	]) {
+		assert.equal(serverGuard({ toolName: "bash", input: { command } })?.block, true, command);
+	}
+});
+
 test("isForegroundServer: the python-script forms the ladder-era pattern missed", () => {
 	// LC.19's attempt 1 hung on exactly this shape, which the first pattern did not match.
 	assert.equal(isForegroundServer("uv run --frozen python app.py"), true);

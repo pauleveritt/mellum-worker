@@ -156,10 +156,15 @@ export function isBackgrounded(command: string): boolean {
 /** Read/search commands whose arguments may mention a server but never run one. */
 const READONLY_FIRST = /^\s*(grep|rg|cat|less|more|head|tail|echo|printf|find|ls|awk|sed|sort|uniq|wc|diff|which|type|git)\b/;
 
+// Only simple, known CLI queries: scripts can ignore flags, and a help query
+// followed by another command must not exempt that command from the guard.
+const SERVER_QUERY = /^\s*(?:uv\s+run(?:\s+--[\w-]+)*\s+)?(?:python\d?(?:\.\d+)?\s+-m\s+)?(?:uvicorn|gunicorn|hypercorn|daphne|waitress-serve|http\.server)\s+(?:--help|--version|-h|-V)\s*$/;
+
 /** A blocking server started in the foreground (so it would hang the run). */
 export function isForegroundServer(command: string | undefined): boolean {
 	if (!command) return false;
 	if (READONLY_FIRST.test(command)) return false; // e.g. `grep uvicorn`, `cat app.py`
+	if (SERVER_QUERY.test(command)) return false;
 	return SERVER_START.test(command) && !isBackgrounded(command);
 }
 

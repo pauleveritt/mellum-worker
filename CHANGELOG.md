@@ -89,6 +89,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- The foreground-server remedy permits simple known server CLI help/version
+  queries, including `uv run --frozen uvicorn --help`, while retaining blocks
+  on real foreground starts, compound commands and arbitrary scripts.
+
 - Contained measurement now permits uv checker binaries to execute in private
   scratch, and qualification rejects a grader whose health checkers never
   launch. The interrupted A40 attempt and corrected proof are retained.
