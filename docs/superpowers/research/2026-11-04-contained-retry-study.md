@@ -82,6 +82,24 @@ EXITED after stopping. Existing Pods remain stopped; no extra worker is created.
 Keep persistent files; their storage continues billing. Do not leave compute on
 while reporting or preserving evidence after a terminal outcome.
 
+## Partial4500 outcome and continuation correction
+
+This host produced three retained counted Vanilla attempts: one4/4/health pass
+settled in46.828s; one200.129s foreground-server stall with unavailable hidden
+checks and health pass; one61.707s settled mixed failure. The third added
+`uvicorn` to project dependencies without updating the lockfile, preventing
+offline checker provisioning. Two recovered502s correlate with host-relay
+upstream `ECONNRESET`; output/full-context totals remain unknown. It is counted
+conservatively after substantive work, preserving both model and transport
+failures; no selective replacement. This is a partial cohort, not n=6 evidence.
+
+The controller initially promoted the third attempt's review pause to a terminal
+blocker; the guardian stopped the Pod and verified EXITED. Its host then refused
+restart for capacity. The [PRO6000 continuation](2026-11-04-contained-pro6000-study.md)
+uses a fresh full cohort and a local controller that holds a routine review for
+explicit classification (maximum three minutes), rather than treating every
+review as terminal. The measured harness/image and scoring policy are unchanged.
+
 ## What would falsify this
 
 Backend/input drift, unexpected extensions, unqualified checker launch, missing
