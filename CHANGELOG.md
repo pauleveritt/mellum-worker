@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [interrupted A40 study](evals/2026-11-04-contained-a40-interrupted/README.md)
+  preserves its model stall, grading failure, measured budget and verified raw
+  evidence, alongside the corrected qualification. No comparison is claimed.
+
 - Contained exploratory runs can explicitly load repository remedy units from
   the frozen image, with their sources included in qualification provenance.
 

@@ -1,0 +1,89 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:a53fb9f0058d14e93fe3f0eb478a53ee61524034ed6a0656d73eafe70b63e7c5"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": {
+    "seconds": 180.3,
+    "limit": 180,
+    "command": "uv run python -m uvicorn main:app --reload --port 8000"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": false,
+  "code_health": "not checked",
+  "grading_infrastructure_error": true,
+  "contaminated": false,
+  "failed_checks": 4,
+  "checks_ran": false,
+  "checks_passed": 0,
+  "checks_total": 4,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 14,
+  "turns": 14,
+  "tool_calls": 14,
+  "tool_errors": 1,
+  "context": 5477,
+  "context_uncached": 1531,
+  "output_tokens": 2221,
+  "wall": 199.338,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 91,
+      "pgid": null,
+      "command": "uv run python -m uvicorn main:app --reload --port 8000"
+    },
+    {
+      "pid": 94,
+      "pgid": null,
+      "command": "/attempt/runs/20261104T130432Z-easy-fc000f/workspace/.venv/bin/python3 -m uvicorn main:app --reload --port 8000"
+    },
+    {
+      "pid": 95,
+      "pgid": null,
+      "command": "/attempt/runs/20261104T130432Z-easy-fc000f/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 96,
+      "pgid": null,
+      "command": "/attempt/runs/20261104T130432Z-easy-fc000f/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": [
+    "main.py"
+  ],
+  "completion": "stalled",
+  "elapsed_seconds": 199.338,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": -9
+}

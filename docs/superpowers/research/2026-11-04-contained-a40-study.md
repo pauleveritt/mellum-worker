@@ -68,6 +68,21 @@ do not mix the interrupted old-policy attempt into their rates. The original
 proof remains historical and is superseded for collection. The A40 backend
 freeze is [retained separately](2026-11-04-contained-a40-study/backend-config.json).
 
+## Outcome of this attempt
+
+Correction committed/pushed as `95d7c36`. Full checks passed: npm640/640,
+Python223/223, docs caps4/4 and Ruff F/E9. A first sandbox-limited npm invocation
+failed on uv-cache permissions; the unrestricted full command passed.
+
+Three attempts to restart the same A40 after local qualification returned
+insufficient host GPU capacity. Fresh MCP reads verified both the A40 and old
+Pod EXITED. No collection/retry watcher remains, and no new counted cohort was
+started. The [interrupted record](../../../evals/2026-11-04-contained-a40-interrupted/README.md)
+preserves the stall, failed grading, budget, provenance and verified raw archive.
+Vanilla six, thin Worker six and the remedy screen remain outstanding. A future
+restart must reverify SSH mapping and the frozen backend, then use the corrected
+image/proof for all arms. Persistent disk charges remain; compute is stopped.
+
 ## What would falsify this
 
 Unqualified hardware/runtime/weight/server drift, unexpected extensions, altered

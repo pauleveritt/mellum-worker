@@ -1,0 +1,17 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "contained-a40-interrupted-20261104T130432Z.tar.gz",
+  "source_commit": "95d7c3626c5ff3703a89180a84b625605c712ef9",
+  "scope": [
+    "complete interrupted batch including model stall and grading infrastructure failure",
+    "A40 build, synthetic qualification and orchestration records",
+    "corrected containment qualification and verification logs"
+  ],
+  "archive_policy": "No model weights, SSH private keys or credential stores; raw traces remain outside Git.",
+  "sha256": "bd91e85fcee138584ad60fa0bfa1f0e2228b10c3494f669bcb8653f2495410f5",
+  "size_bytes": 656889,
+  "members": 277,
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/contained-a40-interrupted-20261104T130432Z.tar.gz",
+  "published_download_verified": true,
+  "download_verified_at": "2026-11-04T13:15:33.038854+00:00"
+}
