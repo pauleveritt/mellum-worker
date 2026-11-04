@@ -402,6 +402,34 @@ def test_report_counts_a_guard_refusal_the_model_was_told_about(tmp_path):
     assert counts["nudges"] == 0
 
 
+def test_report_counts_native_blocked_execution_without_message_end(tmp_path):
+    refusal = [{"type": "text", "text": "That starts a server in the foreground; it blocks forever."}]
+    _write_trace(tmp_path, [
+        {"type": "tool_execution_end", "instanceId": "pi", "toolName": "bash",
+         "toolCallId": "blocked", "isError": True, "result": {"content": refusal}},
+        # The next provider request repeats history; it is not another refusal.
+        {"type": "provider_request", "payload": {"messages": [
+            {"role": "tool", "tool_call_id": "blocked", "content": refusal[0]["text"]}]}},
+    ])
+    assert harness.report(tmp_path)["guard_blocks"] == 1
+
+
+def test_report_deduplicates_refusal_events_by_instance_and_tool_call(tmp_path):
+    refusal = [{"type": "text", "text": "That starts a server in the foreground; it blocks forever."}]
+    _write_trace(tmp_path, [
+        {"type": "tool_execution_end", "instanceId": "pi", "toolName": "bash",
+         "toolCallId": "one", "isError": True, "result": {"content": refusal}},
+        {"type": "message_end", "instanceId": "pi", "message": {
+            "role": "toolResult", "toolCallId": "one", "content": refusal}},
+        {"type": "tool_execution_end", "instanceId": "pi", "toolName": "bash",
+         "toolCallId": "two", "isError": True, "result": {"content": refusal}},
+        {"type": "tool_execution_end", "instanceId": "other-pi", "toolName": "bash",
+         "toolCallId": "one", "isError": True, "result": {"content": refusal}},
+        {"type": "message_end", "message": {"role": "assistant", "content": refusal}},
+    ])
+    assert harness.report(tmp_path)["guard_blocks"] == 3
+
+
 def test_score_details_counts_expected_failures(tmp_path):
     suite_dir = tmp_path / "suites" / "failcheck"
     (suite_dir / "tests").mkdir(parents=True)

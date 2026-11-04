@@ -717,9 +717,8 @@ def _trace_time(value):
 
 
 # A blocked tool call never reaches the recorder: the worker's guard stops the
-# event chain first, so there is no tool_call row. What the trace does carry is
-# the refusal as the model saw it, in a toolResult message. This phrase is that
-# refusal's first sentence; the guard test pins it on the extension side.
+# event chain first, so there is no tool_call row. Pi still emits the refusal
+# in tool_execution_end; older traces may carry a toolResult message instead.
 SERVER_REFUSAL = "starts a server in the foreground"
 
 
@@ -776,12 +775,24 @@ def report(run: Path) -> dict:
     times = []
     empties: list[int] = []
     guard_blocks = 0
+    guard_calls = set()
     for index, row in enumerate(rows):
         if (when := _trace_time(row.get("timestamp"))) is not None:
             times.append(when)
+        message = row.get("message") or {}
+        refusal = None
+        if row.get("type") == "tool_execution_end" and row.get("isError"):
+            refusal = row.get("result") or {}
+        elif row.get("type") == "message_end" and message.get("role") == "toolResult":
+            refusal = message
+        if refusal and SERVER_REFUSAL in str(refusal.get("content")):
+            call_id = row.get("toolCallId") or refusal.get("toolCallId")
+            key = (row.get("instanceId"), "call", call_id) if call_id else (None, "event", index)
+            if key not in guard_calls:
+                guard_calls.add(key)
+                guard_blocks += 1
         if row.get("type") != "message_end":
             continue
-        message = row.get("message") or {}
         usage = message.get("usage") or {}
         value = usage.get("input", usage.get("prompt_tokens"))
         if isinstance(value, (int, float)):
@@ -789,9 +800,6 @@ def report(run: Path) -> dict:
         value = usage.get("output", usage.get("completion_tokens"))
         if isinstance(value, (int, float)):
             outputs.append(value)
-        if (message.get("role") == "toolResult"
-                and SERVER_REFUSAL in str(message.get("content"))):
-            guard_blocks += 1
         if message.get("role") != "assistant":
             continue
         blocks = message.get("content") or []

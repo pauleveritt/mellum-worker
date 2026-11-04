@@ -89,6 +89,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- Harness guard counts include Pi's native blocked `tool_execution_end`
+  events and deduplicate matching legacy results by instance and tool-call ID,
+  so an earlier guard hook cannot hide a refusal from the report.
+
 - The foreground-server remedy permits simple known server CLI help/version
   queries, including `uv run --frozen uvicorn --help`, while retaining blocks
   on real foreground starts, compound commands and arbitrary scripts.
