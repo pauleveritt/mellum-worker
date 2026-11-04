@@ -1,0 +1,514 @@
+{
+  "scope": "Added after observing early misses; post-registration diagnostic, not a changed hidden oracle or registered decision rule. No worker saw these checks.",
+  "qualification": {
+    "qualified": true,
+    "good_all_checks_pass": true,
+    "missing_favicon_and_broken_reload_rejected": true,
+    "checks": 13,
+    "image": "sha256:7f2d77f56b5f0efa2d26224ac7ebffc7fd8b924b83ba9b0950f9a64aff64d5c2"
+  },
+  "audit_source_sha256": "e130ed2b0386af485b387f7f671db70060011f917cbfdb8e4394d8f8fce2adee",
+  "results": [
+    {
+      "run_id": "20261104T230024Z-easy-5c97f0",
+      "arm": "layout",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": false,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 11,
+      "total": 13,
+      "all_pass": false,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": 3,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T230109Z-easy-ca9239",
+      "arm": "selective",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": false,
+        "home_200_tagline": false,
+        "shared_base_template_used": false,
+        "html5_and_english": false,
+        "responsive_viewport": false,
+        "bootstrap5_css_head": false,
+        "bootstrap5_bundle_body_end": false,
+        "python_favicon": false,
+        "default_title": false,
+        "navbar_brand_and_links": false,
+        "welcoming_paragraph": false,
+        "reload_under_main_guard": false,
+        "required_startup_serves_home": false
+      },
+      "passed": 0,
+      "total": 13,
+      "all_pass": false,
+      "errors": {
+        "import_or_request": "SyntaxError: unterminated string literal (detected at line 42) (app.py, line 42)",
+        "default_title": "AttributeError: 'NoneType' object has no attribute 'text'",
+        "reload_under_main_guard": "SyntaxError: unterminated string literal (detected at line 42) (<unknown>, line 42)"
+      },
+      "loaded_templates": [],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": 1,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T230340Z-easy-0def09",
+      "arm": "layout",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": true,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 12,
+      "total": 13,
+      "all_pass": false,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": 3,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T230503Z-easy-73ae20",
+      "arm": "selective",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": false,
+        "shared_base_template_used": false,
+        "html5_and_english": false,
+        "responsive_viewport": false,
+        "bootstrap5_css_head": false,
+        "bootstrap5_bundle_body_end": false,
+        "python_favicon": false,
+        "default_title": false,
+        "navbar_brand_and_links": false,
+        "welcoming_paragraph": false,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 2,
+      "total": 13,
+      "all_pass": false,
+      "errors": {
+        "default_title": "AttributeError: 'NoneType' object has no attribute 'text'"
+      },
+      "loaded_templates": [],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T230609Z-easy-513af9",
+      "arm": "layout",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": false,
+        "shared_base_template_used": false,
+        "html5_and_english": false,
+        "responsive_viewport": false,
+        "bootstrap5_css_head": false,
+        "bootstrap5_bundle_body_end": false,
+        "python_favicon": false,
+        "default_title": false,
+        "navbar_brand_and_links": false,
+        "welcoming_paragraph": false,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 2,
+      "total": 13,
+      "all_pass": false,
+      "errors": {
+        "default_title": "AttributeError: 'NoneType' object has no attribute 'text'"
+      },
+      "loaded_templates": [],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": 3,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T230726Z-easy-ef6140",
+      "arm": "selective",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": true,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 12,
+      "total": 13,
+      "all_pass": false,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": 3,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T230852Z-easy-f49701",
+      "arm": "layout",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": true,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": true
+      },
+      "passed": 13,
+      "total": 13,
+      "all_pass": true,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": true,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T231046Z-easy-9045f2",
+      "arm": "selective",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": true,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": true
+      },
+      "passed": 13,
+      "total": 13,
+      "all_pass": true,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": true,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T231223Z-easy-7041e7",
+      "arm": "layout",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": false,
+        "shared_base_template_used": false,
+        "html5_and_english": false,
+        "responsive_viewport": false,
+        "bootstrap5_css_head": false,
+        "bootstrap5_bundle_body_end": false,
+        "python_favicon": false,
+        "default_title": false,
+        "navbar_brand_and_links": false,
+        "welcoming_paragraph": false,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 2,
+      "total": 13,
+      "all_pass": false,
+      "errors": {
+        "default_title": "AttributeError: 'NoneType' object has no attribute 'text'"
+      },
+      "loaded_templates": [],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T231334Z-easy-206fca",
+      "arm": "selective",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": true,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": true
+      },
+      "passed": 13,
+      "total": 13,
+      "all_pass": true,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": true,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T231544Z-easy-759857",
+      "arm": "layout",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": false,
+        "shared_base_template_used": false,
+        "html5_and_english": false,
+        "responsive_viewport": false,
+        "bootstrap5_css_head": false,
+        "bootstrap5_bundle_body_end": false,
+        "python_favicon": false,
+        "default_title": false,
+        "navbar_brand_and_links": false,
+        "welcoming_paragraph": false,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": false
+      },
+      "passed": 2,
+      "total": 13,
+      "all_pass": false,
+      "errors": {
+        "default_title": "AttributeError: 'NoneType' object has no attribute 'text'"
+      },
+      "loaded_templates": [],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": false,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    },
+    {
+      "run_id": "20261104T231951Z-easy-d94655",
+      "arm": "selective",
+      "scope": "Supplementary post-registration spec diagnostic; original hidden grade and fixed comparison scores unchanged.",
+      "checks": {
+        "fastapi_app_at_root": true,
+        "home_200_tagline": true,
+        "shared_base_template_used": true,
+        "html5_and_english": true,
+        "responsive_viewport": true,
+        "bootstrap5_css_head": true,
+        "bootstrap5_bundle_body_end": true,
+        "python_favicon": true,
+        "default_title": true,
+        "navbar_brand_and_links": true,
+        "welcoming_paragraph": true,
+        "reload_under_main_guard": true,
+        "required_startup_serves_home": true
+      },
+      "passed": 13,
+      "total": 13,
+      "all_pass": true,
+      "errors": {},
+      "loaded_templates": [
+        "home.html",
+        "base.html"
+      ],
+      "startup": {
+        "command": [
+          "uv",
+          "run",
+          "--offline",
+          "--frozen",
+          "python",
+          "app.py"
+        ],
+        "ready": true,
+        "exit_before_shutdown": null,
+        "reaped": true
+      }
+    }
+  ],
+  "by_arm": {
+    "layout": {
+      "n": 6,
+      "all_checks_pass": 1,
+      "startup_pass": 1
+    },
+    "selective": {
+      "n": 6,
+      "all_checks_pass": 3,
+      "startup_pass": 3
+    }
+  }
+}

@@ -51,7 +51,8 @@ entries below.
 | 18 | Recovered connection errors leave token usage unknown | none — retain errors and report unknown totals rather than partial usage |
 | 19 | Verifies against another app and signals its server | none implemented — qualify filesystem/process/network run isolation before further unattended or parallel collection |
 | 20 | Compaction bypasses the agent budget recorder | none — reconcile all provider traffic with an independent backend/relay counter |
-| 21 | A guard blocks a harmless check | none — repair classification and verify allowed diagnostics alongside real forbidden operations |
+| 21 | A guard blocks a harmless check | foreground-server classification repair — distinguish launch intent from a library mention |
+| 22 | Tests pass but the required startup fails | none — check the documented launch externally as well as in-process behavior |
 
 ## It says it is done and it is not
 
@@ -249,7 +250,7 @@ entries below.
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–21 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–22 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
 
@@ -278,6 +279,21 @@ it is not a rate.*
     claimed it started a server and blocked it. The session continued and passed
     its hidden grade, but no server start was prevented
     ([record](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-04-local-selective3/README.md)).
-    **Answer:** distinguish diagnostic inspection from execution, test allowed
-    diagnostics alongside real server launches, and retain the misclassification
-    instead of interpreting every refusal as a safety benefit.
+    **Answer:** the classifier now distinguishes diagnostic inspection from
+    execution, with allowed-diagnostic and real-launch regressions. The controlled
+    local cohort recorded three real launch refusals; this is bounded evidence,
+    not a guarantee that every shell form is classified correctly
+    ([follow-up](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-04-local-controlled6/README.md)).
+
+## In-process tests miss a broken launch
+
+22. **Tests pass but the required startup fails.** A startup check exercises a
+    different path from importing the app into TestClient.
+    **Seen:** L2 and S3 in the local controlled comparison passed hidden and
+    project tests, but `uvicorn.run(app, reload=True)` exited with a warning that
+    reload requires an import string. Their registered passes were preserved;
+    supplementary launches exposed the missing behavior
+    ([record](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-04-local-controlled6/README.md)).
+    **Answer:** verify the documented launch in isolation with a readiness limit
+    and cleanup; qualify the external acceptance checks against the whole spec
+    rather than treating an in-process test pass as completion.

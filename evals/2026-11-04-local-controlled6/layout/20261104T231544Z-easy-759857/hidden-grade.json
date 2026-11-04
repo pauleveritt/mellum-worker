@@ -1,0 +1,21 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--with",
+    "pytest==8.3.4",
+    "sh",
+    "-c",
+    "printf started > \"$1\"; shift; exec \"$@\"",
+    "mellum-check",
+    "/attempt/grading/hidden-grade.started",
+    "pytest",
+    "-q",
+    "-rA",
+    "grader_tests"
+  ],
+  "exit_code": 1,
+  "started": true,
+  "stdout": "FFFF                                                                     [100%]\n=================================== FAILURES ===================================\n___________________ test_home_still_returns_200_and_tagline ____________________\n\n    def test_home_still_returns_200_and_tagline():\n        response = client.get(\"/\")\n>       assert response.status_code == 200\nE       assert 422 == 200\nE        +  where 422 = <Response [422 Unprocessable Entity]>.status_code\n\ngrader_tests/test_phase1_home.py:27: AssertionError\n_________________________ test_home_has_html5_doctype __________________________\n\n    def test_home_has_html5_doctype():\n        document = parse(client.get(\"/\").text)\n    \n>       assert _has_html5_doctype(document)\nE       assert False\nE        +  where False = _has_html5_doctype(Document())\n\ngrader_tests/test_phase1_home.py:34: AssertionError\n_______________ test_home_html_element_declares_english_language _______________\n\n    def test_home_html_element_declares_english_language():\n        document = parse(client.get(\"/\").text)\n        html = document.select_one(\"html\")\n    \n>       assert html is not None and html.attr(\"lang\").casefold() == \"en\"\nE       AttributeError: 'NoneType' object has no attribute 'casefold'\n\ngrader_tests/test_phase1_home.py:41: AttributeError\n_____________________ test_home_still_has_navigation_links _____________________\n\n    def test_home_still_has_navigation_links():\n        body = client.get(\"/\").text\n        document = parse(body)\n    \n>       assert \"AgentClinic\" in body\nE       assert 'AgentClinic' in '{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"request\"],\"msg\":\"Field required\",\"input\":null}]}'\n\ngrader_tests/test_phase1_home.py:48: AssertionError\n=============================== warnings summary ===============================\n.venv/lib/python3.14/site-packages/starlette/testclient.py:37\n  /attempt/grading/workspace/.venv/lib/python3.14/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.\n    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]\n\n.venv/lib/python3.14/site-packages/fastapi/routing.py:233\n.venv/lib/python3.14/site-packages/fastapi/routing.py:233\n  /attempt/grading/workspace/.venv/lib/python3.14/site-packages/fastapi/routing.py:233: DeprecationWarning: 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead\n    is_coroutine = asyncio.iscoroutinefunction(dependant.call)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline\nFAILED grader_tests/test_phase1_home.py::test_home_has_html5_doctype - assert...\nFAILED grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language\nFAILED grader_tests/test_phase1_home.py::test_home_still_has_navigation_links\n4 failed, 3 warnings in 0.37s\n",
+  "stderr": ""
+}

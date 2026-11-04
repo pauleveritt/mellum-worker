@@ -1,0 +1,71 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:7f2d77f56b5f0efa2d26224ac7ebffc7fd8b924b83ba9b0950f9a64aff64d5c2"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "prompt/name-the-layout"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+      "sha256": "d68a6b3655663d661dabfd8b975310e8acfda34ce157101b8af67a3d7263151b"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 4,
+  "checks_ran": true,
+  "checks_passed": 0,
+  "checks_total": 4,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 23,
+  "turns": 23,
+  "tool_calls": 22,
+  "tool_errors": 4,
+  "context": 11082,
+  "context_uncached": 1581,
+  "output_tokens": 7311,
+  "wall": 69.288,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [
+    "models.py"
+  ],
+  "completion": "settled",
+  "elapsed_seconds": 69.288,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": 0
+}

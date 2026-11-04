@@ -1,0 +1,33 @@
+{
+  "implementation_commit": "2f2aaded47a63b0b534c08779ecedc5d5db03b11",
+  "source_suite": {
+    "passed": 658,
+    "failed": 0,
+    "duration_ms": 114795.037458
+  },
+  "focused_checks": 42,
+  "review": "Corrected guard independently approved (58 focused checks plus nine probes); all12 final runs independently reconciled against backend/relay/native records, final report and corrected supplementary diagnostic approved with no important findings.",
+  "new_guard_tests_observed_red": 5,
+  "boundary_qualification": 27,
+  "actual_pi_interaction_checks": 11,
+  "project_grade_qualification": [
+    "pass",
+    "fail",
+    "no tests fails"
+  ],
+  "supplementary_qualification": {
+    "qualified": true,
+    "good_all_checks_pass": true,
+    "missing_favicon_and_broken_reload_rejected": true,
+    "checks": 13,
+    "image": "sha256:7f2d77f56b5f0efa2d26224ac7ebffc7fd8b924b83ba9b0950f9a64aff64d5c2"
+  },
+  "supplementary_correction": "Initial diagnostic assumed every meta had a name attribute. A valid charset+viewport fixture reproduced its false failure before optional-attribute correction. Original invalid results retained in raw archive; v4 fixtures and all final saved-output audits pass with corrected code. No new inference or changed registered scoring.",
+  "compactions_observed": 0,
+  "shutdown": "Independent post-run identity and no-listener readback passed.",
+  "final_docs_checks": {
+    "passed": 21,
+    "failed": 0
+  },
+  "changelog": "Unreleased reconciled against commits since the latest checkpoint; source fixes and measurement records have entries."
+}

@@ -302,17 +302,18 @@ closed cycle and its design inputs are in [`ROADMAP-M.md`](ROADMAP-M.md).
 2026-10-24, on Andre's fork: `--acceptance-test` and `--redispatch` are on
 `main` again after a merge dropped them ([LEARNING](LEARNING.md) §VII.1).
 
-**Freeze-the-oracle exit gate.** Make "done" an external test the worker cannot
-weaken, instead of its own final message. Promote the ladder's scorer checks
-(`existing_tests_kept`, `outside_write_list`) into a runtime guard on the
-worker, and gate the exit on an actual run of the frozen acceptance test with
-the failure re-dispatched as the next "make this pass". The mediated test
-supplies the external, complete test; the unweakenable half is here
-([note](docs/superpowers/research/2026-10-18-harness-exit-gate.md)).
-*Reopens when* a mediated run moves rung 9 and a trace shows a worker editing or
-deleting a test to exit, or writing outside the allowed paths, on a run that
-then scored as done. 2026-10-24: restored after a merge dropped it; rung 9 has
-moved (screens), but no such trace is recorded yet.
+**Freeze-the-oracle exit gate.** Make completion an external, complete test the
+worker cannot weaken, with bounded failure redispatch and all repair inference
+counted. Keep it an explicit additive unit; the worker remains a command tool.
+The local controlled comparison found registered stricter passes 1/6 and 4/6,
+but passing hidden/project tests could still leave broken reload startup.
+The post-registration diagnostic also has coverage gaps; qualify a complete
+checker against correct builds and seeded omissions before using it as authority.
+[Comparison](evals/2026-11-04-local-controlled6/README.md),
+[original direction](docs/superpowers/research/2026-10-18-harness-exit-gate.md).
+*Reopens when* the next local remedy iteration is prepared: define the trusted
+acceptance command and immutable boundary before more prompt stacking. This
+2026-11-04 evidence broadens the earlier reopen condition; no gate is shipped.
 
 **Benchmark a plain mlx_lm.server against oMLX.** The ladder reaches any
 OpenAI-compatible server (`--provider`, `--base-url`, `--model provider/id`;

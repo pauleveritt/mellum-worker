@@ -1,0 +1,22 @@
+[
+  {
+    "pid": 82,
+    "pgid": null,
+    "command": "uv run --frozen python app.py"
+  },
+  {
+    "pid": 86,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T231544Z-easy-759857/workspace/.venv/bin/python3 app.py"
+  },
+  {
+    "pid": 87,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T231544Z-easy-759857/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+  },
+  {
+    "pid": 88,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T231544Z-easy-759857/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+  }
+]

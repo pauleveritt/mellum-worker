@@ -1,0 +1,25 @@
+{
+  "qualified": true,
+  "checks": {
+    "diagnostic_import_allowed": true,
+    "help_query_allowed": true,
+    "version_query_allowed": true,
+    "native_refusal_count_exactly_one": true,
+    "five_units_loaded": true,
+    "two_instructions_per_request": true,
+    "developer_only_in_system": true,
+    "foreground_guard": true,
+    "output_trim": true,
+    "native_pi_settled": true,
+    "brief_preserved": true
+  },
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output"
+  ],
+  "scope": "local fake provider; no counted coding session",
+  "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-controlled6/interaction/run/20261104T225804Z-easy-fdf51b"
+}

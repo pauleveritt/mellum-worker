@@ -1,0 +1,86 @@
+[
+  {
+    "run_id": "20261104T230024Z-easy-5c97f0",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T230109Z-easy-ca9239",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T230340Z-easy-0def09",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T230503Z-easy-73ae20",
+    "state": "counted",
+    "reason": "Counted output-format failure of this model/backend pair: peg-native mismatch, complete HTTP200 relay and server generation, no infrastructure outage. API usage remains unknown; server output is counted independently.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T230609Z-easy-513af9",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T230726Z-easy-ef6140",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T230852Z-easy-f49701",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T231046Z-easy-9045f2",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T231223Z-easy-7041e7",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T231334Z-easy-206fca",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T231544Z-easy-759857",
+    "state": "counted",
+    "reason": "Counted model stall: uv run --frozen python app.py left a tool open; fixed180s open-tool cutoff ended it. Private container removed.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  },
+  {
+    "run_id": "20261104T231951Z-easy-d94655",
+    "state": "counted",
+    "reason": "Counted model execution, including any incomplete work or test failure.",
+    "replaced": false,
+    "grading_infrastructure_error": false
+  }
+]

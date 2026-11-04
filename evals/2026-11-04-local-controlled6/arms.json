@@ -1,0 +1,31 @@
+{
+  "n_per_arm": 6,
+  "order": [
+    "layout",
+    "selective",
+    "layout",
+    "selective",
+    "layout",
+    "selective",
+    "layout",
+    "selective",
+    "layout",
+    "selective",
+    "layout",
+    "selective"
+  ],
+  "remedies": {
+    "layout": [
+      "prompt/name-the-layout"
+    ],
+    "selective": [
+      "prompt/name-the-layout",
+      "prompt/python-developer",
+      "prompt/verify-the-spec",
+      "guard/foreground-server",
+      "context/trim-tool-output"
+    ]
+  },
+  "preregistration_sha256": "eb4e3c96355b9d7f0a667b09257caac65d5b7a9e95cd07da425bef18965380da",
+  "project_grader_sha256": "0f7bc330ccc239e1d7932745bd314b16fd5630d48be3611c45cb47b40d727756"
+}

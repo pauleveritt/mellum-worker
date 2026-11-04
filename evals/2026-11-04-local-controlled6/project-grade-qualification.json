@@ -1,0 +1,9 @@
+{
+  "qualified": true,
+  "checks": [
+    "passing suite",
+    "failing suite",
+    "no tests is failure"
+  ],
+  "image": "sha256:7f2d77f56b5f0efa2d26224ac7ebffc7fd8b924b83ba9b0950f9a64aff64d5c2"
+}

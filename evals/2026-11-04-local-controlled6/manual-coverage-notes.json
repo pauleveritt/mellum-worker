@@ -1,0 +1,26 @@
+{
+  "scope": "Additional source inspection, not a rescore.",
+  "notes": [
+    {
+      "run_id": "20261104T231046Z-easy-9045f2",
+      "source_sha256": "81d5533a29811525778fd0ca3952f4b4c2398d6c5a0989da4e763cce65454511",
+      "literal_title": true,
+      "title_block_present": false,
+      "observation": "Base template hard-codes the title; the13-check diagnostic does not test a page-specific title override. Do not equate its pass with exhaustive Phase1 acceptance."
+    },
+    {
+      "run_id": "20261104T231334Z-easy-206fca",
+      "source_sha256": "ffd8b5784ecd161a61df1074438e17d65147d6cd960ca424d175105ae8733e85",
+      "literal_title": true,
+      "title_block_present": false,
+      "observation": "Base template hard-codes the title; the13-check diagnostic does not test a page-specific title override. Do not equate its pass with exhaustive Phase1 acceptance."
+    },
+    {
+      "run_id": "20261104T231951Z-easy-d94655",
+      "source_sha256": "2da492141a50ed114913d48bfa20cebfc4081efefb7c5a0e5f425a95e5e2b126",
+      "literal_title": true,
+      "title_block_present": false,
+      "observation": "Base template hard-codes the title; the13-check diagnostic does not test a page-specific title override. Do not equate its pass with exhaustive Phase1 acceptance."
+    }
+  ]
+}

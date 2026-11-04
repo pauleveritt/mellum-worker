@@ -498,3 +498,10 @@ A guard refusing an allowed action because its detection rule mistakes it for
 forbidden behavior. A command that merely inspects a server library can trigger
 a broad server-name matcher. Count the refusal, but do not count it as evidence
 that the guard prevented a real server start or hang.
+
+### Startup check
+
+An external check that executes the documented application startup command,
+waits for the expected response within a fixed limit, and cleans up the process.
+An in-process test can pass while this launch path fails; passing one does not
+establish the other.

@@ -12,7 +12,7 @@ current cycle.
 **Next:** LC.13B (lesson 4's firing task), LC.26 (the pass floor behind lessons 2, 5 and 10), then LC.5 and LC.20–LC.23.
 **After:** LC.20–LC.23 in their listing order. Context/input workflows are INT.3 candidates. The M series is closed ([archive](ROADMAP-M.md)).
 **Parked:** OpenCode, Ollama, execution bounds, versioned assessments, the mediated test, one worker, INT.1, INT.2 and the PR #1 prompt/guard extraction are [backlog entries](BACKLOG.md) with reopen conditions.
-**Latest contained collection:** local five-unit selective injection passed hidden/health/completion 3/3; a diagnostic guard false positive was observed ([record](evals/2026-11-04-local-selective3/README.md)). Guard repair and whole-session compaction accounting are the next instrument follow-ups.
+**Latest contained collection:** controlled local n=6 per arm: layout/selective registered stricter passes 1/6 and 4/6; neither met the trust bar ([record](evals/2026-11-04-local-controlled6/README.md)). A complete external acceptance gate is the next lead; compaction accounting remains open.
 
 ## Feature cycles
 

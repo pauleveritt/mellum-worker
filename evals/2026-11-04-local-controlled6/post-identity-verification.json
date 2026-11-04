@@ -1,0 +1,23 @@
+{
+  "source_image_runtime_unchanged": true,
+  "orchestration_and_preregistration_unchanged": true,
+  "weight_hash_after_collection": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+  "server_original_identity_absent": {
+    "pid": 68417,
+    "start": "Wed Nov  4 17:59:40 2026"
+  },
+  "listener_8002": null,
+  "owned_containers": [],
+  "owned_volumes": [],
+  "previous_local_backend_comparison": {
+    "model_hash": true,
+    "backend_runtime": true,
+    "server_argv": true,
+    "hardware_os": true,
+    "profile": true
+  },
+  "notes": [
+    "Image/remedy implementation intentionally changed for the reviewed guard fix.",
+    "Legacy descriptive server.llama_cache is not environment proof; identical explicit -m argv is authoritative."
+  ]
+}

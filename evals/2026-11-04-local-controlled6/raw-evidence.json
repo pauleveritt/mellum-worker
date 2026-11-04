@@ -1,0 +1,22 @@
+{
+  "asset": "local-controlled6-20261104T232935Z.tar.gz",
+  "local_path": "runs/local-controlled6-20261104T232935Z.tar.gz",
+  "sha256": "cba702a7aabf0275792a16e076609908587da88de9a28c76277e88956c2784bb",
+  "size_bytes": 12583290,
+  "implementation_commit": "2f2aaded47a63b0b534c08779ecedc5d5db03b11",
+  "archive_integrity": {
+    "members": 2228,
+    "critical_files_byte_verified": 128
+  },
+  "scope": [
+    "twelve alternating local coding sessions, n6 per arm",
+    "raw native provider/session/workspace/checker/relay evidence",
+    "backend qualification/freeze and pre/post identity",
+    "independent project-test rechecks",
+    "explicitly post-registration supplementary specification/startup diagnostics",
+    "independent server shutdown readback"
+  ],
+  "archive_policy": "Credential-like scan passed. No weights, private keys, credential stores or FIXES.md. No existing asset replaced.",
+  "publication_status": "held by user; retained locally, not uploaded",
+  "published_download_verified": false
+}

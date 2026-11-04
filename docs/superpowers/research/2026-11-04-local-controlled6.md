@@ -74,3 +74,57 @@ remedy delivery. A wider task or multi-phase failure limits any recommendation.
 One task, small n, stochastic sampling, local hardware and heuristic guards.
 A project suite can be weak; separate hidden checks and supplementary audits
 remain necessary. Alternation limits order drift but is not seed pairing.
+
+## Outcome — 2026-11-04
+
+**Measured now:** all twelve fixed attempts completed and remain counted, with
+no replacements or infrastructure failures. L/S passed hidden/health/completion
+3/6 and 4/6; the registered stricter conjunction passed 1/6 and 4/6. Both miss
+5/6, so the registered decision is neither candidate. L/S used 123/148 requests
+and 46,405/64,859 backend-generated output tokens including thinking. Output per
+registered stricter pass was 46,405/16,214.75; combined execution 592.436/554.707s.
+A model-format error's API usage remains unknown; its backend generations are
+counted. No compactions occurred, so this does not repair the recorder gap.
+
+The five-unit stack is the better next lead on this reading, not a promoted
+preset or an established reliability rate. The actual feed proves the intended
+once-per-task delivery, not obedience. One layout-only foreground server stalled;
+the fixed cutoff ended it. Three selective launch attempts were refused, all
+actual starts. No diagnostic false positive was observed in this cohort.
+
+A separate post-registration diagnostic audited 13 aspects of each saved output,
+including actual startup in a private container. It did not change registered
+scores or reach the worker. After correcting a reproduced checker false failure
+on ordinary charset metadata, all 13 diagnostics passed L/S 1/6 and 3/6; intersecting
+with registered stricter passes gives 0/6 and 3/6. L2/S3 pass hidden/project tests
+but fail actual reload startup with an application instance instead of an import
+string. The three surviving S templates hard-code the base title; title override
+is outside this diagnostic's coverage. Thus even 13/13 is not exhaustive Phase 1
+acceptance. Original invalid diagnostics and the correction qualification remain
+in raw evidence. No inference was repeated for diagnostic repairs.
+
+The [compact record](../../../evals/2026-11-04-local-controlled6/README.md) retains
+all scoring layers, failures, budgets, source/runtime identity, registered
+snapshot and verification. Guard repair `2f2aade` passed 658 source tests, 27 boundary
+checks and 11 contained actual-Pi interaction checks. Independent review approved
+the corrected guard and reconciled seven completed sessions during collection.
+The server/guardian stopped; independent readback found no listener or owned
+resources. No Runpod GPU started, and raw evidence stays local under upload hold.
+
+**Recommendation:** the next measured behavior should enforce a qualified,
+external acceptance command and bounded failure redispatch. Keep it additive;
+do not bundle it into the worker or add another unmeasured prompt stack.
+
+## What would falsify the next lead
+
+A complete independent checker that rejects valid implementations, misses seeded
+spec omissions, is editable by the worker, or cannot account for every repair
+request would not establish trustworthy acceptance. Failure to improve the
+quality/budget conjunction under a new fixed comparison would reject promotion.
+
+## Risks after collection
+
+One task and six sessions per arm; stacked units cannot identify individual
+causes. Final paths are not an exhaustive write history. Self-authored tests and
+the 13-check diagnostic have coverage gaps. Guard heuristics and zero observed
+compactions do not guarantee isolation or complete native accounting in future.

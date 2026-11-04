@@ -1,0 +1,5 @@
+{
+  "requests": 271,
+  "original_brief_present_in_every_agent_request": true,
+  "scope": "Every saved provider_request payload; no compaction occurred."
+}

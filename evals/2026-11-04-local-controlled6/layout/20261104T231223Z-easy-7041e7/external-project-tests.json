@@ -1,0 +1,9 @@
+{
+  "exit_code": 4,
+  "tests": 0,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": false,
+  "scope": "External isolated execution of worker-authored project tests; not hidden acceptance."
+}

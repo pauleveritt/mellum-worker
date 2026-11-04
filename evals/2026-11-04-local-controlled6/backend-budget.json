@@ -1,0 +1,2182 @@
+{
+  "scope": "All completed coding-session generations, including compaction/thinking. Six uncounted backend qualification generations excluded.",
+  "method": "Single sequential backend: partition server timing records by each alternating run relay count; reconcile all native agent records when no compaction occurred.",
+  "limitations": [
+    "Backend prompt evaluation counts are computational work, not API billing usage. Native input/cache totals cover successful agent responses; failed/compaction API usage can be unknown.",
+    "If any request/task/usage failed to reconcile, this script would refuse a complete budget decision.",
+    "On model/provider-format errors, API usage may be unknown. Backend timings still count the generated output; normal request usage is individually cross-checked where available.",
+    "This supplements the recorder; it does not repair its compaction blind spot."
+  ],
+  "runs": [
+    {
+      "run_id": "20261104T230024Z-easy-5c97f0",
+      "arm": "layout",
+      "agent_requests": 15,
+      "relay_completed_requests": 15,
+      "backend_generations": 15,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 5299,
+      "backend_output_tokens": 5299,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 79672,
+      "evaluated_prompt_tokens_sum": 4065,
+      "peak_prompt": 8839,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4065,
+          "known_requests": 15,
+          "total_requests": 15,
+          "total": 4065
+        },
+        "cacheRead": {
+          "known_sum": 75607,
+          "known_requests": 15,
+          "total_requests": 15,
+          "total": 75607
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 15,
+          "total_requests": 15,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 5299,
+          "known_requests": 15,
+          "total_requests": 15,
+          "total": 5299
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 1125,
+          "full_prompt_tokens": 1582,
+          "evaluated_prompt_tokens": 1582,
+          "generated_output_tokens": 184
+        },
+        {
+          "task": 1316,
+          "full_prompt_tokens": 1980,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 63
+        },
+        {
+          "task": 1382,
+          "full_prompt_tokens": 2198,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 164
+        },
+        {
+          "task": 1549,
+          "full_prompt_tokens": 2481,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 155
+        },
+        {
+          "task": 1707,
+          "full_prompt_tokens": 2798,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 39
+        },
+        {
+          "task": 1749,
+          "full_prompt_tokens": 3693,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 1741
+        },
+        {
+          "task": 3494,
+          "full_prompt_tokens": 5558,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 448
+        },
+        {
+          "task": 3945,
+          "full_prompt_tokens": 6025,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 197
+        },
+        {
+          "task": 4145,
+          "full_prompt_tokens": 6248,
+          "evaluated_prompt_tokens": 33,
+          "generated_output_tokens": 83
+        },
+        {
+          "task": 4231,
+          "full_prompt_tokens": 6348,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 1031
+        },
+        {
+          "task": 5265,
+          "full_prompt_tokens": 7400,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 160
+        },
+        {
+          "task": 5428,
+          "full_prompt_tokens": 7582,
+          "evaluated_prompt_tokens": 145,
+          "generated_output_tokens": 558
+        },
+        {
+          "task": 5989,
+          "full_prompt_tokens": 8271,
+          "evaluated_prompt_tokens": 132,
+          "generated_output_tokens": 52
+        },
+        {
+          "task": 6044,
+          "full_prompt_tokens": 8669,
+          "evaluated_prompt_tokens": 347,
+          "generated_output_tokens": 41
+        },
+        {
+          "task": 6088,
+          "full_prompt_tokens": 8839,
+          "evaluated_prompt_tokens": 130,
+          "generated_output_tokens": 383
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T230109Z-easy-ca9239",
+      "arm": "selective",
+      "agent_requests": 27,
+      "relay_completed_requests": 27,
+      "backend_generations": 27,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 17980,
+      "backend_output_tokens": 17980,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 317243,
+      "evaluated_prompt_tokens_sum": 6575,
+      "peak_prompt": 22128,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 6575,
+          "known_requests": 27,
+          "total_requests": 27,
+          "total": 6575
+        },
+        "cacheRead": {
+          "known_sum": 310668,
+          "known_requests": 27,
+          "total_requests": 27,
+          "total": 310668
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 27,
+          "total_requests": 27,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 17980,
+          "known_requests": 27,
+          "total_requests": 27,
+          "total": 17980
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 6475,
+          "full_prompt_tokens": 1675,
+          "evaluated_prompt_tokens": 1675,
+          "generated_output_tokens": 179
+        },
+        {
+          "task": 6661,
+          "full_prompt_tokens": 2068,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 56
+        },
+        {
+          "task": 6720,
+          "full_prompt_tokens": 2279,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 168
+        },
+        {
+          "task": 6891,
+          "full_prompt_tokens": 2472,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 57
+        },
+        {
+          "task": 6951,
+          "full_prompt_tokens": 2546,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 80
+        },
+        {
+          "task": 7034,
+          "full_prompt_tokens": 3482,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 870
+        },
+        {
+          "task": 7908,
+          "full_prompt_tokens": 4566,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 800
+        },
+        {
+          "task": 8711,
+          "full_prompt_tokens": 5490,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 84
+        },
+        {
+          "task": 8798,
+          "full_prompt_tokens": 5625,
+          "evaluated_prompt_tokens": 52,
+          "generated_output_tokens": 1364
+        },
+        {
+          "task": 10165,
+          "full_prompt_tokens": 7023,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 893
+        },
+        {
+          "task": 11061,
+          "full_prompt_tokens": 7941,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 222
+        },
+        {
+          "task": 11286,
+          "full_prompt_tokens": 8282,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 2719
+        },
+        {
+          "task": 14008,
+          "full_prompt_tokens": 11018,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 426
+        },
+        {
+          "task": 14437,
+          "full_prompt_tokens": 11606,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 3083
+        },
+        {
+          "task": 17523,
+          "full_prompt_tokens": 14724,
+          "evaluated_prompt_tokens": 411,
+          "generated_output_tokens": 95
+        },
+        {
+          "task": 17621,
+          "full_prompt_tokens": 14914,
+          "evaluated_prompt_tokens": 96,
+          "generated_output_tokens": 719
+        },
+        {
+          "task": 18343,
+          "full_prompt_tokens": 15764,
+          "evaluated_prompt_tokens": 132,
+          "generated_output_tokens": 52
+        },
+        {
+          "task": 18398,
+          "full_prompt_tokens": 15959,
+          "evaluated_prompt_tokens": 144,
+          "generated_output_tokens": 1640
+        },
+        {
+          "task": 20041,
+          "full_prompt_tokens": 17741,
+          "evaluated_prompt_tokens": 143,
+          "generated_output_tokens": 432
+        },
+        {
+          "task": 20476,
+          "full_prompt_tokens": 18190,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 140
+        },
+        {
+          "task": 20619,
+          "full_prompt_tokens": 18949,
+          "evaluated_prompt_tokens": 620,
+          "generated_output_tokens": 244
+        },
+        {
+          "task": 20867,
+          "full_prompt_tokens": 19549,
+          "evaluated_prompt_tokens": 357,
+          "generated_output_tokens": 1041
+        },
+        {
+          "task": 21911,
+          "full_prompt_tokens": 20622,
+          "evaluated_prompt_tokens": 37,
+          "generated_output_tokens": 58
+        },
+        {
+          "task": 21972,
+          "full_prompt_tokens": 20713,
+          "evaluated_prompt_tokens": 34,
+          "generated_output_tokens": 69
+        },
+        {
+          "task": 22044,
+          "full_prompt_tokens": 20797,
+          "evaluated_prompt_tokens": 16,
+          "generated_output_tokens": 78
+        },
+        {
+          "task": 22125,
+          "full_prompt_tokens": 21120,
+          "evaluated_prompt_tokens": 246,
+          "generated_output_tokens": 389
+        },
+        {
+          "task": 22517,
+          "full_prompt_tokens": 22128,
+          "evaluated_prompt_tokens": 620,
+          "generated_output_tokens": 2022
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T230340Z-easy-0def09",
+      "arm": "layout",
+      "agent_requests": 20,
+      "relay_completed_requests": 20,
+      "backend_generations": 20,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 8298,
+      "backend_output_tokens": 8298,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 142221,
+      "evaluated_prompt_tokens_sum": 4520,
+      "peak_prompt": 12457,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4520,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 4520
+        },
+        "cacheRead": {
+          "known_sum": 137701,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 137701
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 8298,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 8298
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 24544,
+          "full_prompt_tokens": 1580,
+          "evaluated_prompt_tokens": 1580,
+          "generated_output_tokens": 219
+        },
+        {
+          "task": 24770,
+          "full_prompt_tokens": 2013,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 75
+        },
+        {
+          "task": 24848,
+          "full_prompt_tokens": 2243,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 63
+        },
+        {
+          "task": 24914,
+          "full_prompt_tokens": 2468,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 44
+        },
+        {
+          "task": 24961,
+          "full_prompt_tokens": 3368,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 891
+        },
+        {
+          "task": 25856,
+          "full_prompt_tokens": 4293,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 192
+        },
+        {
+          "task": 26051,
+          "full_prompt_tokens": 4609,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 85
+        },
+        {
+          "task": 26139,
+          "full_prompt_tokens": 4728,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 3001
+        },
+        {
+          "task": 29143,
+          "full_prompt_tokens": 7748,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 114
+        },
+        {
+          "task": 29260,
+          "full_prompt_tokens": 7976,
+          "evaluated_prompt_tokens": 115,
+          "generated_output_tokens": 127
+        },
+        {
+          "task": 29390,
+          "full_prompt_tokens": 8129,
+          "evaluated_prompt_tokens": 33,
+          "generated_output_tokens": 543
+        },
+        {
+          "task": 29936,
+          "full_prompt_tokens": 8693,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 140
+        },
+        {
+          "task": 30079,
+          "full_prompt_tokens": 8853,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 676
+        },
+        {
+          "task": 30758,
+          "full_prompt_tokens": 9546,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 267
+        },
+        {
+          "task": 31028,
+          "full_prompt_tokens": 9932,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 309
+        },
+        {
+          "task": 31340,
+          "full_prompt_tokens": 10368,
+          "evaluated_prompt_tokens": 128,
+          "generated_output_tokens": 222
+        },
+        {
+          "task": 31565,
+          "full_prompt_tokens": 10607,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 271
+        },
+        {
+          "task": 31839,
+          "full_prompt_tokens": 10901,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 94
+        },
+        {
+          "task": 31936,
+          "full_prompt_tokens": 11709,
+          "evaluated_prompt_tokens": 715,
+          "generated_output_tokens": 634
+        },
+        {
+          "task": 32574,
+          "full_prompt_tokens": 12457,
+          "evaluated_prompt_tokens": 115,
+          "generated_output_tokens": 331
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T230503Z-easy-73ae20",
+      "arm": "selective",
+      "agent_requests": 17,
+      "relay_completed_requests": 17,
+      "backend_generations": 17,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": null,
+      "backend_output_tokens": 6292,
+      "additional_output_outside_agent_recorder": null,
+      "full_prompt_tokens_sum": 98866,
+      "evaluated_prompt_tokens_sum": 4490,
+      "peak_prompt": 9754,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4236,
+          "known_requests": 16,
+          "total_requests": 17,
+          "total": null
+        },
+        "cacheRead": {
+          "known_sum": 84876,
+          "known_requests": 16,
+          "total_requests": 17,
+          "total": null
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 16,
+          "total_requests": 17,
+          "total": null
+        },
+        "output": {
+          "known_sum": 5284,
+          "known_requests": 16,
+          "total_requests": 17,
+          "total": null
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 32909,
+          "full_prompt_tokens": 1675,
+          "evaluated_prompt_tokens": 1675,
+          "generated_output_tokens": 182
+        },
+        {
+          "task": 33098,
+          "full_prompt_tokens": 2071,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 68
+        },
+        {
+          "task": 33169,
+          "full_prompt_tokens": 2294,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 81
+        },
+        {
+          "task": 33253,
+          "full_prompt_tokens": 2639,
+          "evaluated_prompt_tokens": 265,
+          "generated_output_tokens": 186
+        },
+        {
+          "task": 33442,
+          "full_prompt_tokens": 2868,
+          "evaluated_prompt_tokens": 44,
+          "generated_output_tokens": 70
+        },
+        {
+          "task": 33515,
+          "full_prompt_tokens": 3100,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 83
+        },
+        {
+          "task": 33601,
+          "full_prompt_tokens": 4039,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 763
+        },
+        {
+          "task": 34368,
+          "full_prompt_tokens": 5037,
+          "evaluated_prompt_tokens": 236,
+          "generated_output_tokens": 695
+        },
+        {
+          "task": 35066,
+          "full_prompt_tokens": 5851,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 1650
+        },
+        {
+          "task": 36719,
+          "full_prompt_tokens": 7520,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 407
+        },
+        {
+          "task": 37129,
+          "full_prompt_tokens": 7948,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 134
+        },
+        {
+          "task": 37266,
+          "full_prompt_tokens": 8103,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 309
+        },
+        {
+          "task": 37578,
+          "full_prompt_tokens": 8679,
+          "evaluated_prompt_tokens": 268,
+          "generated_output_tokens": 135
+        },
+        {
+          "task": 37716,
+          "full_prompt_tokens": 8831,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 221
+        },
+        {
+          "task": 37940,
+          "full_prompt_tokens": 9176,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 80
+        },
+        {
+          "task": 38023,
+          "full_prompt_tokens": 9281,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 220
+        },
+        {
+          "task": 38246,
+          "full_prompt_tokens": 9754,
+          "evaluated_prompt_tokens": 254,
+          "generated_output_tokens": 1008
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T230609Z-easy-513af9",
+      "arm": "layout",
+      "agent_requests": 23,
+      "relay_completed_requests": 23,
+      "backend_generations": 23,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 7311,
+      "backend_output_tokens": 7311,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 158768,
+      "evaluated_prompt_tokens_sum": 4498,
+      "peak_prompt": 11082,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4498,
+          "known_requests": 23,
+          "total_requests": 23,
+          "total": 4498
+        },
+        "cacheRead": {
+          "known_sum": 154270,
+          "known_requests": 23,
+          "total_requests": 23,
+          "total": 154270
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 23,
+          "total_requests": 23,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 7311,
+          "known_requests": 23,
+          "total_requests": 23,
+          "total": 7311
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 39259,
+          "full_prompt_tokens": 1581,
+          "evaluated_prompt_tokens": 1581,
+          "generated_output_tokens": 186
+        },
+        {
+          "task": 39452,
+          "full_prompt_tokens": 1981,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 47
+        },
+        {
+          "task": 39502,
+          "full_prompt_tokens": 2183,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 65
+        },
+        {
+          "task": 39570,
+          "full_prompt_tokens": 2410,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 39
+        },
+        {
+          "task": 39612,
+          "full_prompt_tokens": 3305,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 1510
+        },
+        {
+          "task": 41126,
+          "full_prompt_tokens": 4863,
+          "evaluated_prompt_tokens": 49,
+          "generated_output_tokens": 50
+        },
+        {
+          "task": 41179,
+          "full_prompt_tokens": 4952,
+          "evaluated_prompt_tokens": 40,
+          "generated_output_tokens": 1000
+        },
+        {
+          "task": 42182,
+          "full_prompt_tokens": 5971,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 70
+        },
+        {
+          "task": 42255,
+          "full_prompt_tokens": 6060,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 465
+        },
+        {
+          "task": 42723,
+          "full_prompt_tokens": 6546,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 153
+        },
+        {
+          "task": 42879,
+          "full_prompt_tokens": 6720,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 354
+        },
+        {
+          "task": 43236,
+          "full_prompt_tokens": 7097,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 417
+        },
+        {
+          "task": 43656,
+          "full_prompt_tokens": 7624,
+          "evaluated_prompt_tokens": 111,
+          "generated_output_tokens": 54
+        },
+        {
+          "task": 43713,
+          "full_prompt_tokens": 8049,
+          "evaluated_prompt_tokens": 372,
+          "generated_output_tokens": 38
+        },
+        {
+          "task": 43754,
+          "full_prompt_tokens": 8188,
+          "evaluated_prompt_tokens": 102,
+          "generated_output_tokens": 914
+        },
+        {
+          "task": 44671,
+          "full_prompt_tokens": 9420,
+          "evaluated_prompt_tokens": 319,
+          "generated_output_tokens": 62
+        },
+        {
+          "task": 44736,
+          "full_prompt_tokens": 9605,
+          "evaluated_prompt_tokens": 124,
+          "generated_output_tokens": 32
+        },
+        {
+          "task": 44771,
+          "full_prompt_tokens": 9732,
+          "evaluated_prompt_tokens": 96,
+          "generated_output_tokens": 242
+        },
+        {
+          "task": 45016,
+          "full_prompt_tokens": 10012,
+          "evaluated_prompt_tokens": 39,
+          "generated_output_tokens": 103
+        },
+        {
+          "task": 45122,
+          "full_prompt_tokens": 10181,
+          "evaluated_prompt_tokens": 67,
+          "generated_output_tokens": 92
+        },
+        {
+          "task": 45217,
+          "full_prompt_tokens": 10312,
+          "evaluated_prompt_tokens": 40,
+          "generated_output_tokens": 559
+        },
+        {
+          "task": 45779,
+          "full_prompt_tokens": 10894,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 158
+        },
+        {
+          "task": 45940,
+          "full_prompt_tokens": 11082,
+          "evaluated_prompt_tokens": 31,
+          "generated_output_tokens": 701
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T230726Z-easy-ef6140",
+      "arm": "selective",
+      "agent_requests": 25,
+      "relay_completed_requests": 25,
+      "backend_generations": 25,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 8632,
+      "backend_output_tokens": 8632,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 185125,
+      "evaluated_prompt_tokens_sum": 4987,
+      "peak_prompt": 12441,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4987,
+          "known_requests": 25,
+          "total_requests": 25,
+          "total": 4987
+        },
+        "cacheRead": {
+          "known_sum": 180138,
+          "known_requests": 25,
+          "total_requests": 25,
+          "total": 180138
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 25,
+          "total_requests": 25,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 8632,
+          "known_requests": 25,
+          "total_requests": 25,
+          "total": 8632
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 46645,
+          "full_prompt_tokens": 1675,
+          "evaluated_prompt_tokens": 1675,
+          "generated_output_tokens": 158
+        },
+        {
+          "task": 46810,
+          "full_prompt_tokens": 1891,
+          "evaluated_prompt_tokens": 59,
+          "generated_output_tokens": 73
+        },
+        {
+          "task": 46886,
+          "full_prompt_tokens": 2126,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 36
+        },
+        {
+          "task": 46925,
+          "full_prompt_tokens": 3018,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 1276
+        },
+        {
+          "task": 48205,
+          "full_prompt_tokens": 4418,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 164
+        },
+        {
+          "task": 48372,
+          "full_prompt_tokens": 4616,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 150
+        },
+        {
+          "task": 48525,
+          "full_prompt_tokens": 4885,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 2279
+        },
+        {
+          "task": 50807,
+          "full_prompt_tokens": 7185,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 155
+        },
+        {
+          "task": 50965,
+          "full_prompt_tokens": 7362,
+          "evaluated_prompt_tokens": 139,
+          "generated_output_tokens": 166
+        },
+        {
+          "task": 51134,
+          "full_prompt_tokens": 7547,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 393
+        },
+        {
+          "task": 51530,
+          "full_prompt_tokens": 7978,
+          "evaluated_prompt_tokens": 39,
+          "generated_output_tokens": 57
+        },
+        {
+          "task": 51590,
+          "full_prompt_tokens": 8073,
+          "evaluated_prompt_tokens": 39,
+          "generated_output_tokens": 75
+        },
+        {
+          "task": 51668,
+          "full_prompt_tokens": 8173,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 49
+        },
+        {
+          "task": 51720,
+          "full_prompt_tokens": 8261,
+          "evaluated_prompt_tokens": 44,
+          "generated_output_tokens": 53
+        },
+        {
+          "task": 51776,
+          "full_prompt_tokens": 8339,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 49
+        },
+        {
+          "task": 51828,
+          "full_prompt_tokens": 8427,
+          "evaluated_prompt_tokens": 40,
+          "generated_output_tokens": 119
+        },
+        {
+          "task": 51950,
+          "full_prompt_tokens": 8568,
+          "evaluated_prompt_tokens": 23,
+          "generated_output_tokens": 135
+        },
+        {
+          "task": 52088,
+          "full_prompt_tokens": 8828,
+          "evaluated_prompt_tokens": 126,
+          "generated_output_tokens": 89
+        },
+        {
+          "task": 52180,
+          "full_prompt_tokens": 8934,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 359
+        },
+        {
+          "task": 52542,
+          "full_prompt_tokens": 9316,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 60
+        },
+        {
+          "task": 52605,
+          "full_prompt_tokens": 9785,
+          "evaluated_prompt_tokens": 410,
+          "generated_output_tokens": 716
+        },
+        {
+          "task": 53324,
+          "full_prompt_tokens": 10541,
+          "evaluated_prompt_tokens": 41,
+          "generated_output_tokens": 73
+        },
+        {
+          "task": 53400,
+          "full_prompt_tokens": 10919,
+          "evaluated_prompt_tokens": 306,
+          "generated_output_tokens": 870
+        },
+        {
+          "task": 54273,
+          "full_prompt_tokens": 11819,
+          "evaluated_prompt_tokens": 31,
+          "generated_output_tokens": 44
+        },
+        {
+          "task": 54320,
+          "full_prompt_tokens": 12441,
+          "evaluated_prompt_tokens": 579,
+          "generated_output_tokens": 1034
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T230852Z-easy-f49701",
+      "arm": "layout",
+      "agent_requests": 31,
+      "relay_completed_requests": 31,
+      "backend_generations": 31,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 11538,
+      "backend_output_tokens": 11538,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 303427,
+      "evaluated_prompt_tokens_sum": 6247,
+      "peak_prompt": 17099,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 6247,
+          "known_requests": 31,
+          "total_requests": 31,
+          "total": 6247
+        },
+        "cacheRead": {
+          "known_sum": 297180,
+          "known_requests": 31,
+          "total_requests": 31,
+          "total": 297180
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 31,
+          "total_requests": 31,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 11538,
+          "known_requests": 31,
+          "total_requests": 31,
+          "total": 11538
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 55359,
+          "full_prompt_tokens": 1582,
+          "evaluated_prompt_tokens": 1582,
+          "generated_output_tokens": 131
+        },
+        {
+          "task": 55497,
+          "full_prompt_tokens": 1927,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 77
+        },
+        {
+          "task": 55577,
+          "full_prompt_tokens": 2159,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 191
+        },
+        {
+          "task": 55771,
+          "full_prompt_tokens": 2512,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 52
+        },
+        {
+          "task": 55826,
+          "full_prompt_tokens": 3420,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 1462
+        },
+        {
+          "task": 57292,
+          "full_prompt_tokens": 5001,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 218
+        },
+        {
+          "task": 57513,
+          "full_prompt_tokens": 5351,
+          "evaluated_prompt_tokens": 133,
+          "generated_output_tokens": 1616
+        },
+        {
+          "task": 59132,
+          "full_prompt_tokens": 6986,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 61
+        },
+        {
+          "task": 59196,
+          "full_prompt_tokens": 7066,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 466
+        },
+        {
+          "task": 59665,
+          "full_prompt_tokens": 7553,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 160
+        },
+        {
+          "task": 59828,
+          "full_prompt_tokens": 7734,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 194
+        },
+        {
+          "task": 60025,
+          "full_prompt_tokens": 7951,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 59
+        },
+        {
+          "task": 60087,
+          "full_prompt_tokens": 8097,
+          "evaluated_prompt_tokens": 88,
+          "generated_output_tokens": 592
+        },
+        {
+          "task": 60682,
+          "full_prompt_tokens": 8813,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 145
+        },
+        {
+          "task": 60830,
+          "full_prompt_tokens": 8991,
+          "evaluated_prompt_tokens": 34,
+          "generated_output_tokens": 102
+        },
+        {
+          "task": 60935,
+          "full_prompt_tokens": 9850,
+          "evaluated_prompt_tokens": 758,
+          "generated_output_tokens": 1391
+        },
+        {
+          "task": 62330,
+          "full_prompt_tokens": 11256,
+          "evaluated_prompt_tokens": 16,
+          "generated_output_tokens": 315
+        },
+        {
+          "task": 62648,
+          "full_prompt_tokens": 11618,
+          "evaluated_prompt_tokens": 48,
+          "generated_output_tokens": 60
+        },
+        {
+          "task": 62711,
+          "full_prompt_tokens": 11744,
+          "evaluated_prompt_tokens": 67,
+          "generated_output_tokens": 278
+        },
+        {
+          "task": 62992,
+          "full_prompt_tokens": 12064,
+          "evaluated_prompt_tokens": 43,
+          "generated_output_tokens": 59
+        },
+        {
+          "task": 63054,
+          "full_prompt_tokens": 12522,
+          "evaluated_prompt_tokens": 400,
+          "generated_output_tokens": 172
+        },
+        {
+          "task": 63229,
+          "full_prompt_tokens": 12736,
+          "evaluated_prompt_tokens": 43,
+          "generated_output_tokens": 60
+        },
+        {
+          "task": 63292,
+          "full_prompt_tokens": 12913,
+          "evaluated_prompt_tokens": 118,
+          "generated_output_tokens": 632
+        },
+        {
+          "task": 63927,
+          "full_prompt_tokens": 13649,
+          "evaluated_prompt_tokens": 257,
+          "generated_output_tokens": 77
+        },
+        {
+          "task": 64007,
+          "full_prompt_tokens": 13743,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 401
+        },
+        {
+          "task": 64411,
+          "full_prompt_tokens": 14275,
+          "evaluated_prompt_tokens": 132,
+          "generated_output_tokens": 1672
+        },
+        {
+          "task": 66086,
+          "full_prompt_tokens": 15973,
+          "evaluated_prompt_tokens": 27,
+          "generated_output_tokens": 122
+        },
+        {
+          "task": 66211,
+          "full_prompt_tokens": 16112,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 96
+        },
+        {
+          "task": 66310,
+          "full_prompt_tokens": 16293,
+          "evaluated_prompt_tokens": 86,
+          "generated_output_tokens": 127
+        },
+        {
+          "task": 66440,
+          "full_prompt_tokens": 16437,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 50
+        },
+        {
+          "task": 66493,
+          "full_prompt_tokens": 17099,
+          "evaluated_prompt_tokens": 613,
+          "generated_output_tokens": 500
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T231046Z-easy-9045f2",
+      "arm": "selective",
+      "agent_requests": 19,
+      "relay_completed_requests": 19,
+      "backend_generations": 19,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 9774,
+      "backend_output_tokens": 9774,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 140069,
+      "evaluated_prompt_tokens_sum": 6826,
+      "peak_prompt": 13525,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 6826,
+          "known_requests": 19,
+          "total_requests": 19,
+          "total": 6826
+        },
+        "cacheRead": {
+          "known_sum": 133243,
+          "known_requests": 19,
+          "total_requests": 19,
+          "total": 133243
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 19,
+          "total_requests": 19,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 9774,
+          "known_requests": 19,
+          "total_requests": 19,
+          "total": 9774
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 66998,
+          "full_prompt_tokens": 1676,
+          "evaluated_prompt_tokens": 1676,
+          "generated_output_tokens": 219
+        },
+        {
+          "task": 67224,
+          "full_prompt_tokens": 2109,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 64
+        },
+        {
+          "task": 67291,
+          "full_prompt_tokens": 2328,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 140
+        },
+        {
+          "task": 67434,
+          "full_prompt_tokens": 2592,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 151
+        },
+        {
+          "task": 67588,
+          "full_prompt_tokens": 3599,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 873
+        },
+        {
+          "task": 68465,
+          "full_prompt_tokens": 4506,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 261
+        },
+        {
+          "task": 68729,
+          "full_prompt_tokens": 4824,
+          "evaluated_prompt_tokens": 248,
+          "generated_output_tokens": 607
+        },
+        {
+          "task": 69339,
+          "full_prompt_tokens": 5695,
+          "evaluated_prompt_tokens": 265,
+          "generated_output_tokens": 161
+        },
+        {
+          "task": 69503,
+          "full_prompt_tokens": 6070,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 1645
+        },
+        {
+          "task": 71151,
+          "full_prompt_tokens": 7834,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 174
+        },
+        {
+          "task": 71328,
+          "full_prompt_tokens": 8041,
+          "evaluated_prompt_tokens": 34,
+          "generated_output_tokens": 442
+        },
+        {
+          "task": 71773,
+          "full_prompt_tokens": 8502,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 1412
+        },
+        {
+          "task": 73188,
+          "full_prompt_tokens": 9933,
+          "evaluated_prompt_tokens": 1436,
+          "generated_output_tokens": 130
+        },
+        {
+          "task": 73323,
+          "full_prompt_tokens": 10084,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 1013
+        },
+        {
+          "task": 74339,
+          "full_prompt_tokens": 11735,
+          "evaluated_prompt_tokens": 639,
+          "generated_output_tokens": 214
+        },
+        {
+          "task": 74557,
+          "full_prompt_tokens": 11970,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 48
+        },
+        {
+          "task": 74608,
+          "full_prompt_tokens": 12151,
+          "evaluated_prompt_tokens": 134,
+          "generated_output_tokens": 721
+        },
+        {
+          "task": 75332,
+          "full_prompt_tokens": 12895,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 52
+        },
+        {
+          "task": 75387,
+          "full_prompt_tokens": 13525,
+          "evaluated_prompt_tokens": 579,
+          "generated_output_tokens": 1447
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T231223Z-easy-7041e7",
+      "arm": "layout",
+      "agent_requests": 20,
+      "relay_completed_requests": 20,
+      "backend_generations": 20,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 7135,
+      "backend_output_tokens": 7135,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 130998,
+      "evaluated_prompt_tokens_sum": 4356,
+      "peak_prompt": 10736,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4356,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 4356
+        },
+        "cacheRead": {
+          "known_sum": 126642,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 126642
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 7135,
+          "known_requests": 20,
+          "total_requests": 20,
+          "total": 7135
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 76839,
+          "full_prompt_tokens": 1582,
+          "evaluated_prompt_tokens": 1582,
+          "generated_output_tokens": 208
+        },
+        {
+          "task": 77054,
+          "full_prompt_tokens": 2004,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 75
+        },
+        {
+          "task": 77132,
+          "full_prompt_tokens": 2234,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 105
+        },
+        {
+          "task": 77240,
+          "full_prompt_tokens": 2397,
+          "evaluated_prompt_tokens": 59,
+          "generated_output_tokens": 140
+        },
+        {
+          "task": 77383,
+          "full_prompt_tokens": 2699,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 81
+        },
+        {
+          "task": 77467,
+          "full_prompt_tokens": 3044,
+          "evaluated_prompt_tokens": 265,
+          "generated_output_tokens": 130
+        },
+        {
+          "task": 77600,
+          "full_prompt_tokens": 4030,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 1268
+        },
+        {
+          "task": 78872,
+          "full_prompt_tokens": 5512,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 467
+        },
+        {
+          "task": 79342,
+          "full_prompt_tokens": 6013,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 1857
+        },
+        {
+          "task": 81202,
+          "full_prompt_tokens": 7889,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 148
+        },
+        {
+          "task": 81353,
+          "full_prompt_tokens": 8165,
+          "evaluated_prompt_tokens": 129,
+          "generated_output_tokens": 167
+        },
+        {
+          "task": 81523,
+          "full_prompt_tokens": 8368,
+          "evaluated_prompt_tokens": 43,
+          "generated_output_tokens": 67
+        },
+        {
+          "task": 81593,
+          "full_prompt_tokens": 8563,
+          "evaluated_prompt_tokens": 129,
+          "generated_output_tokens": 187
+        },
+        {
+          "task": 81783,
+          "full_prompt_tokens": 8786,
+          "evaluated_prompt_tokens": 37,
+          "generated_output_tokens": 105
+        },
+        {
+          "task": 81891,
+          "full_prompt_tokens": 9019,
+          "evaluated_prompt_tokens": 129,
+          "generated_output_tokens": 173
+        },
+        {
+          "task": 82067,
+          "full_prompt_tokens": 9320,
+          "evaluated_prompt_tokens": 129,
+          "generated_output_tokens": 484
+        },
+        {
+          "task": 82554,
+          "full_prompt_tokens": 9823,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 454
+        },
+        {
+          "task": 83011,
+          "full_prompt_tokens": 10298,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 197
+        },
+        {
+          "task": 83211,
+          "full_prompt_tokens": 10516,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 92
+        },
+        {
+          "task": 83306,
+          "full_prompt_tokens": 10736,
+          "evaluated_prompt_tokens": 129,
+          "generated_output_tokens": 730
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T231334Z-easy-206fca",
+      "arm": "selective",
+      "agent_requests": 34,
+      "relay_completed_requests": 34,
+      "backend_generations": 34,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 12924,
+      "backend_output_tokens": 12924,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 353164,
+      "evaluated_prompt_tokens_sum": 10850,
+      "peak_prompt": 20180,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 10850,
+          "known_requests": 34,
+          "total_requests": 34,
+          "total": 10850
+        },
+        "cacheRead": {
+          "known_sum": 342314,
+          "known_requests": 34,
+          "total_requests": 34,
+          "total": 342314
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 34,
+          "total_requests": 34,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 12924,
+          "known_requests": 34,
+          "total_requests": 34,
+          "total": 12924
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 84040,
+          "full_prompt_tokens": 1674,
+          "evaluated_prompt_tokens": 1674,
+          "generated_output_tokens": 160
+        },
+        {
+          "task": 84207,
+          "full_prompt_tokens": 1892,
+          "evaluated_prompt_tokens": 59,
+          "generated_output_tokens": 94
+        },
+        {
+          "task": 84304,
+          "full_prompt_tokens": 2250,
+          "evaluated_prompt_tokens": 265,
+          "generated_output_tokens": 67
+        },
+        {
+          "task": 84374,
+          "full_prompt_tokens": 2334,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 61
+        },
+        {
+          "task": 84438,
+          "full_prompt_tokens": 2531,
+          "evaluated_prompt_tokens": 137,
+          "generated_output_tokens": 81
+        },
+        {
+          "task": 84522,
+          "full_prompt_tokens": 2670,
+          "evaluated_prompt_tokens": 59,
+          "generated_output_tokens": 81
+        },
+        {
+          "task": 84606,
+          "full_prompt_tokens": 2913,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 44
+        },
+        {
+          "task": 84653,
+          "full_prompt_tokens": 3813,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 2960
+        },
+        {
+          "task": 87617,
+          "full_prompt_tokens": 6791,
+          "evaluated_prompt_tokens": 2983,
+          "generated_output_tokens": 484
+        },
+        {
+          "task": 88109,
+          "full_prompt_tokens": 7296,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 131
+        },
+        {
+          "task": 88243,
+          "full_prompt_tokens": 7448,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 306
+        },
+        {
+          "task": 88552,
+          "full_prompt_tokens": 7878,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 175
+        },
+        {
+          "task": 88730,
+          "full_prompt_tokens": 8320,
+          "evaluated_prompt_tokens": 268,
+          "generated_output_tokens": 626
+        },
+        {
+          "task": 89359,
+          "full_prompt_tokens": 8980,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 516
+        },
+        {
+          "task": 89878,
+          "full_prompt_tokens": 9513,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 520
+        },
+        {
+          "task": 90401,
+          "full_prompt_tokens": 10285,
+          "evaluated_prompt_tokens": 253,
+          "generated_output_tokens": 721
+        },
+        {
+          "task": 91125,
+          "full_prompt_tokens": 11040,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 742
+        },
+        {
+          "task": 91870,
+          "full_prompt_tokens": 11921,
+          "evaluated_prompt_tokens": 140,
+          "generated_output_tokens": 311
+        },
+        {
+          "task": 92184,
+          "full_prompt_tokens": 12257,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 31
+        },
+        {
+          "task": 92218,
+          "full_prompt_tokens": 12313,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 189
+        },
+        {
+          "task": 92410,
+          "full_prompt_tokens": 12540,
+          "evaluated_prompt_tokens": 39,
+          "generated_output_tokens": 169
+        },
+        {
+          "task": 92582,
+          "full_prompt_tokens": 12735,
+          "evaluated_prompt_tokens": 27,
+          "generated_output_tokens": 401
+        },
+        {
+          "task": 92986,
+          "full_prompt_tokens": 13205,
+          "evaluated_prompt_tokens": 70,
+          "generated_output_tokens": 64
+        },
+        {
+          "task": 93053,
+          "full_prompt_tokens": 13415,
+          "evaluated_prompt_tokens": 147,
+          "generated_output_tokens": 229
+        },
+        {
+          "task": 93285,
+          "full_prompt_tokens": 13670,
+          "evaluated_prompt_tokens": 27,
+          "generated_output_tokens": 176
+        },
+        {
+          "task": 93464,
+          "full_prompt_tokens": 13901,
+          "evaluated_prompt_tokens": 56,
+          "generated_output_tokens": 809
+        },
+        {
+          "task": 94276,
+          "full_prompt_tokens": 14839,
+          "evaluated_prompt_tokens": 130,
+          "generated_output_tokens": 328
+        },
+        {
+          "task": 94607,
+          "full_prompt_tokens": 15193,
+          "evaluated_prompt_tokens": 27,
+          "generated_output_tokens": 161
+        },
+        {
+          "task": 94771,
+          "full_prompt_tokens": 15455,
+          "evaluated_prompt_tokens": 180,
+          "generated_output_tokens": 310
+        },
+        {
+          "task": 95084,
+          "full_prompt_tokens": 16072,
+          "evaluated_prompt_tokens": 308,
+          "generated_output_tokens": 857
+        },
+        {
+          "task": 95944,
+          "full_prompt_tokens": 18940,
+          "evaluated_prompt_tokens": 2012,
+          "generated_output_tokens": 398
+        },
+        {
+          "task": 96348,
+          "full_prompt_tokens": 19355,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 167
+        },
+        {
+          "task": 96518,
+          "full_prompt_tokens": 19545,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 40
+        },
+        {
+          "task": 96561,
+          "full_prompt_tokens": 20180,
+          "evaluated_prompt_tokens": 596,
+          "generated_output_tokens": 515
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T231544Z-easy-759857",
+      "arm": "layout",
+      "agent_requests": 14,
+      "relay_completed_requests": 14,
+      "backend_generations": 14,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 6824,
+      "backend_output_tokens": 6824,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 85855,
+      "evaluated_prompt_tokens_sum": 4332,
+      "peak_prompt": 10515,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 4332,
+          "known_requests": 14,
+          "total_requests": 14,
+          "total": 4332
+        },
+        "cacheRead": {
+          "known_sum": 81523,
+          "known_requests": 14,
+          "total_requests": 14,
+          "total": 81523
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 14,
+          "total_requests": 14,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 6824,
+          "known_requests": 14,
+          "total_requests": 14,
+          "total": 6824
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 97081,
+          "full_prompt_tokens": 1582,
+          "evaluated_prompt_tokens": 1582,
+          "generated_output_tokens": 189
+        },
+        {
+          "task": 97277,
+          "full_prompt_tokens": 1985,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 158
+        },
+        {
+          "task": 97438,
+          "full_prompt_tokens": 2298,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 70
+        },
+        {
+          "task": 97511,
+          "full_prompt_tokens": 2530,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 198
+        },
+        {
+          "task": 97712,
+          "full_prompt_tokens": 2992,
+          "evaluated_prompt_tokens": 265,
+          "generated_output_tokens": 385
+        },
+        {
+          "task": 98100,
+          "full_prompt_tokens": 4233,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 2869
+        },
+        {
+          "task": 100973,
+          "full_prompt_tokens": 7316,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 574
+        },
+        {
+          "task": 101550,
+          "full_prompt_tokens": 7909,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 93
+        },
+        {
+          "task": 101646,
+          "full_prompt_tokens": 8019,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 402
+        },
+        {
+          "task": 102051,
+          "full_prompt_tokens": 8442,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 156
+        },
+        {
+          "task": 102210,
+          "full_prompt_tokens": 8619,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 855
+        },
+        {
+          "task": 103068,
+          "full_prompt_tokens": 9593,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 196
+        },
+        {
+          "task": 103267,
+          "full_prompt_tokens": 9822,
+          "evaluated_prompt_tokens": 34,
+          "generated_output_tokens": 55
+        },
+        {
+          "task": 103325,
+          "full_prompt_tokens": 10515,
+          "evaluated_prompt_tokens": 639,
+          "generated_output_tokens": 624
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T231951Z-easy-d94655",
+      "arm": "selective",
+      "agent_requests": 26,
+      "relay_completed_requests": 26,
+      "backend_generations": 26,
+      "additional_requests_outside_agent_recorder": 0,
+      "compaction_attempts": 0,
+      "agent_reported_output_tokens": 9257,
+      "backend_output_tokens": 9257,
+      "additional_output_outside_agent_recorder": 0,
+      "full_prompt_tokens_sum": 218095,
+      "evaluated_prompt_tokens_sum": 5051,
+      "peak_prompt": 13293,
+      "native_agent_usage": {
+        "input": {
+          "known_sum": 5051,
+          "known_requests": 26,
+          "total_requests": 26,
+          "total": 5051
+        },
+        "cacheRead": {
+          "known_sum": 213044,
+          "known_requests": 26,
+          "total_requests": 26,
+          "total": 213044
+        },
+        "cacheWrite": {
+          "known_sum": 0,
+          "known_requests": 26,
+          "total_requests": 26,
+          "total": 0
+        },
+        "output": {
+          "known_sum": 9257,
+          "known_requests": 26,
+          "total_requests": 26,
+          "total": 9257
+        }
+      },
+      "backend_tasks": [
+        {
+          "task": 103954,
+          "full_prompt_tokens": 1676,
+          "evaluated_prompt_tokens": 1676,
+          "generated_output_tokens": 244
+        },
+        {
+          "task": 104205,
+          "full_prompt_tokens": 2134,
+          "evaluated_prompt_tokens": 215,
+          "generated_output_tokens": 42
+        },
+        {
+          "task": 104250,
+          "full_prompt_tokens": 2331,
+          "evaluated_prompt_tokens": 156,
+          "generated_output_tokens": 169
+        },
+        {
+          "task": 104422,
+          "full_prompt_tokens": 2543,
+          "evaluated_prompt_tokens": 44,
+          "generated_output_tokens": 113
+        },
+        {
+          "task": 104538,
+          "full_prompt_tokens": 2818,
+          "evaluated_prompt_tokens": 163,
+          "generated_output_tokens": 44
+        },
+        {
+          "task": 104585,
+          "full_prompt_tokens": 3718,
+          "evaluated_prompt_tokens": 857,
+          "generated_output_tokens": 3032
+        },
+        {
+          "task": 107621,
+          "full_prompt_tokens": 6769,
+          "evaluated_prompt_tokens": 20,
+          "generated_output_tokens": 479
+        },
+        {
+          "task": 108103,
+          "full_prompt_tokens": 7269,
+          "evaluated_prompt_tokens": 22,
+          "generated_output_tokens": 139
+        },
+        {
+          "task": 108245,
+          "full_prompt_tokens": 7429,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 603
+        },
+        {
+          "task": 108851,
+          "full_prompt_tokens": 8151,
+          "evaluated_prompt_tokens": 120,
+          "generated_output_tokens": 583
+        },
+        {
+          "task": 109437,
+          "full_prompt_tokens": 8864,
+          "evaluated_prompt_tokens": 131,
+          "generated_output_tokens": 396
+        },
+        {
+          "task": 109836,
+          "full_prompt_tokens": 9286,
+          "evaluated_prompt_tokens": 27,
+          "generated_output_tokens": 291
+        },
+        {
+          "task": 110130,
+          "full_prompt_tokens": 9599,
+          "evaluated_prompt_tokens": 23,
+          "generated_output_tokens": 145
+        },
+        {
+          "task": 110278,
+          "full_prompt_tokens": 9769,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 57
+        },
+        {
+          "task": 110338,
+          "full_prompt_tokens": 9851,
+          "evaluated_prompt_tokens": 26,
+          "generated_output_tokens": 78
+        },
+        {
+          "task": 110419,
+          "full_prompt_tokens": 9968,
+          "evaluated_prompt_tokens": 44,
+          "generated_output_tokens": 64
+        },
+        {
+          "task": 110486,
+          "full_prompt_tokens": 10097,
+          "evaluated_prompt_tokens": 66,
+          "generated_output_tokens": 53
+        },
+        {
+          "task": 110542,
+          "full_prompt_tokens": 10343,
+          "evaluated_prompt_tokens": 194,
+          "generated_output_tokens": 86
+        },
+        {
+          "task": 110631,
+          "full_prompt_tokens": 10561,
+          "evaluated_prompt_tokens": 133,
+          "generated_output_tokens": 330
+        },
+        {
+          "task": 110964,
+          "full_prompt_tokens": 11021,
+          "evaluated_prompt_tokens": 131,
+          "generated_output_tokens": 347
+        },
+        {
+          "task": 111314,
+          "full_prompt_tokens": 11492,
+          "evaluated_prompt_tokens": 125,
+          "generated_output_tokens": 338
+        },
+        {
+          "task": 111655,
+          "full_prompt_tokens": 11864,
+          "evaluated_prompt_tokens": 35,
+          "generated_output_tokens": 131
+        },
+        {
+          "task": 111789,
+          "full_prompt_tokens": 12139,
+          "evaluated_prompt_tokens": 145,
+          "generated_output_tokens": 323
+        },
+        {
+          "task": 112115,
+          "full_prompt_tokens": 12479,
+          "evaluated_prompt_tokens": 18,
+          "generated_output_tokens": 129
+        },
+        {
+          "task": 112247,
+          "full_prompt_tokens": 12631,
+          "evaluated_prompt_tokens": 24,
+          "generated_output_tokens": 59
+        },
+        {
+          "task": 112309,
+          "full_prompt_tokens": 13293,
+          "evaluated_prompt_tokens": 604,
+          "generated_output_tokens": 982
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "layout": {
+      "requests": 123,
+      "output_tokens": 46405,
+      "requests_median": 20.0,
+      "output_median": 7223.0,
+      "requests_per_strict_success": 123.0,
+      "output_per_strict_success": 46405.0,
+      "additional_requests": 0,
+      "full_prompt_tokens": 900941,
+      "evaluated_prompt_tokens": 28018
+    },
+    "selective": {
+      "requests": 148,
+      "output_tokens": 64859,
+      "requests_median": 25.5,
+      "output_median": 9515.5,
+      "requests_per_strict_success": 37.0,
+      "output_per_strict_success": 16214.75,
+      "additional_requests": 0,
+      "full_prompt_tokens": 1312562,
+      "evaluated_prompt_tokens": 38779
+    }
+  },
+  "total_generations_including_qualification": 277,
+  "all_coding_requests": 271,
+  "all_coding_output": 111264,
+  "preregistered_candidate": "neither"
+}

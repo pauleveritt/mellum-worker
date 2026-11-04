@@ -1,0 +1,6 @@
+{
+  "backend": "temporary-docker",
+  "image": "sha256:7f2d77f56b5f0efa2d26224ac7ebffc7fd8b924b83ba9b0950f9a64aff64d5c2",
+  "control": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-controlled6/layout/.container-bdf2a24cef574095b21170295041733b",
+  "container_removed": true
+}
