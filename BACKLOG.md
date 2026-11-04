@@ -10,14 +10,6 @@ never by line number.
 
 Reopen conditions, not promises.
 
-**Foreground guard refuses diagnostic imports.** The selective-injection screen
-refused `python -c "import uvicorn, sys; print(uvicorn.__file__)"` as a foreground
-server start. It merely inspects a module path. Match execution intent rather
-than an incidental server-library name, with positive server-launch and negative
-help/version/import-introspection cases. Keep native refusal accounting intact.
-*Reopens when* the next remedy screen is prepared, before claiming the guard
-prevents a hang. [Observed refusal](evals/2026-11-04-local-selective3/observations.json).
-
 **Whole-session compaction accounting.** The local layout-only screen's first
 session recorded 36 agent requests/23,923 output tokens, while the independent
 server/relay observed 40/34,749 during three compaction attempts. Capture all

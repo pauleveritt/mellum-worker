@@ -141,31 +141,102 @@ function commandOf(input: unknown): string | undefined {
 	return undefined;
 }
 
-/** Commands that run a long-lived server in the foreground and never return. */
-const SERVER_START =
-	/\b(uvicorn|gunicorn|hypercorn|daphne|waitress-serve)\b|\bflask\s+run\b|\bpython\d?\s+-m\s+(http\.server|flask)\b|\bmanage\.py\s+runserver\b|\bfastapi\s+(dev|run)\b|\brails\s+server\b|\bnpm\s+(start|run\s+dev)\b|\bpython\d?(?:\.\d+)?\s+(?:-[\w-]+\s+)*(?:[\w.-]+\/)*(?:app|main|server|serve|asgi|wsgi)\.py\b/;
-
-/** Whether a shell command is already detached (nohup, or a background `&` operator). */
-export function isBackgrounded(command: string): boolean {
-	if (/\bnohup\b/.test(command)) return true;
-	// Ignore redirects that contain '&' (2>&1, &>, >&) before looking for a background '&'.
-	const stripped = command.replace(/\d*>&\d*/g, " ").replace(/&>/g, " ");
-	return /(^|[^&])&(\s|$)/.test(stripped.trim());
+interface ShellCommand {
+	words: string[];
+	background: boolean;
 }
 
-/** Read/search commands whose arguments may mention a server but never run one. */
-const READONLY_FIRST = /^\s*(grep|rg|cat|less|more|head|tail|echo|printf|find|ls|awk|sed|sort|uniq|wc|diff|which|type|git)\b/;
+/** A small shell-word scanner: quoted descriptions are data, separators split
+ * commands, and redirection ampersands do not detach a command. This is a
+ * hang-prevention heuristic, not a complete shell parser or a security boundary. */
+function shellCommands(command: string): ShellCommand[] {
+	const commands: ShellCommand[] = [];
+	let words: string[] = [], word = "", quote = "";
+	let pipelineStart = 0;
+	const groups: number[] = [];
+	const finishWord = () => { if (word) words.push(word); word = ""; };
+	const finish = (background = false) => {
+		finishWord();
+		if (words.length) commands.push({ words, background });
+		words = [];
+	};
+	for (let i = 0; i < command.length; i++) {
+		const c = command[i];
+		if (c === "\\" && quote !== "'" && i + 1 < command.length) {
+			if (command[++i] !== "\n") word += command[i];
+		} else if (quote) {
+			if (c === quote) quote = "";
+			else word += c;
+		} else if (c === "'" || c === '"') {
+			quote = c;
+		} else if (c === "#" && !word) {
+			while (i + 1 < command.length && command[i + 1] !== "\n") i++;
+		} else if (c === "&" && (command[i - 1] === ">" || command[i + 1] === ">")) {
+			word += c;
+		} else if (";\n|&()".includes(c)) {
+			const doubled = (c === "&" || c === "|") && command[i + 1] === c;
+			finish();
+			if (c === "(") groups.push(pipelineStart);
+			else if (c === ")") pipelineStart = groups.pop() ?? pipelineStart;
+			else if (c === "&" && !doubled) {
+				for (let j = pipelineStart; j < commands.length; j++) commands[j].background = true;
+				pipelineStart = commands.length;
+			} else if (c !== "|" || doubled) pipelineStart = commands.length;
+			if (doubled) i++;
+		} else if (/\s/.test(c)) {
+			finishWord();
+		} else word += c;
+	}
+	finish();
+	return commands;
+}
 
-// Only simple, known CLI queries: scripts can ignore flags, and a help query
-// followed by another command must not exempt that command from the guard.
-const SERVER_QUERY = /^\s*(?:uv\s+run(?:\s+--[\w-]+)*\s+)?(?:python\d?(?:\.\d+)?\s+-m\s+)?(?:uvicorn|gunicorn|hypercorn|daphne|waitress-serve|http\.server)\s+(?:--help|--version|-h|-V)\s*$/;
+const SERVER_EXECUTABLES = new Set(["uvicorn", "gunicorn", "hypercorn", "daphne", "waitress-serve"]);
+const QUERY_FLAGS = new Set(["--help", "--version", "-h", "-V"]);
+const basename = (word = "") => word.split("/").at(-1) ?? "";
 
-/** A blocking server started in the foreground (so it would hang the run). */
+function startsServer(words: string[]): boolean {
+	words = [...words];
+	// Common launch wrappers; no command is ever executed by the classifier.
+	while (/^[A-Za-z_][A-Za-z_0-9]*=/.test(words[0] ?? "") || ["env", "exec", "command"].includes(words[0])) words.shift();
+	if (basename(words[0]) === "nohup") return false;
+	if (basename(words[0]) === "uv" && words[1] === "run") {
+		words.splice(0, 2);
+		while (words[0]?.startsWith("-")) {
+			const option = words.shift();
+			if (["--directory", "--project", "--python", "--with"].includes(option ?? "")) words.shift();
+		}
+	}
+	let executable = basename(words.shift());
+	if (/^python(?:\d+(?:\.\d+)?)?$/.test(executable)) {
+		while (words[0]?.startsWith("-") && !["-m", "-c"].includes(words[0])) words.shift();
+		const entry = words.shift();
+		if (entry === "-c") {
+			// An import/introspection is not a launch. Ignore literals/comments so
+			// printing a sample call does not become an executable server call.
+			const code = (words[0] ?? "").replace(/(['"])(?:\\.|(?!\1)[^\\])*?\1|#[^\n]*/g, " ");
+			return /\b(?:uvicorn\.run|app\.run|serve|run_simple)\s*\(/.test(code);
+		}
+		if (entry === "-m") executable = words.shift() ?? "";
+		else return /^(?:app|main|server|serve|asgi|wsgi)\.py$/.test(basename(entry)) || (basename(entry) === "manage.py" && words[0] === "runserver");
+	}
+	if ((SERVER_EXECUTABLES.has(executable) || executable === "http.server") && words.length === 1 && QUERY_FLAGS.has(words[0])) return false;
+	if (SERVER_EXECUTABLES.has(executable) || executable === "http.server") return true;
+	return (executable === "flask" && words[0] === "run") ||
+		(executable === "fastapi" && ["dev", "run"].includes(words[0])) ||
+		(executable === "rails" && words[0] === "server") ||
+		(executable === "npm" && (words[0] === "start" || (words[0] === "run" && words[1] === "dev")));
+}
+
+/** Whether a shell command contains a detached command. */
+export function isBackgrounded(command: string): boolean {
+	return shellCommands(command).some(({ words, background }) => background || basename(words[0]) === "nohup");
+}
+
+/** Detect each simple command separately; a read, help query or background job
+ * must not exempt a different foreground launch in the same shell input. */
 export function isForegroundServer(command: string | undefined): boolean {
-	if (!command) return false;
-	if (READONLY_FIRST.test(command)) return false; // e.g. `grep uvicorn`, `cat app.py`
-	if (SERVER_QUERY.test(command)) return false;
-	return SERVER_START.test(command) && !isBackgrounded(command);
+	return !!command && shellCommands(command).some(({ words, background }) => !background && startsServer(words));
 }
 
 /** The non-blocking form: detached, logs aside, prints the pid to kill later. */

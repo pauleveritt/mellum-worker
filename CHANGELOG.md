@@ -125,6 +125,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- The foreground-server guard now distinguishes executable launches from library
+  mentions in Python diagnostics and test commands, and checks compound commands
+  without letting an unrelated read or background job exempt a foreground start.
+
 - Harness guard counts include Pi's native blocked `tool_execution_end`
   events and deduplicate matching legacy results by instance and tool-call ID,
   so an earlier guard hook cannot hide a refusal from the report.

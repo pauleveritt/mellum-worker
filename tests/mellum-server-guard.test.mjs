@@ -85,3 +85,45 @@ test("serverGuard: blocks a foreground bash server, allows everything else", () 
 	assert.equal(serverGuard({ toolName: "bash", input: { command: "uvicorn app:app &" } }), undefined);
 	assert.equal(serverGuard({ toolName: "edit", input: { path: "app.py" } }), undefined);
 });
+
+test("serverGuard permits Python diagnostics that only mention server libraries", () => {
+	for (const command of [
+		'python -c "import uvicorn, sys; print(uvicorn.__file__)"',
+		"uv run --frozen python -c 'import uvicorn; print(uvicorn.__version__)'",
+		"python3 -c 'from importlib.metadata import version; print(version(\"uvicorn\"))'",
+		"python -c 'from starlette.testclient import TestClient; import app; print(TestClient(app.app).get(\"/\"))'",
+		"uv run python -m pip show uvicorn",
+		"python -c 'print(\"uvicorn app:app &\")'",
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } }), undefined, command);
+});
+
+test("serverGuard checks launches after read commands and background jobs", () => {
+	for (const command of [
+		"echo ready; uvicorn app:app",
+		"cat app.py && uv run python app.py",
+		"uvicorn one:app & uvicorn two:app",
+		"nohup echo ready; python -m http.server",
+		'uvicorn app:app --log-config "a& b.json"',
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } })?.block, true, command);
+});
+
+test("serverGuard permits quoted launch descriptions in ordinary commands", () => {
+	for (const command of [
+		"uv run python -m pytest -k uvicorn",
+		"cd project && rg 'uvicorn app:app' .",
+		"printf '%s' 'uvicorn app:app; python main.py'",
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } }), undefined, command);
+});
+
+test("serverGuard preserves background allowance for pipelines and subshell groups", () => {
+	for (const command of [
+		"uvicorn app:app | cat &",
+		"(uvicorn app:app > /tmp/s.log 2>&1) &",
+		"(echo ready; uvicorn app:app) & echo $!",
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } }), undefined, command);
+});
+
+test("serverGuard recognizes launches continued across shell lines", () => {
+	for (const command of ["python \\\n app.py", "uv run --frozen \\\n python app.py"])
+		assert.equal(serverGuard({ toolName: "bash", input: { command } })?.block, true, command);
+});
