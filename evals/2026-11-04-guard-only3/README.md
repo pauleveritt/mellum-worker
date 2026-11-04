@@ -80,6 +80,8 @@ guard-only comparison on this host.
 [verification](final-verification.json), [raw evidence](raw-evidence.json).
 
 The raw archive is preserved locally and SHA256/critical bytes verified.
-Public release upload was rejected by automatic approval review pending explicit
-approval to disclose raw traces and workspace/checker data. The manifest's
-`published_download_verified` remains false; no public asset is claimed.
+Automatic approval review initially rejected public disclosure; Paul explicitly
+approved publishing the compact records and raw traces/workspace/checker data.
+The [published archive](https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/guard-only3-20261104T161430Z.tar.gz)
+was downloaded into a fresh directory and its SHA256 matched the reviewed local
+archive. The manifest records `published_download_verified: true`.

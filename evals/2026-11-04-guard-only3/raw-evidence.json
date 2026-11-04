@@ -15,5 +15,6 @@
     "stopped Pod readback"
   ],
   "archive_policy": "No weights, private keys, user credential stores or FIXES.md. Credential-like content scan passed; no existing release asset replaced.",
-  "published_download_verified": false
+  "published_download_verified": true,
+  "download_url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/guard-only3-20261104T161430Z.tar.gz"
 }
