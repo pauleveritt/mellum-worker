@@ -6,6 +6,9 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- Contained exploratory runs can explicitly load repository remedy units from
+  the frozen image, with their sources included in qualification provenance.
+
 - A temporary Docker measurement backend confines Pi tools and grading to
   separate private containers. Trusted collection now requires a matching
   qualified image and rejects native references; the installed worker gains no

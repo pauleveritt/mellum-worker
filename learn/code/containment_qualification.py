@@ -178,6 +178,16 @@ stop(); console.log(JSON.stringify({rows,observations}));
                 native[arm] = any(r["type"] == "agent_settled" and r.get("aborted") is False for r in rows)
             results["native_pi_vanilla"] = native["vanilla"]
             results["native_pi_worker"] = native["worker"]
+            # Exercise the actual selected modules through Pi before collection.
+            from containment import REPO
+            extras = [REPO / "remedies/guard/foreground-server.ts", REPO / "remedies/prompt/verify-the-spec.ts"]
+            run = run_contained(harness.load_suite(harness.SUITES, "easy"), image=image,
+                runs_dir=output / "native-remedy", profile=profile,
+                inference_target=f"http://127.0.0.1:{server.server_port}", arm="vanilla", deadline=60, stall=10, extras=extras)
+            rows = [json.loads(line) for line in (run / "trace.jsonl").read_text().splitlines()]
+            results["native_pi_remedies"] = any(r["type"] == "agent_settled" and r.get("aborted") is False for r in rows)
+            results["remedy_launch"] = json.loads((run / "launch.json").read_text())["extras"] == [
+                "/opt/instrument/remedies/guard/foreground-server.ts", "/opt/instrument/remedies/prompt/verify-the-spec.ts"]
             # Stop the fake upstream, then prove connection refusal is retained at the host boundary.
             server.shutdown(); server.server_close()
             refused = "const r=await fetch('http://127.0.0.1:8002/v1/chat/completions',{method:'POST',body:'{}'}); console.log(r.status)"

@@ -76,6 +76,14 @@ def test_private_volume_is_bounded_and_owned():
     assert argv[-1] == "mellum-attempt-test"
 
 
+def test_contained_remedies_map_only_trusted_repository_units():
+    unit = containment.REPO / "remedies/guard/foreground-server.ts"
+    assert containment.contained_extras([unit]) == ["/opt/instrument/remedies/guard/foreground-server.ts"]
+    for path in (containment.REPO / "learn/code/harness.py", Path("/tmp/arbitrary.ts")):
+        with pytest.raises(ValueError, match="remedy"):
+            containment.contained_extras([path])
+
+
 def test_model_input_never_contains_oracle_names_or_canary():
     import harness
     suite = harness.load_suite(harness.SUITES, "easy")

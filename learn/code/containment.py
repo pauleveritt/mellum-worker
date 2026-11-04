@@ -90,6 +90,7 @@ def source_hashes() -> dict:
     paths = [*SCRIPTS.glob("*"), *(REPO / "learn/code").glob("containment*.py"),
              REPO / "learn/code/harness.py", REPO / "learn/code/baseline.py",
              * (REPO / "extensions").rglob("*.ts"),
+             *(p for p in (REPO / "remedies").rglob("*") if p.is_file()),
              REPO / "learn/code/suites/easy/base/pyproject.toml",
              REPO / "learn/code/suites/easy/base/uv.lock"]
     return {str(p.relative_to(REPO)): hashlib.sha256(p.read_bytes()).hexdigest()
@@ -102,6 +103,7 @@ def build_image() -> str:
         context = Path(temporary)
         shutil.copytree(SCRIPTS, context, dirs_exist_ok=True)
         shutil.copytree(REPO / "extensions", context / "instrument/extensions")
+        shutil.copytree(REPO / "remedies", context / "instrument/remedies")
         for name in ("harness.py", "baseline.py", "containment.py"):
             target = context / "instrument/learn/code" / name
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -279,6 +281,16 @@ def suite_data(suite, *, grading=False) -> dict:
     return data
 
 
+def contained_extras(paths) -> list[str]:
+    mapped = []
+    for path in paths:
+        path = Path(path).resolve()
+        if not path.is_relative_to(REPO / "remedies") or path.suffix != ".ts" or not path.is_file():
+            raise ValueError("contained extras must be repository remedy units")
+        mapped.append(str(PurePosixPath("/opt/instrument") / path.relative_to(REPO)))
+    return mapped
+
+
 def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
                   inference_target="http://127.0.0.1:8002", **options) -> Path:
     from baseline import write_json
@@ -293,10 +305,11 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             shutil.copytree(suite.root / "base", seed / "suite/base")
         if suite.start:
             shutil.copytree(suite.start, seed / "suite/start")
-        if options.get("extras") or options.get("specs"):
-            raise ValueError("temporary contained runner currently accepts base arms without extras/variants")
+        if options.get("specs"):
+            raise ValueError("temporary contained runner does not accept spec variants")
         write_json(seed / "input.json", {"suite": suite_data(suite), "options": {
-            k: v for k, v in options.items() if k in {"arm", "deadline", "stall", "single_prompt", "context_files"}}})
+            **{k: v for k, v in options.items() if k in {"arm", "deadline", "stall", "single_prompt", "context_files"}},
+            "extras": contained_extras(options.get("extras", ()))}})
         with Container(image, control) as container:
             container.seed(seed)
             container.start_relay(inference_target)

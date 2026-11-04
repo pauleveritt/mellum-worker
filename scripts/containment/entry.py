@@ -16,6 +16,7 @@ suite = harness.Suite(**data["suite"], tests=Path("/attempt/grader"),
                       root=Path("/attempt/suite"),
                       start=Path("/attempt/suite/start") if Path("/attempt/suite/start").is_dir() else None)
 if sys.argv[1] == "model":
+    data["options"]["extras"] = [Path(p) for p in data["options"].get("extras", [])]
     harness.run_suite(suite, runs_dir=Path("/attempt/runs"), profile=Path("/attempt/profile"),
                       pi_binary="/usr/local/bin/pi", **data["options"])
 else:
