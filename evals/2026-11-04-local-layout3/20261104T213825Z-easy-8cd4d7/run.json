@@ -1,0 +1,66 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:0c025729e6e7c84566a054e20a598bf4d2fd40ba7cffc926d15851c143bf6dbb"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "prompt/name-the-layout"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+      "sha256": "8fe445380606a11ec6e05278aaad32a769f3f07181a6afb75c0bfbbc91f51c61"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 21,
+  "turns": 21,
+  "tool_calls": 20,
+  "tool_errors": 5,
+  "context": 12874,
+  "context_uncached": 1581,
+  "output_tokens": 8110,
+  "wall": 58.174,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [
+    "models.py"
+  ],
+  "completion": "settled",
+  "elapsed_seconds": 58.174,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": 0
+}

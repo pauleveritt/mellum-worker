@@ -10,6 +10,15 @@ never by line number.
 
 Reopen conditions, not promises.
 
+**Whole-session compaction accounting.** The local layout-only screen's first
+session recorded 36 agent requests/23,923 output tokens, while the independent
+server/relay observed 40/34,749 during three compaction attempts. Capture all
+provider traffic and usage with a qualified source independent of the agent's
+turn callbacks; keep agent turns distinct from total inference requests. Do not
+rewrite earlier records or assume their compaction budgets are complete.
+*Reopens when* the next budget comparison is prepared, before claiming whole
+session cost. [Measured supplement](evals/2026-11-04-local-layout3/backend-budget.json).
+
 **Kill-by-name test skipped on the GitHub Actions runner.**
 `tests/backend-lifecycle.test.mjs`'s "kill ends every process with the server's
 name" spawns two fake processes under a unique name and asserts `backend.py

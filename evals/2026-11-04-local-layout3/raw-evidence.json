@@ -1,0 +1,21 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "local-layout3-20261104T214531Z.tar.gz",
+  "sha256": "5f49fbac871f71403fe82018cacf164cbe7f5d3bc25b063ee9cb6e73b6182a0f",
+  "size_bytes": 3020055,
+  "source_commit": "f6d511e0fcd82c77aa2a378f7d98d2fe2565475f",
+  "archive_integrity": {
+    "members": 479,
+    "critical_files_byte_verified": 30
+  },
+  "scope": [
+    "three fresh local Metal layout-only Phase 1 sessions",
+    "raw provider/session/workspace/checker/relay evidence",
+    "backend qualification/freeze and pre/post identity",
+    "independent local server shutdown readback"
+  ],
+  "archive_policy": "No weights, private keys, credential stores or FIXES.md. Credential-like scan passed. No existing asset replaced.",
+  "published_download_verified": false,
+  "publication_status": "Not uploaded: automatic approval review requires explicit user authorization for this new archive and destination.",
+  "local_archive": "runs/local-layout3-20261104T214531Z.tar.gz"
+}

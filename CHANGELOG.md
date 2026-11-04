@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [local M5 Max layout-only screen](evals/2026-11-04-local-layout3/README.md)
+  records three fresh Phase 1 sessions, two hidden/health/completion passes,
+  a retained failure, and verified shutdown. Backend reconciliation preserves
+  compaction requests and output missing from the agent recorder.
+
 - The [guard-only three-session screen](evals/2026-11-04-guard-only3/README.md)
   records three foreground refusals and normal exits alongside incomplete
   hidden-check outcomes, missing usage and verified Pod shutdown. It keeps

@@ -1,0 +1,15 @@
+{
+  "npm_test": {
+    "passed": 647,
+    "failed": 0,
+    "duration_ms": 115236.695083
+  },
+  "docs_caps": {
+    "passed": 4,
+    "failed": 0
+  },
+  "zensical_build": "No issues found",
+  "git_diff_check": "passed",
+  "runtime_sources_and_weight_reverified": true,
+  "local_inference_stopped": true
+}

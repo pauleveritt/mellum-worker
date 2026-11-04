@@ -1,0 +1,19 @@
+{
+  "qualified": true,
+  "checks": {
+    "exactly_one_instruction_per_request": true,
+    "only_layout_loaded": true,
+    "no_worker": true,
+    "no_developer_prompt": true,
+    "no_verification_prompt": true,
+    "no_guard": true,
+    "no_output_trim": true,
+    "native_pi_settled": true,
+    "brief_preserved": true
+  },
+  "remedies": [
+    "prompt/name-the-layout"
+  ],
+  "scope": "local fake provider; no counted coding session",
+  "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-layout3/interaction/run/20261104T212124Z-easy-b94cf5"
+}

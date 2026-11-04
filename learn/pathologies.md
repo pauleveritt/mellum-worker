@@ -50,6 +50,7 @@ entries below.
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
 | 18 | Recovered connection errors leave token usage unknown | none — retain errors and report unknown totals rather than partial usage |
 | 19 | Verifies against another app and signals its server | none implemented — qualify filesystem/process/network run isolation before further unattended or parallel collection |
+| 20 | Compaction bypasses the agent budget recorder | none — reconcile all provider traffic with an independent backend/relay counter |
 
 ## It says it is done and it is not
 
@@ -233,10 +234,21 @@ entries below.
     completion and budget separate. Do not silently substitute a partial sum
     or replace a substantive model attempt to obtain a cleaner budget.
 
+
+20. **Compaction bypasses the agent budget recorder.** A harness can record every
+    ordinary agent turn yet omit model requests used to summarize context.
+    **Seen:** the first local Metal layout-only session recorded 36 requests and
+    23,923 output tokens, while server/relay reconciliation found 40 requests and
+    34,749 tokens during three compaction attempts
+    ([record](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-04-local-layout3/README.md)).
+    **Answer:** keep agent turns separate from whole-session inference requests,
+    reconcile independent backend counters, and retain an explicit supplement.
+    A complete agent-usage sum alone does not establish a complete budget.
+
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–19 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–20 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
 

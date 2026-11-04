@@ -1,0 +1,9 @@
+{
+  "source_image_and_runtime_unchanged": true,
+  "weight_hash_reverified_after_collection": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+  "server_identity_absent": {
+    "pid": 47776,
+    "start": "Wed Nov  4 16:27:34 2026"
+  },
+  "listener_8002": null
+}

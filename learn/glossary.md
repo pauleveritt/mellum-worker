@@ -484,3 +484,10 @@ safety guarantee to qualify, independent of optional model-facing remedies.
 The temporary Docker measurement backend qualifies this boundary using unrelated
 host/sibling sentinels, a fake provider and separately contained grading; it
 requires a fresh reference shared by later arms.
+
+### Compaction
+
+Replacing older conversation context with a generated summary to make room for
+later work. Summarization can make additional inference requests outside normal
+agent turns. Include those requests and tokens in a whole-session budget; a
+summary can also quote an injected instruction after its original entry is gone.

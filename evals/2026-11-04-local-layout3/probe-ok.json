@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-04T21:28:20.143Z",
+  "long_input_tokens": [
+    47026,
+    47026
+  ],
+  "protocol": "OpenAI-compatible chat completions and required tool call",
+  "counted_evaluation_sessions": 0
+}

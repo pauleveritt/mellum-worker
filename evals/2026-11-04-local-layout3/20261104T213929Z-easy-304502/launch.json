@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/usr/local/bin/pi",
+    "-p",
+    "--no-approve",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--provider",
+    "llamacpp",
+    "--model",
+    "Mellum2.1-12B-A2.5B-Thinking",
+    "--session-id",
+    "12d2ec80-eaf0-4744-8734-b1485603550b",
+    "--session-dir",
+    "/attempt/runs/20261104T213929Z-easy-304502/sessions",
+    "-e",
+    "/opt/instrument/remedies/prompt/name-the-layout.ts",
+    "-e",
+    "/attempt/runs/20261104T213929Z-easy-304502/record-pi.mjs",
+    "Implement Phase 1 \u2014 Home Page."
+  ],
+  "arm": "vanilla",
+  "extras": [
+    "/opt/instrument/remedies/prompt/name-the-layout.ts"
+  ],
+  "context_files": false,
+  "arm_env": {},
+  "mode_runs_file": "/attempt/runs/20261104T213929Z-easy-304502/mellum-mode-runs.jsonl"
+}
