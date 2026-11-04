@@ -1,0 +1,21 @@
+{
+  "qualified": true,
+  "checks": {
+    "all_five_loaded": true,
+    "developer_role": true,
+    "layout_prompt": true,
+    "verification_prompt": true,
+    "foreground_guard": true,
+    "output_trim": true,
+    "native_pi_settled": true
+  },
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output"
+  ],
+  "scope": "local fake provider; no counted coding session",
+  "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-retry-study/five-remedy-qualification-02/run/20261104T132243Z-easy-918715"
+}
