@@ -60,6 +60,29 @@ measurement containers/volumes. Stop before evidence reporting/preservation.
 Keep persistent files; storage billing continues. All three earlier Pods remain
 stopped; this is the only running study Pod.
 
+## Outcome and later host attempts
+
+No counted session ran here. Build progress reached100% compilation, then the
+local readiness controller failed when its build session ended before both
+readiness markers were observed. Its original predicate had no valid waiting
+state for build-complete/download-active. The guardian stopped the Pod before
+full remote failure logs could be fetched, so exact remote completion remains
+unknown; do not claim a finished/qualified backend. The corrected helper passed
+six local states, including old-exit2/new-exit0 for that race. Its source and
+proof are archived; it has not been GPU-qualified. The stopped Pod could not
+restart; subsequent PRO6000 and4500 placement attempts also failed.
+
+An H200 at$5.29/hour was created in EUR-IS-5 after price/stock reads, but its
+host repeatedly failed Docker container creation (context deadline, then exit1).
+No SSH/runtime ever appeared, and it was stopped. Both advertised A100 locations
+US-KS-2 andUS-MD-1 then refused placement at$1.79/hour; no A100 was created.
+Community Cloud returned no suitable stock. All five existing Pods were read
+back EXITED. The [partial retry record](../../../evals/2026-11-04-contained-retry-partial/README.md)
+preserves the three4500 model attempts, five-unit interaction proof, controller
+failures/fixes, host startup logs, usage limits and verified raw archive. No
+Worker cohort or counted remedy screen ran. No capacity watcher remains.
+Persistent disks total250GB and continue storage billing; compute is stopped.
+
 ## What would falsify this
 
 Changed shared inputs, unexpected modules, inactive worker, altered grader,

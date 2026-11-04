@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-11-04T13:49:57.208792+00:00",
+  "cases": [
+    {
+      "build_ok": true,
+      "weights_ok": true,
+      "active": "",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "build_ok": true,
+      "weights_ok": false,
+      "active": "mellum-download",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "build_ok": false,
+      "weights_ok": true,
+      "active": "mellum-build",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "build_ok": false,
+      "weights_ok": false,
+      "active": "mellum-build:mellum-download",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "build_ok": false,
+      "weights_ok": true,
+      "active": "",
+      "expected_exit": 2,
+      "observed_exit": 2
+    },
+    {
+      "build_ok": true,
+      "weights_ok": false,
+      "active": "",
+      "expected_exit": 3,
+      "observed_exit": 3
+    }
+  ],
+  "regression": {
+    "original_exit": 2,
+    "corrected_exit": 0,
+    "case": "build done; weight download active"
+  },
+  "qualified": true,
+  "scope": "Local readiness controller only; no GPU/backend qualification claim"
+}

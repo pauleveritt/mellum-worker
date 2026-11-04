@@ -1,0 +1,41 @@
+{
+  "run_id": "20261104T133039Z-easy-0b7304",
+  "state": "counted",
+  "classification_reason": "model execution (including failure, stall or deadline)",
+  "provider_request_count": 17,
+  "sent_max_tokens_counts": {
+    "16384": 17
+  },
+  "provider_errors": [],
+  "relay_boundaries": {
+    "ready": 1,
+    "created": 17,
+    "headers": 17,
+    "complete": 14,
+    "stream_error": 3
+  },
+  "relay_errors": [
+    {
+      "boundary": "stream_error",
+      "id": "bcc67db0-0303-4012-bb56-cefb2ed48ac9",
+      "timestamp": "2026-11-04T13:30:43.074Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 761.3662499999996
+    },
+    {
+      "boundary": "stream_error",
+      "id": "16e47bff-dcfe-456e-bdb6-5c8bf4f814d1",
+      "timestamp": "2026-11-04T13:30:49.783Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 2419.4317919999994
+    },
+    {
+      "boundary": "stream_error",
+      "id": "87fa656c-4e73-4ce8-9022-29f085f3d99b",
+      "timestamp": "2026-11-04T13:30:56.508Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 551.907291999998
+    }
+  ],
+  "usage_policy": "Incomplete output/full-context usage remains unknown; failed requests are not fabricated as zero."
+}

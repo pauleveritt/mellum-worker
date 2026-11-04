@@ -1,0 +1,21 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--with",
+    "pytest==8.3.4",
+    "sh",
+    "-c",
+    "printf started > \"$1\"; shift; exec \"$@\"",
+    "mellum-check",
+    "/attempt/grading/hidden-grade.started",
+    "pytest",
+    "-q",
+    "-rA",
+    "grader_tests"
+  ],
+  "exit_code": 1,
+  "started": false,
+  "stdout": "",
+  "stderr": "  \u00d7 No solution found when resolving dependencies for split (markers:\n  \u2502 python_full_version >= '3.14'):\n  \u2570\u2500\u25b6 Because there is no version of fastapi[standard]==0.115.10 and your\n      project depends on fastapi[standard]==0.115.10, we can conclude that\n      your project's requirements are unsatisfiable.\n"
+}

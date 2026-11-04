@@ -100,6 +100,14 @@ uses a fresh full cohort and a local controller that holds a routine review for
 explicit classification (maximum three minutes), rather than treating every
 review as terminal. The measured harness/image and scoring policy are unchanged.
 
+## Final retained record
+
+The [partial scorecard and provenance](../../../evals/2026-11-04-contained-retry-partial/README.md)
+retain all three counted attempts (75 requests,308.664s; cohort output unknown),
+actual sent16384-token limits, five-unit interaction proof and subsequent setup
+failures. No completed6+6 baseline comparison or counted remedy screen exists.
+All five Pods are verified EXITED; persistent storage remains billable.
+
 ## What would falsify this
 
 Backend/input drift, unexpected extensions, unqualified checker launch, missing

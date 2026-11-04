@@ -1,0 +1,18 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "contained-retry-partial-20261104T132947Z.tar.gz",
+  "source_commit": "814a44a8e7a7925982ea3fdf62d12548718ec16a",
+  "scope": [
+    "complete three-counted Vanilla partial batch, including failures, transport boundaries, sessions and final workspaces",
+    "4500 backend build, synthetic qualification and five-remedy fake-provider interaction records, including failed initial probe",
+    "PRO6000 controller/build-progress failure and corrected local readiness helper/proof; helper correction was not run on a GPU",
+    "H200 host startup failure logs and final five-Pod shutdown readback"
+  ],
+  "archive_policy": "No weights, SSH private keys or credential stores; raw traces remain outside Git. Existing assets are not replaced.",
+  "sha256": "5d3b9dedfd817e64206e6a84c0bb1ac55e5702e73bca88867f12023d65df942c",
+  "size_bytes": 1861145,
+  "members": 425,
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/contained-retry-partial-20261104T132947Z.tar.gz",
+  "published_download_verified": true,
+  "download_verified_at": "2026-11-04T13:51:58.048750+00:00"
+}

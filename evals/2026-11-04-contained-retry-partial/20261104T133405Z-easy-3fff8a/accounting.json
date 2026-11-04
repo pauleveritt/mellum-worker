@@ -1,0 +1,72 @@
+{
+  "run_id": "20261104T133405Z-easy-3fff8a",
+  "state": "counted",
+  "classification_reason": "Counted conservatively after substantive model work: model added uvicorn to pyproject without updating lock, breaking offline grading. Two recovered relay ECONNRESET/502 failures are confirmed; output/full-context totals remain unknown. Mixed model/transport failure retained, no selective replacement.",
+  "provider_request_count": 33,
+  "sent_max_tokens_counts": {
+    "16384": 33
+  },
+  "provider_errors": [
+    {
+      "request_id": "534ff24f-8e74-45b4-a5a3-1034a988827d:13",
+      "message": "502 status code (no body)"
+    },
+    {
+      "request_id": "534ff24f-8e74-45b4-a5a3-1034a988827d:31",
+      "message": "502 status code (no body)"
+    }
+  ],
+  "relay_boundaries": {
+    "ready": 1,
+    "created": 33,
+    "headers": 31,
+    "complete": 27,
+    "stream_error": 4,
+    "request_error": 2
+  },
+  "relay_errors": [
+    {
+      "boundary": "stream_error",
+      "id": "cd96d875-eb47-429e-a06a-060c1712c514",
+      "timestamp": "2026-11-04T13:34:10.903Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 1004.9632080000001
+    },
+    {
+      "boundary": "stream_error",
+      "id": "81adcefa-28a6-4860-832a-c83d7c080c4a",
+      "timestamp": "2026-11-04T13:34:16.049Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 4026.578666999999
+    },
+    {
+      "boundary": "request_error",
+      "id": "b146c9d4-cddc-4b7d-888b-77a0afd1b01f",
+      "timestamp": "2026-11-04T13:34:24.860Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 3.3171670000010636
+    },
+    {
+      "boundary": "stream_error",
+      "id": "b35f6ff5-6016-4b68-8919-c51288c8bc8d",
+      "timestamp": "2026-11-04T13:34:38.564Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 2580.9614170000023
+    },
+    {
+      "boundary": "stream_error",
+      "id": "b4c7736f-983e-4544-be33-c8704089152a",
+      "timestamp": "2026-11-04T13:34:43.450Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 4880.284082999999
+    },
+    {
+      "boundary": "request_error",
+      "id": "0b952206-3890-46b7-8b4a-3ea87572040c",
+      "timestamp": "2026-11-04T13:35:00.240Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 45.23099999999977
+    }
+  ],
+  "usage_policy": "Incomplete output/full-context usage remains unknown; failed requests are not fabricated as zero."
+}

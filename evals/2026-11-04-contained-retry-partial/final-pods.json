@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-11-04 13:48:33 UTC",
+  "pods": [
+    {
+      "id": "9vcvde4oilrref",
+      "name": "mellum-contained-study-h200",
+      "gpu": "NVIDIA H200",
+      "status": "EXITED",
+      "compute_rate_when_running": 5.29,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "wgt1xks8hypwgb",
+      "name": "mellum-contained-study-pro6000",
+      "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "status": "EXITED",
+      "compute_rate_when_running": 2.49,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "5ztijjtwz1l4i5",
+      "name": "mellum-contained-study-20261104",
+      "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+      "status": "EXITED",
+      "compute_rate_when_running": 0.72,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "icrpuerli5mgih",
+      "name": "mellum-inference-replacement",
+      "gpu": "NVIDIA A40",
+      "status": "EXITED",
+      "compute_rate_when_running": 0.59,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "adwa2g95zg24vx",
+      "name": "mellum-inference",
+      "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+      "status": "EXITED",
+      "compute_rate_when_running": 0.72,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    }
+  ],
+  "all_stopped": true,
+  "persistent_total_gb": 250
+}

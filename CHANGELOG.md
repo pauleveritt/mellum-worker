@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [partial contained retry](evals/2026-11-04-contained-retry-partial/README.md)
+  preserves three counted Vanilla attempts, complete/missing budgets, five-unit
+  remedy interaction checks, setup failures and verified shutdown. The Worker
+  comparison and counted remedy screen remain uncollected.
+
 - The [interrupted A40 study](evals/2026-11-04-contained-a40-interrupted/README.md)
   preserves its model stall, grading failure, measured budget and verified raw
   evidence, alongside the corrected qualification. No comparison is claimed.

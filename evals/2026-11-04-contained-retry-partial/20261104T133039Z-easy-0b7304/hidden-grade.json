@@ -1,0 +1,21 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--with",
+    "pytest==8.3.4",
+    "sh",
+    "-c",
+    "printf started > \"$1\"; shift; exec \"$@\"",
+    "mellum-check",
+    "/attempt/grading/hidden-grade.started",
+    "pytest",
+    "-q",
+    "-rA",
+    "grader_tests"
+  ],
+  "exit_code": 2,
+  "started": true,
+  "stdout": "\n==================================== ERRORS ====================================\n______________ ERROR collecting grader_tests/test_phase1_home.py _______________\nImportError while importing test module '/attempt/grading/workspace/grader_tests/test_phase1_home.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/opt/python/cpython-3.14.2-linux-aarch64-gnu/lib/python3.14/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\ngrader_tests/test_phase1_home.py:17: in <module>\n    from grader_tests._contract import (\ngrader_tests/_contract.py:15: in <module>\n    from app import app\nE   ModuleNotFoundError: No module named 'app'\n=============================== warnings summary ===============================\n.venv/lib/python3.14/site-packages/starlette/testclient.py:37\n  /attempt/grading/workspace/.venv/lib/python3.14/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.\n    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nERROR grader_tests/test_phase1_home.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 warning, 1 error in 0.21s\n",
+  "stderr": ""
+}
