@@ -74,6 +74,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- Contained measurement now permits uv checker binaries to execute in private
+  scratch, and qualification rejects a grader whose health checkers never
+  launch. The interrupted A40 attempt and corrected proof are retained.
+
 - New harness reports count cached prompt input in full context usage, keep
   uncached input separately and leave incomplete maxima unknown. The recorder
   passively retains redacted native HTTP boundaries and cause codes so connection

@@ -41,6 +41,33 @@ The replacement has its own shutdown guard: stop on workflow completion or a
 blocking failure, or after 90 compute minutes including setup. Keep `/workspace`;
 storage charges continue after stop. Do not start the old Pod or another GPU.
 
+## 2026-11-04 correction before resumed collection
+
+The first A40 Vanilla attempt stalled after 199.338s on foreground Uvicorn
+(14 requests, 2,221 output tokens). Its checker binaries could not launch:
+Docker's `/tmp` defaulted to `noexec` while uv's cached native binaries lived
+there. The prior 27-check proof checked the hidden oracle but failed to require
+health-checker launch. No quality score was accepted. This attempt remains
+retained in `vanilla-easy-20261104T130425Z-4162a7`, separate from the corrected
+cohorts; its model stall is not erased or described as a model success.
+
+The Pod was stopped and read back EXITED at the blocker. A failing unit
+regression demonstrated the false-positive qualification gate, and a real
+Docker reproduction showed mount flags and checker exit126. The corrected gate
+requires all three health checkers to launch on both fixtures; it rejected the
+old policy. Explicit `exec` on private `/tmp` lets uv run its cached binaries;
+non-root, no network/host mounts, read-only root, nosuid/nodev and resource
+bounds remain. A real Docker recheck passed for both fixtures.
+
+The corrected image is
+`sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56`.
+Its [replacement qualification](2026-11-04-contained-a40-study/qualification.json)
+passed all27 checks, now including checker launch in the grader check. Use this
+image for a fresh six Vanilla, six thin Worker and one bundled remedy screen;
+do not mix the interrupted old-policy attempt into their rates. The original
+proof remains historical and is superseded for collection. The A40 backend
+freeze is [retained separately](2026-11-04-contained-a40-study/backend-config.json).
+
 ## What would falsify this
 
 Unqualified hardware/runtime/weight/server drift, unexpected extensions, altered

@@ -68,6 +68,22 @@ def test_environment_is_an_allowlist(monkeypatch):
     assert not any(k in env for k in ["SSH_AUTH_SOCK", "OPENAI_API_KEY", "NODE_OPTIONS"])
 
 
+def test_grader_qualification_rejects_checkers_that_never_launched(monkeypatch):
+    import containment_qualification
+    import harness
+
+    def unlaunched(run, suite, image, versions):
+        (run / "grade.json").write_text(json.dumps({
+            name: {"status": "not checked"}
+            for name in ("ruff", "pyrefly", "complexipy")}))
+        return [], [run.name == "known-good", None, None, True]
+
+    monkeypatch.setattr(containment, "grade_contained", unlaunched)
+    ok, _ = containment_qualification.qualify_grader(
+        harness.load_suite(harness.SUITES, "easy"), "unused-image")
+    assert not ok
+
+
 def test_private_volume_is_bounded_and_owned():
     argv = containment.volume_argv("test")
     assert "type=tmpfs" in argv and "device=tmpfs" in argv

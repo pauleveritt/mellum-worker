@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "status": "frozen_infrastructure_screen_passed",
+  "scope": "A40 inference backend shared by contained Vanilla, worker and remedy screen",
+  "hardware": {
+    "provider": "Runpod",
+    "cloud": "SECURE",
+    "data_center": "EU-SE-1",
+    "gpu": "NVIDIA A40",
+    "gpu_count": 1,
+    "vram_mib": 46068,
+    "driver": "595.91.07",
+    "compute_capability": "8.6",
+    "cpu": "Intel(R) Xeon(R) Gold 6342 CPU @ 2.80GHz",
+    "container_disk_gb": 20,
+    "persistent_mount": {
+      "path": "/workspace",
+      "size_gb": 50
+    },
+    "allocated_vcpus": 9,
+    "allocated_ram_gb": 50,
+    "gpu_uuid": "GPU-251b506d-9a94-da67-924c-41d9524f4aa5"
+  },
+  "container": {
+    "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+    "observed_digest": "sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+    "os": "Ubuntu 24.04.3 LTS",
+    "exposed_ports": [
+      "22/tcp"
+    ],
+    "jupyter": false,
+    "digest_source": "Registry index read at recreation; runtime binaries independently hashed"
+  },
+  "backend": {
+    "repository": "https://github.com/ggml-org/llama.cpp",
+    "source_revision": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+    "build_number": 11669,
+    "compiler": "GNU 13.3.0",
+    "cuda_toolkit": "12.8.93",
+    "cmake": "3.28.3",
+    "build_options": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "GGML_CUDA": "ON",
+      "CMAKE_CUDA_ARCHITECTURES": "86",
+      "GGML_NATIVE": "OFF",
+      "CMAKE_BUILD_RPATH": "$ORIGIN",
+      "LLAMA_BUILD_NUMBER": 11669,
+      "LLAMA_BUILD_COMMIT": "620d2225c",
+      "LLAMA_BUILD_IS_DEV": "OFF"
+    },
+    "runtime_sha256": {
+      "libggml-base.so": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+      "libggml-base.so.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+      "libggml-base.so.0.27.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+      "libggml-cpu.so": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+      "libggml-cpu.so.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+      "libggml-cpu.so.0.27.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+      "libggml-cuda.so": "5e6da9512ae28e581e8db4a868c1143c0e695719d8efc795ffd00b7e2cec80a8",
+      "libggml-cuda.so.0": "5e6da9512ae28e581e8db4a868c1143c0e695719d8efc795ffd00b7e2cec80a8",
+      "libggml-cuda.so.0.27.0": "5e6da9512ae28e581e8db4a868c1143c0e695719d8efc795ffd00b7e2cec80a8",
+      "libggml.so": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+      "libggml.so.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+      "libggml.so.0.27.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+      "libllama-common.so": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+      "libllama-common.so.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+      "libllama-common.so.0.7.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+      "libllama-server-impl.so": "45f355aafb3c0a960f8b58501830be8d16f8e497886fdb23b13851cc764fd577",
+      "libllama.so": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+      "libllama.so.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+      "libllama.so.0.7.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+      "libmtmd.so": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+      "libmtmd.so.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+      "libmtmd.so.0.7.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+      "llama-server": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791"
+    },
+    "requested_cuda_architectures": "86"
+  },
+  "model": {
+    "repository": "JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF",
+    "revision": "4159d684ffdb09ba89dc2a58feb3e75c54eef036",
+    "file": "Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+    "size_bytes": 8071295264,
+    "sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+    "alias": "Mellum2.1-12B-A2.5B-Thinking",
+    "quantization": "Q4_K_M",
+    "mtp": false
+  },
+  "server": {
+    "bind": "127.0.0.1:18001",
+    "parallel_slots": 2,
+    "requested_total_context": 100000,
+    "client_context_per_session": 50000,
+    "kv_unified": false,
+    "cache_type_k": "q8_0",
+    "cache_type_v": "q8_0",
+    "gpu_layers": 999,
+    "jinja": true,
+    "flash_attention": "auto",
+    "continuous_batching": true,
+    "batch": 512,
+    "microbatch": 512,
+    "threads": 16,
+    "batch_threads": 16,
+    "process_manager": "tmux",
+    "llama_cache": "/workspace/mellum/cache",
+    "effective_context_per_slot": 50176,
+    "effective_total_context": 100352,
+    "context_budget": "Input and generated tokens share each slot context; max output is not additional context."
+  },
+  "client": {
+    "pi_version": "1.4.0",
+    "provider": "llamacpp",
+    "api": "openai-completions",
+    "max_output_tokens": 16384,
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0,
+    "presence_penalty": 0,
+    "repetition_penalty": 1,
+    "reasoning": true,
+    "thinking_format": "qwen-chat-template",
+    "qualification_base_url": "http://127.0.0.1:8002/v1",
+    "collection_base_url": "http://127.0.0.1:8002/v1",
+    "profile_sha256": "75504835b567a3d86793bc983edcb8cdb1dd0a069cb65f4bf06e5fd4a191ac80",
+    "frequency_penalty": 0,
+    "collection_endpoint_status": "Use qualified tunnel on Mac 8002 to Pod 18001; preserve unrelated Mac 8001 listener."
+  },
+  "collection": {
+    "status": "not_started",
+    "counted_sessions": 0,
+    "baseline_sessions_per_arm": 6,
+    "remedy_screen_sessions": 1,
+    "session_concurrency": 1,
+    "deadline_seconds": 600,
+    "open_tool_call_cutoff_seconds": 180
+  },
+  "qualification": {
+    "status": "passed_synthetic_screen",
+    "completed_at": "2026-11-04T13:04:13.307751+00:00",
+    "counted_evaluation_sessions": 0,
+    "checks": [
+      "two short slots",
+      "two 47k-context slots",
+      "required tool call",
+      "SSE",
+      "live hashes/GPU/argv"
+    ],
+    "evidence_directory": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-a40-study",
+    "limits": [
+      "Synthetic backend screen; no coding quality claim",
+      "Full 16384-token generation not exercised"
+    ]
+  },
+  "reuse_rule": "Verify exact hardware class, VRAM, driver, image digest, backend revision/build options and runtime hashes, weight hash, server settings, client settings, concurrency and relevant host load before a comparison. An incompatible change requires requalification and an explicit baseline comparability decision.",
+  "frozen_at": "2026-11-04",
+  "connection": {
+    "host": "194.68.245.71",
+    "port": 22033,
+    "user": "root",
+    "key_path": "~/.ssh/id_rsa",
+    "known_hosts": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-a40-study/known_hosts",
+    "pod_id": "icrpuerli5mgih"
+  }
+}

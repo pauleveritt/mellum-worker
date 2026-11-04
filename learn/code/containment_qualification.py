@@ -23,7 +23,13 @@ def qualify_grader(suite, image):
             shutil.copytree(suite.root / "fixtures" / name, run / "workspace", dirs_exist_ok=True)
             _, scored = grade_contained(run, suite, image, None)
             observed[name] = scored[0] and scored[3]
-    return observed["known-good"] and not observed["known-broken"], observed
+            diagnostics = json.loads((run / "grade.json").read_text())
+            observed[name + "-checkers-launched"] = all(
+                diagnostics.get(tool, {}).get("status") in ("pass", "fail")
+                for tool in ("ruff", "pyrefly", "complexipy"))
+    return (observed["known-good"] and not observed["known-broken"]
+            and observed["known-good-checkers-launched"]
+            and observed["known-broken-checkers-launched"]), observed
 
 
 class FakeProvider(BaseHTTPRequestHandler):

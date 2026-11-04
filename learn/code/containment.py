@@ -31,7 +31,7 @@ def create_argv(image: str, owner: str) -> list[str]:
             "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
             "--pids-limit", "256", "--memory", "4g", "--cpus", "4",
             "--mount", f"type=volume,source=mellum-attempt-{owner},target=/attempt",
-            "--tmpfs", "/tmp:rw,nosuid,nodev,size=1g,uid=1000,gid=1000,mode=1777",
+            "--tmpfs", "/tmp:rw,exec,nosuid,nodev,size=1g,uid=1000,gid=1000,mode=1777",
             "--label", f"{LABEL}={owner}", image, "sleep", "infinity"]
 
 
