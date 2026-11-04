@@ -466,3 +466,11 @@ The compact per-attempt report: hidden checks passed/total, code health,
 completion, model turns/provider requests, output tokens and execution elapsed
 time. Artifact correctness and completion are independent; diagnostics and shared
 provenance stay in the underlying records.
+
+### Run isolation
+
+A runner boundary that confines an agent's files, processes and network access
+to its own experiment. A fresh workspace/private profile and post-run cleanup
+do not establish this boundary: the agent can still reach shared host services
+when its native tools run with the host user's access. Isolation is a harness
+safety guarantee to qualify, independent of optional model-facing remedies.

@@ -1,5 +1,13 @@
 # Phase 1 Vanilla versus thin Baseline Worker
 
+**2026-11-03 deep-analysis correction:** worker attempt 5 queried a pre-existing
+host server and issued a successful port-based kill command. The directory/profile
+and cleanup checks did not establish execution isolation. Preserve the observed
+artifact grades, counts and raw evidence; treat behavioral/budget comparisons as
+exploratory with this uncontrolled interference. The cold arms also share identical
+initial model payloads. See [findings and fix priorities](../../docs/superpowers/research/2026-11-03-baseline-deep-analysis.md).
+The original collection summary below is retained with these qualifications.
+
 **Measured:** six counted sequential Easy Phase 1 worker sessions on the qualified
 Runpod GPU, compared descriptively with the retained six-session Vanilla reference.
 **Not established:** statistical superiority, a product-default change, remedy

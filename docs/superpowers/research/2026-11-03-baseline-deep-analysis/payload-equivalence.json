@@ -1,0 +1,71 @@
+{
+  "normalization": "Canonical JSON object-key order and replace only exact absolute workspace path with <WORKSPACE>; no timestamps or other values removed.",
+  "first_request_unique_hashes": [
+    "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+  ],
+  "first_requests": [
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T223611Z-easy-7e3179",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T223844Z-easy-9451c9",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224231Z-easy-874a37",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224249Z-easy-bc05b5",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224610Z-easy-deb247",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224939Z-easy-dd226b",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T232453Z-easy-39c844",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T232852Z-easy-b2920a",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T233023Z-easy-312b1d",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T233443Z-easy-a32b6c",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T233814Z-easy-73b011",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T234412Z-easy-ca810c",
+      "sha256": "98d2c23fb42f6df51fefc3a5eb0ae68599ea9d50980260a69f9d57ce910e633c"
+    }
+  ],
+  "worker_payloads_reapplied": 137,
+  "worker_payloads_changed_by_reapplying_filter": 0,
+  "limit": "Recorder observes post-worker payloads. Idempotence is supplemental; source and cold native history explain why pre-marker filtering has no active history boundary here."
+}

@@ -66,6 +66,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- The Phase 1 comparison now carries a dated isolation correction: a worker
+  contacted and signaled a pre-existing host server. Raw grades remain preserved;
+  the analysis distinguishes wrapper equivalence, incomplete acceptance coverage
+  and transport/context-budget limitations before further collection.
+
 - Harness records now separate hidden-check correctness, code health, and native
   session completion. Execution time includes silent waits; unchecked health
   stays explicit, and full checker output and provider errors are retained.

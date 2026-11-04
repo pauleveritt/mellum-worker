@@ -1,0 +1,276 @@
+{
+  "scope": "Retrospective analysis of 12 retained sessions, no new model sessions; 50 read-only health probes",
+  "runs": [
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T223611Z-easy-7e3179",
+      "hidden_all_pass": true,
+      "completion": "settled",
+      "requests": 17,
+      "tool_calls": 14,
+      "tool_errors": 0,
+      "elapsed_seconds": 38.686,
+      "output_tokens": null,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 1,
+      "provider_errors": [
+        {
+          "request": 6,
+          "requestId": "8741f557-46ad-4c2c-b775-38ba2110e63f:6",
+          "time": "2026-11-03T22:36:16.321Z",
+          "request_time": "2026-11-03T22:36:16.272Z",
+          "duration_ms": 49,
+          "stream_events": 0,
+          "message": "Connection error.",
+          "previous_event": "provider_request"
+        },
+        {
+          "request": 16,
+          "requestId": "8741f557-46ad-4c2c-b775-38ba2110e63f:16",
+          "time": "2026-11-03T22:36:43.586Z",
+          "request_time": "2026-11-03T22:36:43.583Z",
+          "duration_ms": 3,
+          "stream_events": 0,
+          "message": "Connection error.",
+          "previous_event": "provider_request"
+        }
+      ]
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T223844Z-easy-9451c9",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 15,
+      "tool_calls": 15,
+      "tool_errors": 0,
+      "elapsed_seconds": 223.46,
+      "output_tokens": 5709,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224231Z-easy-874a37",
+      "hidden_all_pass": false,
+      "completion": "settled",
+      "requests": 11,
+      "tool_calls": 10,
+      "tool_errors": 0,
+      "elapsed_seconds": 16.15,
+      "output_tokens": 2284,
+      "roadmap_seen": false,
+      "agents_rule_seen": false,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224249Z-easy-bc05b5",
+      "hidden_all_pass": false,
+      "completion": "stalled",
+      "requests": 13,
+      "tool_calls": 13,
+      "tool_errors": 0,
+      "elapsed_seconds": 197.314,
+      "output_tokens": 2477,
+      "roadmap_seen": false,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224610Z-easy-deb247",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 15,
+      "tool_calls": 15,
+      "tool_errors": 1,
+      "elapsed_seconds": 206.803,
+      "output_tokens": 4295,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "vanilla",
+      "run_id": "20261103T224939Z-easy-dd226b",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 20,
+      "tool_calls": 19,
+      "tool_errors": 3,
+      "elapsed_seconds": 219.198,
+      "output_tokens": null,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": [
+        {
+          "request": 14,
+          "requestId": "f99277f5-4b0b-4c9b-8748-67b9e3290bc3:14",
+          "time": "2026-11-03T22:50:05.100Z",
+          "request_time": "2026-11-03T22:50:04.942Z",
+          "duration_ms": 158,
+          "stream_events": 0,
+          "message": "Connection error.",
+          "previous_event": "provider_request"
+        }
+      ]
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T232453Z-easy-39c844",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 21,
+      "tool_calls": 21,
+      "tool_errors": 2,
+      "elapsed_seconds": 235.243,
+      "output_tokens": 9975,
+      "roadmap_seen": true,
+      "agents_rule_seen": false,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T232852Z-easy-b2920a",
+      "hidden_all_pass": false,
+      "completion": "settled",
+      "requests": 16,
+      "tool_calls": 14,
+      "tool_errors": 0,
+      "elapsed_seconds": 24.326,
+      "output_tokens": null,
+      "roadmap_seen": false,
+      "agents_rule_seen": false,
+      "self_test_calls": 0,
+      "provider_errors": [
+        {
+          "request": 10,
+          "requestId": "a165b6a4-6a37-49b6-a41f-4091a49a3cfb:10",
+          "time": "2026-11-03T23:29:06.682Z",
+          "request_time": "2026-11-03T23:29:06.592Z",
+          "duration_ms": 90,
+          "stream_events": 0,
+          "message": "Connection error.",
+          "previous_event": "provider_request"
+        }
+      ]
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T233023Z-easy-312b1d",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 22,
+      "tool_calls": 22,
+      "tool_errors": 5,
+      "elapsed_seconds": 257.062,
+      "output_tokens": 8037,
+      "roadmap_seen": true,
+      "agents_rule_seen": false,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T233443Z-easy-a32b6c",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 11,
+      "tool_calls": 11,
+      "tool_errors": 0,
+      "elapsed_seconds": 208.028,
+      "output_tokens": 5390,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": []
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T233814Z-easy-73b011",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 49,
+      "tool_calls": 48,
+      "tool_errors": 14,
+      "elapsed_seconds": 307.669,
+      "output_tokens": null,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": [
+        {
+          "request": 41,
+          "requestId": "2fc1d202-3c21-46c6-9027-f5e2377920da:41",
+          "time": "2026-11-03T23:39:37.113Z",
+          "request_time": "2026-11-03T23:39:37.090Z",
+          "duration_ms": 23,
+          "stream_events": 0,
+          "message": "Connection error.",
+          "previous_event": "provider_request"
+        }
+      ]
+    },
+    {
+      "arm": "worker",
+      "run_id": "20261103T234412Z-easy-ca810c",
+      "hidden_all_pass": true,
+      "completion": "stalled",
+      "requests": 18,
+      "tool_calls": 17,
+      "tool_errors": 2,
+      "elapsed_seconds": 214.308,
+      "output_tokens": null,
+      "roadmap_seen": true,
+      "agents_rule_seen": true,
+      "self_test_calls": 0,
+      "provider_errors": [
+        {
+          "request": 11,
+          "requestId": "e7a9dab3-8c7c-43d3-a9c1-022733be1d71:11",
+          "time": "2026-11-03T23:44:32.054Z",
+          "request_time": "2026-11-03T23:44:31.958Z",
+          "duration_ms": 96,
+          "stream_events": 0,
+          "message": "Connection error.",
+          "previous_event": "provider_request"
+        }
+      ]
+    }
+  ],
+  "host_interference": {
+    "run_id": "20261103T233814Z-easy-73b011",
+    "request36": "ps snapshot shows pre-existing uvicorn app:app --reload --port8765,PID36820,start1:10PM; current run began18:38EDT",
+    "request38": "lsof lists8765 listeners PID36820 and36822",
+    "request39": "curl localhost:8765 returns1194-byte AgentClinic page; response differs from current workspace home template",
+    "request46": "kill $(lsof -t -i :8765) returns success",
+    "subsequent_model_context_contains_external_response": true,
+    "limits": "Old process cwd and originating session not captured. Command and start time prove it predates this attempt. Current artifact was written before the external read, and hidden grading used its own workspace."
+  },
+  "combined": {
+    "hidden_all_pass": 9,
+    "settled": 3,
+    "stalled": 9,
+    "hidden_pass_and_settled": 1,
+    "provider_requests": 228,
+    "provider_error_events": 6,
+    "provider_error_runs": 5,
+    "provider_error_stream_events": 0,
+    "roadmap_unread_in_all_three_hidden_failures": true,
+    "self_test_runs": 1,
+    "id_fifo_stall_match_mismatches": 0
+  },
+  "source_instruments": {
+    "vanilla": "e54b6f1f40a9dceca6b35081428dbf43a57ce6d4",
+    "worker": "378217f0b10b588a702c1ccb409488a7f00531b0"
+  }
+}

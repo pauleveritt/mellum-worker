@@ -59,3 +59,12 @@ SSH transport and native cache behavior; shutting down an idle Mac backend may
 change host pressure. Native worker requests can match Vanilla requests; this
 is possible behavior, not proof of recorder failure. Known missing token totals
 prevent a complete output-budget comparison. Runpod remains billable while idle.
+
+## 2026-11-03 deep-analysis correction
+
+Worker attempt 5 read a pre-existing host server's response and issued a successful
+port-based kill. Cleanup/configuration checks did not establish run isolation;
+clean-isolation interpretation is withdrawn. Counts and frozen raw artifacts stay
+unchanged. All twelve initial model payloads are also identical after workspace
+normalization, so request/time differences do not establish a causal worker cost.
+[Detailed analysis and prerequisites](2026-11-03-baseline-deep-analysis.md).

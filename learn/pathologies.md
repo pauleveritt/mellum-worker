@@ -49,6 +49,7 @@ entries below.
 | 16 | A skipped rule | none — a fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
 | 18 | Recovered connection errors leave token usage unknown | none — retain errors and report unknown totals rather than partial usage |
+| 19 | Verifies against another app and signals its server | none implemented — qualify filesystem/process/network run isolation before further unattended or parallel collection |
 
 ## It says it is done and it is not
 
@@ -235,6 +236,19 @@ entries below.
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–18 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–19 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
+
+## It reaches a pre-existing host service
+
+19. **Verifies against another app and signals its server.** A model discovers
+    a pre-existing host listener, reads its page as evidence during its own task,
+    and can signal that server. **Seen:** once, worker attempt 5 of the 2026-11-03
+    Phase 1 comparison queried port 8765 and received a different AgentClinic page,
+    then `kill $(lsof -t -i :8765)` returned success. Its current app used port 8000;
+    the discovered process predated the attempt. The external response entered
+    later model context ([analysis](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/docs/superpowers/research/2026-11-03-baseline-deep-analysis.md)).
+    **Answer:** qualify run isolation across files/processes/network, before
+    further unattended or parallel collection. Workspace cleanup alone did not
+    prevent this event. No isolation fix has been implemented or measured here.

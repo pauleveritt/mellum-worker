@@ -1,0 +1,11 @@
+{
+  "purpose": "Read-only health requests through the same SSH tunnel; no inference. A quiet probe cannot clear historical intermittent failures.",
+  "node": "v24.22.1",
+  "execPath": "/Users/pauleveritt/Library/Caches/JetBrains/PyCharm2026.3/acp-agents/.runtimes/node/24.22.1/bin/node",
+  "requests": 50,
+  "errors": [],
+  "status_counts": {
+    "200": 50
+  },
+  "limit": "Health GET requests only; not streaming completions. No failures observed here does not explain or clear the six historical errors."
+}

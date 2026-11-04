@@ -1,0 +1,192 @@
+[
+  {
+    "arm": "vanilla",
+    "run_id": "20261103T223611Z-easy-7e3179",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 16,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": [
+      "tests/test_home.py"
+    ]
+  },
+  {
+    "arm": "vanilla",
+    "run_id": "20261103T223844Z-easy-9451c9",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 22,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "vanilla",
+    "run_id": "20261103T224231Z-easy-874a37",
+    "hidden_pass": false,
+    "shared_base_template_exists": false,
+    "app_exists": false,
+    "uvicorn_run": [],
+    "self_test_files": []
+  },
+  {
+    "arm": "vanilla",
+    "run_id": "20261103T224249Z-easy-bc05b5",
+    "hidden_pass": false,
+    "shared_base_template_exists": false,
+    "app_exists": true,
+    "uvicorn_run": [],
+    "self_test_files": []
+  },
+  {
+    "arm": "vanilla",
+    "run_id": "20261103T224610Z-easy-deb247",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 14,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "host": "'127.0.0.1'",
+          "port": "8000",
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "vanilla",
+    "run_id": "20261103T224939Z-easy-dd226b",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 13,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "host": "'0.0.0.0'",
+          "port": "8000",
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "worker",
+    "run_id": "20261103T232453Z-easy-39c844",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 20,
+        "first_argument": "app",
+        "keywords": {
+          "host": "'0.0.0.0'",
+          "port": "8000",
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "worker",
+    "run_id": "20261103T232852Z-easy-b2920a",
+    "hidden_pass": false,
+    "shared_base_template_exists": false,
+    "app_exists": true,
+    "uvicorn_run": [],
+    "self_test_files": []
+  },
+  {
+    "arm": "worker",
+    "run_id": "20261103T233023Z-easy-312b1d",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 14,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "worker",
+    "run_id": "20261103T233443Z-easy-a32b6c",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 13,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "worker",
+    "run_id": "20261103T233814Z-easy-73b011",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 13,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  },
+  {
+    "arm": "worker",
+    "run_id": "20261103T234412Z-easy-ca810c",
+    "hidden_pass": true,
+    "shared_base_template_exists": true,
+    "app_exists": true,
+    "uvicorn_run": [
+      {
+        "line": 18,
+        "first_argument": "'app:app'",
+        "keywords": {
+          "host": "'127.0.0.1'",
+          "port": "8000",
+          "reload": "True"
+        }
+      }
+    ],
+    "self_test_files": []
+  }
+]
