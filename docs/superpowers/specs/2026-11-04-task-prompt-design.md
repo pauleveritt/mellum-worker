@@ -58,3 +58,30 @@ The same verifier rejected the old delivery because it changed the task text.
 Raw local verification lives in runs/2026-11-04-task-prompt/ (not coding evidence).
 No GPU was started. Historical experiment records and other prompt units were
 not changed. Requalify the measurement image before any new counted collection.
+
+## Selective extension approved 2026-11-04
+
+The user requested a new five-remedy screen with selective injection. Extend
+this same task-lifetime contract to `prompt/verify-the-spec`, retaining its
+instruction text. Extract the existing lifecycle into one shared helper; each
+unit owns its own task identity, message and toggle state. Both instructions
+can coexist, each visibly labelled with its remedy name. The worker remains
+unchanged and bundles neither. `prompt/python-developer` retains its existing
+system-role behavior. Other prompt units retain their behavior.
+
+Test both units against the same lifecycle regressions and verify their
+composition and independent live toggles. Qualify actual Pi and the rebuilt
+contained image before collecting three fresh sequential Easy Phase 1 sessions
+with all five original remedy units on the local Metal freeze. Keep backend
+accounting for compaction, all failures and shutdown evidence. This screen
+selects no default and does not isolate a causal delivery effect against the
+older hosted stack.
+
+Selective implementation verification: eight new verification/composition
+regressions failed against old delivery; focused tests pass 47/47 and the full
+suite passes 653/653 after regenerating the remedy-description page. Actual
+Pi verification injection passes 12 checks across 20 deterministic-provider
+requests. A rebuilt image passes 27 boundary checks and a contained five-unit
+probe verifies two independent injected messages, preserved brief/system role,
+help/version allowance, one foreground refusal and output trimming. Independent
+code review found no issues. Coding-screen results are recorded separately.

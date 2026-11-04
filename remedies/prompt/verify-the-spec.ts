@@ -1,9 +1,10 @@
 /** Remedy unit (prompt): make the model finish only after it has checked every requirement the
  * spec lists and actually run the project's own tests — not after reading files or starting a
  * server. Agnostic: it names no requirement, route, file or expected value; the model reads the
- * requirements from the spec itself. Appends one line to each user message. New unit; unmeasured
+ * requirements from the spec itself. Injects one visible instruction per task. Coding effect under test
  * (easy-ladder, 2026-11-02). */
 import type { PiLike, UnitMeta } from "../install.ts";
+import { installTaskPrompt } from "../task-prompt.ts";
 
 const LINE =
 	"Before you finish, check that every requirement the spec lists is present in your code, and " +
@@ -12,27 +13,13 @@ const LINE =
 
 export const meta: UnitMeta = {
 	pathology: "Declares done with a spec requirement unimplemented or unverified",
-	does: "Tells the model to check every spec requirement and run the tests before finishing",
+	does: "Injects the requirement-and-test verification instruction once per task",
 	lesson: "",
 	evidence: "new unit; unmeasured (easy-ladder, 2026-11-02)",
 };
 
-/** Append `line` to a user message's content, whether it is a plain string or content blocks. */
-function append(content: any, line: string): any {
-	if (typeof content === "string") return `${content}\n\n${line}`;
-	if (Array.isArray(content)) return [...content, { type: "text", text: `\n\n${line}` }];
-	return content;
-}
-
 export function install(pi: PiLike): void {
-	pi.on("before_provider_request", (event) => {
-		const payload = event?.payload;
-		if (!payload || !Array.isArray(payload.messages)) return undefined;
-		return {
-			...payload,
-			messages: payload.messages.map((m: any) => (m.role === "user" ? { ...m, content: append(m.content, LINE) } : m)),
-		};
-	});
+ installTaskPrompt(pi, "prompt/verify-the-spec", LINE);
 }
 
 export default (pi: PiLike) => install(pi);

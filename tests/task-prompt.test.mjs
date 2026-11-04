@@ -3,16 +3,14 @@ import { EventEmitter } from "node:events";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import test from "node:test";
-import layout from "../remedies/prompt/name-the-layout.ts";
+import layoutUnit from "../remedies/prompt/name-the-layout.ts";
+import verification from "../remedies/prompt/verify-the-spec.ts";
 import worker from "../extensions/mellum-worker.ts";
 import host from "../extensions/mellum-remedies.ts";
 
 process.env.HOME = mkdtempSync(`${tmpdir()}/task-prompt-home-`);
 process.env.MELLUM_MODE_RUNS = "0";
-const NAME = "prompt/name-the-layout";
-const instruction = "Read the project's own spec or notes for where each file and route belongs, and create files at exactly those paths — do not invent your own layout.";
 const text = (m) => typeof m.content === "string" ? m.content : (m.content ?? []).map((b) => b.text ?? "").join("");
-const injected = (messages) => messages.filter((m) => text(m).includes(instruction));
 
 // Models the documented Pi hook boundaries; the real worker, unit and remedy
 // controller run unchanged. User/custom messages are converted just as Pi does.
@@ -38,7 +36,8 @@ function rig() {
 		for (const fn of handlers[name] ?? []) {
 			const out = await fn(event, ctx);
 			if (out !== undefined) {
-				result = out;
+				result = name === "before_agent_start" && out.message
+					? { messages: [...(result?.messages ?? []), out.message] } : out;
 				if (name === "context") event = { ...event, ...out };
 				if (name === "before_provider_request") event = { payload: out };
 			}
@@ -51,7 +50,7 @@ function rig() {
 		async start(prompt) {
 			const out = await fire("before_agent_start", { messageType: "user", prompt, systemPrompt: "Pi system" });
 			transcript.push({ role: "user", content: [{ type: "text", text: prompt }], timestamp: ++stamp }, ...pending.splice(0));
-			if (out?.message) transcript.push({ role: "custom", ...out.message, timestamp: ++stamp });
+			for (const message of out?.messages ?? []) transcript.push({ role: "custom", ...message, timestamp: ++stamp });
 			await fire("agent_start", {});
 		},
 		async payload() {
@@ -63,7 +62,12 @@ function rig() {
 	};
 }
 
-test("layout is one visible injected message retained across tool requests, without rewriting the task", async () => {
+for (const { install: layout, name: NAME, instruction } of [
+ { install: layoutUnit, name: "prompt/name-the-layout", instruction: "Read the project's own spec or notes for where each file and route belongs, and create files at exactly those paths — do not invent your own layout." },
+ { install: verification, name: "prompt/verify-the-spec", instruction: "Before you finish, check that every requirement the spec lists is present in your code, and run the project's own tests to confirm — do not finish while a requirement is unimplemented or a test you can run is failing. Reading the files is not verification; run them." },
+]) {
+const injected = (messages) => messages.filter((m) => text(m).includes(instruction));
+test(`${NAME}: layout is one visible injected message retained across tool requests, without rewriting the task`, async () => {
 	const r = rig(); layout(r.pi);
 	await r.start("Build the requested page.");
 	const shown = injected(r.transcript);
@@ -81,7 +85,7 @@ test("layout is one visible injected message retained across tool requests, with
 	assert.deepEqual(first.tools, [{ name: "read" }]);
 });
 
-test("a new Vanilla task excludes the previous injection and gets one new transcript entry", async () => {
+test(`${NAME}: a new Vanilla task excludes the previous injection and gets one new transcript entry`, async () => {
 	const r = rig(); layout(r.pi);
 	await r.start("First task");
 	await r.fire("agent_settled", {});
@@ -90,7 +94,7 @@ test("a new Vanilla task excludes the previous injection and gets one new transc
 	assert.equal(injected((await r.payload()).messages).length, 1);
 });
 
-test("compaction retains one task instruction without appending another transcript entry", async () => {
+test(`${NAME}: compaction retains one task instruction without appending another transcript entry`, async () => {
 	const r = rig(); layout(r.pi);
 	await r.start("Task");
 	assert.equal(injected(r.transcript).length, 1);
@@ -102,7 +106,7 @@ test("compaction retains one task instruction without appending another transcri
 	assert.equal(injected(r.transcript).length, 0);
 });
 
-test("worker span retains its brief and one injection across user turns, with no parent leakage", async () => {
+test(`${NAME}: worker span retains its brief and one injection across user turns, with no parent leakage`, async () => {
 	const r = rig(); worker(r.pi, { fetch: async () => { throw Error("No network"); } }); layout(r.pi);
 	await r.start("Parent task");
 	assert.equal(injected((await r.payload()).messages).length, 0);
@@ -124,7 +128,7 @@ test("worker span retains its brief and one injection across user turns, with no
 	assert.equal(injected((await r.payload()).messages).length, 1);
 });
 
-test("live enable injects in the next request and disable removes it from outgoing context", async () => {
+test(`${NAME}: live enable injects in the next request and disable removes it from outgoing context`, async () => {
 	const r = rig(); await host(r.pi);
 	await r.start("Task started with no remedies");
 	assert.equal(injected((await r.payload()).messages).length, 0);
@@ -141,7 +145,7 @@ test("live enable injects in the next request and disable removes it from outgoi
 	assert.equal(injected((await r.payload()).messages).length, 0, "persisted custom messages must also be filtered when disabled");
 });
 
-test("session changes discard the previous task's instruction", async () => {
+test(`${NAME}: session changes discard the previous task's instruction`, async () => {
 	const r = rig(); layout(r.pi);
 	await r.start("Task in old session");
 	await r.fire("session_start", {});
@@ -152,7 +156,7 @@ test("session changes discard the previous task's instruction", async () => {
 	assert.equal(injected((await r.payload()).messages).length, 1);
 });
 
-test("enabling during a task publishes one visible instruction without starting another turn", async () => {
+test(`${NAME}: enabling during a task publishes one visible instruction without starting another turn`, async () => {
 	const r = rig(); await host(r.pi);
 	await r.start("Already working");
 	await r.command("remedy", `on ${NAME}`);
@@ -164,4 +168,21 @@ test("enabling during a task publishes one visible instruction without starting 
 	await r.payload();
 	assert.equal(injected(r.transcript).length, 1, "one publication, even across multiple requests");
 	assert.deepEqual(r.sent.map((s) => s.options), [{ triggerTurn: false }]);
+});
+
+}
+
+test("two task prompts keep independent visible messages and live toggles", async () => {
+ const r = rig(); await host(r.pi);
+ await r.command("remedy", "on prompt/name-the-layout");
+ await r.command("remedy", "on prompt/verify-the-spec");
+ await r.start("Implement the task");
+ const messages = r.transcript.filter((m) => m.customType === "Injected");
+ assert.deepEqual(messages.map((m) => m.details.remedy).sort(), ["prompt/name-the-layout", "prompt/verify-the-spec"]);
+ assert.equal((await r.payload()).messages.filter((m) => text(m).startsWith("[Injected remedy:")).length, 2);
+ await r.command("remedy", "off prompt/verify-the-spec");
+ const remaining = (await r.payload()).messages.filter((m) => text(m).startsWith("[Injected remedy:"));
+ assert.equal(remaining.length, 1);
+ assert.match(text(remaining[0]), /^\[Injected remedy: prompt\/name-the-layout\]/);
+ assert.equal(text(r.transcript[0]), "Implement the task");
 });

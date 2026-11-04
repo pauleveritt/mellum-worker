@@ -83,6 +83,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- `prompt/verify-the-spec` now supplies its instruction as one visible,
+  task-scoped injection, preserving the user's brief. It shares the layout
+  remedy's lifecycle implementation; each prompt toggles independently.
+  The developer-role prompt retains its system-prompt delivery.
+
 - `prompt/name-the-layout` now supplies one visible, task-scoped injected
   instruction instead of rewriting every user message. It stays available
   across tool turns, respects live toggling, and is excluded outside the worker
