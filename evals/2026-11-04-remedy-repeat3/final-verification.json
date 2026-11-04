@@ -1,0 +1,40 @@
+{
+  "repository_tests": {
+    "command": "npm test",
+    "passed": 641,
+    "failed": 0,
+    "duration_ms": 121042.277416
+  },
+  "docs_caps": {
+    "command": "node --test tests/docs-caps.test.mjs",
+    "passed": 4,
+    "failed": 0
+  },
+  "source_and_boundary_reverified": true,
+  "backend_live_before_equals_after": true,
+  "all_three_identity_launch_and_cleanup_verified": true,
+  "provider_requests": 67,
+  "all_requests_sent_max_tokens": 16384,
+  "all_requests_sampling": [
+    1,
+    0.95,
+    20
+  ],
+  "pod_read_back": "EXITED",
+  "pod_id": "x40gf9pjw2gw09",
+  "shutdown_note": "Automatic review rejected the stale watchdog Pod ID. Direct stop of the actual active Pod was independently verified EXITED.",
+  "controller_and_tunnel_exited": true,
+  "local_inference_processes_remaining": [],
+  "owned_containers_remaining": [],
+  "owned_volumes_remaining": [],
+  "limits": [
+    "Exploratory n=3; no default selection or individual effect",
+    "Different host from original baselines; no causal timing comparison",
+    "One recovered native 502; full cohort output remains unknown",
+    "No actual foreground refusal or trim note; targeted interaction proof is separate",
+    "Four hidden checks cover less than whole-phase acceptance"
+  ],
+  "raw_archive_download_sha256_verified": true,
+  "all_eight_pods_read_back_exited": true,
+  "retained_persistent_gb": 400
+}

@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [three-session repaired-remedy screen](evals/2026-11-04-remedy-repeat3/README.md)
+  retains three hidden-check, health and completion passes, including a recovered
+  502 with unknown usage. It records shared backend identity, setup observations
+  and verified shutdown without promoting a preset.
+
 - The [guard-repair repeat screen](evals/2026-11-04-guard-repair/README.md)
   preserves the same five-remedy arm after the help-query and refusal-count
   fixes: four hidden checks, health and completion passed. It includes targeted

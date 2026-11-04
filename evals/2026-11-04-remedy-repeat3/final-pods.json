@@ -1,0 +1,79 @@
+{
+  "readback_at": "2026-11-04 16:01:03 UTC",
+  "pods": [
+    {
+      "id": "x40gf9pjw2gw09",
+      "name": "mellum-remedy-repeat3-h100",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "dnjioygj7izxh0",
+      "name": "mellum-guard-repair-rerun",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "kmz813v3rm3f88",
+      "name": "mellum-complete-comparison-h100",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "9vcvde4oilrref",
+      "name": "mellum-contained-study-h200",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "wgt1xks8hypwgb",
+      "name": "mellum-contained-study-pro6000",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "5ztijjtwz1l4i5",
+      "name": "mellum-contained-study-20261104",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "icrpuerli5mgih",
+      "name": "mellum-inference-replacement",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "adwa2g95zg24vx",
+      "name": "mellum-inference",
+      "status": "EXITED",
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    }
+  ],
+  "all_exited": true,
+  "retained_persistent_gb": 400
+}

@@ -1,0 +1,20 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "remedy-repeat3-20261104T160034Z.tar.gz",
+  "sha256": "25788ba7f53369f9f1c7dff1feef799b6e7bfa563f4e4ef36258d244498191bd",
+  "size_bytes": 1845787,
+  "source_commit": "36ba0e03695c21d12afe9000e5b8020aaa41ef76",
+  "archive_integrity": {
+    "members": 454,
+    "critical_files_byte_verified": 32
+  },
+  "scope": [
+    "three fresh repaired-remedy sessions, no replacements",
+    "raw trace/session/workspace/checker/transport evidence",
+    "reused boundary/interaction proofs, pinned Pod backend build/probes/freeze and pre/post live identity",
+    "stopped Pod readback"
+  ],
+  "archive_policy": "No weights, private keys, user credential stores or FIXES.md. Credential-like content scan passed; no existing release asset replaced.",
+  "published_download_verified": true,
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/remedy-repeat3-20261104T160034Z.tar.gz"
+}

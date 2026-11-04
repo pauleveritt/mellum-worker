@@ -1,0 +1,114 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:ce76e13a2be6a5b559985b203fd3751e304b3918aff36589a45f65220a2c82cb"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+      "sha256": "92505d2149d2fe9cc21b199655beaf8a2db6dc68650f639fc7173f2136f1bddb"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/python-developer.ts",
+      "sha256": "b3aeb9d88d994b8b29dc8c9aa7c0d16907eac6ec8a8aa810ddb2e37949572726"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/verify-the-spec.ts",
+      "sha256": "2457f823f4f3c95f679605a247c91847614bb8b4a374f77c90c8cdd83e705756"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/context/trim-tool-output.ts",
+      "sha256": "02d7802411740a55b7e6ac05d06eb59921a8c8e72c7ab27aa1d96e0db7534199"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 33,
+  "turns": 33,
+  "tool_calls": 31,
+  "tool_errors": 6,
+  "context": null,
+  "context_uncached": 1642,
+  "output_tokens": null,
+  "wall": 82.503,
+  "nudges": 1,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [],
+  "completion": "settled",
+  "elapsed_seconds": 82.503,
+  "provider_error": {
+    "classification": "review",
+    "evidence": [
+      {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "llamacpp",
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1793807697756,
+        "errorMessage": "502 status code (no body)",
+        "durationMs": 236,
+        "thinkingLevel": "medium"
+      }
+    ]
+  },
+  "cleanup_ok": true,
+  "exit_code": 0
+}

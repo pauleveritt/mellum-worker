@@ -62,3 +62,42 @@ CUDA12.8 image,20GB container/50GB persistent disk,SSH only. Actual GPU/UUID
 and pinned backend still require qualification before collection. No H200 or
 Blackwell run is being substituted. This is a new host, kept separate.
 Guardian's fixed ceiling remains16:23UTC, earlier than40minutes after creation.
+
+## Qualification observations
+
+SSH fingerprints matched boot logs. Actual H10081559MiB, driver595.91.07,
+CUDA12.8.93, UUID GPU-86a33338-e7ea-a161-7ba9-55d41c6fcdc6; image digest
+matches0a360022. Rebuilt pinned90a backend, verified weights and runtime hashes.
+Initial readiness was invoked before setup copied its script (exit127); setup
+completion resolved that uncounted orchestration race. Initial short requests
+both succeeded, but the~0.5s tunnel polling observed only one active slot during
+~0.3s GPU decodes. Keep that failed concurrency observation. The synthetic
+qualification alone now forces bounded generation with ignore_eos:true:
+both512-token short-prompt requests and both64-token47k-prompt requests
+observed two simultaneous slots. Coding requests are unchanged. Re-extraction
+also initially refused its existing immutable destination; prior extraction
+was preserved under qualification-attempt1 and a fresh extraction succeeded.
+No coding attempt existed during these setup/probe corrections.
+
+## Outcome
+
+[Three-session record](../../../evals/2026-11-04-remedy-repeat3/README.md): all3
+hidden4/4, healthpass and settled. Requests17/33/17; actualseconds
+46.892/82.503/42.805. Outputs8171/unknown/6836. Totals67requests,172.200s;
+full cohort output unknown. Middle run recovered native502(request12), retains
+unknown full usage/context and all debugging errors. Relay resets exist in all
+three; none was excluded. All67 actual requests sent16384 and sampling1/.95/20.
+All five units/prompt fragments verified; no server/help attempt, refusal or
+trim note. Before/after runtime/backend identities match, all cleanup passes.
+
+Repository641/641 passed121042.277416ms. New H100 scope remains separate from
+old cohorts; no causal timing, individual effect or default promotion claim.
+The next useful contrast is guard-only versus five units sharing one backend.
+
+Shutdown correction: guardian983's active isolate retained the original
+kmz813v3rm3f88 target despite later cross-cell store writes. Automatic approval
+review rejected its attempted stop of that already-exited Pod. Immediately
+read active x40gf9pjw2gw09, stop it directly, then independent readback EXITED.
+This corrects earlier guardian-target claims; do not rely on mutable cross-cell
+store to retarget a running guardian. All local controller/tunnel and owned
+Docker scratch have exited. Persistent disk retained and still bills.
