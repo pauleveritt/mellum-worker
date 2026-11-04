@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -335,4 +335,166 @@ test("withDelegateNudge appends the nudge to user messages only", async () => {
 	assert.match(out.messages[1].content, /add a \/health route/);
 	assert.match(out.messages[1].content, /delegate/i);
 	assert.equal(out.messages[2].content, "ok");
+});
+
+// ── Step-file delegation (MELLUM_DELEGATE_STEPS=1) ──────────────────────────────
+
+test("authorStepsPrompt splits the spec into small ordered steps with a doc + self-contained test each + a todo.md", async () => {
+	const { authorStepsPrompt } = await load();
+	const p = authorStepsPrompt("build a board");
+	assert.match(p, /SMALL ORDERED STEPS/i);
+	assert.match(p, /stepNN\.md/, "each step gets its own instruction doc");
+	assert.match(p, /test_stepN_<slug>\.py/, "each step gets its own test");
+	assert.match(p, /SELF-CONTAINED/i, "each step test stands on that step alone");
+	assert.match(p, /todo\.md/i, "a todo.md ledger is written");
+	assert.match(p, /- \[ \] step01/, "the ledger starts unchecked");
+	assert.match(p, /NAMED CONTRACTS/i);
+	assert.match(p, /contiguous/i);
+	assert.match(p, /SINGLE-quoted/i, "warns against nested double-quotes");
+});
+
+test("listSteps pairs each stepNN.md with its numbered test, ordered, and skips an unpaired doc", async () => {
+	const { listSteps } = await load();
+	await inTempCwd(async (dir) => {
+		mkdirSync(join(dir, "tests"), { recursive: true });
+		for (const f of ["step02.md", "step10.md", "step01.md", "step03.md"]) writeFileSync(join(dir, f), "do this\n");
+		for (const f of ["test_step2_board.py", "test_step10_last.py", "test_step1_home.py", "test_helpers.py"]) writeFileSync(join(dir, "tests", f), "x = 1\n");
+		// step03 has a doc but no test → it cannot be gated, so it is not listed.
+		assert.deepEqual(listSteps(dir), [
+			{ n: 1, doc: "step01.md", test: "tests/test_step1_home.py" },
+			{ n: 2, doc: "step02.md", test: "tests/test_step2_board.py" },
+			{ n: 10, doc: "step10.md", test: "tests/test_step10_last.py" },
+		]);
+	});
+});
+
+test("stepTestCmd is self-contained (that step only) and stepWorkerBrief points at the step doc, freezes the oracle, warns from step 2", async () => {
+	const { stepTestCmd, allStepsCmd, stepWorkerBrief } = await load();
+	const steps = [
+		{ n: 1, doc: "step01.md", test: "tests/test_step1_a.py" },
+		{ n: 2, doc: "step02.md", test: "tests/test_step2_b.py" },
+	];
+	assert.equal(stepTestCmd(steps[0]), "uv run --with pytest python -m pytest tests/test_step1_a.py -q");
+	assert.equal(stepTestCmd(steps[1]), "uv run --with pytest python -m pytest tests/test_step2_b.py -q", "each step runs its own test alone, not the cumulative set");
+	assert.equal(allStepsCmd(steps), "uv run --with pytest python -m pytest tests/test_step1_a.py tests/test_step2_b.py -q");
+	const b0 = stepWorkerBrief(steps, 0);
+	assert.match(b0, /step 1 of 2/);
+	assert.match(b0, /Read step01\.md/, "the worker reads its own step doc");
+	assert.match(b0, /do NOT edit any tests\/test_step\*\.py/i);
+	assert.doesNotMatch(b0, /do NOT break/i, "step 1 has no earlier step to break");
+	assert.match(b0, /only inside this directory/i);
+	const b1 = stepWorkerBrief(steps, 1);
+	assert.match(b1, /step 2 of 2/);
+	assert.match(b1, /Read step02\.md/);
+	assert.match(b1, /do NOT break them/i);
+});
+
+test("renderTodo ticks only the verified steps and counts them in the header", async () => {
+	const { renderTodo } = await load();
+	const steps = [
+		{ n: 1, doc: "step01.md", test: "tests/test_step1_a.py" },
+		{ n: 2, doc: "step02.md", test: "tests/test_step2_b.py" },
+	];
+	const t = renderTodo(steps, new Set([1]));
+	assert.match(t, /1\/2 steps done and tested/);
+	assert.match(t, /- \[x\] step01 — step01\.md — tests\/test_step1_a\.py/);
+	assert.match(t, /- \[ \] step02 — step02\.md — tests\/test_step2_b\.py/);
+});
+
+test("doTaskSteps runs one fresh worker per step against its own test, ticks todo.md as the harness verifies, and reports 100%", async () => {
+	const { doTaskSteps } = await load();
+	await inTempCwd(async (dir) => {
+		const briefs = [], ran = [];
+		const authorSteps = async () => {
+			mkdirSync("tests", { recursive: true });
+			writeFileSync("step01.md", "build home\n"); writeFileSync("step02.md", "build board\n");
+			writeFileSync("tests/test_step1_home.py", "def t():\n    assert True\n");
+			writeFileSync("tests/test_step2_board.py", "def t():\n    assert True\n");
+			return "wrote 2 steps";
+		};
+		const worker = async (b) => { briefs.push(b); return "impl"; };
+		const acceptance = async (cmd) => { ran.push(cmd); return { passed: true, output: "ok" }; };
+		const compile = async () => undefined;
+		const shell = async () => ({ passed: false, output: "" }); // report no git
+		const r = await doTaskSteps("build it", { authorSteps, worker, acceptance, compile, shell });
+		assert.equal(briefs.length, 2, "one worker per step");
+		assert.match(ran[0], /test_step1_home\.py -q$/, "step 1 runs its own test only");
+		assert.match(ran[1], /test_step2_board\.py -q$/, "step 2 runs its own test only (self-contained)");
+		assert.match(r, /steps done and tested: 2\/2/);
+		assert.match(r, /100%/);
+		const todo = readFileSync(join(dir, "todo.md"), "utf8");
+		assert.match(todo, /2\/2 steps done/);
+		assert.doesNotMatch(todo, /\[ \]/, "every step is ticked");
+	});
+});
+
+test("doTaskSteps stops at the first failing step and leaves its todo.md line unchecked", async () => {
+	const { doTaskSteps, MAX_STEP_RETRIES } = await load();
+	await inTempCwd(async (dir) => {
+		let workerCalls = 0;
+		const authorSteps = async () => {
+			mkdirSync("tests", { recursive: true });
+			for (const n of [1, 2, 3]) { writeFileSync(`step0${n}.md`, "x\n"); writeFileSync(`tests/test_step${n}_x.py`, "def t():\n    assert True\n"); }
+			return "wrote 3 steps";
+		};
+		const worker = async () => { workerCalls++; return "impl"; };
+		const acceptance = async (cmd) => ({ passed: !cmd.includes("test_step2"), output: "boom" }); // step 2 never passes
+		const r = await doTaskSteps("x", { authorSteps, worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(workerCalls, 1 + (MAX_STEP_RETRIES + 1), "step 1 once, step 2 retried then given up, step 3 never");
+		assert.match(r, /steps done and tested: 1\/3/);
+		assert.match(r, /stopped at the first failing step/);
+		const todo = readFileSync(join(dir, "todo.md"), "utf8");
+		assert.match(todo, /- \[x\] step01/);
+		assert.match(todo, /- \[ \] step02/);
+		assert.match(todo, /- \[ \] step03/);
+	});
+});
+
+test("doTaskSteps declares done only when the final full-suite run is green, even if every step was ticked", async () => {
+	const { doTaskSteps } = await load();
+	await inTempCwd(async () => {
+		const authorSteps = async () => {
+			mkdirSync("tests", { recursive: true });
+			for (const n of [1, 2]) { writeFileSync(`step0${n}.md`, "x\n"); writeFileSync(`tests/test_step${n}_x.py`, "def t():\n    assert True\n"); }
+			return "wrote 2 steps";
+		};
+		const worker = async () => "impl";
+		// Each single-step run passes; the final full-suite run (both tests together) fails → not done.
+		const acceptance = async (cmd) => ({ passed: !(cmd.includes("test_step1_x.py") && cmd.includes("test_step2_x.py")), output: "regression" });
+		const r = await doTaskSteps("x", { authorSteps, worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		assert.match(r, /steps done and tested: 2\/2/);
+		assert.match(r, /all ticked but the full suite did not pass/i);
+		assert.doesNotMatch(r, /100%/);
+	});
+});
+
+test("doTaskSteps refuses when the architect writes no paired step doc + test", async () => {
+	const { doTaskSteps } = await load();
+	await inTempCwd(async () => {
+		const authorSteps = async () => { writeFileSync("step01.md", "x\n"); return "no test written"; }; // doc but no test
+		const r = await doTaskSteps("x", { authorSteps, worker: async () => "impl", acceptance: async () => ({ passed: true, output: "" }), compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		assert.match(r, /no paired stepNN\.md/i);
+	});
+});
+
+// ── Code-eval remedies wired into the delegation workers ────────────────────────
+
+test("resolveRemedyFiles turns a preset into existing remedy unit files and skips unknown names", async () => {
+	const { resolveRemedyFiles } = await load();
+	const files = resolveRemedyFiles("preset:medium");
+	assert.ok(files.length >= 1, "the medium preset resolves to at least one unit file");
+	assert.ok(files.every((f) => f.endsWith(".ts")), "each resolved unit is a .ts file");
+	assert.ok(files.some((f) => /prompt\/python-developer\.ts$/.test(f)), "the medium preset includes prompt/python-developer");
+	assert.deepEqual(resolveRemedyFiles("guard/does-not-exist"), [], "an unknown unit is skipped, not fatal");
+	assert.deepEqual(resolveRemedyFiles(""), [], "no spec means no remedies");
+	assert.deepEqual(resolveRemedyFiles(undefined), []);
+});
+
+test("remedyArgs renders the resolved units as -e file arguments for the spawned worker", async () => {
+	const { remedyArgs } = await load();
+	const args = remedyArgs("prompt/python-developer");
+	assert.equal(args.length, 2);
+	assert.equal(args[0], "-e");
+	assert.match(args[1], /remedies\/prompt\/python-developer\.ts$/);
+	assert.deepEqual(remedyArgs(""), [], "no remedies when the spec is empty (bare worker, the measured default)");
 });

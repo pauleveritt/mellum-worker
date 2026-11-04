@@ -180,6 +180,29 @@ strictness), a freeze that a `chmod` cannot defeat, and a deterministic revert. 
 on this run — the evidence points at completeness and two harness-robustness bugs, not a worker
 guard. n=1, a lead.
 
+### Step-file delegation + code-eval remedies (MELLUM_DELEGATE_STEPS=1) — built, not yet measured
+
+Two levers from the 6/18 screen turned into a mechanism (conjecture until a run lands):
+
+- **Steps, not phases.** `doTaskSteps` has the architect split the spec into the SMALLEST ordered
+  chunks, each a `stepNN.md` doc (its own brief + named contracts) with a SELF-CONTAINED test
+  `tests/test_stepN_*.py`, plus a `todo.md` ledger. A fresh worker reads only its step doc and makes
+  that one test pass. The theory: a smaller bite than a phase is where a fixed turn budget converges,
+  and a per-step doc keeps the worker from re-reading the whole spec each time. Each step is gated on
+  its own test; a final full-suite run is the 100% check (a later step that regresses an earlier one
+  fails there, not in a per-step gate — so "self-contained" stays honest).
+- **todo.md is the harness's ledger, not the worker's.** The harness ticks a step only after it runs
+  and passes that step's test itself, then git-checkpoints it; "done" means every box ticked AND the
+  final full run green. This is the exit-gate discipline (don't trust the self-exit) made a file.
+- **Remedies wired into the worker.** `MELLUM_DELEGATE_REMEDY=preset:medium` loads the measured
+  remedy units as `-e remedies/<unit>.ts` before the worker extension — the same units the challenge
+  harness applies — so the implementing worker gets the medium stack. Unset is the bare worker (the
+  measured default); the architect pass stays bare. Whether the stack lifts the per-step hidden grade
+  is the open question the next run answers.
+
+The screen that decides this: medium hidden grade, `MELLUM_DELEGATE_STEPS=1` with
+`MELLUM_DELEGATE_REMEDY=preset:medium`, vs the 6/18 per-phase checkpoint. n=1 is a lead.
+
 ## What would falsify "we no longer need remedies"
 
 - A tier where the bare arm's **hidden** grade is below the tier preset's on a

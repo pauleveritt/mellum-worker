@@ -6,6 +6,27 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
+  than per-phase. With this on, `/mellum <task>` has the architect split the whole
+  spec into the smallest ordered chunks, each written as its own `stepNN.md`
+  instruction doc (`step01.md`, `step02.md`, …) with its OWN self-contained test
+  (`tests/test_step1_*.py`, …), plus a `todo.md` ledger listing every step. Each
+  step then gets a fresh worker that reads only its step doc and makes that step's
+  test pass. The **harness, never the worker**, ticks a step in `todo.md` — and
+  only after it runs and passes that step's test itself — then git-checkpoints it;
+  the run is "done" only when every step is ticked AND a final full run of all step
+  tests is green. The architect derives the steps from the spec, so it stays
+  agnostic. Default (unset) and `MELLUM_DELEGATE_PHASED=1` are unchanged.
+
+- **Code-eval remedies in the delegation workers (`MELLUM_DELEGATE_REMEDY`).** A
+  spawned delegation worker can now carry the measured remedy units — set
+  `MELLUM_DELEGATE_REMEDY=preset:medium` (or a comma list of unit names) and each
+  worker loads those `remedies/<unit>.ts` files with `-e` before the worker
+  extension, exactly as the challenge harness applies `--remedy`. Unset is the
+  bare worker, the measured default, so remedies are added explicitly for a
+  code-eval run and never switch on by surprise. The architect pass is left bare;
+  the remedies help the implementing worker.
+
 - **`delegate` — the primary hands a brief to a local worker by itself.** Loading
   `extensions/mellum-worker.ts` now also gives the primary model one tool,
   `delegate`: it explores and decides, pins the goal with a failing test, then

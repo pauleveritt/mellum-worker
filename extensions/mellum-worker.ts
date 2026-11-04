@@ -62,6 +62,39 @@ const DEFAULT_MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking"
 const CHILD_ENV = "MELLUM_WORKER_CHILD";
 // This file, re-loaded by the spawned worker with `-e <self> /mellum <brief>`.
 const SELF = fileURLToPath(import.meta.url);
+// The remedy units live beside the extensions, as remedies/<kind>/<name>.ts and presets/<name>.json.
+const REMEDIES_DIR = resolve(dirname(SELF), "..", "remedies");
+
+/**
+ * Resolve a remedy spec — a comma list of unit names (`prompt/python-developer`) and/or
+ * `preset:<name>` references — to the unit files to load, in order. A preset is the JSON name
+ * list under remedies/presets/. Unknown names are skipped (best-effort), so a spawned worker
+ * never fails to start over a typo; a run script names a known preset. This mirrors the harness's
+ * resolve_extras: a remedy unit is a .ts file loaded with `-e`, nothing more.
+ */
+export function resolveRemedyFiles(spec: string | undefined, dir = REMEDIES_DIR): string[] {
+	const names: string[] = [];
+	for (const item of (spec ?? "").split(",").map((s) => s.trim()).filter(Boolean)) {
+		if (item.startsWith("preset:")) {
+			try { names.push(...JSON.parse(readFileSync(resolve(dir, "presets", `${item.slice("preset:".length)}.json`), "utf8"))); } catch {}
+		} else {
+			names.push(item);
+		}
+	}
+	const files: string[] = [];
+	for (const name of names) {
+		const p = resolve(dir, `${name}.ts`);
+		if (existsSync(p)) files.push(p);
+	}
+	return files;
+}
+
+/** The `-e <file>` arguments for the code-eval remedies applied to a spawned delegation worker,
+ * from MELLUM_DELEGATE_REMEDY (e.g. `preset:medium`). Empty when unset — the bare, measured
+ * default — so remedies are added explicitly for a code-eval run, never on by surprise. */
+export function remedyArgs(spec = process.env.MELLUM_DELEGATE_REMEDY): string[] {
+	return resolveRemedyFiles(spec).flatMap((p) => ["-e", p]);
+}
 
 // The primary nudge, appended to each user message so the model delegates the implementation
 // instead of writing it. Agnostic: it names no suite, file or command — the brief is the primary's.
@@ -300,9 +333,11 @@ export function spawnAuthor(task: string): Promise<string> {
 	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPrompt(task)}`], "architect: writing the handover (failing test + brief)");
 }
 
-/** The worker pass: this extension headless, running `/mellum <brief>` to implement to green. */
+/** The worker pass: this extension headless, running `/mellum <brief>` to implement to green.
+ * Any code-eval remedies named in MELLUM_DELEGATE_REMEDY load first (so their prompt fragments and
+ * guards are installed before the worker extension), then this extension, then the brief. */
 export function spawnWorker(brief: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${brief}`], "worker: implementing to pass");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...remedyArgs(), "-e", SELF, `/mellum ${brief}`], "worker: implementing to pass");
 }
 
 /** The repair pass: the architect fixes the syntax of the oracle it just wrote. */
@@ -580,6 +615,219 @@ export async function doTaskPhased(task: string, deps: DoTaskPhasedDeps = {}): P
 	].join("\n");
 }
 
+// ── Step-file delegation (MELLUM_DELEGATE_STEPS=1) ──────────────────────────────
+// A finer-grained handover than per-phase: the architect splits the whole spec into the SMALLEST
+// ordered chunks, each written as stepNN.md (the chunk's own brief + named contracts) with its OWN
+// self-contained test tests/test_stepN_*.py, plus a todo.md ledger. Each step gets a fresh worker
+// (fresh budget) that reads only its step doc; the HARNESS — never the worker — ticks todo.md after
+// it independently runs and passes that step's test, git-checkpointing each pass. "Done" means every
+// step is ticked AND a final full run of all step tests is green. The architect derives the steps
+// from the spec (it names no suite phase), so this stays agnostic.
+
+/** step01.md, step02.md, … — the per-step instruction docs the architect writes. */
+export const STEP_DOC_RE = /^step(\d+)\.md$/i;
+export const STEP_TEST_DIR = "tests";
+/** tests/test_step1_*.py — the self-contained test for a step (number matched to its doc). */
+export const STEP_TEST_RE = /^test_step(\d+)[_.].*\.py$/;
+export const TODO_FILE = "todo.md";
+/** One fresh-budget retry per step before it is declared failed. */
+export const MAX_STEP_RETRIES = 1;
+
+export interface Step { n: number; doc: string; test: string; }
+
+/** The phased architect prompt's sibling: split the spec into small ordered steps, each a doc plus
+ * its own self-contained test, and a todo.md ledger. Never the code. */
+export function authorStepsPrompt(task: string): string {
+	return (
+		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code.\n" +
+		"Read the task below AND every spec or notes file already in this directory (a specs/ folder, " +
+		"AGENTS.md, a roadmap). Break the WHOLE project into SMALL ORDERED STEPS — the smallest chunks " +
+		"that each add one working slice (step 1 is the first slice; each later step adds the next).\n" +
+		"For each step N (N starts at 1, contiguous — 1, 2, 3, …) write TWO files:\n" +
+		"  stepNN.md  (zero-padded: step01.md, step02.md, …) — the instructions for THAT chunk alone: " +
+		"what to build, which files, and the exact named contracts it must satisfy.\n" +
+		`  ${STEP_TEST_DIR}/test_stepN_<slug>.py — a SELF-CONTAINED test for THAT step only: it asserts ` +
+		"every requirement the step adds, each as its own explicit check, and passes on that step alone. " +
+		"It must FAIL now, before any implementation.\n" +
+		"Pin EXACT NAMED CONTRACTS, not just behaviour. Wherever the spec names something concrete — a " +
+		"module, a module-level variable or attribute, a class, a function, a collection or field name, an " +
+		"exact count, or a verbatim seed string or literal — assert that named thing DIRECTLY (import the " +
+		"module and check the attribute, its type, its length/count, and the exact seed values), as well as " +
+		"probing behaviour through any route or output.\n" +
+		QUOTING_RULE + "\n" +
+		`Then write ${TODO_FILE} — a checklist with ONE UNCHECKED line per step, in order, each naming the ` +
+		"step doc and its test:\n" +
+		`  - [ ] step01 — <title> — ${STEP_TEST_DIR}/test_step1_<slug>.py\n` +
+		"And write BRIEF.md — 2 to 4 sentences on what to build overall and which files. Write ONLY the " +
+		`step docs, the step tests, ${TODO_FILE} and BRIEF.md, nothing else; do NOT create, edit or stub ` +
+		"any implementation file. Before you stop, confirm the steps are contiguous from 1, each step doc " +
+		"has its own test, and together they cover the whole spec.\n\n" +
+		`Task: ${task}`
+	);
+}
+
+/** The step architect pass: split the spec into step docs + self-contained tests + a todo.md. */
+export function spawnAuthorSteps(task: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorStepsPrompt(task)}`], "architect: splitting the spec into steps");
+}
+
+/** The step docs paired with their numbered tests, ordered by step number. A doc with no matching
+ * test cannot be gated, so it is left out (and reported as "no paired step" when none pairs up). */
+export function listSteps(cwd: string): Step[] {
+	let docs: string[] = [];
+	try { docs = readdirSync(cwd); } catch { return []; }
+	let tests: string[] = [];
+	try { tests = readdirSync(resolve(cwd, STEP_TEST_DIR)); } catch {}
+	const testByN = new Map<number, string>();
+	for (const f of tests) { const m = STEP_TEST_RE.exec(f); if (m) testByN.set(Number(m[1]), `${STEP_TEST_DIR}/${f}`); }
+	const steps: Step[] = [];
+	for (const f of docs) {
+		const m = STEP_DOC_RE.exec(f);
+		if (!m) continue;
+		const n = Number(m[1]);
+		const test = testByN.get(n);
+		if (test) steps.push({ n, doc: f, test });
+	}
+	return steps.sort((a, b) => a.n - b.n);
+}
+
+/** The self-contained pytest command for ONE step (that step's test alone). */
+export function stepTestCmd(step: Step): string {
+	return `uv run --with pytest python -m pytest ${step.test} -q`;
+}
+
+/** The full-suite pytest command over the given steps' tests (regression guard + final verdict). */
+export function allStepsCmd(steps: Step[]): string {
+	return `uv run --with pytest python -m pytest ${steps.map((s) => s.test).join(" ")} -q`;
+}
+
+/** What the per-step worker is told: read your step doc, pass your step's test, keep earlier steps green. */
+export function stepWorkerBrief(steps: Step[], i: number): string {
+	const s = steps[i];
+	return (
+		`This is step ${s.n} of ${steps.length}. Read ${s.doc} — it is YOUR instructions for this step — ` +
+		`and BRIEF.md for the overall goal. Implement the solution so this step's test passes:\n  ${s.test}\n` +
+		(i > 0 ? "Earlier steps are already built and their tests pass — do NOT break them. " : "") +
+		`Do NOT edit any ${STEP_TEST_DIR}/test_step*.py file; they are the frozen oracle. ` +
+		"Work only inside this directory — do NOT read, search for, or copy files outside it. " +
+		`Run this exact command until every test passes, then stop:\n  ${stepTestCmd(s)}`
+	);
+}
+
+/** The todo.md ledger the harness owns: one line per step, ticked [x] only for steps it verified. */
+export function renderTodo(steps: Step[], done: ReadonlySet<number>): string {
+	const body = steps.map((s) => `- [${done.has(s.n) ? "x" : " "}] step${String(s.n).padStart(2, "0")} — ${s.doc} — ${s.test}`).join("\n");
+	const n = steps.filter((s) => done.has(s.n)).length;
+	return `# TODO — ${n}/${steps.length} steps done and tested\n\n${body}\n`;
+}
+
+export interface DoTaskStepsDeps extends DoTaskPhasedDeps {
+	authorSteps?: (task: string) => Promise<string>;
+}
+
+/**
+ * Step-file delegation (MELLUM_DELEGATE_STEPS=1): the architect splits the spec into small ordered
+ * steps (a stepNN.md doc + a self-contained test each) and a todo.md ledger; then each step gets its
+ * OWN fresh worker reading only its step doc. The harness runs that step's own test, and only on a
+ * real pass ticks todo.md and git-checkpoints it — the worker's self-exit is never trusted. Done
+ * means every step is ticked AND a final full run of all step tests is green.
+ */
+export async function doTaskSteps(task: string, deps: DoTaskStepsDeps = {}): Promise<string> {
+	const authorSteps = deps.authorSteps ?? spawnAuthorSteps;
+	const worker = deps.worker ?? spawnWorker;
+	const acceptance = deps.acceptance ?? runAcceptance;
+	const compile = deps.compile ?? compileTest;
+	const repair = deps.repair ?? spawnRepair;
+	const shell = deps.shell ?? runAcceptance;
+	const cwd = process.cwd();
+	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
+
+	const t0 = Date.now();
+	let authorReport = await authorSteps(task);
+	const steps = listSteps(cwd);
+	if (!steps.length) {
+		return `delegate(steps): the architect wrote no paired stepNN.md + ${STEP_TEST_DIR}/test_stepN_*.py files, so there is no step handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	}
+	// Every step test must parse before we freeze or run anything (the architect's nested-quote bug).
+	for (const s of steps) {
+		let err = await compile(resolve(cwd, s.test));
+		for (let i = 0; err && i < MAX_ORACLE_REPAIRS; i++) {
+			if (verbose()) process.stdout.write(`\n[handover] ${s.test} does not parse — asking the architect to fix the syntax (attempt ${i + 1}/${MAX_ORACLE_REPAIRS}):\n${err}\n`);
+			authorReport = await repair(err, s.test);
+			err = existsSync(resolve(cwd, s.test)) ? await compile(resolve(cwd, s.test)) : "(test missing)";
+		}
+		if (err) return `delegate(steps): ${s.test} does not parse after ${MAX_ORACLE_REPAIRS} repair attempts, so it cannot be frozen or run.\n\n--- syntax error ---\n${err}\n\n--- architect output (tail) ---\n${authorReport.slice(-1200)}`;
+	}
+	const authorWall = secs(t0);
+	const authorStats = latestRunStats(cwd);
+
+	// The harness owns todo.md truth: start it all-unchecked and tick only what it verifies itself.
+	const done = new Set<number>();
+	const writeTodo = () => { try { writeFileSync(resolve(cwd, TODO_FILE), renderTodo(steps, done)); } catch {} };
+	writeTodo();
+	if (verbose()) {
+		for (const s of steps) { try { process.stdout.write(`\n──── ${s.doc} ────\n${readFileSync(resolve(cwd, s.doc), "utf8")}\n`); } catch {} }
+		try { process.stdout.write(`\n──── BRIEF.md ────\n${readFileSync(resolve(cwd, "BRIEF.md"), "utf8")}\n`); } catch {}
+	}
+
+	// Git checkpointing (best-effort): a clean slate, then a commit per passing step, so a later step
+	// that breaks an earlier one is reverted to the last good step, not carried forward.
+	const haveGit = (await shell("command -v git >/dev/null 2>&1")).passed;
+	if (haveGit) {
+		try {
+			const gi = resolve(cwd, ".gitignore");
+			const have = existsSync(gi) ? readFileSync(gi, "utf8") : "";
+			const add = [".venv/", "__pycache__/", "*.pyc", "grader_tests/"].filter((l) => !have.includes(l));
+			if (add.length) writeFileSync(gi, (have && !have.endsWith("\n") ? have + "\n" : have) + add.join("\n") + "\n");
+		} catch {}
+		await shell('git init -q && git add -A && git -c user.email=w@w -c user.name=w commit -q -m handover --no-verify || true');
+	}
+
+	const stage = (name: string, stats: { turns: number } | undefined, wall: number) =>
+		`${name} ${stats?.turns != null ? `${stats.turns} turns` : "turns n/a"}/${wall}s`;
+	const freeze = (p: string, ro: boolean) => { try { chmodSync(resolve(cwd, p), ro ? 0o444 : 0o644); } catch {} };
+	const lines: string[] = [];
+	let prevId = authorStats?.id;
+	for (let i = 0; i < steps.length; i++) {
+		for (let j = 0; j <= i; j++) freeze(steps[j].test, true); // the worker cannot weaken any oracle so far
+		const tStep = Date.now();
+		let passed = false, output = "";
+		// Each step is gated on its OWN self-contained test; a later regression is caught by the
+		// final full-suite run, not by mixing the cumulative set into a per-step gate.
+		for (let attempt = 0; attempt <= MAX_STEP_RETRIES && !passed; attempt++) {
+			await worker(stepWorkerBrief(steps, i)); // a fresh worker (fresh turn budget) each attempt
+			({ passed, output } = await acceptance(stepTestCmd(steps[i])));
+		}
+		const stepWall = secs(tStep);
+		const ws = latestRunStats(cwd);
+		const wStats = ws && ws.id !== prevId ? ws : undefined;
+		prevId = ws?.id ?? prevId;
+		lines.push(`step ${steps[i].n}/${steps.length} (${steps[i].doc}): ${passed ? "PASS ✅" : "FAIL ❌"} · ${stage("worker", wStats, stepWall)}`);
+		if (passed) {
+			done.add(steps[i].n);
+			writeTodo(); // the harness ticks todo.md only after it verified the step itself
+			if (haveGit) await shell(`git add -A && git -c user.email=w@w -c user.name=w commit -q -m "step ${steps[i].n}" --no-verify || true`);
+		} else {
+			if (verbose()) lines.push(`--- step ${steps[i].n} output ---\n${output.slice(-1200)}`);
+			if (haveGit) { for (let j = 0; j <= i; j++) freeze(steps[j].test, false); await shell("git reset --hard -q && git clean -fdq || true"); }
+			break; // a later step cannot build on a broken one
+		}
+	}
+	for (const s of steps) freeze(s.test, false);
+
+	// Done only when every step is ticked AND a final full run of all step tests is green.
+	const complete = done.size === steps.length;
+	const finalGreen = complete ? (await acceptance(allStepsCmd(steps))).passed : false;
+	writeTodo();
+	const totalWall = secs(t0);
+	return [
+		`handover (steps): ${steps.length} step doc${steps.length === 1 ? "" : "s"} + self-contained test${steps.length === 1 ? "" : "s"} + ${TODO_FILE} + BRIEF.md.`,
+		`steps done and tested: ${done.size}/${steps.length}${complete ? (finalGreen ? " — 100%, full suite green ✅" : " — all ticked but the full suite did not pass ❌") : " (stopped at the first failing step)"}`,
+		...lines,
+		`turns/wall: ${stage("architect", authorStats, authorWall)} · total ${totalWall}s`,
+	].join("\n");
+}
+
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
 
 /**
@@ -831,12 +1079,13 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
 /**
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
-export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
+export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; authorSteps?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
 	// How the primary farms a brief to a fresh worker: the real spawn, or a test's stand-in.
 	const runWorker = options.spawnWorker ?? spawnWorker;
 	// The full task-delegation loop (author the handover, then run the worker to pass) and its deps.
 	const doTaskDeps: DoTaskDeps = { author: options.author, worker: runWorker, acceptance: options.acceptance };
 	const doTaskPhasedDeps: DoTaskPhasedDeps = { authorPhases: options.authorPhases, worker: runWorker, acceptance: options.acceptance };
+	const doTaskStepsDeps: DoTaskStepsDeps = { authorSteps: options.authorSteps, worker: runWorker, acceptance: options.acceptance };
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;
@@ -1049,6 +1298,14 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			// and the frozen acceptance test is the verdict. Only a spawned child (CHILD_ENV) runs the
 			// task in this session, below — so no recursion.
 			if (process.env[CHILD_ENV] !== "1") {
+				// MELLUM_DELEGATE_STEPS=1 runs the step-file loop: the architect splits the spec into
+				// small ordered steps (a doc + a self-contained test each) and a todo.md ledger, and
+				// each step gets its own fresh worker, ticked and checkpointed as the harness verifies it.
+				if (process.env.MELLUM_DELEGATE_STEPS === "1") {
+					say(ctx, "mellum: splitting the spec into steps (step docs + self-contained tests + todo.md), then a fresh worker per step…");
+					say(ctx, await doTaskSteps(want, doTaskStepsDeps));
+					return;
+				}
 				// MELLUM_DELEGATE_PHASED=1 runs the per-phase loop: the architect splits the spec into
 				// ordered phases and each phase gets its own fresh worker, checkpointed as it passes.
 				if (process.env.MELLUM_DELEGATE_PHASED === "1") {
