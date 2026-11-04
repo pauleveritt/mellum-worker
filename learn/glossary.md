@@ -417,6 +417,13 @@ The initial broad training that builds a model’s general capabilities.
 
 The input given to a model, including questions, instructions, or examples.
 
+### Injected prompt
+
+An explicitly labelled instruction added to a task's context by an enabled
+remedy, separate from the user's brief and the system prompt. A task-scoped
+injection appears once and remains available across that task's requests.
+It is excluded from later tasks and from the parent after the worker span ends.
+
 ### RAG
 
 Retrieval-augmented generation: retrieving relevant information and adding it to the model’s context before it answers.

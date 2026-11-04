@@ -72,12 +72,24 @@ actions; they do not tell the model where a file goes.
 **Lesson check:** 2 of 3 on the local host, the fastest pass at 15 turns
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 
-The unit appends one agnostic line to each turn: read the project's own spec for
+The originally measured unit appended one agnostic line to each turn: read the project's own spec for
 where each file and route belongs, and create files at exactly those paths — do
 not invent your own layout. It names no path, file or route of any suite; the
 model reads the layout from the spec itself. That is the line between a remedy
 and coding to the eval: a unit that named `app.py` would be answering the exam,
 and it would be void as evidence.
+
+**Delivery update, 2026-11-04:** the unit now supplies an injected prompt once
+per task, shown as `Injected` in Pi. The instruction remains in subsequent
+requests without rewriting user messages. With the worker installed, it applies
+only inside the active worker span; without the worker it applies to the
+current user-initiated run. Switching the remedy off removes it from outgoing
+context. Enabling it midway through a task adds it to the next request's
+context. The transcript retains task-start injections for inspection; later
+tasks do not receive old ones. Other prompt units keep their existing delivery.
+The earlier scores describe the original delivery. Local lifecycle verification
+supports the new implementation; its coding effect still needs a fresh screen.
+See the [delivery contract](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/docs/superpowers/specs/2026-11-04-task-prompt-design.md).
 
 ## Validation
 

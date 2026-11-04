@@ -44,7 +44,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Builds each file to completion in turn, so the layout drifts and earlier parts break | `prompt/concept-sketch`: Sketch every file first (signatures and stubs), then fill the bodies one at a time | new unit (prose v1); unmeasured — a lead, see the next-concept research note | `/remedy on prompt/concept-sketch` |
-| Invents its own file layout instead of the one the spec names | `prompt/name-the-layout`: Tells the model to take the file layout from the spec | new unit; unmeasured | `/remedy on prompt/name-the-layout` |
+| Invents its own file layout instead of the one the spec names | `prompt/name-the-layout`: Injects the spec-layout instruction once per task | task-scoped delivery verified locally; coding effect unmeasured | `/remedy on prompt/name-the-layout` |
 | Works without a focused, careful developer frame (ships typos, declares done unchecked) | `prompt/python-developer`: Prepends a meticulous experienced-Python-developer, spec-driven role to the system prompt | theory; unmeasured (easy-ladder, 2026-11-02) | `/remedy on prompt/python-developer` |
 | Declares done with a spec requirement unimplemented or unverified | `prompt/verify-the-spec`: Tells the model to check every spec requirement and run the tests before finishing | new unit; unmeasured (easy-ladder, 2026-11-02) | `/remedy on prompt/verify-the-spec` |
 

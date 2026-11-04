@@ -78,6 +78,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- `prompt/name-the-layout` now supplies one visible, task-scoped injected
+  instruction instead of rewriting every user message. It stays available
+  across tool turns, respects live toggling, and is excluded outside the worker
+  span and from later tasks. Vanilla runs can still load it independently;
+  previous coding scores apply to the original delivery.
+
 - **The Pi version lives in one file, and `run.sh` says when you are not on
   it.** `scripts/pi-pin.env` now holds `PI_VERSION` (1.4.0) and `PI_PACKAGE`;
   `install.sh`, `run.sh` and `install.bat` read it instead of repeating the

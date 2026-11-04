@@ -410,9 +410,10 @@ async function runChallenge(tier: string, units: string[], runs: number, arm: st
 function gated(pi: any, isOn: () => boolean, pendingTools: unknown[][]): any {
 	return new Proxy(pi, {
 		get(target, prop, receiver) {
+			if (prop === "isRemedyEnabled") return isOn;
 			if (prop === "on") {
-				return (event: string, handler: (e: any, ctx?: any) => unknown) =>
-					target.on(event, (e: any, ctx?: any) => (isOn() ? handler(e, ctx) : undefined));
+				return (event: string, handler: (e: any, ctx?: any) => unknown, options?: { whileDisabled: boolean }) =>
+					target.on(event, (e: any, ctx?: any) => (isOn() || options?.whileDisabled ? handler(e, ctx) : undefined));
 			}
 			if (prop === "registerTool") return (...args: unknown[]) => { pendingTools.push(args); };
 			return Reflect.get(target, prop, receiver);

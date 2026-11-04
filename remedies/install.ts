@@ -3,9 +3,14 @@
  * A guard unit is a `ToolCall -> Decision` function on `tool_call`; nothing else.
  */
 import type { Guard } from "../extensions/mellum-guards.ts";
+import type { TaskBus } from "../extensions/mellum-task.ts";
 
 export interface PiLike {
-	on: (event: string, handler: (event: any, ctx?: any) => unknown) => void;
+	on: (event: string, handler: (event: any, ctx?: any) => unknown, options?: { whileDisabled: boolean }) => void;
+	events?: TaskBus;
+	/** Supplied by the live remedy controller; directly loaded units are enabled. */
+	isRemedyEnabled?: () => boolean;
+	sendMessage?: (message: any, options: { triggerTurn: false }) => void;
 }
 
 /** What the remedies list shows for a unit, read from each unit's `meta` export. */
