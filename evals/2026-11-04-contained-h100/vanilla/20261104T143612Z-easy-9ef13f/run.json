@@ -1,0 +1,60 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 2,
+  "checks_ran": true,
+  "checks_passed": 2,
+  "checks_total": 4,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 2,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 13,
+  "turns": 13,
+  "tool_calls": 12,
+  "tool_errors": 0,
+  "context": 5035,
+  "context_uncached": 1531,
+  "output_tokens": 2026,
+  "wall": 11.106,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [],
+  "completion": "settled",
+  "elapsed_seconds": 11.106,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": 0
+}

@@ -1,0 +1,72 @@
+{
+  "source": "Runpod MCP list_pods",
+  "read_at": "2026-11-04 14:59:23 UTC",
+  "pagination": {
+    "hasNextPage": false,
+    "nextCursor": null
+  },
+  "pods": [
+    {
+      "id": "kmz813v3rm3f88",
+      "name": "mellum-complete-comparison-h100",
+      "status": "EXITED",
+      "cost_per_hour": 3.99,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "9vcvde4oilrref",
+      "name": "mellum-contained-study-h200",
+      "status": "EXITED",
+      "cost_per_hour": 5.29,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "wgt1xks8hypwgb",
+      "name": "mellum-contained-study-pro6000",
+      "status": "EXITED",
+      "cost_per_hour": 2.49,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "5ztijjtwz1l4i5",
+      "name": "mellum-contained-study-20261104",
+      "status": "EXITED",
+      "cost_per_hour": 0.72,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "icrpuerli5mgih",
+      "name": "mellum-inference-replacement",
+      "status": "EXITED",
+      "cost_per_hour": 0.59,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    },
+    {
+      "id": "adwa2g95zg24vx",
+      "name": "mellum-inference",
+      "status": "EXITED",
+      "cost_per_hour": 0.72,
+      "persistent": {
+        "path": "/workspace",
+        "size": 50
+      }
+    }
+  ],
+  "all_exited": true,
+  "persistent_gb": 300
+}

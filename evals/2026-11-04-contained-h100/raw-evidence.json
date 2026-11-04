@@ -1,0 +1,23 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "contained-h100-comparison-20261104T141734Z.tar.gz",
+  "url": "https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-11-04/contained-h100-comparison-20261104T141734Z.tar.gz",
+  "source_commit": "2c602de32e505cc6e18423f97bbc8a9841304687",
+  "sha256": "277da96903eff01ab77fd1f2f81b29ace1b3d3ad874c926809e3307921ead6ff",
+  "size_bytes": 6430486,
+  "archive_integrity": {
+    "members": 1546,
+    "critical_files_byte_verified": 112,
+    "symlinks_preserved": 0
+  },
+  "scope": [
+    "complete six Vanilla and six thin Worker batches, no exclusions",
+    "five-unit Vanilla screen with raw guard counter discrepancy retained",
+    "full traces/sessions/workspaces/checker output/transport boundaries",
+    "H100 pinned setup, qualification, freeze, server snapshot and audit controllers",
+    "compact comparison, final identity/input/cleanup audit and stopped-Pod readback"
+  ],
+  "archive_policy": "No weights, SSH private keys, user credential stores or FIXES.md. Profiles contain no user auth; credential-like content scan passed. Existing release assets are not replaced.",
+  "published_download_verified": true,
+  "download_verified_at": "2026-11-04T15:04:17.374707+00:00"
+}

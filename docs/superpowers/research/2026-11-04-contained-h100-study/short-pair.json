@@ -1,0 +1,103 @@
+{
+  "label": "short-pair",
+  "started": "2026-11-04T14:17:01.512Z",
+  "elapsed_seconds": 0.9135567499999999,
+  "max_simultaneous_slots": 2,
+  "inputs": [
+    {
+      "characters": 72,
+      "sha256": "b3a10fdd7f6ea655bb1a23dfc24e8239b5bf288d578eb0778866beee9082b785"
+    },
+    {
+      "characters": 78,
+      "sha256": "8dbe8e8186da5c909bb6b11f83dfaf065307780ee04d960cc81053e1914fb47e"
+    }
+  ],
+  "max_tokens": 512,
+  "results": [
+    {
+      "status": "fulfilled",
+      "elapsed_seconds": 0.6411515,
+      "data": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "def add(a, b):\n    return a + b",
+              "reasoning_content": "We need to respond with a short Python function that adds two integers. Include only code. So we should output something like:\n\ndef add(a, b):\n    return a + b\n\nThat's it. No extra text. Ensure it's just code. Probably include the function definition. That's fine.\n"
+            }
+          }
+        ],
+        "created": 1793801822,
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "system_fingerprint": "b11669-620d2225c",
+        "object": "chat.completion",
+        "usage": {
+          "completion_tokens": 89,
+          "prompt_tokens": 23,
+          "total_tokens": 112,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "id": "chatcmpl-K7g5z4VdlSOGbxypESLcERjvNKAQaJ1R",
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 23,
+          "prompt_ms": 154.327,
+          "prompt_per_token_ms": 6.709869565217391,
+          "prompt_per_second": 149.03419362781625,
+          "predicted_n": 89,
+          "predicted_ms": 338.835,
+          "predicted_per_token_ms": 3.850397727272727,
+          "predicted_per_second": 259.71342984048283
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "elapsed_seconds": 0.618656416,
+      "data": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "```python\ndef multiply(a, b):\n    return a * b\n```",
+              "reasoning_content": "We need to produce a short Python function that multiplies two integers. Include only code. So just code block with function definition. Probably something like:\n\ndef multiply(a, b):\n    return a * b\n\nThat's it. No extra text. Provide just code.\n"
+            }
+          }
+        ],
+        "created": 1793801822,
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "system_fingerprint": "b11669-620d2225c",
+        "object": "chat.completion",
+        "usage": {
+          "completion_tokens": 86,
+          "prompt_tokens": 23,
+          "total_tokens": 109,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "id": "chatcmpl-qbU0tmNxOUnP4fFM0IZzOQ9EqfqgQGes",
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 23,
+          "prompt_ms": 154.936,
+          "prompt_per_token_ms": 6.7363478260869565,
+          "prompt_per_second": 148.44839159394846,
+          "predicted_n": 86,
+          "predicted_ms": 323.219,
+          "predicted_per_token_ms": 3.8025764705882352,
+          "predicted_per_second": 262.97958968996255
+        }
+      }
+    }
+  ],
+  "observations_count": 3,
+  "retention_note": "Compact qualification summary; complete slot observations retained in the raw research asset under runs/2026-11-04-h100-study/short-pair.json"
+}

@@ -1,0 +1,33 @@
+{
+  "run_id": "20261104T144943Z-easy-fae40f",
+  "state": "counted",
+  "classification_reason": "Recovered 502 on assistant request14 after substantive model work; native Pi continued through19 requests then the fixed180s foreground-app cutoff. All4 hidden checks executed/pass, health passes; runtime/worker activation and cleanup verified. Count this mixed model/transport failure without replacement, retaining unknown complete output/context. Relay request_error reports ECONNRESET; precise transport root cause unproven.",
+  "provider_request_count": 19,
+  "sent_max_tokens_counts": {
+    "16384": 19
+  },
+  "provider_errors": [
+    {
+      "request_id": "99fa79ef-478f-490a-b633-422e0b27f28f:14",
+      "error": "502 status code (no body)",
+      "stop_reason": "error"
+    }
+  ],
+  "relay_boundaries": {
+    "ready": 1,
+    "created": 19,
+    "headers": 18,
+    "complete": 18,
+    "request_error": 1
+  },
+  "relay_errors": [
+    {
+      "boundary": "request_error",
+      "id": "281ae560-eb76-47c4-b109-37c4b54e7583",
+      "timestamp": "2026-11-04T14:50:02.051Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 20.58625000000029
+    }
+  ],
+  "usage_policy": "Incomplete output/full-context usage remains unknown; failed requests are not fabricated as zero."
+}

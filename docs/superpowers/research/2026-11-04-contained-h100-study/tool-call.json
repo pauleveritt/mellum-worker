@@ -1,0 +1,50 @@
+{
+  "elapsed_seconds": 0.941372542000001,
+  "data": {
+    "choices": [
+      {
+        "finish_reason": "tool_calls",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "reasoning_content": "Okay, the user wants me to call the read_file function with the path README.md. Let me check the tools available. The read_file function takes a 'path' parameter, which is required. Since the user specified the path as README.md, I should generate the tool call with that path. I don't need to do anything else because the user directly provided the path. So I'll create the JSON object inside the tool_call tags as specified.\n",
+          "tool_calls": [
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "arguments": "{\"path\": \"README.md\"}"
+              },
+              "id": "qHcegeXaHUXZKfkqADupYYAGMTRzEvq6"
+            }
+          ]
+        }
+      }
+    ],
+    "created": 1793801831,
+    "model": "Mellum2.1-12B-A2.5B-Thinking",
+    "system_fingerprint": "b11669-620d2225c",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 127,
+      "prompt_tokens": 168,
+      "total_tokens": 295,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-OwkihFtl290JdRniOucYPHmjY2xDkXpk",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 168,
+      "prompt_ms": 54.61,
+      "prompt_per_token_ms": 0.3250595238095238,
+      "prompt_per_second": 3076.359641091375,
+      "predicted_n": 127,
+      "predicted_ms": 421.062,
+      "predicted_per_token_ms": 3.341761904761905,
+      "predicted_per_second": 299.2433418356442
+    }
+  }
+}

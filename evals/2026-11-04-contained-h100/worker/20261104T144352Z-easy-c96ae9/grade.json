@@ -1,0 +1,61 @@
+{
+  "ruff": {
+    "status": "fail",
+    "version": "0.16.3",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "ruff==0.16.3",
+      "ruff",
+      "check",
+      "--select",
+      "F,E9",
+      "--extend-exclude",
+      "tests",
+      "--extend-exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 1,
+    "stdout": "F401 [*] `fastapi.responses.HTMLResponse` imported but unused\n --> app.py:2:31\n  |\n1 | from fastapi import FastAPI, Request\n2 | from fastapi.responses import HTMLResponse\n  |                               ^^^^^^^^^^^^\n3 | from fastapi.templates import Jinja2Templates\n  |\nhelp: Remove unused import: `fastapi.responses.HTMLResponse`\n  |\n1 | from fastapi import FastAPI, Request\n  - from fastapi.responses import HTMLResponse\n2 | from fastapi.templates import Jinja2Templates\n  |\n\nFound 1 error.\n[*] 1 fixable with the `--fix` option.\n",
+    "stderr": "Using CPython 3.14.2\nCreating virtual environment at: .venv\nwarning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.\n         If the cache and target directories are on different filesystems, hardlinking may not be supported.\n         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.\nInstalled 47 packages in 14ms\nInstalled 1 package in 0.16ms\n"
+  },
+  "pyrefly": {
+    "status": "fail",
+    "version": "1.2.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "pyrefly==1.2.0",
+      "pyrefly",
+      "check",
+      "."
+    ],
+    "exit_code": 1,
+    "stdout": "ERROR Cannot find module `fastapi.templates` [missing-import]\n --> app.py:3:1\n  |\n3 | from fastapi.templates import Jinja2Templates\n  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  |\n  Looked in these locations (from config in `/attempt/grading/workspace/pyrefly.toml`):\n  Import root (inferred from project layout): \"/attempt/grading/workspace\"\n  Site package path queried from interpreter: [\"/attempt/grading/workspace\", \"/tmp/uv-cache/builds-v0/.tmpf1VuJI/lib/python3.14/site-packages\", \"/tmp/uv-cache/archive-v0/3_Go4nJgwjRc3mpNRSbmv/lib/python3.14/site-packages\", \"/attempt/grading/workspace/.venv/lib/python3.14/site-packages\"]\n",
+    "stderr": "Installed 1 package in 0.45ms\n WARN PYTHONPATH environment variable is set to `/attempt/grading/workspace`. Checks in other environments may not include these paths.\n INFO 1 error\n"
+  },
+  "complexipy": {
+    "status": "pass",
+    "version": "8.3.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "complexipy==8.3.0",
+      "complexipy",
+      "--max-complexity-allowed",
+      "10",
+      "--exclude",
+      "tests",
+      "--exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83d\udc19 complexipy \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\napp.py\n    home 0  \u2705  PASSED  \n\nAll functions are within the allowed complexity.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83c\udf89 Analysis completed! \ud83c\udf89 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n",
+    "stderr": "Installed 1 package in 0.89ms\n"
+  }
+}

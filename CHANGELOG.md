@@ -6,10 +6,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [completed contained H100 comparison](evals/2026-11-04-contained-h100/README.md)
+  retains six Vanilla attempts, six thin Worker attempts and the five-remedy
+  screen on one frozen backend, with quality/completion budgets and verified
+  shutdown. The single remedy run passed its observed checks; guard help-query
+  and refusal-accounting defects are recorded without promoting a default.
+
 - The [partial contained retry](evals/2026-11-04-contained-retry-partial/README.md)
   preserves three counted Vanilla attempts, complete/missing budgets, five-unit
-  remedy interaction checks, setup failures and verified shutdown. The Worker
-  comparison and counted remedy screen remain uncollected.
+  remedy interaction checks, setup failures and verified shutdown. That partial
+  retry collected no Worker cohort or counted remedy screen.
 
 - The [interrupted A40 study](evals/2026-11-04-contained-a40-interrupted/README.md)
   preserves its model stall, grading failure, measured budget and verified raw

@@ -1,0 +1,33 @@
+{
+  "run_id": "20261104T144352Z-easy-c96ae9",
+  "state": "counted",
+  "classification_reason": "Recovered 502 on assistant request10 after substantive model work; native Pi continued to17 requests and the fixed180s foreground-Uvicorn cutoff. Hidden grader launched but could not collect because generated app imports nonexistent fastapi.templates; Ruff/Pyrefly fail. Runtime/worker activation and cleanup verified. Count this mixed model/transport failure without replacement, with hidden checks unavailable and complete output/context unknown. Relay request_error reports ECONNRESET; precise transport root cause unproven.",
+  "provider_request_count": 17,
+  "sent_max_tokens_counts": {
+    "16384": 17
+  },
+  "provider_errors": [
+    {
+      "request_id": "7d950ba5-15db-4a14-b66a-703221f74559:10",
+      "error": "502 status code (no body)",
+      "stop_reason": "error"
+    }
+  ],
+  "relay_boundaries": {
+    "ready": 1,
+    "created": 17,
+    "headers": 16,
+    "complete": 16,
+    "request_error": 1
+  },
+  "relay_errors": [
+    {
+      "boundary": "request_error",
+      "id": "1d3ea6bd-57ef-4bb4-8943-4892c333443c",
+      "timestamp": "2026-11-04T14:44:05.160Z",
+      "code": "ECONNRESET",
+      "elapsedMs": 31.209000000000742
+    }
+  ],
+  "usage_policy": "Incomplete output/full-context usage remains unknown; failed requests are not fabricated as zero."
+}

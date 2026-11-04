@@ -1,0 +1,6 @@
+{
+  "backend": "temporary-docker",
+  "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56",
+  "control": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261104T143652Z-f11b07/attempt-03/.container-a9c0557bfd21457399d1f8f4dd3d153f",
+  "container_removed": true
+}

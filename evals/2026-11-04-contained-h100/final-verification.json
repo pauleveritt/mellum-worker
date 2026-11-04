@@ -1,0 +1,111 @@
+{
+  "baseline_attempts": [
+    {
+      "run_id": "20261104T141734Z-easy-dba46a",
+      "arm": "vanilla",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T142124Z-easy-5b174c",
+      "arm": "vanilla",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T142455Z-easy-cc84c4",
+      "arm": "vanilla",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T142844Z-easy-b28f08",
+      "arm": "vanilla",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T143242Z-easy-2a920b",
+      "arm": "vanilla",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T143612Z-easy-9ef13f",
+      "arm": "vanilla",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": true,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T143659Z-easy-234637",
+      "arm": "worker",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T144023Z-easy-c19315",
+      "arm": "worker",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T144352Z-easy-c96ae9",
+      "arm": "worker",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T144855Z-easy-741e6d",
+      "arm": "worker",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": true,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T144943Z-easy-fae40f",
+      "arm": "worker",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    },
+    {
+      "run_id": "20261104T145429Z-easy-576e7f",
+      "arm": "worker",
+      "identity_verified": true,
+      "cleanup_ok": true,
+      "native_settled": false,
+      "initial_payload_normalized_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab"
+    }
+  ],
+  "baseline_initial_payloads_identical_after_run_id_replacement": true,
+  "material_inputs_reverified": true,
+  "qualified_boundary_image_reverified": true,
+  "remedy_launch_order_verified": true,
+  "all13_cleanup_ok": true,
+  "owned_containers_remaining": [],
+  "owned_volumes_remaining": [],
+  "limits": [
+    "Initial payload equivalence removes only the run-specific workspace ID; later stochastic trajectories differ.",
+    "No causal thin-worker quality or timing effect established. Original hidden oracle covers four checks, less than complete Phase1 acceptance."
+  ]
+}

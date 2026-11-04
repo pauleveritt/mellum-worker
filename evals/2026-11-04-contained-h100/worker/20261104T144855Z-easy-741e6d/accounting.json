@@ -1,0 +1,18 @@
+{
+  "run_id": "20261104T144855Z-easy-741e6d",
+  "state": "counted",
+  "classification_reason": "model execution (including failure, stall or deadline)",
+  "provider_request_count": 29,
+  "sent_max_tokens_counts": {
+    "16384": 29
+  },
+  "provider_errors": [],
+  "relay_boundaries": {
+    "ready": 1,
+    "created": 29,
+    "headers": 29,
+    "complete": 29
+  },
+  "relay_errors": [],
+  "usage_policy": "Incomplete output/full-context usage remains unknown; failed requests are not fabricated as zero."
+}

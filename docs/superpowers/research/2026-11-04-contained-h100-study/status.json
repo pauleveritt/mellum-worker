@@ -1,0 +1,11 @@
+{
+  "state": "complete",
+  "started_at": "2026-11-04T14:17:19.018797+00:00",
+  "stage": "remedy-screen",
+  "vanilla": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261104T141728Z-d1b67e",
+  "review_batch": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261104T143652Z-f11b07",
+  "pending": null,
+  "worker": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/worker-easy-20261104T143652Z-f11b07",
+  "remedy": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-h100-study/remedy/20261104T145823Z-easy-d12025",
+  "finished_at": "2026-11-04T14:58:56.596269+00:00"
+}

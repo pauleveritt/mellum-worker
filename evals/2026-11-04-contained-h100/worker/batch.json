@@ -1,0 +1,568 @@
+{
+  "schema": 1,
+  "created_at": "2026-11-04T14:36:52.266396+00:00",
+  "command": "uv run python learn/code/harness.py baseline",
+  "source_commit": "2c602de32e505cc6e18423f97bbc8a9841304687",
+  "material": {
+    "pi": {
+      "path": "/Users/pauleveritt/.local/bin/pi",
+      "entry_path": "/Users/pauleveritt/.local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js",
+      "version": "1.4.0"
+    },
+    "effective_profile": {
+      "providers": {
+        "llamacpp": {
+          "name": "llama.cpp",
+          "baseUrl": "http://127.0.0.1:8002/v1",
+          "api": "openai-completions",
+          "apiKey": "not-needed",
+          "models": [
+            {
+              "id": "Mellum2.1-12B-A2.5B-Thinking",
+              "name": "Mellum 2.1 12B-A2.5B Thinking (Q4_K_M, llama.cpp)",
+              "reasoning": true,
+              "input": [
+                "text"
+              ],
+              "contextWindow": 50000,
+              "maxTokens": 16384,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "samplingParams": {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0,
+                "presence_penalty": 0,
+                "repetition_penalty": 1
+              },
+              "compat": {
+                "supportsDeveloperRole": false,
+                "supportsReasoningEffort": false,
+                "maxTokensField": "max_tokens",
+                "thinkingFormat": "qwen-chat-template"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "checkers": {
+      "ruff": "0.16.3",
+      "complexipy": "8.3.0",
+      "pyrefly": "1.2.0",
+      "pytest": "8.3.4"
+    },
+    "backend": {
+      "freeze": {
+        "schema": 1,
+        "status": "frozen_infrastructure_screen_passed",
+        "scope": "H100 inference backend shared by contained Vanilla, worker and remedy screen",
+        "hardware": {
+          "provider": "Runpod",
+          "cloud": "SECURE",
+          "data_center": "US-NE-1",
+          "gpu": "NVIDIA H100 80GB HBM3",
+          "gpu_count": 1,
+          "vram_mib": 81559,
+          "driver": "595.91.07",
+          "compute_capability": "9.0",
+          "cpu": "Intel(R) Xeon(R) Platinum 8470",
+          "container_disk_gb": 20,
+          "persistent_mount": {
+            "path": "/workspace",
+            "size_gb": 50
+          },
+          "allocated_vcpus": 26,
+          "allocated_ram_gb": 251,
+          "gpu_uuid": "GPU-f657e315-79d1-7039-c975-7152a6d2828e"
+        },
+        "container": {
+          "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+          "observed_digest": "sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+          "os": "Ubuntu 24.04.3 LTS",
+          "exposed_ports": [
+            "22/tcp"
+          ],
+          "jupyter": false,
+          "digest_source": "Registry index read at recreation; runtime binaries independently hashed"
+        },
+        "backend": {
+          "repository": "https://github.com/ggml-org/llama.cpp",
+          "source_revision": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+          "build_number": 11669,
+          "compiler": "GNU 13.3.0",
+          "cuda_toolkit": "12.8.93",
+          "cmake": "3.28.3",
+          "build_options": {
+            "CMAKE_BUILD_TYPE": "Release",
+            "GGML_CUDA": "ON",
+            "CMAKE_CUDA_ARCHITECTURES": "90a",
+            "GGML_NATIVE": "OFF",
+            "CMAKE_BUILD_RPATH": "$ORIGIN",
+            "LLAMA_BUILD_NUMBER": 11669,
+            "LLAMA_BUILD_COMMIT": "620d2225c",
+            "LLAMA_BUILD_IS_DEV": "OFF"
+          },
+          "runtime_sha256": {
+            "libggml-base.so": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+            "libggml-base.so.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+            "libggml-base.so.0.27.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+            "libggml-cpu.so": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+            "libggml-cpu.so.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+            "libggml-cpu.so.0.27.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+            "libggml-cuda.so": "cd20083a3a3ca4a98eb45dfb2356964c6a25e578610909a179d75b163ccad72d",
+            "libggml-cuda.so.0": "cd20083a3a3ca4a98eb45dfb2356964c6a25e578610909a179d75b163ccad72d",
+            "libggml-cuda.so.0.27.0": "cd20083a3a3ca4a98eb45dfb2356964c6a25e578610909a179d75b163ccad72d",
+            "libggml.so": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+            "libggml.so.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+            "libggml.so.0.27.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+            "libllama-common.so": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+            "libllama-common.so.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+            "libllama-common.so.0.7.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+            "libllama-server-impl.so": "45f355aafb3c0a960f8b58501830be8d16f8e497886fdb23b13851cc764fd577",
+            "libllama.so": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+            "libllama.so.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+            "libllama.so.0.7.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+            "libmtmd.so": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+            "libmtmd.so.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+            "libmtmd.so.0.7.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+            "llama-server": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791"
+          },
+          "requested_cuda_architectures": "90a"
+        },
+        "model": {
+          "repository": "JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF",
+          "revision": "4159d684ffdb09ba89dc2a58feb3e75c54eef036",
+          "file": "Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+          "size_bytes": 8071295264,
+          "sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+          "alias": "Mellum2.1-12B-A2.5B-Thinking",
+          "quantization": "Q4_K_M",
+          "mtp": false
+        },
+        "server": {
+          "bind": "127.0.0.1:18001",
+          "parallel_slots": 2,
+          "requested_total_context": 100000,
+          "client_context_per_session": 50000,
+          "kv_unified": false,
+          "cache_type_k": "q8_0",
+          "cache_type_v": "q8_0",
+          "gpu_layers": 999,
+          "jinja": true,
+          "flash_attention": "auto",
+          "continuous_batching": true,
+          "batch": 512,
+          "microbatch": 512,
+          "threads": 16,
+          "batch_threads": 16,
+          "process_manager": "tmux",
+          "llama_cache": "/workspace/mellum/cache",
+          "effective_context_per_slot": 50176,
+          "effective_total_context": 100352,
+          "context_budget": "Input and generated tokens share each slot context; max output is not additional context."
+        },
+        "client": {
+          "pi_version": "1.4.0",
+          "provider": "llamacpp",
+          "api": "openai-completions",
+          "max_output_tokens": 16384,
+          "temperature": 1,
+          "top_p": 0.95,
+          "top_k": 20,
+          "min_p": 0,
+          "presence_penalty": 0,
+          "repetition_penalty": 1,
+          "reasoning": true,
+          "thinking_format": "qwen-chat-template",
+          "qualification_base_url": "http://127.0.0.1:8002/v1",
+          "collection_base_url": "http://127.0.0.1:8002/v1",
+          "profile_sha256": "75504835b567a3d86793bc983edcb8cdb1dd0a069cb65f4bf06e5fd4a191ac80",
+          "frequency_penalty": 0,
+          "collection_endpoint_status": "Use qualified tunnel on Mac 8002 to Pod 18001; preserve unrelated Mac 8001 listener."
+        },
+        "collection": {
+          "status": "not_started",
+          "counted_sessions": 0,
+          "baseline_sessions_per_arm": 6,
+          "remedy_screen_sessions": 1,
+          "session_concurrency": 1,
+          "deadline_seconds": 600,
+          "open_tool_call_cutoff_seconds": 180
+        },
+        "qualification": {
+          "status": "passed_synthetic_screen",
+          "completed_at": "2026-11-04T14:17:18.938782+00:00",
+          "counted_evaluation_sessions": 0,
+          "checks": [
+            "two short slots",
+            "two 47k-context slots",
+            "required tool call",
+            "SSE",
+            "live hashes/GPU/argv"
+          ],
+          "evidence_directory": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-h100-study",
+          "limits": [
+            "Synthetic backend screen; no coding quality claim",
+            "Full 16384-token generation not exercised"
+          ]
+        },
+        "reuse_rule": "Verify exact hardware class, VRAM, driver, image digest, backend revision/build options and runtime hashes, weight hash, server settings, client settings, concurrency and relevant host load before a comparison. An incompatible change requires requalification and an explicit baseline comparability decision.",
+        "frozen_at": "2026-11-04",
+        "connection": {
+          "host": "216.243.220.219",
+          "port": 13014,
+          "user": "root",
+          "key_path": "~/.ssh/id_rsa",
+          "known_hosts": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-h100-study/known_hosts",
+          "pod_id": "kmz813v3rm3f88"
+        }
+      },
+      "live": {
+        "runtime_sha256": {
+          "libggml-base.so": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+          "libggml-base.so.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+          "libggml-base.so.0.27.0": "31cdb77fc1bf4e8ee1a30cedc02674783b2faf461dd9b2cbb6b747dfcfb06f38",
+          "libggml-cpu.so": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+          "libggml-cpu.so.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+          "libggml-cpu.so.0.27.0": "6a75cf47418561c164ab36b17e46191f5e5b5150ccb69e8b6d876587663bdc64",
+          "libggml-cuda.so": "cd20083a3a3ca4a98eb45dfb2356964c6a25e578610909a179d75b163ccad72d",
+          "libggml-cuda.so.0": "cd20083a3a3ca4a98eb45dfb2356964c6a25e578610909a179d75b163ccad72d",
+          "libggml-cuda.so.0.27.0": "cd20083a3a3ca4a98eb45dfb2356964c6a25e578610909a179d75b163ccad72d",
+          "libggml.so": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+          "libggml.so.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+          "libggml.so.0.27.0": "ff9acbfaa21961459af623d7670cfcc98a20deb1878799f9093a403084f2abfe",
+          "libllama-common.so": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+          "libllama-common.so.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+          "libllama-common.so.0.7.0": "78aa2d3b958364a2a2e041e0821686b2b5b32141cdccad6c295e862b08b6dccd",
+          "libllama-server-impl.so": "45f355aafb3c0a960f8b58501830be8d16f8e497886fdb23b13851cc764fd577",
+          "libllama.so": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+          "libllama.so.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+          "libllama.so.0.7.0": "fb55d66ce86454df9884c494bafc726c7d8daa34925d9539a95c202d1929b0f3",
+          "libmtmd.so": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+          "libmtmd.so.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+          "libmtmd.so.0.7.0": "e2a2689fc1f44adad88d5782d42e40d26a253b994604e00eb1e93ee77c3cb453",
+          "llama-server": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791"
+        },
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "vram_mib": 81559,
+        "driver": "595.91.07",
+        "gpu_uuid": "GPU-f657e315-79d1-7039-c975-7152a6d2828e",
+        "weight_sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+        "executable_sha256": "73fc9bd2a1ecd026af31fbc353ee3bef447dc5ea7e0288bb306a9b71dcfa9791",
+        "cmdline": [
+          "/workspace/mellum/llama.cpp/build/bin/llama-server",
+          "-m",
+          "/workspace/mellum/cache/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+          "-a",
+          "Mellum2.1-12B-A2.5B-Thinking",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          "18001",
+          "-c",
+          "100000",
+          "-np",
+          "2",
+          "--no-kv-unified",
+          "--jinja",
+          "-fa",
+          "auto",
+          "--cont-batching",
+          "-t",
+          "16",
+          "-tb",
+          "16",
+          "-b",
+          "512",
+          "-ub",
+          "512",
+          "-ctk",
+          "q8_0",
+          "-ctv",
+          "q8_0",
+          "-ngl",
+          "999"
+        ]
+      },
+      "props": {
+        "build_info": "b11669-620d2225c",
+        "model_alias": "Mellum2.1-12B-A2.5B-Thinking",
+        "model_ftype": "Q4_K - Medium",
+        "model_path": "/workspace/mellum/cache/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+        "total_slots": 2
+      }
+    },
+    "profile_settings": {
+      "quietStartup": true,
+      "lastChangelogVersion": "1.4.0"
+    },
+    "hashes": {
+      "learn/code/harness.py": "f714d0100769e28300d76ff46b0e38356842685861387474b0efefc741261326",
+      "learn/code/baseline.py": "e4c6d3dacd6814f3801fbc4c8e94ca3008db40ccc7d19f39756faed50ca6d66a",
+      "extensions/mellum-recorder.ts": "6252ad445bf5b1339f7c76f3da86e27a77148617f0cfade55e87faf4e2a129d9",
+      "scripts/pi-pin.env": "eb9b0175add79a606199cda01b04bf9cb746221df679f23a1a6051e17f8ea0a6",
+      "scripts/backend.py": "d5bc84292591f3fe97774101a56f2e97a365df59dc4eafeb5057ab2196268c78",
+      "pyproject.toml": "0baff116be27cc83233601df9e7f9d4dc86b459043fae69796804119ac3067e8",
+      "uv.lock": "8378752dc53be07e9eac86d7a19843dcc3ca4b0300ebe0dabbbccf62a6f7aa29",
+      "learn/code/suites/easy/base/.gitignore": "4409b253ac33acb862192f9cad8583ed3fe0bac938082a6cfa784d7cf0d185ef",
+      "learn/code/suites/easy/base/AGENTS.md": "e1b95ace215013b76cd7043d64df5bf7955453b11516c454b9881676891dd2ca",
+      "learn/code/suites/easy/base/pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+      "learn/code/suites/easy/base/specs/mission.md": "df464c1f7801e38994ebc30a9e01cbc839fe7ff71c422b7c7b83a6c113a9e6fc",
+      "learn/code/suites/easy/base/specs/roadmap.md": "670e36dcb2778e426092d9030c074f01a5015f2e8932868d9764b5fcae24a638",
+      "learn/code/suites/easy/base/specs/tech-stack.md": "321ee9a48f521ad876e18599f883a539ba538c7f1e567e77871427454f0372cd",
+      "learn/code/suites/easy/base/uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884",
+      "learn/code/suites/easy/expected.json": "f921a54346d8cfbe26c1058050e0d0cc0a922863c0d608b644b7031c4b01a2b8",
+      "learn/code/suites/easy/fixtures/known-broken/app.py": "ee8328d4341d6f3c73bf66b85c99523312efd6e43889c1c130bf2513bc5c1867",
+      "learn/code/suites/easy/fixtures/known-broken/models.py": "9c86bda59487d50fab5bfda7c4775e5a1013fe5c8211bed9875474221e7c4cc1",
+      "learn/code/suites/easy/fixtures/known-broken/templates/base.html": "1a0fe07d17aae0c064941b99aa2a647f2783e792b1c242c7ba8b46fe051c6133",
+      "learn/code/suites/easy/fixtures/known-broken/templates/complaints.html": "2987a73da2250b5a1f1df1ef0c04693da7e46a5d35d567bcd070b4ed50c43339",
+      "learn/code/suites/easy/fixtures/known-broken/templates/home.html": "d00fb1e35930ce8fd210b236c21ed253e43d76540c79edfb3f7370f10aaa92d9",
+      "learn/code/suites/easy/fixtures/known-good/app.py": "ee8328d4341d6f3c73bf66b85c99523312efd6e43889c1c130bf2513bc5c1867",
+      "learn/code/suites/easy/fixtures/known-good/models.py": "9c86bda59487d50fab5bfda7c4775e5a1013fe5c8211bed9875474221e7c4cc1",
+      "learn/code/suites/easy/fixtures/known-good/templates/base.html": "eb0f5000246cce70fed561c45d09fda67ccd3b646e7a268ef72576421ca75c4b",
+      "learn/code/suites/easy/fixtures/known-good/templates/complaints.html": "2987a73da2250b5a1f1df1ef0c04693da7e46a5d35d567bcd070b4ed50c43339",
+      "learn/code/suites/easy/fixtures/known-good/templates/home.html": "d00fb1e35930ce8fd210b236c21ed253e43d76540c79edfb3f7370f10aaa92d9",
+      "learn/code/suites/easy/grader/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "learn/code/suites/easy/grader/_contract.py": "082b3b980dff1d94e7ef75362aed0ab1e83d3189fb18244eeafc21099c53bbd6",
+      "learn/code/suites/easy/grader/canary": "18573a419ea3f9d0ac9428c349a82be03e82abbb6df8c981bea859d6ebc7fb66",
+      "learn/code/suites/easy/grader/test_phase1_home.py": "9050acf16e0cc4640fbd0384949153d7194454f4a8acaa5e5662cb3bca6fae48",
+      "learn/code/suites/easy/layout.json": "ba41de4543c51a0eda0f4644bfe1d3fafb5b356cff02761d56cd71802c13acdc",
+      "learn/code/suites/easy/prompts/01.md": "26e4bfb122df8f29f9c24b14a4ee00219ce4340199dcf6e9730b5784075af034"
+    },
+    "machine": "Apple M5 Max, 128 GiB",
+    "pi_entry_sha256": "e79626f2dd6f94aa45d30f3fa63cd84319a6eefcd150b353cfaf274366926774",
+    "limits": {
+      "deadline": 600,
+      "stall": 180,
+      "target": 6,
+      "concurrency": 1
+    },
+    "arm": "worker",
+    "extensions": [
+      "extensions/mellum-worker.ts",
+      "extensions/mellum-recorder.ts"
+    ],
+    "context_files": false,
+    "cold_context": true,
+    "arm_env": {
+      "MELLUM_MODE": "1"
+    },
+    "worker_hashes": {
+      "extensions/mellum-worker.ts": "1a225a9efeede96fb3ff95b7a5dfd6b85c44719c88369b362d2563662081d1d0",
+      "extensions/mellum-last.ts": "45fb1433b18d6ecea7d8a76bdae7fed2dad2ae665e76d488bcc8e49cbb764443",
+      "extensions/mellum-learn.ts": "c19ae60c5dbb3e36f5a6fdd465c1ee8aeb1719dbd64c13438cb6ca41274b1296",
+      "extensions/mellum-record.ts": "2d8968bdb6373216a2b57d16a84355af11f8a68e32f6d48fd962ca11f200a9c4",
+      "extensions/mellum-commands.ts": "d76513d4028f39b278191965e6c0eb568a88aefe608fe74d8b6594bbcc47c15f",
+      "extensions/mellum-check.ts": "5cf00120c2c2ac68d0085b24853228000e8243435f2bf2d9b542fe5eee9f9baa",
+      "extensions/mellum-facts.ts": "b7229631e7978b1b945845410a42e3c0c7952fbf6debe1699c6d762f5533f826"
+    },
+    "isolation": {
+      "backend": "temporary-docker",
+      "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56",
+      "runtime": {
+        "node": "v24.22.1",
+        "execPath": "/usr/local/bin/node",
+        "pi": {
+          "version": "1.4.0",
+          "entry_path": "/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
+        },
+        "python": "3.14.2",
+        "uv": "0.11.6",
+        "checkers": {
+          "ruff": "0.16.3",
+          "complexipy": "8.3.0",
+          "pyrefly": "1.2.0",
+          "pytest": "8.3.4"
+        },
+        "sources": {
+          "extensions/content-tool-call-assist/index.ts": "cdb67f095203aaebd6de25bea85d0ba7558c537dcfc87e6ffe14f47d4129fdeb",
+          "extensions/content-tool-call-assist/parse.ts": "21bbfc59b7c854f2796b0250fbd4bc4418b6f1814862feeb79ab66d3df78bd9e",
+          "extensions/mellum-acceptance.ts": "dc6db722984092b45b2c0f01e0c3848787638e0741b593e3f52448704a615b74",
+          "extensions/mellum-check.ts": "5cf00120c2c2ac68d0085b24853228000e8243435f2bf2d9b542fe5eee9f9baa",
+          "extensions/mellum-commands.ts": "d76513d4028f39b278191965e6c0eb568a88aefe608fe74d8b6594bbcc47c15f",
+          "extensions/mellum-context.ts": "0496cf98bf8368ee294e02a7e2439e48db410333b0dd1583a076cb0b5b5a7d07",
+          "extensions/mellum-control.ts": "05743418b6823dced1970abaa33aeed0853c26c83eb17123555f2bfe2f55b5ca",
+          "extensions/mellum-facts.ts": "b7229631e7978b1b945845410a42e3c0c7952fbf6debe1699c6d762f5533f826",
+          "extensions/mellum-feed.ts": "fe082054ac2e29907ffaced1992d68143e44564cbe08f4634dfee34b494cfb83",
+          "extensions/mellum-files.ts": "18df3000b2c5e4e71a5902e7ba1708af089f0ea809488ca4ae74b0dbdf164e2d",
+          "extensions/mellum-flow.ts": "c3213ce5510ad92790ee708bceae9b0c468aaf52bf454faf7a252934a9c45b83",
+          "extensions/mellum-guards.ts": "c027f3ab0a6c68a582f8ed562357cd456c68e1b2dd824a106553143547bed8cc",
+          "extensions/mellum-knowledge.ts": "63214d8cd0a1926d2db4d8aea9fb126d72533ddf7c611070dff5e270a1896a32",
+          "extensions/mellum-last.ts": "45fb1433b18d6ecea7d8a76bdae7fed2dad2ae665e76d488bcc8e49cbb764443",
+          "extensions/mellum-learn.ts": "c19ae60c5dbb3e36f5a6fdd465c1ee8aeb1719dbd64c13438cb6ca41274b1296",
+          "extensions/mellum-lesson-tutor.ts": "6e36b868ab29ee32d858fa1b2ebb0964499866987800c97c2277d94818655da9",
+          "extensions/mellum-lessons.ts": "a97193de22ffd96b8f345b314c8e3402bf115bd9092dc2783a2f767a2b5ef366",
+          "extensions/mellum-loop.ts": "c3847eed4129eab23db5c51590756fe8ec8e7ab49d33c1e45ffd7e258007b29f",
+          "extensions/mellum-loopguard.ts": "5925d3fe7744a6cd4cd4ce1507294dbd9dc2c9ae5187dc5246437051a9c64c7a",
+          "extensions/mellum-nonblock.ts": "c7cb7671ed8db35a4ac458aab007ccc6d5631adc60546d8f0d63fe22be580897",
+          "extensions/mellum-override.ts": "32bb2a68e739abd2f3fdd4339c2508cbfd40ba2397b8596263caf8ed51c3fbe2",
+          "extensions/mellum-plan.ts": "ed2de9e010c8aacc6a39a114753a47394fb47778bf4d62dfc55f99e6facbb768",
+          "extensions/mellum-quality.ts": "109445c676dde65e53d34b0f70deeeb38eccef92e75cc2fed27828f8fd85272c",
+          "extensions/mellum-record.ts": "2d8968bdb6373216a2b57d16a84355af11f8a68e32f6d48fd962ca11f200a9c4",
+          "extensions/mellum-recorder.ts": "6252ad445bf5b1339f7c76f3da86e27a77148617f0cfade55e87faf4e2a129d9",
+          "extensions/mellum-remedies.ts": "881fb9ac232872b3424a64a8a0cde6cee109edf7b61fde001c7f57ce6c3b0249",
+          "extensions/mellum-replay.ts": "da161a8364a45e80b8e1fd26cab6287d024a201daff3b569134f55cb8951b3fc",
+          "extensions/mellum-rethink.ts": "1fa79cf14294d31946749ac2d37b4387a10c96874bb0d9e5608236b29a194170",
+          "extensions/mellum-surgical.ts": "e0c2c17471af7225a0363504f317642c54357865b2909b53da960309accc8477",
+          "extensions/mellum-think-tags.ts": "b4861563939606984fcedfbd11ccbc7859c110b63f4984d389c3d2d474bd3572",
+          "extensions/mellum-verify.ts": "e90614d8455f0ce6605c68763b435623885376abd6cd4e0ce29c30b0bde150d3",
+          "extensions/mellum-vision.ts": "9d594beb9754b362d6f88951d6aaa17e6197159cef84854301cd369ac1360290",
+          "extensions/mellum-worker.ts": "1a225a9efeede96fb3ff95b7a5dfd6b85c44719c88369b362d2563662081d1d0",
+          "learn/code/baseline.py": "e4c6d3dacd6814f3801fbc4c8e94ca3008db40ccc7d19f39756faed50ca6d66a",
+          "learn/code/containment.py": "adc0197c31ae54dbd691d9151347a0369ee731e4309401e1377a5f7bb857f184",
+          "learn/code/containment_qualification.py": "ba72570e6ee736136e28cdf733e3d6e1489f449f93184992936b506faba50db3",
+          "learn/code/harness.py": "f714d0100769e28300d76ff46b0e38356842685861387474b0efefc741261326",
+          "learn/code/suites/easy/base/pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+          "learn/code/suites/easy/base/uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884",
+          "remedies/check/code-quality.ts": "59540844c0b68297a2a8fa8925f6cb21b4980aef01ef0e56c467470ba3961b42",
+          "remedies/context/narrow-tools.ts": "3c14581812eefa0def200430b5d2ac21aed0d9acefa9a85455ab569f326c0c03",
+          "remedies/context/repair-think-tags.ts": "c36ad492c2ec1a88f17b232202bea4c0bd0aab1f4192a870d86ca4ec937347ea",
+          "remedies/context/trim-tool-output.ts": "02d7802411740a55b7e6ac05d06eb59921a8c8e72c7ab27aa1d96e0db7534199",
+          "remedies/context/use-short-prompt.ts": "ee14b0a873d63810151655a06d10d9637596e2eccc5880c153d5f972ed3182f4",
+          "remedies/delegate/collapse-handoffs.ts": "f49693c8a36c5de2a314c8bcc21ac4b09e2af709ea19206b8d94d9c884cfab86",
+          "remedies/guard/foreground-server.ts": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4",
+          "remedies/guard/outside-workspace.ts": "adf1b5c16a5d8cc407218e19b1f171212096ce9bef2c14e7c4d2131828ec5f75",
+          "remedies/guard/repeat-loops.ts": "e7c063b70914bf225e57871b3731bdf3cc0b46da4aa1bd8864d967077007730a",
+          "remedies/guard/turn-cap.ts": "5c5d429ee25bd263a25cb7d3326a4aa9c091c35c4868e3c8e606e2810bc356c2",
+          "remedies/guard/whole-file-rewrite.ts": "27197ecf7fa239ca18b2e0254ddd1681b32bd76f56ce84481e64025c40ab3ebb",
+          "remedies/install.ts": "62dd2aefd49b558140ed01c40f8dc23af04ba6ad0b06434d2b7fd73e972ecad9",
+          "remedies/nudge/empty-turn.ts": "5d99c8a5aaf79d46e6723c2ea99018b65043126f7708ceb1cd1df36ba4dcc0b1",
+          "remedies/presets/baseline-worker.json": "40ca536fad9cf999f4d51ea6dda0522d85a581ea5a9b4c01b34bb875689f5c09",
+          "remedies/presets/easy.json": "51f5f15d738060ff40894edd4b922b75ed7a26a6d5485fe76a15c16d262f2a3c",
+          "remedies/presets/hard.json": "51f5f15d738060ff40894edd4b922b75ed7a26a6d5485fe76a15c16d262f2a3c",
+          "remedies/presets/medium.json": "51f5f15d738060ff40894edd4b922b75ed7a26a6d5485fe76a15c16d262f2a3c",
+          "remedies/prompt/concept-sketch.ts": "49eed00ffa7569ef87370b74edcd54d31f68dd86266e33957bd837c1683495e6",
+          "remedies/prompt/name-the-layout.ts": "92505d2149d2fe9cc21b199655beaf8a2db6dc68650f639fc7173f2136f1bddb",
+          "remedies/prompt/python-developer.ts": "b3aeb9d88d994b8b29dc8c9aa7c0d16907eac6ec8a8aa810ddb2e37949572726",
+          "remedies/prompt/verify-the-spec.ts": "2457f823f4f3c95f679605a247c91847614bb8b4a374f77c90c8cdd83e705756",
+          "remedies/tool/background-long-commands.ts": "11bebcc419133112e55880d58f98f20f6ac6f31ccfc24aa9660ee1e4d1f7b9cf",
+          "remedies/tool/keep-a-plan.ts": "98732904f8b1e88e9be8165b2660f4c3777627caf08a7e6beea13cd84844c466",
+          "remedies/tool/lookup-library-docs.ts": "ce7700402895e988305410a0128d93f249922868f1291130aa9f9a69dde61de2",
+          "remedies/workflow/spec-driven-flow.ts": "7e32ac9e0775d194ab8e822bbaf30d7fe18e28d1f30e5d0e0f954cc325b382fa",
+          "scripts/containment/Dockerfile": "cf36ef4f7bbad248eea9368709a9bcd2049876efa04400973dea54279998d9f2",
+          "scripts/containment/entry.py": "3c4236f5cc4c358bf30cdcdd1c6302859608ac07c2d006f58f30945cd4e0a0a4",
+          "scripts/containment/identity.mjs": "456b264b4907d4fd6a7505e98b9d90952d1f9c96cfa91f4a2fcb28159b512736",
+          "scripts/containment/relay.mjs": "10603108f507687881d6cca12426947e95338503a2f22b8492dd5cb54a25b39a",
+          "scripts/containment/start.sh": "db58490c3c4c96661fab761d5476490fb6ee596f733d30ae8e85e3d257189033"
+        }
+      },
+      "engine": {
+        "ID": "a9541cb9-3183-471a-86b2-ce01c3cc31f6",
+        "ServerVersion": "29.9.2",
+        "OSType": "linux",
+        "Architecture": "aarch64"
+      },
+      "policy": [
+        "docker",
+        "create",
+        "--network",
+        "none",
+        "--read-only",
+        "--user",
+        "1000:1000",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges",
+        "--pids-limit",
+        "256",
+        "--memory",
+        "4g",
+        "--cpus",
+        "4",
+        "--mount",
+        "type=volume,source=mellum-attempt-<ATTEMPT_OWNER>,target=/attempt",
+        "--tmpfs",
+        "/tmp:rw,exec,nosuid,nodev,size=1g,uid=1000,gid=1000,mode=1777",
+        "--label",
+        "mellum.measurement.owner=<ATTEMPT_OWNER>",
+        "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56",
+        "sleep",
+        "infinity"
+      ],
+      "volume_policy": [
+        "docker",
+        "volume",
+        "create",
+        "--driver",
+        "local",
+        "--opt",
+        "type=tmpfs",
+        "--opt",
+        "device=tmpfs",
+        "--opt",
+        "o=size=1g,uid=1000,gid=1000,mode=0700",
+        "--label",
+        "mellum.measurement.owner=<ATTEMPT_OWNER>",
+        "mellum-attempt-<ATTEMPT_OWNER>"
+      ]
+    }
+  },
+  "attempts": [
+    {
+      "run_id": "20261104T143659Z-easy-234637",
+      "directory": "attempt-01",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-01/20261104T143659Z-easy-234637",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261104T144023Z-easy-c19315",
+      "directory": "attempt-02",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-02/20261104T144023Z-easy-c19315",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261104T144352Z-easy-c96ae9",
+      "directory": "attempt-03",
+      "state": "counted",
+      "reason": "Recovered 502 on assistant request10 after substantive model work; native Pi continued to17 requests and the fixed180s foreground-Uvicorn cutoff. Hidden grader launched but could not collect because generated app imports nonexistent fastapi.templates; Ruff/Pyrefly fail. Runtime/worker activation and cleanup verified. Count this mixed model/transport failure without replacement, with hidden checks unavailable and complete output/context unknown. Relay request_error reports ECONNRESET; precise transport root cause unproven.",
+      "path": "attempt-03/20261104T144352Z-easy-c96ae9",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261104T144855Z-easy-741e6d",
+      "directory": "attempt-04",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-04/20261104T144855Z-easy-741e6d",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261104T144943Z-easy-fae40f",
+      "directory": "attempt-05",
+      "state": "counted",
+      "reason": "Recovered 502 on assistant request14 after substantive model work; native Pi continued through19 requests then the fixed180s foreground-app cutoff. All4 hidden checks executed/pass, health passes; runtime/worker activation and cleanup verified. Count this mixed model/transport failure without replacement, retaining unknown complete output/context. Relay request_error reports ECONNRESET; precise transport root cause unproven.",
+      "path": "attempt-05/20261104T144943Z-easy-fae40f",
+      "identity_ok": true,
+      "cleanup_ok": true
+    },
+    {
+      "run_id": "20261104T145429Z-easy-576e7f",
+      "directory": "attempt-06",
+      "state": "counted",
+      "reason": "model execution (including failure, stall or deadline)",
+      "path": "attempt-06/20261104T145429Z-easy-576e7f",
+      "identity_ok": true,
+      "cleanup_ok": true
+    }
+  ],
+  "reference": {
+    "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261104T141728Z-d1b67e/batch.json",
+    "sha256": "240a8cb7ca0a2124535be32a47c308c8ff78da814009bfd7051788c6c77ec0f0"
+  },
+  "status": "complete"
+}

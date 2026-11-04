@@ -1,0 +1,17 @@
+[
+  {
+    "pid": 91,
+    "pgid": null,
+    "command": "uv run python -m uvicorn app:app --reload --port 8000"
+  },
+  {
+    "pid": 95,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T144352Z-easy-c96ae9/workspace/.venv/bin/python3 -m uvicorn app:app --reload --port 8000"
+  },
+  {
+    "pid": 96,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T144352Z-easy-c96ae9/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+  }
+]

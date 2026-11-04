@@ -1,0 +1,64 @@
+{
+  "vanilla": {
+    "n": 6,
+    "all_hidden_pass": 2,
+    "health_pass": 5,
+    "settled": 1,
+    "hidden_health_settled": 0,
+    "completion_counts": {
+      "stalled": 5,
+      "settled": 1
+    },
+    "requests_total": 128,
+    "requests_median": 17.5,
+    "elapsed_total": 1097.24,
+    "elapsed_median": 213.7705,
+    "context_known_n": 6,
+    "context_peak_known": 16997,
+    "context_uncached_peak_known": 2691,
+    "output_known_n": 6,
+    "output_known_subset_sum": 34889,
+    "output_total": 34889
+  },
+  "worker": {
+    "n": 6,
+    "all_hidden_pass": 4,
+    "health_pass": 5,
+    "settled": 1,
+    "hidden_health_settled": 1,
+    "completion_counts": {
+      "stalled": 5,
+      "settled": 1
+    },
+    "requests_total": 124,
+    "requests_median": 18.0,
+    "elapsed_total": 1070.735,
+    "elapsed_median": 202.003,
+    "context_known_n": 4,
+    "context_peak_known": 13627,
+    "context_uncached_peak_known": 1628,
+    "output_known_n": 4,
+    "output_known_subset_sum": 24146,
+    "output_total": null
+  },
+  "remedy": {
+    "n": 1,
+    "all_hidden_pass": 1,
+    "health_pass": 1,
+    "settled": 1,
+    "hidden_health_settled": 1,
+    "completion_counts": {
+      "settled": 1
+    },
+    "requests_total": 18,
+    "requests_median": 18,
+    "elapsed_total": 28.504,
+    "elapsed_median": 28.504,
+    "context_known_n": 1,
+    "context_peak_known": 10949,
+    "context_uncached_peak_known": 1642,
+    "output_known_n": 1,
+    "output_known_subset_sum": 5823,
+    "output_total": 5823
+  }
+}

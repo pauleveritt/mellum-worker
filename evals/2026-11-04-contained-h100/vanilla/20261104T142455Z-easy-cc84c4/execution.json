@@ -1,0 +1,7 @@
+{
+  "elapsed_seconds": 223.338,
+  "exit_code": -9,
+  "termination_reason": "stalled",
+  "cleanup_ok": true,
+  "inner_cleanup_ok": true
+}

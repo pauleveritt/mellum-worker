@@ -1,0 +1,25 @@
+{
+  "run_id": "20261104T145823Z-easy-d12025",
+  "five_units_loaded_in_order": true,
+  "prompt_fragments_in_first_provider_request": {
+    "Read the project's own spec": true,
+    "experienced, meticulous python developer": true,
+    "Before you finish, check that every requirement": true
+  },
+  "provider_visible_guard_refusals": 1,
+  "blocked_commands": [
+    {
+      "command": "uv run --frozen uvicorn --help"
+    }
+  ],
+  "raw_guard_blocks_counter": 0,
+  "provider_visible_trim_notes": 0,
+  "own_pytest_command": "uv run --frozen python -m pytest tests",
+  "own_pytest_result": "1 passed, 3 warnings in 0.42s",
+  "interpretation": [
+    "Harmless uvicorn --help was blocked: observed guard false positive, not evidence that a real foreground hang was prevented in this run.",
+    "Raw guard_blocks=0 misses the provider-visible refusal; retain raw record and this separate payload audit.",
+    "Output trimming was loaded; no trim note observed in this one screen. Functional interaction proof is separate.",
+    "n=1 five-unit bundle cannot establish a comparative rate or attribute its result to any unit."
+  ]
+}

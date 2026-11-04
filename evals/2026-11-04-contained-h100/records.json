@@ -1,0 +1,1118 @@
+{
+  "vanilla": [
+    {
+      "run_id": "20261104T141734Z-easy-dba46a",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.1,
+        "limit": 180,
+        "command": "uv run uvicorn app:app --port 8001"
+      },
+      "passed": false,
+      "tests_passed": false,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 2,
+      "checks_ran": true,
+      "checks_passed": 2,
+      "checks_total": 4,
+      "missing_checks": [
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+        "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+      ],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 2,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 39,
+      "turns": 39,
+      "tool_calls": 39,
+      "tool_errors": 9,
+      "context": 14867,
+      "context_uncached": 1530,
+      "output_tokens": 5853,
+      "wall": 224.033,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 147,
+          "pgid": null,
+          "command": "uv run uvicorn app:app --port 8001"
+        },
+        {
+          "pid": 150,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T141734Z-easy-dba46a/workspace/.venv/bin/python /attempt/runs/20261104T141734Z-easy-dba46a/workspace/.venv/bin/uvicorn app:app --port 8001"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 224.033,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T142124Z-easy-5b174c",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.9,
+        "limit": 180,
+        "command": "uv run app.py"
+      },
+      "passed": false,
+      "tests_passed": true,
+      "quality_ok": false,
+      "code_health": "fail",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 13,
+      "turns": 13,
+      "tool_calls": 13,
+      "tool_errors": 1,
+      "context": 11660,
+      "context_uncached": 2691,
+      "output_tokens": 4683,
+      "wall": 204.203,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 73,
+          "pgid": null,
+          "command": "uv run app.py"
+        },
+        {
+          "pid": 83,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142124Z-easy-5b174c/workspace/.venv/bin/python app.py"
+        },
+        {
+          "pid": 84,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142124Z-easy-5b174c/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 85,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142124Z-easy-5b174c/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 204.203,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T142455Z-easy-cc84c4",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.9,
+        "limit": 180,
+        "command": "uv run uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+      },
+      "passed": false,
+      "tests_passed": false,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 1,
+      "checks_ran": true,
+      "checks_passed": 3,
+      "checks_total": 4,
+      "missing_checks": [
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+      ],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 1,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 28,
+      "turns": 28,
+      "tool_calls": 28,
+      "tool_errors": 9,
+      "context": 16997,
+      "context_uncached": 2691,
+      "output_tokens": 8165,
+      "wall": 223.338,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 120,
+          "pgid": null,
+          "command": "uv run uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+        },
+        {
+          "pid": 123,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142455Z-easy-cc84c4/workspace/.venv/bin/python /attempt/runs/20261104T142455Z-easy-cc84c4/workspace/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+        },
+        {
+          "pid": 124,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142455Z-easy-cc84c4/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 125,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142455Z-easy-cc84c4/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 223.338,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T142844Z-easy-b28f08",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.0,
+        "limit": 180,
+        "command": "uv run uvicorn app:app --reload --port 8000"
+      },
+      "passed": false,
+      "tests_passed": false,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 4,
+      "checks_ran": true,
+      "checks_passed": 0,
+      "checks_total": 4,
+      "missing_checks": [
+        "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+        "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+        "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+      ],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 4,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 22,
+      "turns": 22,
+      "tool_calls": 22,
+      "tool_errors": 5,
+      "context": 13687,
+      "context_uncached": 1532,
+      "output_tokens": 9099,
+      "wall": 231.175,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 107,
+          "pgid": null,
+          "command": "uv run uvicorn app:app --reload --port 8000"
+        },
+        {
+          "pid": 110,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142844Z-easy-b28f08/workspace/.venv/bin/python /attempt/runs/20261104T142844Z-easy-b28f08/workspace/.venv/bin/uvicorn app:app --reload --port 8000"
+        },
+        {
+          "pid": 111,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142844Z-easy-b28f08/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 112,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T142844Z-easy-b28f08/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 231.175,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T143242Z-easy-2a920b",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.7,
+        "limit": 180,
+        "command": "uv run python app.py"
+      },
+      "passed": true,
+      "tests_passed": true,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 13,
+      "turns": 13,
+      "tool_calls": 13,
+      "tool_errors": 1,
+      "context": 8900,
+      "context_uncached": 1532,
+      "output_tokens": 5063,
+      "wall": 203.385,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 84,
+          "pgid": null,
+          "command": "uv run python app.py"
+        },
+        {
+          "pid": 88,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T143242Z-easy-2a920b/workspace/.venv/bin/python3 app.py"
+        },
+        {
+          "pid": 89,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T143242Z-easy-2a920b/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 90,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T143242Z-easy-2a920b/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 203.385,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T143612Z-easy-9ef13f",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": null,
+      "passed": false,
+      "tests_passed": false,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 2,
+      "checks_ran": true,
+      "checks_passed": 2,
+      "checks_total": 4,
+      "missing_checks": [
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+        "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+      ],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 2,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 13,
+      "turns": 13,
+      "tool_calls": 12,
+      "tool_errors": 0,
+      "context": 5035,
+      "context_uncached": 1531,
+      "output_tokens": 2026,
+      "wall": 11.106,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [],
+      "out_of_layout": [],
+      "completion": "settled",
+      "elapsed_seconds": 11.106,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": 0
+    }
+  ],
+  "worker": [
+    {
+      "run_id": "20261104T143659Z-easy-234637",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "worker",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.3,
+        "limit": 180,
+        "command": "uv run python -m uvicorn app:app --reload --port 8000"
+      },
+      "passed": false,
+      "tests_passed": false,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 2,
+      "checks_ran": true,
+      "checks_passed": 2,
+      "checks_total": 4,
+      "missing_checks": [
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+        "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+      ],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 2,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 16,
+      "turns": 16,
+      "tool_calls": 16,
+      "tool_errors": 4,
+      "context": 8015,
+      "context_uncached": 1532,
+      "output_tokens": 3550,
+      "wall": 198.412,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 89,
+          "pgid": null,
+          "command": "uv run python -m uvicorn app:app --reload --port 8000"
+        },
+        {
+          "pid": 92,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T143659Z-easy-234637/workspace/.venv/bin/python3 -m uvicorn app:app --reload --port 8000"
+        },
+        {
+          "pid": 93,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T143659Z-easy-234637/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 94,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T143659Z-easy-234637/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 198.412,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T144023Z-easy-c19315",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "worker",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.9,
+        "limit": 180,
+        "command": "uv run --frozen python app.py"
+      },
+      "passed": true,
+      "tests_passed": true,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 13,
+      "turns": 13,
+      "tool_calls": 13,
+      "tool_errors": 0,
+      "context": 7402,
+      "context_uncached": 1532,
+      "output_tokens": 4810,
+      "wall": 202.304,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 75,
+          "pgid": null,
+          "command": "uv run --frozen python app.py"
+        },
+        {
+          "pid": 85,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144023Z-easy-c19315/workspace/.venv/bin/python app.py"
+        },
+        {
+          "pid": 86,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144023Z-easy-c19315/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 87,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144023Z-easy-c19315/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 202.304,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T144352Z-easy-c96ae9",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "worker",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.8,
+        "limit": 180,
+        "command": "uv run python -m uvicorn app:app --reload --port 8000"
+      },
+      "passed": false,
+      "tests_passed": false,
+      "quality_ok": false,
+      "code_health": "fail",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 4,
+      "checks_ran": false,
+      "checks_passed": 0,
+      "checks_total": 4,
+      "missing_checks": [
+        "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+        "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+        "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+      ],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 4,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 17,
+      "turns": 17,
+      "tool_calls": 16,
+      "tool_errors": 3,
+      "context": null,
+      "context_uncached": 1531,
+      "output_tokens": null,
+      "wall": 201.702,
+      "nudges": 1,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 91,
+          "pgid": null,
+          "command": "uv run python -m uvicorn app:app --reload --port 8000"
+        },
+        {
+          "pid": 95,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144352Z-easy-c96ae9/workspace/.venv/bin/python3 -m uvicorn app:app --reload --port 8000"
+        },
+        {
+          "pid": 96,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144352Z-easy-c96ae9/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 201.702,
+      "provider_error": {
+        "classification": "review",
+        "evidence": [
+          {
+            "role": "assistant",
+            "content": [],
+            "api": "openai-completions",
+            "provider": "llamacpp",
+            "model": "Mellum2.1-12B-A2.5B-Thinking",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "error",
+            "timestamp": 1793803445124,
+            "errorMessage": "502 status code (no body)",
+            "durationMs": 38,
+            "thinkingLevel": "medium"
+          }
+        ]
+      },
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T144855Z-easy-741e6d",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "worker",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": null,
+      "passed": true,
+      "tests_passed": true,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 29,
+      "turns": 29,
+      "tool_calls": 28,
+      "tool_errors": 10,
+      "context": 13627,
+      "context_uncached": 1532,
+      "output_tokens": 8556,
+      "wall": 41.978,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [],
+      "out_of_layout": [],
+      "completion": "settled",
+      "elapsed_seconds": 41.978,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": 0
+    },
+    {
+      "run_id": "20261104T144943Z-easy-fae40f",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "worker",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.0,
+        "limit": 180,
+        "command": "uv run --frozen python app.py"
+      },
+      "passed": true,
+      "tests_passed": true,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 19,
+      "turns": 19,
+      "tool_calls": 18,
+      "tool_errors": 3,
+      "context": null,
+      "context_uncached": 1530,
+      "output_tokens": null,
+      "wall": 208.633,
+      "nudges": 1,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 90,
+          "pgid": null,
+          "command": "uv run --frozen python app.py"
+        },
+        {
+          "pid": 93,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144943Z-easy-fae40f/workspace/.venv/bin/python3 app.py"
+        },
+        {
+          "pid": 94,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144943Z-easy-fae40f/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 95,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T144943Z-easy-fae40f/workspace/.venv/bin/python3 -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 208.633,
+      "provider_error": {
+        "classification": "review",
+        "evidence": [
+          {
+            "role": "assistant",
+            "content": [],
+            "api": "openai-completions",
+            "provider": "llamacpp",
+            "model": "Mellum2.1-12B-A2.5B-Thinking",
+            "usage": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "totalTokens": 0,
+              "cost": {
+                "input": 0,
+                "output": 0,
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "total": 0
+              }
+            },
+            "stopReason": "error",
+            "timestamp": 1793803802025,
+            "errorMessage": "502 status code (no body)",
+            "durationMs": 30,
+            "thinkingLevel": "medium"
+          }
+        ]
+      },
+      "cleanup_ok": true,
+      "exit_code": -9
+    },
+    {
+      "run_id": "20261104T145429Z-easy-576e7f",
+      "state": "counted",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "worker",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [],
+      "extensions": [],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": {
+        "seconds": 180.2,
+        "limit": 180,
+        "command": "uv run uvicorn app:app --reload"
+      },
+      "passed": true,
+      "tests_passed": true,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 30,
+      "turns": 30,
+      "tool_calls": 30,
+      "tool_errors": 8,
+      "context": 13477,
+      "context_uncached": 1628,
+      "output_tokens": 7230,
+      "wall": 217.706,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [
+        {
+          "pid": 119,
+          "pgid": null,
+          "command": "uv run uvicorn app:app --reload"
+        },
+        {
+          "pid": 122,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/python /attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/uvicorn app:app --reload"
+        },
+        {
+          "pid": 123,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+        },
+        {
+          "pid": 124,
+          "pgid": null,
+          "command": "/attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+        }
+      ],
+      "out_of_layout": [],
+      "completion": "stalled",
+      "elapsed_seconds": 217.706,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": -9
+    }
+  ],
+  "remedy": [
+    {
+      "run_id": "20261104T145823Z-easy-d12025",
+      "state": "screen",
+      "isolation": {
+        "backend": "temporary-docker",
+        "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56"
+      },
+      "instrumentation_error": false,
+      "suite": "easy",
+      "arm": "vanilla",
+      "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+      "remedies": [
+        "prompt/name-the-layout",
+        "prompt/python-developer",
+        "prompt/verify-the-spec",
+        "guard/foreground-server",
+        "context/trim-tool-output"
+      ],
+      "extensions": [
+        {
+          "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+          "sha256": "92505d2149d2fe9cc21b199655beaf8a2db6dc68650f639fc7173f2136f1bddb"
+        },
+        {
+          "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/python-developer.ts",
+          "sha256": "b3aeb9d88d994b8b29dc8c9aa7c0d16907eac6ec8a8aa810ddb2e37949572726"
+        },
+        {
+          "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/verify-the-spec.ts",
+          "sha256": "2457f823f4f3c95f679605a247c91847614bb8b4a374f77c90c8cdd83e705756"
+        },
+        {
+          "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-server.ts",
+          "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+        },
+        {
+          "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/context/trim-tool-output.ts",
+          "sha256": "02d7802411740a55b7e6ac05d06eb59921a8c8e72c7ab27aa1d96e0db7534199"
+        }
+      ],
+      "single_prompt": false,
+      "specs": null,
+      "strip_thinking": false,
+      "machine": "Apple M5 Max, 128 GiB",
+      "deadline": 600,
+      "stall": 180,
+      "stalled": null,
+      "passed": true,
+      "tests_passed": true,
+      "quality_ok": true,
+      "code_health": "pass",
+      "grading_infrastructure_error": false,
+      "contaminated": false,
+      "failed_checks": 0,
+      "checks_ran": true,
+      "checks_passed": 4,
+      "checks_total": 4,
+      "missing_checks": [],
+      "check_groups": {
+        "test_phase1_home.py": {
+          "missing": 0,
+          "total": 4
+        }
+      },
+      "record_failures": [],
+      "requests": 18,
+      "turns": 18,
+      "tool_calls": 16,
+      "tool_errors": 0,
+      "context": 10949,
+      "context_uncached": 1642,
+      "output_tokens": 5823,
+      "wall": 28.504,
+      "nudges": 0,
+      "empty_finals": 0,
+      "guard_blocks": 0,
+      "reasoning_as_text": 0,
+      "compactions": 0,
+      "leaked": [],
+      "out_of_layout": [],
+      "completion": "settled",
+      "elapsed_seconds": 28.504,
+      "provider_error": null,
+      "cleanup_ok": true,
+      "exit_code": 0
+    }
+  ]
+}

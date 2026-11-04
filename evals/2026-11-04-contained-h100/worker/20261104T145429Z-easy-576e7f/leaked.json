@@ -1,0 +1,22 @@
+[
+  {
+    "pid": 119,
+    "pgid": null,
+    "command": "uv run uvicorn app:app --reload"
+  },
+  {
+    "pid": 122,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/python /attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/uvicorn app:app --reload"
+  },
+  {
+    "pid": 123,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+  },
+  {
+    "pid": 124,
+    "pgid": null,
+    "command": "/attempt/runs/20261104T145429Z-easy-576e7f/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+  }
+]

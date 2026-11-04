@@ -44,6 +44,31 @@ at15:34UTC (90 minutes including setup). Verify EXITED before reporting or
 archiving. Keep persistent files; storage billing continues. All five earlier
 Pods were read back EXITED; do not restart them during this study.
 
+## Result — November4
+
+All6+6+1 attempts completed on this one frozen backend; none was excluded.
+[Retained comparison](../../../evals/2026-11-04-contained-h100/README.md):
+Vanilla hidden-all-pass2/6, health5/6, settled1/6, joint0/6; thin Worker
+hidden-all-pass4/6 (one unavailable grade), health5/6, settled1/6, joint1/6.
+The five-unit single screen passed4/4 plus health and settled in28.504s,
+18requests/5823output. This is a lead, not a comparative remedy rate.
+
+All twelve initial baseline payloads match after replacing run IDs. Both arms
+stalled5/6 times on foreground servers. Two recovered502 Worker attempts were
+explicitly counted; full usage remains unknown, and one generated an invalid
+import preventing hidden collection. No favorable replacements.
+
+The remedy payload shows all three prompt fragments and one guard refusal for
+harmless `uvicorn --help`; its raw guard counter misses that refusal. No trim
+note appeared in this one screen. Own pytest1pass and hidden4/4 are retained;
+neither guard benefit nor an individual prompt effect is established. Follow-up
+guard/help and accounting defects are recorded in BACKLOG, not silently fixed.
+
+The guardian stopped the H100 immediately after14:58:56UTC completion and read
+back EXITED. The fresh14:59:23UTC account read confirms all six Pods EXITED;
+no owned Docker containers/volumes remain. Persistent storage300GB still bills.
+Raw evidence is preserved as the comparison's unique research-release asset.
+
 ## What would falsify this
 
 Changed shared inputs, unexpected modules, backend drift, altered scoring,

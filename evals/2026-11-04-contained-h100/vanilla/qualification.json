@@ -1,0 +1,9 @@
+{
+  "qualified": true,
+  "results": {
+    "known-good": true,
+    "known-good-checkers-launched": true,
+    "known-broken": false,
+    "known-broken-checkers-launched": true
+  }
+}

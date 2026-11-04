@@ -1,0 +1,103 @@
+{
+  "label": "long-pair",
+  "started": "2026-11-04T14:17:03.010Z",
+  "elapsed_seconds": 7.459617166999999,
+  "max_simultaneous_slots": 2,
+  "inputs": [
+    {
+      "characters": 282098,
+      "sha256": "84d3d5cb73a2eb7edd5af4d1db78de4d1f20f0214ba3257a55ab1e5d306807a4"
+    },
+    {
+      "characters": 235098,
+      "sha256": "02b2a871af44207c8123ca9246e75cb760f27f2535a3e1cd7f4151badd74c1b7"
+    }
+  ],
+  "max_tokens": 64,
+  "results": [
+    {
+      "status": "fulfilled",
+      "elapsed_seconds": 5.976261084,
+      "data": {
+        "choices": [
+          {
+            "finish_reason": "length",
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "reasoning_content": "We need to parse the problem statement precisely: \"Final question: ... Final question: What is 2 + 2? Answer briefly.\" So there is a puzzle where after solving something we get to the final question. The final question: \"What is 2 + 2?\" And we need to"
+            }
+          }
+        ],
+        "created": 1793801828,
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "system_fingerprint": "b11669-620d2225c",
+        "object": "chat.completion",
+        "usage": {
+          "completion_tokens": 64,
+          "prompt_tokens": 47034,
+          "total_tokens": 47098,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "id": "chatcmpl-rGp2DqEjZVzt0tezi5qYWEIPBAbA7D5F",
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 47034,
+          "prompt_ms": 3163.157,
+          "prompt_per_token_ms": 0.06725256197644258,
+          "prompt_per_second": 14869.322009625192,
+          "predicted_n": 64,
+          "predicted_ms": 2527.704,
+          "predicted_per_token_ms": 40.12228571428572,
+          "predicted_per_second": 24.92380436949896
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "elapsed_seconds": 7.35004375,
+      "data": {
+        "choices": [
+          {
+            "finish_reason": "length",
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "reasoning_content": "We need to answer: The final question: \"What is 2 + 2? Answer briefly.\" This is presumably from a puzzle where earlier there were multiple questions, and they ask \"What is 2 + 2? Answer briefly.\" The answer should be a number. Probably answer \"4"
+            }
+          }
+        ],
+        "created": 1793801830,
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "system_fingerprint": "b11669-620d2225c",
+        "object": "chat.completion",
+        "usage": {
+          "completion_tokens": 64,
+          "prompt_tokens": 47034,
+          "total_tokens": 47098,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "id": "chatcmpl-1aTDRc3JNVqxkdpGUZhB2Sraxq0rrFch",
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 47034,
+          "prompt_ms": 6776.324,
+          "prompt_per_token_ms": 0.14407288344601776,
+          "prompt_per_second": 6940.931395842348,
+          "predicted_n": 64,
+          "predicted_ms": 298.817,
+          "predicted_per_token_ms": 4.7431269841269845,
+          "predicted_per_second": 210.83137840216588
+        }
+      }
+    }
+  ],
+  "observations_count": 25,
+  "retention_note": "Compact qualification summary; complete slot observations retained in the raw research asset under runs/2026-11-04-h100-study/long-pair.json"
+}

@@ -1,0 +1,6 @@
+{
+  "backend": "temporary-docker",
+  "image": "sha256:4079657911571b9a008b2ce97a0195c4c827f6cadc88289605df15e927291d56",
+  "control": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/vanilla-easy-20261104T141728Z-d1b67e/attempt-06/.container-a3ccb2274d1043a8a67173847040489e",
+  "container_removed": true
+}
