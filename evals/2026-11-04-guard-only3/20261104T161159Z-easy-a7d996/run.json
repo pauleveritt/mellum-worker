@@ -1,0 +1,102 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:ce76e13a2be6a5b559985b203fd3751e304b3918aff36589a45f65220a2c82cb"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "guard/foreground-server"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 4,
+  "checks_ran": false,
+  "checks_passed": 0,
+  "checks_total": 4,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 19,
+  "turns": 19,
+  "tool_calls": 16,
+  "tool_errors": 4,
+  "context": null,
+  "context_uncached": 1532,
+  "output_tokens": null,
+  "wall": 30.427,
+  "nudges": 1,
+  "empty_finals": 0,
+  "guard_blocks": 1,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [
+    "main.py",
+    "test_home.py"
+  ],
+  "completion": "settled",
+  "elapsed_seconds": 30.427,
+  "provider_error": {
+    "classification": "review",
+    "evidence": [
+      {
+        "role": "assistant",
+        "content": [],
+        "api": "openai-completions",
+        "provider": "llamacpp",
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1793808732933,
+        "errorMessage": "502 status code (no body)",
+        "durationMs": 48,
+        "thinkingLevel": "medium"
+      }
+    ]
+  },
+  "cleanup_ok": true,
+  "exit_code": 0
+}

@@ -12,7 +12,7 @@ current cycle.
 **Next:** LC.13B (lesson 4's firing task), LC.26 (the pass floor behind lessons 2, 5 and 10), then LC.5 and LC.20–LC.23.
 **After:** LC.20–LC.23 in their listing order. Context/input workflows are INT.3 candidates. The M series is closed ([archive](ROADMAP-M.md)).
 **Parked:** OpenCode, Ollama, execution bounds, versioned assessments, the mediated test, one worker, INT.1, INT.2 and the PR #1 prompt/guard extraction are [backlog entries](BACKLOG.md) with reopen conditions.
-**Latest contained collection:** repaired five-remedy arm passed its observed checks in three fresh sessions ([record](evals/2026-11-04-remedy-repeat3/README.md)); the shared Vanilla6/Worker6 reference remains separate. Guard-only versus five-unit contrast is next.
+**Latest contained collection:** guard alone refused three foreground starts; all three sessions settled, none passed all hidden checks ([record](evals/2026-11-04-guard-only3/README.md)). Spec/layout guidance is the next single-unit hypothesis; earlier cohorts remain separate.
 
 ## Feature cycles
 

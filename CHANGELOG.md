@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [guard-only three-session screen](evals/2026-11-04-guard-only3/README.md)
+  records three foreground refusals and normal exits alongside incomplete
+  hidden-check outcomes, missing usage and verified Pod shutdown. It keeps
+  containment success separate from coding acceptance and promotes no default.
+
 - The [three-session repaired-remedy screen](evals/2026-11-04-remedy-repeat3/README.md)
   retains three hidden-check, health and completion passes, including a recovered
   502 with unknown usage. It records shared backend identity, setup observations

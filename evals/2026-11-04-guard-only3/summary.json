@@ -1,0 +1,23 @@
+{
+  "n": 3,
+  "all_hidden_pass": 0,
+  "health_pass": 3,
+  "settled": 3,
+  "joint_success": 0,
+  "completion_counts": {
+    "settled": 3
+  },
+  "requests_total": 63,
+  "requests_median": 19,
+  "output_total": null,
+  "output_known_n": 1,
+  "output_known_subset_sum": 4626,
+  "elapsed_total": 109.836,
+  "elapsed_median": 35.593,
+  "context_peak_known": 7792,
+  "context_known_n": 1,
+  "guard_refusals_total": 3,
+  "provider_trim_notes_total": 0,
+  "owned_containers_remaining": [],
+  "owned_volumes_remaining": []
+}

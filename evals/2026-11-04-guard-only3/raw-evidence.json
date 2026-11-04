@@ -1,0 +1,19 @@
+{
+  "release": "https://github.com/pauleveritt/mellum-worker/releases/tag/research-2026-11-04",
+  "asset": "guard-only3-20261104T161430Z.tar.gz",
+  "sha256": "23bbbecb96387217d2500ef54101b2cb4fdbf670a323cae5dda7d8d62ce58594",
+  "size_bytes": 1454132,
+  "source_commit": "9b974a84383a413563b7927bf7b1fd1e59e45855",
+  "archive_integrity": {
+    "members": 456,
+    "critical_files_byte_verified": 32
+  },
+  "scope": [
+    "three fresh foreground-guard-only sessions, no replacements",
+    "raw trace/session/workspace/checker/transport evidence",
+    "reused boundary/interaction proofs, pinned Pod backend build/probes/freeze and pre/post live identity",
+    "stopped Pod readback"
+  ],
+  "archive_policy": "No weights, private keys, user credential stores or FIXES.md. Credential-like content scan passed; no existing release asset replaced.",
+  "published_download_verified": false
+}

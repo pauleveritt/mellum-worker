@@ -1,0 +1,44 @@
+{
+  "repository_tests": {
+    "passed": 641,
+    "failed": 0,
+    "log": "runs/2026-11-04-guard-only3/repository-tests.log",
+    "duration_ms": 119103.661708
+  },
+  "docs_caps": {
+    "passed": 4,
+    "failed": 0
+  },
+  "backend_identity_pre_post_equal": true,
+  "measured_source_and_image_identity_verified": true,
+  "initial_payload_equal_to_original_vanilla_after_run_id_normalization": true,
+  "guard_only_interaction_observations_passed": 10,
+  "boundary_checks_passed": 27,
+  "provider_requests_checked": 63,
+  "max_tokens": 16384,
+  "sampling": [
+    1,
+    0.95,
+    20
+  ],
+  "native_guard_refusals": 3,
+  "native_refusals_match_record_counts": true,
+  "no_worker_prompt_trim_or_context_loader": true,
+  "cleanup": {
+    "owned_containers": 0,
+    "owned_volumes": 0,
+    "local_llama_server": false,
+    "tunnel": false,
+    "launch_exit_code": 0
+  },
+  "pod": {
+    "id": "bfnsf868qc593s",
+    "fresh_read_status": "EXITED",
+    "guardian_literal_target": true
+  },
+  "account": {
+    "pods": 9,
+    "all_exited": true,
+    "retained_persistent_gb": 450
+  }
+}

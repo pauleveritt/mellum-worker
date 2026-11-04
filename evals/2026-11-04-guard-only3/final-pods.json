@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-11-04T16:13:27.309Z",
+  "pagination": {
+    "hasNextPage": false,
+    "nextCursor": null
+  },
+  "pods": [
+    {
+      "id": "bfnsf868qc593s",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "x40gf9pjw2gw09",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "dnjioygj7izxh0",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "kmz813v3rm3f88",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "9vcvde4oilrref",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "wgt1xks8hypwgb",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "5ztijjtwz1l4i5",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "icrpuerli5mgih",
+      "status": "EXITED",
+      "persistent_gb": 50
+    },
+    {
+      "id": "adwa2g95zg24vx",
+      "status": "EXITED",
+      "persistent_gb": 50
+    }
+  ]
+}

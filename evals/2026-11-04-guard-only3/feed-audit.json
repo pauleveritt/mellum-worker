@@ -1,0 +1,93 @@
+{
+  "reference": "runs/vanilla-easy-20261104T141728Z-d1b67e/attempt-01/20261104T141734Z-easy-dba46a",
+  "normalization": "JSON sort_keys and literal run directory name replaced with RUN_ID; no other normalization",
+  "runs": [
+    {
+      "run_id": "20261104T161028Z-easy-1a7570",
+      "first_payload_identical_to_original_vanilla": true,
+      "normalized_payload_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab",
+      "read_calls": [
+        {
+          "name": "read",
+          "arguments": {
+            "path": "/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/README.md"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "pyproject.toml"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "specs/tech-stack.md"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "specs/mission.md"
+          }
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T161118Z-easy-db0bb4",
+      "first_payload_identical_to_original_vanilla": true,
+      "normalized_payload_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab",
+      "read_calls": [
+        {
+          "name": "read",
+          "arguments": {
+            "path": "pyproject.toml"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "specs/tech-stack.md"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "app.py"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "app.py"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "templates/index.html"
+          }
+        }
+      ]
+    },
+    {
+      "run_id": "20261104T161159Z-easy-a7d996",
+      "first_payload_identical_to_original_vanilla": true,
+      "normalized_payload_sha256": "ff43e75f117683217a0ef23a20e91ffbd6ca902970f7114a728aab629aa667ab",
+      "read_calls": [
+        {
+          "name": "read",
+          "arguments": {
+            "path": "pyproject.toml"
+          }
+        },
+        {
+          "name": "read",
+          "arguments": {
+            "path": "specs/tech-stack.md"
+          }
+        }
+      ]
+    }
+  ]
+}

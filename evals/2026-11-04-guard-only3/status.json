@@ -1,0 +1,9 @@
+{
+  "state": "complete",
+  "runs": [
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-guard-only3/remedy/20261104T161028Z-easy-1a7570",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-guard-only3/remedy/20261104T161118Z-easy-db0bb4",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-guard-only3/remedy/20261104T161159Z-easy-a7d996"
+  ],
+  "finished_at": "2026-11-04T16:12:44.795477+00:00"
+}

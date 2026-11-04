@@ -1,0 +1,50 @@
+{
+  "actions": [
+    "start",
+    "terminate"
+  ],
+  "args": "",
+  "cloud": "SECURE",
+  "cost": 3.99,
+  "createdAt": "2026-11-04T16:04:26.273Z",
+  "cudaVersion": "13.2",
+  "dataCenterId": "AP-IN-1",
+  "disk": 20,
+  "globalNetworking": {
+    "enabled": false
+  },
+  "gpu": {
+    "count": 1,
+    "id": "NVIDIA H100 80GB HBM3",
+    "memory": 251,
+    "vcpuCount": 28
+  },
+  "id": "bfnsf868qc593s",
+  "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+  "locked": false,
+  "mounts": {
+    "persistent": {
+      "path": "/workspace",
+      "size": 50
+    }
+  },
+  "name": "mellum-guard-only3-h100",
+  "ports": [
+    "22/tcp"
+  ],
+  "registry": null,
+  "runtime": null,
+  "ssh": {
+    "direct": null,
+    "proxy": {
+      "command": "ssh bfnsf868qc593s-6441213d@ssh.runpod.io",
+      "host": "ssh.runpod.io",
+      "port": 22,
+      "username": "bfnsf868qc593s-6441213d"
+    }
+  },
+  "startedAt": "2026-11-04T16:04:26.268Z",
+  "status": "EXITED",
+  "tags": [],
+  "template": null
+}
