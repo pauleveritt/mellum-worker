@@ -654,6 +654,21 @@ export function authorStepsPrompt(task: string): string {
 		"exact count, or a verbatim seed string or literal — assert that named thing DIRECTLY (import the " +
 		"module and check the attribute, its type, its length/count, and the exact seed values), as well as " +
 		"probing behaviour through any route or output.\n" +
+		"COVERAGE: the spec's requirements are the contract. A spec's own \"write tests\" line is a FLOOR, " +
+		"not the ceiling — assert EVERY requirement the step states, not just the checks the spec suggests. " +
+		"For any requirement about what a user SEES — a rendered label, badge, button, or the order items " +
+		"appear on a page — drive the real route and assert on the RESPONSE BODY (the rendered page), not " +
+		"only an in-memory object. Exercise the real end-to-end path: create through its own route, act " +
+		"through the route, then re-read through the route — do NOT mutate seed or fixture state in place. " +
+		"Each assertion must FAIL on the obvious wrong build (state stored but never rendered, an id " +
+		"recomputed from position, items silently reordered).\n" +
+		"NORTH STAR: in each stepNN.md, COPY the exact spec text — the requirement lines VERBATIM — that " +
+		"the step must satisfy, under a \"## Spec (verbatim)\" heading. That copied spec is the step's north " +
+		"star: write the step's test to assert each copied requirement, and quote the requirement in the " +
+		"assertion message so a failure names the exact spec line it breaks. Copy the spec's words, never a " +
+		"paraphrase. Also point each stepNN.md back to the original spec plan it came from — name the spec " +
+		"file and section (for example specs/roadmap.md and the phase) — so the step stays linked to the " +
+		"full plan, not just its own slice.\n" +
 		QUOTING_RULE + "\n" +
 		`Then write ${TODO_FILE} — a checklist with ONE UNCHECKED line per step, in order, each naming the ` +
 		"step doc and its test:\n" +
@@ -669,6 +684,34 @@ export function authorStepsPrompt(task: string): string {
 /** The step architect pass: split the spec into step docs + self-contained tests + a todo.md. */
 export function spawnAuthorSteps(task: string): Promise<string> {
 	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorStepsPrompt(task)}`], "architect: splitting the spec into steps");
+}
+
+/** The final spec-coverage pass: the architect re-reads the spec against the tests it wrote and ADDS
+ * any requirement it left unasserted, before the oracle is frozen. A harness-guaranteed pass, not a
+ * prose rule — for a fixed small model a guaranteed pass lands where a rule in the first prompt does
+ * not. It edits only the test files and may never weaken an assertion. */
+export function authorVerifyPrompt(task: string): string {
+	return (
+		"You are the ARCHITECT doing a FINAL SPEC-COVERAGE PASS. Do NOT write any implementation code.\n" +
+		"Re-read every spec or notes file in this directory, every step doc (stepNN.md), AND every " +
+		`${STEP_TEST_DIR}/test_step*.py you wrote. For EACH step, go through the spec's requirements for ` +
+		"that step ONE BY ONE and confirm each is asserted in that step's test. The requirements are the " +
+		"contract; the spec's own \"write tests\" suggestion is a FLOOR, not the ceiling. Where a requirement " +
+		"is unasserted or only partly checked, ADD the missing assertion to that step's test: assert a " +
+		"rendered requirement through the RESPONSE BODY (the real route's output), exercise the real " +
+		"end-to-end path (create → act → re-read through the routes) rather than mutating seed state, and " +
+		"make each check FAIL on the obvious wrong build. Confirm each stepNN.md quotes VERBATIM, under its " +
+		"\"## Spec (verbatim)\" heading, the spec requirements that step covers — its north star — and copy " +
+		"in any requirement line that is missing. Edit ONLY the step docs and test files; do NOT touch any " +
+		"implementation file, and do NOT weaken, delete, or make always-true any existing assertion. " +
+		QUOTING_RULE + "\n\n" +
+		`Task: ${task}`
+	);
+}
+
+/** The final spec-coverage pass as a spawned architect run. */
+export function spawnAuthorVerify(task: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorVerifyPrompt(task)}`], "architect: final spec-coverage pass");
 }
 
 /** The step docs paired with their numbered tests, ordered by step number. A doc with no matching
@@ -701,16 +744,24 @@ export function allStepsCmd(steps: Step[]): string {
 	return `uv run --with pytest python -m pytest ${steps.map((s) => s.test).join(" ")} -q`;
 }
 
-/** What the per-step worker is told: read your step doc, pass your step's test, keep earlier steps green. */
-export function stepWorkerBrief(steps: Step[], i: number): string {
+/** What the per-step worker is told: read your step doc, pass your step's test, keep earlier steps
+ * green. On a retry, `failure` carries the previous attempt's actual test output, handed back as the
+ * bugs to fix — so the worker fixes the real non-compliance instead of rebuilding blind. */
+export function stepWorkerBrief(steps: Step[], i: number, failure?: string): string {
 	const s = steps[i];
 	return (
 		`This is step ${s.n} of ${steps.length}. Read ${s.doc} — it is YOUR instructions for this step — ` +
 		`and BRIEF.md for the overall goal. Implement the solution so this step's test passes:\n  ${s.test}\n` +
 		(i > 0 ? "Earlier steps are already built and their tests pass — do NOT break them. " : "") +
 		`Do NOT edit any ${STEP_TEST_DIR}/test_step*.py file; they are the frozen oracle. ` +
-		"Work only inside this directory — do NOT read, search for, or copy files outside it. " +
-		`Run this exact command until every test passes, then stop:\n  ${stepTestCmd(s)}`
+		"You may also consult the original spec plan in this directory (the specs/ folder, a roadmap, " +
+		"AGENTS.md) for context — your step doc and its verbatim spec block are the contract, the full " +
+		"plan is there to refer to. Work only inside this directory — do NOT read, search for, or copy " +
+		"files outside it. " +
+		`Run this exact command until every test passes, then stop:\n  ${stepTestCmd(s)}` +
+		(failure
+			? `\n\nYour previous attempt did NOT pass. These are the failures (bugs) — your build does not comply with the spec. Fix them so every check passes:\n${failure.slice(-1500)}`
+			: "")
 	);
 }
 
@@ -723,6 +774,7 @@ export function renderTodo(steps: Step[], done: ReadonlySet<number>): string {
 
 export interface DoTaskStepsDeps extends DoTaskPhasedDeps {
 	authorSteps?: (task: string) => Promise<string>;
+	authorVerify?: (task: string) => Promise<string>;
 }
 
 /**
@@ -734,6 +786,7 @@ export interface DoTaskStepsDeps extends DoTaskPhasedDeps {
  */
 export async function doTaskSteps(task: string, deps: DoTaskStepsDeps = {}): Promise<string> {
 	const authorSteps = deps.authorSteps ?? spawnAuthorSteps;
+	const authorVerify = deps.authorVerify ?? spawnAuthorVerify;
 	const worker = deps.worker ?? spawnWorker;
 	const acceptance = deps.acceptance ?? runAcceptance;
 	const compile = deps.compile ?? compileTest;
@@ -749,15 +802,29 @@ export async function doTaskSteps(task: string, deps: DoTaskStepsDeps = {}): Pro
 		return `delegate(steps): the architect wrote no paired stepNN.md + ${STEP_TEST_DIR}/test_stepN_*.py files, so there is no step handover to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
 	}
 	// Every step test must parse before we freeze or run anything (the architect's nested-quote bug).
-	for (const s of steps) {
-		let err = await compile(resolve(cwd, s.test));
-		for (let i = 0; err && i < MAX_ORACLE_REPAIRS; i++) {
-			if (verbose()) process.stdout.write(`\n[handover] ${s.test} does not parse — asking the architect to fix the syntax (attempt ${i + 1}/${MAX_ORACLE_REPAIRS}):\n${err}\n`);
-			authorReport = await repair(err, s.test);
-			err = existsSync(resolve(cwd, s.test)) ? await compile(resolve(cwd, s.test)) : "(test missing)";
+	const ensureParses = async (): Promise<string | undefined> => {
+		for (const s of steps) {
+			let err = await compile(resolve(cwd, s.test));
+			for (let i = 0; err && i < MAX_ORACLE_REPAIRS; i++) {
+				if (verbose()) process.stdout.write(`\n[handover] ${s.test} does not parse — asking the architect to fix the syntax (attempt ${i + 1}/${MAX_ORACLE_REPAIRS}):\n${err}\n`);
+				authorReport = await repair(err, s.test);
+				err = existsSync(resolve(cwd, s.test)) ? await compile(resolve(cwd, s.test)) : "(test missing)";
+			}
+			if (err) return `${s.test} does not parse after ${MAX_ORACLE_REPAIRS} repair attempts: ${err}`;
 		}
-		if (err) return `delegate(steps): ${s.test} does not parse after ${MAX_ORACLE_REPAIRS} repair attempts, so it cannot be frozen or run.\n\n--- syntax error ---\n${err}\n\n--- architect output (tail) ---\n${authorReport.slice(-1200)}`;
-	}
+		return undefined;
+	};
+	let parseErr = await ensureParses();
+	if (parseErr) return `delegate(steps): ${parseErr}\n\n--- architect output (tail) ---\n${authorReport.slice(-1200)}`;
+
+	// Final spec-coverage pass: the architect re-reads the spec against every step test and fills any
+	// requirement it left unasserted (the "write-tests floor" miss), before the oracle is frozen. Then
+	// re-parse, since the pass just edited the tests.
+	if (verbose()) process.stdout.write(`\n[handover] final spec-coverage pass: the architect checks each step test against the spec…\n`);
+	authorReport = await authorVerify(task);
+	parseErr = await ensureParses();
+	if (parseErr) return `delegate(steps): after the spec-coverage pass, ${parseErr}\n\n--- architect output (tail) ---\n${authorReport.slice(-1200)}`;
+
 	const authorWall = secs(t0);
 	const authorStats = latestRunStats(cwd);
 
@@ -795,7 +862,8 @@ export async function doTaskSteps(task: string, deps: DoTaskStepsDeps = {}): Pro
 		// Each step is gated on its OWN self-contained test; a later regression is caught by the
 		// final full-suite run, not by mixing the cumulative set into a per-step gate.
 		for (let attempt = 0; attempt <= MAX_STEP_RETRIES && !passed; attempt++) {
-			await worker(stepWorkerBrief(steps, i)); // a fresh worker (fresh turn budget) each attempt
+			// A fresh worker each attempt; on a retry, hand back the previous failure as the bugs to fix.
+			await worker(stepWorkerBrief(steps, i, attempt > 0 ? output : undefined));
 			({ passed, output } = await acceptance(stepTestCmd(steps[i])));
 		}
 		const stepWall = secs(tStep);
@@ -1079,13 +1147,13 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
 /**
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
-export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; authorSteps?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
+export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; authorSteps?: (task: string) => Promise<string>; authorVerify?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
 	// How the primary farms a brief to a fresh worker: the real spawn, or a test's stand-in.
 	const runWorker = options.spawnWorker ?? spawnWorker;
 	// The full task-delegation loop (author the handover, then run the worker to pass) and its deps.
 	const doTaskDeps: DoTaskDeps = { author: options.author, worker: runWorker, acceptance: options.acceptance };
 	const doTaskPhasedDeps: DoTaskPhasedDeps = { authorPhases: options.authorPhases, worker: runWorker, acceptance: options.acceptance };
-	const doTaskStepsDeps: DoTaskStepsDeps = { authorSteps: options.authorSteps, worker: runWorker, acceptance: options.acceptance };
+	const doTaskStepsDeps: DoTaskStepsDeps = { authorSteps: options.authorSteps, authorVerify: options.authorVerify, worker: runWorker, acceptance: options.acceptance };
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;

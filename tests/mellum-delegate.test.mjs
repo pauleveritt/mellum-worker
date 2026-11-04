@@ -383,6 +383,7 @@ test("stepTestCmd is self-contained (that step only) and stepWorkerBrief points 
 	assert.match(b0, /do NOT edit any tests\/test_step\*\.py/i);
 	assert.doesNotMatch(b0, /do NOT break/i, "step 1 has no earlier step to break");
 	assert.match(b0, /only inside this directory/i);
+	assert.match(b0, /original spec|specs\/|roadmap/i, "the worker may still consult the original spec plan");
 	const b1 = stepWorkerBrief(steps, 1);
 	assert.match(b1, /step 2 of 2/);
 	assert.match(b1, /Read step02\.md/);
@@ -416,7 +417,7 @@ test("doTaskSteps runs one fresh worker per step against its own test, ticks tod
 		const acceptance = async (cmd) => { ran.push(cmd); return { passed: true, output: "ok" }; };
 		const compile = async () => undefined;
 		const shell = async () => ({ passed: false, output: "" }); // report no git
-		const r = await doTaskSteps("build it", { authorSteps, worker, acceptance, compile, shell });
+		const r = await doTaskSteps("build it", { authorSteps, authorVerify: async () => "", worker, acceptance, compile, shell });
 		assert.equal(briefs.length, 2, "one worker per step");
 		assert.match(ran[0], /test_step1_home\.py -q$/, "step 1 runs its own test only");
 		assert.match(ran[1], /test_step2_board\.py -q$/, "step 2 runs its own test only (self-contained)");
@@ -439,7 +440,7 @@ test("doTaskSteps stops at the first failing step and leaves its todo.md line un
 		};
 		const worker = async () => { workerCalls++; return "impl"; };
 		const acceptance = async (cmd) => ({ passed: !cmd.includes("test_step2"), output: "boom" }); // step 2 never passes
-		const r = await doTaskSteps("x", { authorSteps, worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		const r = await doTaskSteps("x", { authorSteps, authorVerify: async () => "", worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
 		assert.equal(workerCalls, 1 + (MAX_STEP_RETRIES + 1), "step 1 once, step 2 retried then given up, step 3 never");
 		assert.match(r, /steps done and tested: 1\/3/);
 		assert.match(r, /stopped at the first failing step/);
@@ -461,7 +462,7 @@ test("doTaskSteps declares done only when the final full-suite run is green, eve
 		const worker = async () => "impl";
 		// Each single-step run passes; the final full-suite run (both tests together) fails → not done.
 		const acceptance = async (cmd) => ({ passed: !(cmd.includes("test_step1_x.py") && cmd.includes("test_step2_x.py")), output: "regression" });
-		const r = await doTaskSteps("x", { authorSteps, worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		const r = await doTaskSteps("x", { authorSteps, authorVerify: async () => "", worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
 		assert.match(r, /steps done and tested: 2\/2/);
 		assert.match(r, /all ticked but the full suite did not pass/i);
 		assert.doesNotMatch(r, /100%/);
@@ -474,6 +475,74 @@ test("doTaskSteps refuses when the architect writes no paired step doc + test", 
 		const authorSteps = async () => { writeFileSync("step01.md", "x\n"); return "no test written"; }; // doc but no test
 		const r = await doTaskSteps("x", { authorSteps, worker: async () => "impl", acceptance: async () => ({ passed: true, output: "" }), compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
 		assert.match(r, /no paired stepNN\.md/i);
+	});
+});
+
+test("authorStepsPrompt makes the requirements the contract, not the spec's suggested tests, and asserts through the rendered surface", async () => {
+	const { authorStepsPrompt } = await load();
+	const p = authorStepsPrompt("build a board");
+	assert.match(p, /FLOOR, not the ceiling/i, "the spec's own 'write tests' line is a floor, not the ceiling");
+	assert.match(p, /EVERY requirement the step states/i);
+	assert.match(p, /RESPONSE BODY|rendered page/i, "a rendered requirement is asserted through the response body");
+	assert.match(p, /real end-to-end path|through the route/i, "exercise the real path, not seed mutation");
+	assert.match(p, /FAIL on the obvious wrong build/i, "red-on-the-miss");
+});
+
+test("authorStepsPrompt tells the architect to copy the verbatim spec text into each step as its north star", async () => {
+	const { authorStepsPrompt } = await load();
+	const p = authorStepsPrompt("build a board");
+	assert.match(p, /north star/i);
+	assert.match(p, /COPY the exact spec text|copy[^.]*verbatim/i, "the exact spec requirement lines are copied in");
+	assert.match(p, /Spec \(verbatim\)/, "under a verbatim-spec heading in the step doc");
+	assert.match(p, /original spec plan|point back/i, "each step stays linked to the original spec plan");
+});
+
+test("authorVerifyPrompt tells the architect to check each spec requirement is asserted, edit only tests, and never weaken", async () => {
+	const { authorVerifyPrompt } = await load();
+	const p = authorVerifyPrompt("build a board");
+	assert.match(p, /FINAL SPEC-COVERAGE PASS/i);
+	assert.match(p, /requirements are the contract/i);
+	assert.match(p, /FLOOR, not the ceiling/i);
+	assert.match(p, /ADD the missing assertion/i);
+	assert.match(p, /Edit ONLY the step docs and test files/i);
+	assert.match(p, /do NOT.*weaken/i, "existing assertions must not be weakened");
+	assert.match(p, /north star|verbatim/i, "checks the step quotes the spec verbatim as its north star");
+	assert.match(p, /SINGLE-quoted/i, "carries the quoting rule");
+});
+
+test("stepWorkerBrief feeds the actual failure back as bugs only on a retry", async () => {
+	const { stepWorkerBrief } = await load();
+	const steps = [{ n: 1, doc: "step01.md", test: "tests/test_step1_a.py" }];
+	const first = stepWorkerBrief(steps, 0);
+	assert.doesNotMatch(first, /bugs/i, "the first attempt carries no bug feedback");
+	const retry = stepWorkerBrief(steps, 0, "E   AssertionError: badge 'Resolved' not rendered");
+	assert.match(retry, /did NOT pass/i);
+	assert.match(retry, /bugs/i);
+	assert.match(retry, /badge 'Resolved' not rendered/, "the real failure is handed back verbatim");
+});
+
+test("doTaskSteps runs a final spec-coverage pass before freezing and feeds the failure back on retry", async () => {
+	const { doTaskSteps } = await load();
+	await inTempCwd(async () => {
+		let verifyCalled = 0;
+		const briefs = [];
+		const authorSteps = async () => {
+			mkdirSync("tests", { recursive: true });
+			writeFileSync("step01.md", "build home\n");
+			writeFileSync("tests/test_step1_home.py", "def t():\n    assert True\n");
+			return "wrote 1 step";
+		};
+		const authorVerify = async () => { verifyCalled++; return "coverage pass done"; };
+		const worker = async (b) => { briefs.push(b); return "impl"; };
+		let n = 0;
+		// First attempt fails (hands back the bug), retry passes; then the final full-suite run passes.
+		const acceptance = async () => ({ passed: ++n > 1, output: "E   AssertionError: badge not rendered" });
+		const r = await doTaskSteps("x", { authorSteps, authorVerify, worker, acceptance, compile: async () => undefined, shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(verifyCalled, 1, "the final spec-coverage pass ran once, before the worker loop");
+		assert.equal(briefs.length, 2, "the worker retried after the first failure");
+		assert.doesNotMatch(briefs[0], /bugs/i, "first attempt: no bug feedback");
+		assert.match(briefs[1], /badge not rendered/, "retry: the actual failure is fed back as bugs");
+		assert.match(r, /steps done and tested: 1\/1/);
 	});
 });
 

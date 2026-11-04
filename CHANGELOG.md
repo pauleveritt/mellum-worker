@@ -17,6 +17,15 @@ Versions match git tags; pin one in both install lines.
   the run is "done" only when every step is ticked AND a final full run of all step
   tests is green. The architect derives the steps from the spec, so it stays
   agnostic. Default (unset) and `MELLUM_DELEGATE_PHASED=1` are unchanged.
+  The per-step oracle is made a superset of the spec, not the spec's own thin
+  "write tests" suggestion: the architect copies the exact requirement text
+  **verbatim** into each `stepNN.md` (under a "## Spec (verbatim)" heading — the
+  step's north star), asserts every requirement through the rendered response
+  (not just in-memory state) over the real end-to-end path, and then runs a
+  **final spec-coverage pass** that re-reads the spec against each test and fills
+  any requirement it left unasserted before the oracle is frozen. When a step's
+  build does not comply, the worker's retry now carries the actual test failures
+  back as the **bugs to fix**, rather than rebuilding blind.
 
 - **Code-eval remedies in the delegation workers (`MELLUM_DELEGATE_REMEDY`).** A
   spawned delegation worker can now carry the measured remedy units — set
