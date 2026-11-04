@@ -896,6 +896,150 @@ export async function doTaskSteps(task: string, deps: DoTaskStepsDeps = {}): Pro
 	].join("\n");
 }
 
+// ── Plan delegation, no per-step tests (MELLUM_DELEGATE_PLAN=1) ──────────────────
+// The simplest shape: the architect splits the spec into small ordered step docs (stepNN.md, each
+// carrying the verbatim spec it covers and a link back to the plan), and a fresh worker builds each
+// step from its doc. No per-step test, no freeze, no verify pass — the oracle is the suite's hidden
+// grader at the end, and whether that is enough without a per-step gate is the open, measured
+// question. Simpler than doTaskSteps; a candidate to replace it if it grades as well.
+
+export interface PlanStep { n: number; doc: string; }
+
+/** The architect prompt for plan mode: split the spec into step docs only — no tests. */
+export function authorPlanPrompt(task: string): string {
+	return (
+		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code and do NOT " +
+		"write any tests.\n" +
+		"Read the task below AND every spec or notes file already in this directory (a specs/ folder, " +
+		"AGENTS.md, a roadmap). Break the WHOLE project into SMALL ORDERED STEPS — the smallest chunks " +
+		"that each add one working slice (step 1 is the first slice; each later step adds the next).\n" +
+		"For each step N (N starts at 1, contiguous — 1, 2, 3, …) write ONE file:\n" +
+		"  stepNN.md  (zero-padded: step01.md, step02.md, …) — the instructions for THAT chunk alone: " +
+		"what to build, which files, and the EXACT named contracts it must satisfy (module, variable, " +
+		"class, field and collection names, exact counts, verbatim seed strings).\n" +
+		"In each stepNN.md, COPY the exact spec text — the requirement lines VERBATIM — that the step must " +
+		"satisfy, under a \"## Spec (verbatim)\" heading, and point back to the original spec plan it came " +
+		"from (name the spec file and section, for example specs/roadmap.md and the phase). Copy the " +
+		"spec's words, never a paraphrase.\n" +
+		`Then write ${TODO_FILE} — a checklist with ONE UNCHECKED line per step, in order (- [ ] step01 — ` +
+		"<title>). And write BRIEF.md — 2 to 4 sentences on what to build overall and which files. Write " +
+		`ONLY the step docs, ${TODO_FILE} and BRIEF.md — no tests, no implementation files. Before you ` +
+		"stop, confirm the steps are contiguous from 1 and together cover the whole spec.\n\n" +
+		`Task: ${task}`
+	);
+}
+
+/** The plan architect pass as a spawned run. */
+export function spawnAuthorPlan(task: string): Promise<string> {
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPlanPrompt(task)}`], "architect: splitting the spec into step docs (no tests)");
+}
+
+/** The step docs (stepNN.md) in the cwd, ordered by step number. No paired test is required. */
+export function listStepDocs(cwd: string): PlanStep[] {
+	let docs: string[] = [];
+	try { docs = readdirSync(cwd); } catch { return []; }
+	const steps: PlanStep[] = [];
+	for (const f of docs) {
+		const m = STEP_DOC_RE.exec(f);
+		if (m) steps.push({ n: Number(m[1]), doc: f });
+	}
+	return steps.sort((a, b) => a.n - b.n);
+}
+
+/** What the plan-mode worker is told: build THIS step from its doc; no test to run. */
+export function planWorkerBrief(steps: PlanStep[], i: number): string {
+	const s = steps[i];
+	return (
+		`This is step ${s.n} of ${steps.length}. Read ${s.doc} — it is YOUR instructions for this step, ` +
+		"including the exact spec it must satisfy (its \"## Spec (verbatim)\" block) — and BRIEF.md for the " +
+		"overall goal. Build the solution for this step so every requirement in its spec block is met. " +
+		(i > 0 ? "Earlier steps are already built — do NOT break them. " : "") +
+		"You may also consult the original spec plan in this directory (the specs/ folder, a roadmap, " +
+		"AGENTS.md) for context. Work only inside this directory — do NOT read, search for, or copy files " +
+		"outside it. Implement the step completely, then stop."
+	);
+}
+
+/** The plan-mode todo ledger the harness owns: one line per step, ticked as each is built. */
+export function renderPlanTodo(steps: PlanStep[], done: ReadonlySet<number>): string {
+	const body = steps.map((s) => `- [${done.has(s.n) ? "x" : " "}] step${String(s.n).padStart(2, "0")} — ${s.doc}`).join("\n");
+	const n = steps.filter((s) => done.has(s.n)).length;
+	return `# TODO — ${n}/${steps.length} steps built\n\n${body}\n`;
+}
+
+export interface DoTaskPlanDeps {
+	authorPlan?: (task: string) => Promise<string>;
+	worker?: (brief: string) => Promise<string>;
+	shell?: (cmd: string) => Promise<{ passed: boolean; output: string }>;
+}
+
+/**
+ * Plan delegation (MELLUM_DELEGATE_PLAN=1): the architect splits the spec into step docs (no tests),
+ * and a fresh worker builds each step from its doc. The harness checkpoints each step with git and
+ * ticks todo.md as it goes — there is no per-step gate, so "built" is the worker finishing, not a test
+ * passing. The suite's hidden grader is the only oracle, applied at the end; this is the arm that
+ * measures whether the test machinery is worth its complexity.
+ */
+export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promise<string> {
+	const authorPlan = deps.authorPlan ?? spawnAuthorPlan;
+	const worker = deps.worker ?? spawnWorker;
+	const shell = deps.shell ?? runAcceptance;
+	const cwd = process.cwd();
+	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
+
+	const t0 = Date.now();
+	const authorReport = await authorPlan(task);
+	const steps = listStepDocs(cwd);
+	if (!steps.length) {
+		return `delegate(plan): the architect wrote no stepNN.md step docs, so there is no plan to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+	}
+	const authorWall = secs(t0);
+	const authorStats = latestRunStats(cwd);
+
+	const done = new Set<number>();
+	const writeTodo = () => { try { writeFileSync(resolve(cwd, TODO_FILE), renderPlanTodo(steps, done)); } catch {} };
+	writeTodo();
+	if (verbose()) {
+		for (const s of steps) { try { process.stdout.write(`\n──── ${s.doc} ────\n${readFileSync(resolve(cwd, s.doc), "utf8")}\n`); } catch {} }
+		try { process.stdout.write(`\n──── BRIEF.md ────\n${readFileSync(resolve(cwd, "BRIEF.md"), "utf8")}\n`); } catch {}
+	}
+
+	const haveGit = (await shell("command -v git >/dev/null 2>&1")).passed;
+	if (haveGit) {
+		try {
+			const gi = resolve(cwd, ".gitignore");
+			const have = existsSync(gi) ? readFileSync(gi, "utf8") : "";
+			const add = [".venv/", "__pycache__/", "*.pyc", "grader_tests/"].filter((l) => !have.includes(l));
+			if (add.length) writeFileSync(gi, (have && !have.endsWith("\n") ? have + "\n" : have) + add.join("\n") + "\n");
+		} catch {}
+		await shell('git init -q && git add -A && git -c user.email=w@w -c user.name=w commit -q -m handover --no-verify || true');
+	}
+
+	const stage = (name: string, stats: { turns: number } | undefined, wall: number) =>
+		`${name} ${stats?.turns != null ? `${stats.turns} turns` : "turns n/a"}/${wall}s`;
+	const lines: string[] = [];
+	let prevId = authorStats?.id;
+	for (let i = 0; i < steps.length; i++) {
+		const tStep = Date.now();
+		await worker(planWorkerBrief(steps, i)); // a fresh worker (fresh turn budget) builds this step
+		const stepWall = secs(tStep);
+		const ws = latestRunStats(cwd);
+		const wStats = ws && ws.id !== prevId ? ws : undefined;
+		prevId = ws?.id ?? prevId;
+		done.add(steps[i].n);
+		writeTodo();
+		if (haveGit) await shell(`git add -A && git -c user.email=w@w -c user.name=w commit -q -m "step ${steps[i].n}" --no-verify || true`);
+		lines.push(`step ${steps[i].n}/${steps.length} (${steps[i].doc}): built · ${stage("worker", wStats, stepWall)}`);
+	}
+	const totalWall = secs(t0);
+	return [
+		`handover (plan): ${steps.length} step doc${steps.length === 1 ? "" : "s"} + ${TODO_FILE} + BRIEF.md (no tests).`,
+		`steps built: ${done.size}/${steps.length} — grade with the suite's hidden oracle (there is no per-step gate).`,
+		...lines,
+		`turns/wall: ${stage("architect", authorStats, authorWall)} · total ${totalWall}s`,
+	].join("\n");
+}
+
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
 
 /**
@@ -1147,13 +1291,14 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
 /**
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
-export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; authorSteps?: (task: string) => Promise<string>; authorVerify?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
+export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch; spawnWorker?: (brief: string) => Promise<string>; author?: (task: string) => Promise<string>; authorPhases?: (task: string) => Promise<string>; authorSteps?: (task: string) => Promise<string>; authorVerify?: (task: string) => Promise<string>; authorPlan?: (task: string) => Promise<string>; acceptance?: (cmd: string) => Promise<{ passed: boolean; output: string }> } = {}) {
 	// How the primary farms a brief to a fresh worker: the real spawn, or a test's stand-in.
 	const runWorker = options.spawnWorker ?? spawnWorker;
 	// The full task-delegation loop (author the handover, then run the worker to pass) and its deps.
 	const doTaskDeps: DoTaskDeps = { author: options.author, worker: runWorker, acceptance: options.acceptance };
 	const doTaskPhasedDeps: DoTaskPhasedDeps = { authorPhases: options.authorPhases, worker: runWorker, acceptance: options.acceptance };
 	const doTaskStepsDeps: DoTaskStepsDeps = { authorSteps: options.authorSteps, authorVerify: options.authorVerify, worker: runWorker, acceptance: options.acceptance };
+	const doTaskPlanDeps: DoTaskPlanDeps = { authorPlan: options.authorPlan, worker: runWorker };
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;
@@ -1366,6 +1511,13 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 			// and the frozen acceptance test is the verdict. Only a spawned child (CHILD_ENV) runs the
 			// task in this session, below — so no recursion.
 			if (process.env[CHILD_ENV] !== "1") {
+				// MELLUM_DELEGATE_PLAN=1 runs the simplest loop: the architect splits the spec into step
+				// docs (no tests) and a fresh worker builds each from its doc; graded only by the hidden oracle.
+				if (process.env.MELLUM_DELEGATE_PLAN === "1") {
+					say(ctx, "mellum: splitting the spec into step docs (no tests), then a fresh worker builds each…");
+					say(ctx, await doTaskPlan(want, doTaskPlanDeps));
+					return;
+				}
 				// MELLUM_DELEGATE_STEPS=1 runs the step-file loop: the architect splits the spec into
 				// small ordered steps (a doc + a self-contained test each) and a todo.md ledger, and
 				// each step gets its own fresh worker, ticked and checkpointed as the harness verifies it.

@@ -6,6 +6,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **Plan delegation (`MELLUM_DELEGATE_PLAN=1`) — the simplest shape, no per-step
+  tests.** The architect splits the spec into small ordered step docs
+  (`stepNN.md`, each carrying the verbatim spec it covers and a link back to the
+  plan) and a `todo.md`, and a fresh worker builds each step from its doc. The
+  harness git-checkpoints each step and ticks the ledger as it goes — there is no
+  per-step test, freeze, or verify pass; the suite's hidden grader is the only
+  oracle, applied at the end. It is the arm that measures whether the per-step
+  test machinery of `MELLUM_DELEGATE_STEPS=1` is worth its complexity. Default
+  (unset), `MELLUM_DELEGATE_STEPS=1` and `MELLUM_DELEGATE_PHASED=1` are unchanged.
+
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole
   spec into the smallest ordered chunks, each written as its own `stepNN.md`

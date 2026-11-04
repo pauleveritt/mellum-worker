@@ -567,3 +567,66 @@ test("remedyArgs renders the resolved units as -e file arguments for the spawned
 	assert.match(args[1], /remedies\/prompt\/python-developer\.ts$/);
 	assert.deepEqual(remedyArgs(""), [], "no remedies when the spec is empty (bare worker, the measured default)");
 });
+
+// ── Plan delegation, no per-step tests (MELLUM_DELEGATE_PLAN=1) ──────────────────
+
+test("authorPlanPrompt splits the spec into step docs with the verbatim spec and writes NO tests", async () => {
+	const { authorPlanPrompt } = await load();
+	const p = authorPlanPrompt("build a board");
+	assert.match(p, /SMALL ORDERED STEPS/i);
+	assert.match(p, /stepNN\.md/);
+	assert.match(p, /Spec \(verbatim\)/, "the exact spec text is copied into each step doc");
+	assert.match(p, /todo\.md/i);
+	assert.match(p, /do NOT write (any )?tests|no test files/i, "the plan mode writes no tests");
+	assert.doesNotMatch(p, /test_step/i, "no per-step test files are requested");
+});
+
+test("listStepDocs returns the step docs by number, no paired test required", async () => {
+	const { listStepDocs } = await load();
+	await inTempCwd(async (dir) => {
+		for (const f of ["step02.md", "step01.md", "step10.md", "notes.md"]) writeFileSync(join(dir, f), "x\n");
+		assert.deepEqual(listStepDocs(dir), [
+			{ n: 1, doc: "step01.md" },
+			{ n: 2, doc: "step02.md" },
+			{ n: 10, doc: "step10.md" },
+		]);
+	});
+});
+
+test("planWorkerBrief tells the worker to build its step from the doc and consult the spec, with no test gate", async () => {
+	const { planWorkerBrief } = await load();
+	const steps = [{ n: 1, doc: "step01.md" }, { n: 2, doc: "step02.md" }];
+	const b0 = planWorkerBrief(steps, 0);
+	assert.match(b0, /step 1 of 2/);
+	assert.match(b0, /Read step01\.md/);
+	assert.match(b0, /original spec|specs\//i, "the worker may consult the original spec plan");
+	assert.match(b0, /only inside this directory/i);
+	assert.doesNotMatch(b0, /pytest|test passes/i, "there is no per-step test to run");
+	assert.doesNotMatch(planWorkerBrief(steps, 0), /do NOT break/i);
+	assert.match(planWorkerBrief(steps, 1), /do NOT break/i, "a later step must not break earlier ones");
+});
+
+test("doTaskPlan runs one worker per step doc, ticks todo and checkpoints, with no acceptance gate", async () => {
+	const { doTaskPlan } = await load();
+	await inTempCwd(async (dir) => {
+		const briefs = [];
+		const authorPlan = async () => { writeFileSync("step01.md", "home\n"); writeFileSync("step02.md", "board\n"); return "wrote 2 step docs"; };
+		const worker = async (b) => { briefs.push(b); return "built"; };
+		const shell = async () => ({ passed: false, output: "" }); // git off
+		const r = await doTaskPlan("build it", { authorPlan, worker, shell });
+		assert.equal(briefs.length, 2, "one worker per step doc");
+		assert.match(r, /steps built: 2\/2/);
+		const todo = readFileSync(join(dir, "todo.md"), "utf8");
+		assert.match(todo, /2\/2 steps built/);
+		assert.doesNotMatch(todo, /\[ \]/, "every step is ticked");
+	});
+});
+
+test("doTaskPlan refuses when the architect writes no step docs", async () => {
+	const { doTaskPlan } = await load();
+	await inTempCwd(async () => {
+		const authorPlan = async () => "nothing written";
+		const r = await doTaskPlan("x", { authorPlan, worker: async () => "built", shell: async () => ({ passed: false, output: "" }) });
+		assert.match(r, /no step(NN)?\.?md|no step docs/i);
+	});
+});
