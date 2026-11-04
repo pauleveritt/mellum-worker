@@ -117,6 +117,8 @@ def test_baseline_resolves_pin_and_fixed_arguments(tmp_path):
 
 
 def _flight_fixture(monkeypatch):
+    # These are collector state-machine fixtures, not a Docker qualification.
+    monkeypatch.setattr(baseline, 'require_containment', lambda *args: None)
     freeze = json.loads(baseline.FREEZE.read_text())
     raw = harness.CODE.parents[1] / 'runs/2026-11-03-runpod-qualification'
     # Complete HTTP fixture saved by qualification; not a model response oracle.

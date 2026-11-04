@@ -28,6 +28,9 @@ baseline command fails closed without the contained runner and qualification.
   and loopback network. Use `--network none`, no host mounts, no Docker socket,
   read-only image, non-root agent, dropped capabilities, no privilege escalation,
   and bounded memory/PIDs. Never fall back to native execution.
+  Scratch uses a uniquely labeled, 1 GiB tmpfs-backed Docker volume; it has no
+  host bind mount. Record ownership before creation and remove the volume with
+  its container. This permits paused export, which direct `--tmpfs` does not.
 - Only the attempt's prepared workspace/profile and instrument reach the agent.
   Hidden grader source is supplied only after model execution has stopped, in a
   separate grading container with the same boundary. Grading imports model code
@@ -47,6 +50,7 @@ baseline command fails closed without the contained runner and qualification.
 - Persist exact container identity before execution; remove the whole owned
   container on exit, stall, deadline and recovery. PID/workspace sweeps do not
   establish containment. An interrupted attempt remains pending review.
+  The host enforces execution/checker timeouts even if inner processes stop.
 
 ## Qualification and provenance
 

@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- A temporary Docker measurement backend confines Pi tools and grading to
+  separate private containers. Trusted collection now requires a matching
+  qualified image and rejects native references; the installed worker gains no
+  Docker dependency. A restricted inference relay retains transport boundaries.
+
 - The [Phase 1 Vanilla/worker comparison](evals/2026-11-03-worker-easy/README.md)
   retains six attempts per arm, separate correctness/completion and measured
   request/time budgets. Failed and recovered-error attempts remain included;

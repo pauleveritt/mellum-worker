@@ -262,6 +262,14 @@ def test_context_prefers_raw_prompt_usage_and_keeps_native_uncached(tmp_path):
     assert harness.report(tmp_path)["context"] == 8120
 
 
+def test_context_requires_unique_usage_for_every_dispatch(tmp_path):
+    reply = {"type":"message_end", "requestId":"r1", "message":{
+        "role":"assistant", "usage":{"input":1234}}}
+    _write_trace(tmp_path, [{"type":"provider_request", "requestId":"r1"},
+        {"type":"provider_request", "requestId":"r2"}, reply, reply])
+    assert harness.report(tmp_path)["context"] is None
+
+
 def test_report_counts_the_trace(tmp_path):
     run_dir = tmp_path / "r"
     run_dir.mkdir()

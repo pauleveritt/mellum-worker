@@ -754,6 +754,12 @@ def context_usage(rows: list[dict]) -> dict:
         full.append(value if token(value) else None)
     requests = [r for r in rows if r.get("type") == "provider_request"]
     complete = bool(full) and all(v is not None for v in full) and len(full) == len(requests)
+    if any(r.get("requestId") for r in requests + replies):
+        request_ids = [r.get("requestId") for r in requests]
+        reply_ids = [r.get("requestId") for r in replies]
+        complete = (complete and None not in request_ids and None not in reply_ids
+                    and len(set(request_ids)) == len(request_ids)
+                    and len(set(reply_ids)) == len(reply_ids) and set(request_ids) == set(reply_ids))
     return {"context": max(full) if complete else None,
             "context_uncached": max(uncached) if uncached else None}
 
@@ -971,20 +977,30 @@ def _run_sessions(
     extras: list[Path] = (),
     context_files: bool = False,
     grade_versions: dict[str, str] | None = None,
+    isolation_image: str | None = None,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
         print(f"Starting {suite.name} / {arm} session", flush=True)
-        run_dir = run_suite(suite, runs_dir=runs_dir, pi_binary=pi_binary,
+        runner = run_suite
+        containment_options = {}
+        if isolation_image:
+            from containment import run_contained, grade_contained
+            runner = run_contained
+            containment_options["image"] = isolation_image
+        run_dir = runner(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
-                            context_files=context_files)
+                            context_files=context_files, **containment_options)
         execution = json.loads((run_dir / "execution.json").read_text())
         can_grade = execution["cleanup_ok"]
-        grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
+        if isolation_image and can_grade:
+            grades, scored = grade_contained(run_dir, suite, isolation_image, grade_versions)
+        else:
+            grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
                   grade(run_dir / "workspace")) if grade_run and can_grade else []
-        scored = (score_details(run_dir, suite, versions=grade_versions) if grade_versions else
+            scored = (score_details(run_dir, suite, versions=grade_versions) if grade_versions else
                   score_details(run_dir, suite)) if can_grade else None
         tests_passed, tail, missing, checks_ran = (scored if scored is not None else
             (False, "cleanup failed; grading withheld", list(suite.expected), False))
@@ -1012,6 +1028,8 @@ def _run_sessions(
             metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
         model_file = run_dir / "model.txt"
         record = {
+            "isolation": {"backend": "temporary-docker", "image": isolation_image} if isolation_image else {"backend": "unconfined"},
+            "instrumentation_error": "mellum-trace:" in (run_dir / "stdout.txt").read_text(errors="replace"),
             "suite": suite.name,
             "arm": arm,
             "model": model_file.read_text().strip() if model_file.is_file() else None,
@@ -1158,12 +1176,14 @@ def _print_grades(grades: list[tuple[str, bool, str]]) -> None:
 def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
                      exclude: str | None = None, count: str | None = None,
                      reason: str | None = None, arm: str = "vanilla",
-                     reference: Path | None = None) -> int:
+                     reference: Path | None = None, isolation_image: str | None = None,
+                     isolation_qualification: Path | None = None) -> int:
     import baseline
     if arm not in {"vanilla", "worker"} or (arm == "worker") != (reference is not None):
         raise SystemExit("worker collection requires --reference; Vanilla collection uses no reference")
     if (exclude or count or reason) and resume is None:
         raise SystemExit("classification requires --resume and an explicit --reason")
+    boundary = baseline.require_containment(isolation_image, isolation_qualification) if not dry_run else None
     repo = CODE.parents[1]
     pi = baseline.resolve_pinned_pi(repo)
     config = json.loads(baseline.FREEZE.read_text())
@@ -1178,15 +1198,24 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
         return 0
     root = BASELINE_RUNS.resolve()
     with baseline.collection_lock(root):
-        recovered = baseline.reap_stale_runs(root)
+        if boundary:
+            from containment import recover
+            recover(root)
+        recovered = [] if boundary else baseline.reap_stale_runs(root)
         if recovered:
             print(f"Recovered {len(recovered)} stale owned runs", flush=True)
         print("Checking pinned runtime, backend, weight hashes and checker versions", flush=True)
         flight = baseline.preflight(Path(pi["path"]), PROFILE)
         current = baseline.create_manifest(repo, flight, arm=arm)
+        if boundary:
+            current["material"]["isolation"] = boundary
+            flight["checkers"] = boundary["runtime"]["checkers"]
+            current["material"]["checkers"] = flight["checkers"]
         if reference is not None:
             baseline.attach_reference(current, reference)
-        exec_path = current["material"].get("runtime", {}).get("exec_path")
+        exec_path = (boundary["runtime"]["execPath"] if boundary else
+                     current["material"].get("runtime", {}).get("exec_path"))
+        execution_pi = boundary["runtime"]["pi"] if boundary else pi
         if resume is not None:
             batch = resume.resolve()
             if batch.parent != root or not batch.name.startswith(f"{arm}-easy-"):
@@ -1203,14 +1232,19 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             (batch / "profile/settings.json").write_text(json.dumps(flight["profile_settings"], indent=2)+"\n")
         attempts = saved["attempts"]
         baseline.verify_private_profile(batch, saved["material"])
-        baseline.reconcile_attempts(batch, attempts, pi, arm=arm, exec_path=exec_path)
+        baseline.reconcile_attempts(batch, attempts, execution_pi, arm=arm, exec_path=exec_path,
+                                   **({"isolation":boundary} if boundary else {}))
         if exclude or count:
             baseline.resolve_attempt(attempts, exclude or count, "excluded" if exclude else "counted", reason or "")
         baseline.write_json(batch / "batch.json", saved)
         if any(a["state"] == "pending-review" for a in attempts):
             raise SystemExit(f"unclassified attempt retained in {batch}; inspect evidence, then --resume with --count/--exclude and --reason")
         suite = load_suite(SUITES, "easy")
-        ok, qualification = qualify(suite)
+        if boundary:
+            from containment_qualification import qualify_grader
+            ok, qualification = qualify_grader(suite, isolation_image)
+        else:
+            ok, qualification = qualify(suite)
         baseline.write_json(batch / "qualification.json", {"qualified":ok,"results":qualification})
         if not ok:
             raise SystemExit("Easy grader did not qualify; no model sessions launched")
@@ -1226,7 +1260,8 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
             baseline.write_json(batch / "batch.json", saved)
             results = _run_sessions(suite, runs_dir=batch / directory, pi_binary=pi["path"],
                 repeat=1, grade_run=True, deadline=600, stall=180, arm=arm,
-                profile=batch / "profile", grade_versions=flight["checkers"])
+                profile=batch / "profile", grade_versions=flight["checkers"],
+                **({"isolation_image":isolation_image} if boundary else {}))
             run = results[0][0]
             record = json.loads((run / "run.json").read_text())
             try:
@@ -1237,7 +1272,8 @@ def collect_baseline(*, resume: Path | None = None, dry_run: bool = False,
                                reason=f"post-execution integrity failed: {error}")
                 baseline.write_json(batch / "batch.json", saved)
                 raise
-            identity_ok = baseline.verify_trace_identity(run, pi, arm=arm, exec_path=exec_path)
+            identity_ok = baseline.verify_trace_identity(run, execution_pi, arm=arm, exec_path=exec_path,
+                **({"isolation":boundary} if boundary else {}))
             state, explanation = baseline.classify_attempt(record, identity_ok=identity_ok)
             attempt.update(run_id=run.name, path=str(run.relative_to(batch)), state=state,
                            reason=explanation, identity_ok=identity_ok, cleanup_ok=record.get("cleanup_ok"))
@@ -1273,6 +1309,8 @@ def build_parser() -> argparse.ArgumentParser:
     decisions.add_argument("--exclude", metavar="RUN_ID")
     decisions.add_argument("--count", metavar="RUN_ID")
     baseline_parser.add_argument("--reason")
+    baseline_parser.add_argument("--isolation-image")
+    baseline_parser.add_argument("--isolation-qualification", type=Path)
     run = sub.add_parser("run", help="run one eval suite or all of them")
     qualify_p = sub.add_parser("qualify", help="prove a suite's grader both ways")
     qualify_p.add_argument("--suite", required=True)
@@ -1316,7 +1354,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "baseline":
         return collect_baseline(resume=args.resume, dry_run=args.dry_run,
                                 exclude=args.exclude, count=args.count, reason=args.reason,
-                                arm=args.arm, reference=args.reference)
+                                arm=args.arm, reference=args.reference,
+                                isolation_image=args.isolation_image,
+                                isolation_qualification=args.isolation_qualification)
 
     if args.command == "qualify":
         suite = load_suite(args.suites_dir, args.suite)

@@ -474,3 +474,6 @@ to its own experiment. A fresh workspace/private profile and post-run cleanup
 do not establish this boundary: the agent can still reach shared host services
 when its native tools run with the host user's access. Isolation is a harness
 safety guarantee to qualify, independent of optional model-facing remedies.
+The temporary Docker measurement backend qualifies this boundary using unrelated
+host/sibling sentinels, a fake provider and separately contained grading; it
+requires a fresh reference shared by later arms.

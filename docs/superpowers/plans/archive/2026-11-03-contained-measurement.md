@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.33
 cycle: 1
-lifecycle: active
+lifecycle: closed
 ---
 
 # Contained measurement implementation plan
@@ -43,11 +43,11 @@ Files: `learn/code/harness.py`, `extensions/mellum-recorder.ts`, new
 Interfaces: `context_usage(rows)` returns full/uncached maxima; observer
 `installTransportObserver({write, requestId})` returns an unsubscribe function.
 
-- [ ] Add failing cached/raw/missing/error usage regressions and diagnostic
+- [x] Add failing cached/raw/missing/error usage regressions and diagnostic
   refusal/header/trailer/error/redaction/noninterference tests; observe RED.
-- [ ] Implement conservative accounting and passive Undici channels, with
+- [x] Implement conservative accounting and passive Undici channels, with
   per-request identity and visible sink failures; preserve output accounting.
-- [ ] Run targeted tests; update changelog/FIXES and commit/push this fix.
+- [x] Run targeted tests; update changelog/FIXES and commit/push this fix.
 
 ## Task 2: Contained execution and inference relay
 
@@ -57,14 +57,14 @@ utilities; new `learn/code/tests/test_containment.py` and Node relay tests.
 Interfaces: runtime inspect/build pins image; attempt create/execute/export/remove
 owns exact container IDs. A checker runner executes only in a grading container.
 
-- [ ] Add failing policy, safe extraction, route restriction, streaming and
+- [x] Add failing policy, safe extraction, route restriction, streaming and
   ownership regressions; observe RED before implementations.
-- [ ] Build image without hidden graders; implement non-root/networkless
+- [x] Build image without hidden graders; implement non-root/networkless
   execution, bounded exports and relay over exec pipes. Restrict routes to
   inference; preserve bytes and retain upstream boundaries/correlation IDs.
-- [ ] Prove edits, subprocesses, private loopback, fake SSE and grading; inject
+- [x] Prove edits, subprocesses, private loopback, fake SSE and grading; inject
   refusal/reset/truncation. Verify no real inference and no native fallback.
-- [ ] Update changelog/FIXES and commit/push the contained runner.
+- [x] Update changelog/FIXES and commit/push the contained runner.
 
 ## Task 3: Harness integration and qualification gate
 
@@ -74,13 +74,13 @@ qualification command/docs and compact qualification results.
 Interfaces: explicit image on safe runs; baseline requires exact policy/image
 qualification, freezes it in material and rejects native references/resume drift.
 
-- [ ] Add failing collector fail-closed, reference/resume drift, contained
+- [x] Add failing collector fail-closed, reference/resume drift, contained
   grading and exact-owned-container recovery regressions; observe RED.
-- [ ] Integrate execution/graders and image/runtime provenance; preserve old
+- [x] Integrate execution/graders and image/runtime provenance; preserve old
   native educational behavior with explicit unconfined provenance.
-- [ ] Run real host/sibling sentinel qualification and interrupted recovery on
+- [x] Run real host/sibling sentinel qualification and interrupted recovery on
   this Mac. Retain compact evidence; failure blocks counted collection.
-- [ ] Run targeted tests, full npm suite, docs caps and site build. Obtain a
+- [x] Run targeted tests, full npm suite, docs caps and site build. Obtain a
   fresh whole-change review, fix material findings with RED/GREEN tests, update
   roadmap/glossary/pathologies/changelog/FIXES, close/archive and commit/push.
 
@@ -90,3 +90,25 @@ User requested implementation after the forensic findings. Native execution in
 this session; existing `paul/initial-fixes` branch retained to preserve the
 ongoing setup work and local user-owned FIXES. Design choices are the
 implementer's; Docker runner is new measurement infrastructure, not a remedy.
+
+
+## Result
+
+2026-11-03: instrumentation shipped in `7e9f3da`; contained execution and
+collector gate shipped with this closing record. All 25 real fake-provider
+checks passed; both arm launches passed the collector identity check. No
+counted inference or new comparison was collected. The Runpod Pod was stopped.
+[Qualification, review findings and limits](../../research/2026-11-03-contained-measurement.md).
+
+Ruling: keep the observer self-contained in the recorder — run-local recorder
+copies must work without another dependency. Ruling: combine tasks 2 and 3 in
+one atomic fix — containment is usable only with its collector gate and
+qualification. Ruling: use bounded tmpfs-backed named volumes — direct tmpfs
+cannot be exported paused. Recovery removes both uniquely labeled resources.
+
+Fresh final review's four material findings received failing-first fixes:
+host watchdog, exported-control trust, late relay frames and duplicate usage IDs.
+The internal `grade_run=False` health-check mismatch is deferred and documented.
+Verification: npm test 640/640, targeted Python harness/collector/containment
+162/162 followed by the expanded containment suite16/16, Ruff F/E9 clean;
+document caps and site build checked at close. Historical evidence is unchanged.

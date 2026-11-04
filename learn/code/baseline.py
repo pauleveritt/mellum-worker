@@ -216,6 +216,14 @@ def attach_reference(current: dict, path: Path) -> None:
             or counted_attempts(saved["attempts"]) != 6
             or any(a["state"] == "pending-review" for a in saved["attempts"])):
         raise SystemExit("reference must be a complete six-counted Vanilla batch")
+    if current["material"].get("isolation"):
+        ignored = {"arm", "extensions", "arm_env", "worker_hashes"}
+        shared = {k:v for k,v in current["material"].items() if k not in ignored}
+        expected = {k:v for k,v in reference.items() if k not in ignored}
+        if shared != expected or reference.get("extensions") != ["extensions/mellum-recorder.ts"]:
+            raise SystemExit("shared contained reference inputs mismatch; a fresh contained Vanilla reference is required")
+        current["reference"] = {"path":str(path.resolve()), "sha256":sha256(path)}
+        return
     shared = {k:v for k,v in current["material"].items()
               if k not in {"arm", "extensions", "arm_env", "worker_hashes"}}
     expected = {k:v for k,v in reference.items() if k not in {"arm", "extensions"}}
@@ -255,6 +263,10 @@ def attach_reference(current: dict, path: Path) -> None:
 
 
 def verify_collection_inputs(repo: Path, material: dict) -> None:
+    if material.get("isolation"):
+        from containment import image_info
+        if image_info(material["isolation"]["image"]) != material["isolation"]:
+            raise SystemExit("contained runtime/policy inputs changed")
     hashes = {**material["hashes"], **material.get("worker_hashes", {})}
     if any(sha256(repo / name) != digest for name,digest in hashes.items()):
         raise SystemExit("collection source inputs changed")
@@ -268,6 +280,8 @@ def validate_resume(saved: dict, current: dict) -> None:
 
 
 def classify_attempt(record: dict, *, identity_ok: bool) -> tuple[str, str]:
+    if record.get("instrumentation_error"):
+        return "pending-review", "instrumentation diagnostic sink failed"
     if not identity_ok:
         return "pending-review", "missing or mismatched runtime/launch identity"
     if not record.get("cleanup_ok"):
@@ -311,7 +325,8 @@ def verify_private_profile(batch: Path, material: dict) -> None:
         raise SystemExit("unexpected private profile inputs; refusing changed configuration")
 
 
-def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict, *, arm: str = "vanilla", exec_path: str | None = None) -> None:
+def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict, *, arm: str = "vanilla", exec_path: str | None = None,
+                       isolation: dict | None = None) -> None:
     """Recover durable results left between record persistence and ledger commit."""
     for attempt in attempts:
         if attempt["state"] != "pending-review" or attempt.get("path"):
@@ -324,7 +339,8 @@ def reconcile_attempts(batch: Path, attempts: list[dict], pi: dict, *, arm: str 
         run = records[0].parent
         record = json.loads(records[0].read_text())
         attempt.update(run_id=run.name, path=str(run.relative_to(batch)),
-                       identity_ok=verify_trace_identity(run, pi, arm=arm, exec_path=exec_path), cleanup_ok=record.get("cleanup_ok"),
+                       identity_ok=verify_trace_identity(run, pi, arm=arm, exec_path=exec_path,
+                           isolation=isolation), cleanup_ok=record.get("cleanup_ok"),
                        reason="completed run record recovered after interruption; explicit classification required")
 
 
@@ -347,18 +363,24 @@ def worker_activation(run: Path) -> bool:
     return before_user == [("llamacpp", "Mellum2.1-12B-A2.5B-Thinking")] * 2
 
 
-def verify_trace_identity(run: Path, pi: dict, *, arm: str = "vanilla", exec_path: str | None = None) -> bool:
+def verify_trace_identity(run: Path, pi: dict, *, arm: str = "vanilla", exec_path: str | None = None,
+                          isolation: dict | None = None) -> bool:
     try:
         launch = json.loads((run / "launch.json").read_text())
         argv = launch["argv"]
         extensions = [argv[i+1] for i, arg in enumerate(argv) if arg == "-e"]
         rows = [json.loads(line) for line in (run / "trace.jsonl").read_text().splitlines() if line.strip()]
         starts = [row for row in rows if row.get("type") == "instance_start"]
-        expected = [str(run / "record-pi.mjs")]
+        internal = Path("/attempt/runs") / run.name if isolation else run
+        if isolation:
+            boundary = json.loads((run / "containment.json").read_text())
+            if boundary.get("image") != isolation["image"] or not boundary.get("container_removed"):
+                return False
+        expected = [str(internal / "record-pi.mjs")]
         if arm == "worker":
-            expected.insert(0, str(REPO / "extensions/mellum-worker.ts"))
+            expected.insert(0, "/opt/instrument/extensions/mellum-worker.ts" if isolation else str(REPO / "extensions/mellum-worker.ts"))
             if (launch.get("arm_env") != {"MELLUM_MODE":"1"}
-                    or launch.get("mode_runs_file") != str(run / "mellum-mode-runs.jsonl")
+                    or launch.get("mode_runs_file") != str(internal / "mellum-mode-runs.jsonl")
                     or not worker_activation(run)):
                 return False
         return (launch["arm"] == arm and not launch["extras"] and not launch["context_files"]
@@ -376,6 +398,17 @@ def write_json(path: Path, value: dict) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, indent=2) + "\n")
     temporary.replace(path)
+
+
+def require_containment(image: str | None, qualification: Path | None) -> dict:
+    if not image or not qualification:
+        raise SystemExit("trusted collection requires --isolation-image and --isolation-qualification; native containment is unverified")
+    from containment import image_info
+    material = image_info(image)
+    proof = json.loads(qualification.read_text())
+    if proof.get("qualified") is not True or proof.get("material") != material:
+        raise SystemExit("containment qualification is missing, failed or mismatched")
+    return material
 
 
 def process_identity(pid: int) -> dict | None:
@@ -405,7 +438,8 @@ def collection_lock(root: Path):
 def reap_stale_runs(root: Path) -> list[dict]:
     from harness import group_members, sweep_group, sweep_workspace, workspace_members
     recovered = []
-    for path in sorted(root.glob("**/owner.json")):
+    paths = [*root.glob("*/owner.json"), *root.glob("*-easy-*/attempt-*/*/owner.json")]
+    for path in sorted(paths):
         run = path.parent
         execution_path = run / "execution.json"
         if execution_path.is_file() and json.loads(execution_path.read_text()).get("cleanup_ok"):

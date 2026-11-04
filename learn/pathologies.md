@@ -251,4 +251,7 @@ it is not a rate.*
     later model context ([analysis](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/docs/superpowers/research/2026-11-03-baseline-deep-analysis.md)).
     **Answer:** qualify run isolation across files/processes/network, before
     further unattended or parallel collection. Workspace cleanup alone did not
-    prevent this event. No isolation fix has been implemented or measured here.
+    prevent this event. **2026-11-03 follow-up:** the temporary Docker runner
+    passed real host/sibling probes and isolated grading with a fake provider
+    ([qualification](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/docs/superpowers/research/2026-11-03-contained-measurement.md)).
+    This qualifies the runner boundary; no new model comparison was collected.
