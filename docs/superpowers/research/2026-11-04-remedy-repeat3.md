@@ -50,3 +50,15 @@ usage, selective replacement or failed cleanup invalidates claims.
 
 Stopped GPU capacity can disappear. A cold restart clears container packages;
 cached /workspace files must be verified. Three sessions remain a small screen.
+
+## Capacity update before collection
+
+Both previous H100 Pods could not restart and remain EXITED. New H100/US-NE-1,
+H200/US-CA-2 and PRO6000/EU-RO-1 placement requests failed without creating a
+Pod. Refreshed catalog then listed H100/US-MO-1; allowing Runpod to choose the
+data center succeeded at the same quoted$3.99/hour, placing H100 Pod
+`x40gf9pjw2gw09` in AP-IN-1 at15:45:16UTC,28vCPUs/251GB host RAM. Same
+CUDA12.8 image,20GB container/50GB persistent disk,SSH only. Actual GPU/UUID
+and pinned backend still require qualification before collection. No H200 or
+Blackwell run is being substituted. This is a new host, kept separate.
+Guardian's fixed ceiling remains16:23UTC, earlier than40minutes after creation.
