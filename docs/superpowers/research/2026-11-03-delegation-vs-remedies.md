@@ -180,9 +180,9 @@ strictness), a freeze that a `chmod` cannot defeat, and a deterministic revert. 
 on this run — the evidence points at completeness and two harness-robustness bugs, not a worker
 guard. n=1, a lead.
 
-### Step-file delegation + code-eval remedies (MELLUM_DELEGATE_STEPS=1) — built, not yet measured
+### Step-file delegation + code-eval remedies (MELLUM_DELEGATE_STEPS=1) — easy 4/4, medium 13/18 (n=1 leads)
 
-Two levers from the 6/18 screen turned into a mechanism (conjecture until a run lands):
+Two levers from the 6/18 screen turned into a mechanism:
 
 - **Steps, not phases.** `doTaskSteps` has the architect split the spec into the SMALLEST ordered
   chunks, each a `stepNN.md` doc (its own brief + named contracts) with a SELF-CONTAINED test
@@ -200,8 +200,29 @@ Two levers from the 6/18 screen turned into a mechanism (conjecture until a run 
   measured default); the architect pass stays bare. Whether the stack lifts the per-step hidden grade
   is the open question the next run answers.
 
-The screen that decides this: medium hidden grade, `MELLUM_DELEGATE_STEPS=1` with
-`MELLUM_DELEGATE_REMEDY=preset:medium`, vs the 6/18 per-phase checkpoint. n=1 is a lead.
+The screen (local Q4 llama-server on :8001, `MELLUM_DELEGATE_STEPS=1`, verbose, n=1):
+
+- **Easy — hidden 4/4, a full pass.** The architect split Phase 1 into 3 steps; it hit the
+  nested-quote bug once and the compile-repair guard fixed it in one attempt. Each step's fresh
+  worker (with `preset:easy` loaded) read its own step doc, built its slice, passed its own test →
+  the harness ticked todo.md 3/3 and git-checkpointed. The in-loop 3/3 matched the hidden 4/4 — no
+  visible-pass / hidden-gap. Architect 13 tool calls (+8 repair); workers 6/7/13; wall ~5m.
+- **Medium — hidden 13/18, up from the 6/18 per-phase checkpoint.** The architect split the 4-phase
+  spec into 4 steps (all compiled first pass, no repair). Every step ticked (todo 4/4, handover →
+  step1 → step4 all checkpointed), and app.py + models.py + three templates were built. Hidden grade
+  by phase: phase 1 home **4/4** (nav_links now passes, where per-phase missed it), phase 2 board
+  **5/6** (misses seed-complaint *detail* rendering), phase 3 add **3/3** (per-phase never reached
+  it), phase 4 resolve/reopen **1/5** (identity-stable-keyword-only, the resolve and reopen routes,
+  and no-reorder all fail). Architect 28 tool calls; workers 12/15/24/23; wall ~13m (steps 62/94/
+  249/221s).
+
+So the smaller bite works: steps + remedies converged all four milestones' *own* tests and got the
+first three phases to near-full hidden, where per-phase stalled at phase 2. What caps it at 13/18 is
+the same lever as before, now concentrated on the **last milestone**: the architect's per-step test
+is looser than the hidden grader (step 4's test passed in-loop, yet the real resolve/reopen contract —
+stable keyword-only identity, the two routes' state change + redirect, board order held — is unmet),
+plus one phase-2 seed-detail check. Not a step-file flaw; the per-step oracle needs the hidden
+grader's strictness. n=1, a lead — a preregistered repeat against the per-phase arm would decide it.
 
 ## What would falsify "we no longer need remedies"
 
