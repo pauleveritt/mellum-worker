@@ -77,8 +77,13 @@ def read_log_tail(log: Path) -> str:
         return source.read(4096).decode(errors="replace")
 
 
+# The contained image's paths are the defaults; the native probe (LC.39) points these elsewhere.
+PYTEST_PROBE = os.environ.get("MELLUM_PYTEST_PROBE", "/opt/pytest_probe.py")
+PROBE_TMP = Path(os.environ.get("MELLUM_PROBE_TMP", "/tmp"))
+
+
 def startup():
-    log = Path("/tmp/probe-startup.log")
+    log = PROBE_TMP / "probe-startup.log"
     with log.open("w") as output:
         child = subprocess.Popen(["uv", "run", "--offline", "--frozen", "python", "app.py"],
             stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
@@ -122,7 +127,7 @@ def startup():
 def tests():
     import tempfile
     with tempfile.TemporaryFile() as output:
-        result = subprocess.run(["uv", "run", "--offline", "--frozen", "python", "-I", "/opt/pytest_probe.py"],
+        result = subprocess.run(["uv", "run", "--offline", "--frozen", "python", "-I", PYTEST_PROBE],
             stdout=output, stderr=subprocess.STDOUT, timeout=5)
         output.seek(0); raw = output.read(1024 * 1024 + 1)
     try:
