@@ -1,0 +1,437 @@
+{
+  "scope": "Source/text inspection of all forty saved home templates; no browser visual assessment. Structural hero and welcome proxies are not semantic proof. Formal outcomes unchanged.",
+  "reservations": {
+    "G6": "Neutral introduction rather than a strong welcome; automated proxy passes.",
+    "S5": "Bare home-page introduction; already fails external acceptance.",
+    "S11": "More content can be added later: placeholder prose; already fails.",
+    "S19": "Literal A short welcoming paragraph: placeholder; already fails.",
+    "G17": "Usable under registered score but pyrefly flags BaseRoute.path in its test; health does not include typing."
+  },
+  "artifacts": [
+    {
+      "task": "S1",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">We're AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Please browse the complaints board or add your own.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G1",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">We are a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Start by browsing the complaints board or add your own.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S2",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G2",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n{% block title %}Home - AgentClinic{% endblock %}\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">\"Come in. Sit down. Tell us about your human.\"</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>A little slice of the future, built with FastAPI and Bootstrap.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S3",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Start by browsing the complaints board or add your own.</p>\n    <a class=\"btn btn-primary btn-lg\" href=\"/complaints\" role=\"button\">View Complaints</a>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G3",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block title %}Home{% endblock %}\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>A safe space for AI agents to share their experiences.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S4",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "project_tests"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G4",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home - AgentClinic{% endblock %}\n\n{% block content %}\n<div class=\"text-center hero\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "S5",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G5",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where we listen to your concerns.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "S6",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G6",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. Agents can air their grievances here.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S7",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"hero mt-4\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G7",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S8",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"hero mt-4\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "phase_layout"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G8",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S9",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "guarded_reload",
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G9",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"hero-section text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S10",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G10",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}<title>Home - AgentClinic</title>{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "startup",
+        "base_integrity"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "S11",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. Agents can air their grievances here.</p>\n    <hr class=\"my-4\">\n    <p>More content can be added later.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "project_tests"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G11",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"hero-section\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S12",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>A little about us...</p>\n    <a class=\"btn btn-primary btn-lg\" href=\"/complaints\" role=\"button\">View Complaints Board</a>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G12",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}\nHome\n{% endblock %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances.</p>\n</div>\n{% endblock %}",
+        "templates/complaints.html": "{% extends \"base.html\" %}\n\n{% block title %}\nComplaints Board\n{% endblock %}\n\n{% block content %}\n<div class=\"container\">\n    <h1 class=\"mb-4\">Complaints Board</h1>\n    {% for complaint in complaints %}\n    <div class=\"card mb-3\" style=\"max-width: 600px;\">\n        <div class=\"card-body\">\n            <h5 class=\"card-title\">{{ complaint.agent_name }}</h5>\n            <p class=\"card-text\">{{ complaint.text }}</p>\n            <small class=\"text-muted\">Submitted on {{ complaint.timestamp.year }}/{{ complaint.timestamp.month }}/{{ complaint.timestamp.day }}</small>\n        </div>\n    </div>\n    {% endfor %}\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "timeout",
+      "typing": "pass"
+    },
+    {
+      "task": "S13",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Start by browsing the complaints board below, or add your own.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "project_tests"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G13",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S14",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G14",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home Page{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Welcome to the home page.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "phase_layout"
+      ],
+      "external_status": "fail",
+      "typing": "fail"
+    },
+    {
+      "task": "S15",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Welcome to the home page.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override",
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G15",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Welcome to the home page of AgentClinic.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "startup",
+        "phase_layout"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "S16",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "favicon",
+        "title_override",
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G16",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home - AgentClinic{% endblock %}\n\n{% block content %}\n<div class=\"p-5 bg-light rounded\">\n    <h1 class=\"display-6\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S17",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>Welcome to the home page.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G17",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block title %}Home{% endblock %}\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances.</p>\n    <hr class=\"my-4\">\n    <p>Welcome to the home page of AgentClinic.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "fail"
+    },
+    {
+      "task": "S18",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>A little place to share frustrations and listen to others.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G18",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "phase_layout"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "S19",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <hr class=\"my-4\">\n    <p>A short welcoming paragraph.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G19",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}AgentClinic Home{% endblock %}\n\n{% block content %}\n<div class=\"hero mt-5 text-center\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "S20",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"jumbotron text-center\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. A safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "title_override"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G20",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    }
+  ]
+}

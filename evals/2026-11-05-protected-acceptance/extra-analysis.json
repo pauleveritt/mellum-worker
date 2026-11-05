@@ -1,0 +1,124 @@
+{
+  "selective": {
+    "initial_external_pass": 1,
+    "initial_failures": {
+      "title_override": 19,
+      "project_tests": 3,
+      "startup": 4,
+      "phase_layout": 1,
+      "guarded_reload": 1,
+      "favicon": 1
+    },
+    "layout_pass": 19,
+    "failed_task_requests": 460,
+    "fully_measured_tasks": 20,
+    "fully_measured_tasks_output": 203948,
+    "unknown_output_tasks": [],
+    "known_failed_task_count": 19,
+    "known_failed_task_output": 193742,
+    "repair_requests": 0,
+    "repair_complete_generations": 0,
+    "repair_output_tokens": 0,
+    "repair_complete_generation_output_only": 0,
+    "health_components": {
+      "ruff:pass": 19,
+      "pyrefly:pass": 20,
+      "complexipy:pass": 20,
+      "ruff:fail": 1
+    },
+    "output_known_scope_distribution": [
+      6408,
+      7365,
+      7607,
+      7614,
+      8043,
+      8081,
+      8948,
+      8952,
+      9648,
+      9679,
+      9921,
+      10206,
+      10363,
+      10376,
+      11261,
+      12051,
+      13175,
+      13256,
+      13891,
+      17103
+    ],
+    "median_elapsed": 91.021,
+    "total_elapsed": 1885.5430000000001,
+    "requests_range": [
+      16,
+      38
+    ],
+    "repair_distribution": {
+      "0": 20
+    }
+  },
+  "gated": {
+    "initial_external_pass": 0,
+    "initial_failures": {
+      "title_override": 20,
+      "favicon": 2,
+      "guarded_reload": 1,
+      "startup": 7,
+      "project_tests": 1,
+      "bootstrap_css": 1,
+      "phase_layout": 8
+    },
+    "layout_pass": 15,
+    "failed_task_requests": 430,
+    "fully_measured_tasks": 19,
+    "fully_measured_tasks_output": 340867,
+    "unknown_output_tasks": [
+      "task-1c42b2daf3fa4531ba3dbc6b0d1e7f7d"
+    ],
+    "known_failed_task_count": 8,
+    "known_failed_task_output": 159586,
+    "repair_requests": 259,
+    "repair_complete_generations": 258,
+    "repair_output_tokens": null,
+    "repair_complete_generation_output_only": 161303,
+    "health_components": {
+      "ruff:fail": 1,
+      "pyrefly:pass": 18,
+      "complexipy:pass": 20,
+      "ruff:pass": 19,
+      "pyrefly:fail": 2
+    },
+    "output_known_scope_distribution": [
+      9249,
+      10186,
+      10264,
+      11852,
+      13745,
+      13753,
+      14687,
+      14906,
+      16221,
+      16799,
+      18441,
+      19403,
+      19768,
+      20587,
+      21209,
+      22898,
+      26780,
+      27736,
+      32383
+    ],
+    "median_elapsed": 197.36200000000002,
+    "total_elapsed": 4221.579,
+    "requests_range": [
+      20,
+      90
+    ],
+    "repair_distribution": {
+      "1": 11,
+      "2": 9
+    }
+  }
+}

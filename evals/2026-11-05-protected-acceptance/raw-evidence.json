@@ -1,0 +1,15 @@
+{
+  "archive": "runs/2026-11-05-protected-acceptance-raw.tar.gz",
+  "bytes": 81930411,
+  "sha256": "e627d1d214f62837d3e24dffdb9fbdfc2c51800412c26e7b67bfa7c910163010",
+  "members": 15593,
+  "regular_files": 11055,
+  "upload_status": "held locally; no upload",
+  "scope": "All LC.34 raw qualification, aborted cohorts, frozen v3 tasks, host controls, snapshots, execution records and analysis tools. Weights remain separately cached with their registered hash.",
+  "credential_scan": {
+    "files_scanned": 11055,
+    "pattern_hits": [],
+    "nonempty_auth_files": [],
+    "limits": "Pattern scan for known credential formats and private-key headers, plus auth.json inventory; not proof against arbitrary secret formats. No matched values are printed."
+  }
+}

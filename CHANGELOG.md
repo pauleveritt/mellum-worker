@@ -6,6 +6,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [protected acceptance comparison](evals/2026-11-05-protected-acceptance/README.md)
+  records twenty tasks per arm: selective remedies produced 1/20 usable results,
+  adding the gate produced 11/20. The reliability threshold was missed; one
+  cancelled generation leaves gated output totals unknown. Shutdown is verified,
+  raw evidence stays local and no default is promoted.
+
 - Acceptance qualification now covers ordinary, unstyled and header hero
   containers without requiring CSS names, and supports whole-head title
   overrides without counting titles inserted into body content.
@@ -17,7 +23,8 @@ Versions match git tags; pin one in both install lines.
 - Added a fixed twenty-per-arm local acceptance comparison controller with
   complete inference reconciliation, compaction telemetry, a separate safety
   watchdog and recovery of partial task files. Its preregistration blocks
-  decisions on incomplete cohorts or unknown budgets; collection is pending.
+  decisions on incomplete cohorts or unknown budgets; the completed comparison
+  is linked above.
 
 - Hardened acceptance qualification against forged JUnit/early exit, malformed
   checker statuses and variable-based page titles. Both arms share the same
@@ -31,12 +38,13 @@ Versions match git tags; pin one in both install lines.
 - Added the host-side acceptance contract and bounded repair state machine.
   Incomplete checks, changed checker packages and expired deadlines fail closed;
   a settle-time pass requires a final independent artifact check. The contained
-  runtime adapter and measured remedy remain in development.
+  runtime adapter and opt-in remedy enforce the same host contract.
 
 - Added opt-in `check/external-acceptance` for contained measurements: protected
   snapshot checks, bounded same-task repair, final independent verification and
   retained integrity failures. It requires an external controller and leaves
-  the thin worker and existing presets unchanged; reliability is unmeasured.
+  the thin worker and existing presets unchanged; no reliability default is
+  promoted.
 
 - Defined the external acceptance gate in the glossary, distinguishing protected
   completion checks and bounded repairs from independent hidden grading.

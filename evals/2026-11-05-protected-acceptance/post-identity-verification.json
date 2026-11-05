@@ -1,0 +1,22 @@
+{
+  "owned_resource_records": 237,
+  "remaining_owned_containers": [],
+  "remaining_owned_volumes": [],
+  "server_stopped": true,
+  "controller_stopped": true,
+  "listener_8002": "",
+  "freeze_drift": [],
+  "controller_shutdown": {
+    "at": "2026-11-05T06:08:48.956119+00:00",
+    "owned_server_stopped": true,
+    "listener_8002": "",
+    "guardian_stopped": true
+  },
+  "watchdog_shutdown": {
+    "at": "2026-11-05T06:08:48.116636+00:00",
+    "cutoff_epoch": 1793881465.527545,
+    "server_exit_code": 0
+  },
+  "independent_guardian_pids": [],
+  "remaining_label_owned_containers": []
+}

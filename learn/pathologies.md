@@ -53,6 +53,7 @@ entries below.
 | 20 | Compaction bypasses the agent budget recorder | none — reconcile all provider traffic with an independent backend/relay counter |
 | 21 | A guard blocks a harmless check | foreground-server classification repair — distinguish launch intent from a library mention |
 | 22 | Tests pass but the required startup fails | none — check the documented launch externally as well as in-process behavior |
+| 23 | An acceptance checker invents a requirement | none — qualify lawful variants and individual omissions before freezing the oracle |
 
 ## It says it is done and it is not
 
@@ -285,6 +286,11 @@ it is not a rate.*
     not a guarantee that every shell form is classified correctly
     ([follow-up](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-04-local-controlled6/README.md)).
 
+2026-11-05 follow-up to #8: G4 left a `timeout 10 ... uvicorn ... --reload`
+command open until the host’s 180-second cutoff. A timeout wrapper did not make
+the tool return; containment and the external cutoff remained necessary
+([record](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-05-protected-acceptance/README.md)).
+
 ## In-process tests miss a broken launch
 
 22. **Tests pass but the required startup fails.** A startup check exercises a
@@ -297,3 +303,18 @@ it is not a rate.*
     **Answer:** verify the documented launch in isolation with a readiness limit
     and cleanup; qualify the external acceptance checks against the whole spec
     rather than treating an in-process test pass as completion.
+
+## The checker rejects a lawful build
+
+23. **An acceptance checker invents a requirement.** A checker can turn a legal
+    implementation choice into a failure and spend repairs fixing its own rule.
+    This is an instrument defect, not evidence that the model missed the spec.
+    **Seen:** two protected-gate qualification cohorts were stopped after valid
+    hero markup and title overrides false-failed. The checker required CSS names
+    the public spec never required; its first correction still excluded ordinary
+    centered content. Sixteen attempts and their costs were retained separately,
+    with no comparative reuse
+    ([record](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-05-protected-acceptance/README.md)).
+    **Answer:** qualify several lawful constructions, then remove one real
+    requirement at a time; avoid class-name whitelists for structural intent.
+    Inspect saved artifacts before treating a failed oracle as a model defect.

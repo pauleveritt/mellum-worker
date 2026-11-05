@@ -1,0 +1,27 @@
+[
+  {
+    "run": "task-1c42b2daf3fa4531ba3dbc6b0d1e7f7d",
+    "trace_sha256": "8a8d7348ee6dcdaaf0ff3ea650ba2dd4caf33a8316f5c72e04a15f75a2a86f83",
+    "compaction_output_tokens": [
+      3442
+    ],
+    "before": {
+      "requests": 53,
+      "name-the-layout": [
+        1
+      ],
+      "verify-the-spec": [
+        1
+      ]
+    },
+    "after": {
+      "requests": 35,
+      "name-the-layout": [
+        1
+      ],
+      "verify-the-spec": [
+        1
+      ]
+    }
+  }
+]

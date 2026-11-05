@@ -302,19 +302,6 @@ closed cycle and its design inputs are in [`ROADMAP-M.md`](ROADMAP-M.md).
 2026-10-24, on Andre's fork: `--acceptance-test` and `--redispatch` are on
 `main` again after a merge dropped them ([LEARNING](LEARNING.md) §VII.1).
 
-**Freeze-the-oracle exit gate.** Make completion an external, complete test the
-worker cannot weaken, with bounded failure redispatch and all repair inference
-counted. Keep it an explicit additive unit; the worker remains a command tool.
-The local controlled comparison found registered stricter passes 1/6 and 4/6,
-but passing hidden/project tests could still leave broken reload startup.
-The post-registration diagnostic also has coverage gaps; qualify a complete
-checker against correct builds and seeded omissions before using it as authority.
-[Comparison](evals/2026-11-04-local-controlled6/README.md),
-[original direction](docs/superpowers/research/2026-10-18-harness-exit-gate.md).
-*Reopens when* the next local remedy iteration is prepared: define the trusted
-acceptance command and immutable boundary before more prompt stacking. This
-2026-11-04 evidence broadens the earlier reopen condition; no gate is shipped.
-
 **Benchmark a plain mlx_lm.server against oMLX.** The ladder reaches any
 OpenAI-compatible server (`--provider`, `--base-url`, `--model provider/id`;
 [recipe](docs/backends/mlx-lm.md)), but no oMLX-vs-mlx-lm runs have been made.
