@@ -41,5 +41,9 @@ Test screen registration includes guard while default comparison retains prior
 recipe. Qualify new image and actual native Pi blocked-call transport using a
 fake provider before counted inference. One fresh final review. Run all6,
 report costs/semantics/unknowns and independent shutdown. Screen-only even6/6.
+Correct the discovered report matcher for new blocked-before-execution refusal
+wording; preserve legacy counts/deduplication and annotate prior cohorts with
+dated trace audits, without changing original records, usability or budgets.
+
 No causal/reliability promotion from a small uncontrolled screen. Further
 iteration requires a material observed defect, not a disappointing sample.

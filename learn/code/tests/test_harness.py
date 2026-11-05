@@ -1404,3 +1404,16 @@ def test_unconfirmed_empty_runtime_error_requires_review(tmp_path):
             'errorMessage':'Unable to parse generated tool arguments','content':[]}}
     ])
     assert record['provider_error']['classification'] == 'review'
+
+
+@pytest.mark.parametrize("refusal", [
+    "Blocked before execution: this foreground server command was not run. This message is not application output.",
+    "Blocked before execution: this foreground log-follow command was not run. This message is not application output.",
+])
+def test_report_counts_current_blocked_before_execution_guards(tmp_path, refusal):
+    rows = [{"type": "tool_execution_end", "toolName": "bash", "toolCallId": "guarded",
+             "isError": True, "result": {"content": [{"type": "text", "text": refusal}]}},
+            {"type": "message_end", "message": {"role": "toolResult", "toolCallId": "guarded",
+             "content": [{"type": "text", "text": refusal}]}}]
+    (tmp_path / "trace.jsonl").write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    assert harness.report(tmp_path)["guard_blocks"] == 1

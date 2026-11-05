@@ -734,7 +734,9 @@ def _trace_time(value):
 # A blocked tool call never reaches the recorder: the worker's guard stops the
 # event chain first, so there is no tool_call row. Pi still emits the refusal
 # in tool_execution_end; older traces may carry a toolResult message instead.
-SERVER_REFUSAL = "starts a server in the foreground"
+GUARD_REFUSALS = ("starts a server in the foreground",
+                  "Blocked before execution: this foreground server command",
+                  "Blocked before execution: this foreground log-follow command")
 
 
 def context_usage(rows: list[dict]) -> dict:
@@ -800,7 +802,7 @@ def report(run: Path) -> dict:
             refusal = row.get("result") or {}
         elif row.get("type") == "message_end" and message.get("role") == "toolResult":
             refusal = message
-        if refusal and SERVER_REFUSAL in str(refusal.get("content")):
+        if refusal and any(marker in str(refusal.get("content")) for marker in GUARD_REFUSALS):
             call_id = row.get("toolCallId") or refusal.get("toolCallId")
             key = (row.get("instanceId"), "call", call_id) if call_id else (None, "event", index)
             if key not in guard_calls:

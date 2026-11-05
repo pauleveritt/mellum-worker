@@ -5,6 +5,8 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+
+
 - Recorded the repair-authority screen: five formal usable results from six,
   with one retained log-follow stall, complete budgets and verified shutdown.
   Small uncontrolled screens remain separate from reliability evidence.
@@ -188,6 +190,11 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+- Guard reports recognize current blocked-before-execution refusals while
+  retaining legacy text and call deduplication. Dated trace audits correct the
+  prior two screens to three and nineteen intercepted calls; original scores
+  and budgets remain unchanged.
+
 - Protected acceptance repair feedback keeps external failures authoritative,
   asks for missing required tests, and lists already-passing requirements to
   preserve. Bounded feedback reserves evidence across failures so a long early

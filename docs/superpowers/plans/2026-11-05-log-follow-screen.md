@@ -32,6 +32,7 @@ lifecycle: active
 
 **Files:** extensions/mellum-guards.ts; remedies/guard/foreground-log-follow.ts;
 tests/mellum-server-guard.test.mjs; tests/remedy-units.test.mjs;
+learn/code/harness.py; learn/code/tests/test_harness.py;
 scripts/acceptance_overnight.py; learn/code/tests/test_acceptance_overnight.py.
 **Consumes:** existing shell scanning/wrappers and guard hook installation.
 **Produces:** logFollowGuard:Guard; screen-selected explicit remedy metadata.
@@ -45,6 +46,9 @@ scripts/acceptance_overnight.py; learn/code/tests/test_acceptance_overnight.py.
 - [ ] Add failing selected-recipe registration test; screen appends new guard,
   comparison retains prior list. Record remedies in shared collection metadata,
   use selected list in actual harness; new protocol. Focused Python GREEN.
+- [ ] Reproduce current-refusal counting gap RED; recognize old/current guard
+  text with instance/call deduplication GREEN. Dated trace corrections for prior
+  screens preserve original records/scores.
 - [ ] Changelog/FIXES and local commit; npm/docs GREEN, one fresh final review
   and material RED/GREEN fix pass if needed. Prepare new qualified image and
   native fake-provider blocked-call probe with immutable source/hash receipt.

@@ -1,0 +1,172 @@
+{
+  "dated_correction": "2026-11-05",
+  "scope": "Original records retained; current blocked-before-execution refusal strings counted from tool results with instance/call deduplication. No usability/budget rescoring.",
+  "total_guard_blocks": 19,
+  "tasks": [
+    {
+      "task": "G1",
+      "recorded_guard_blocks": 0,
+      "trace_recomputed_guard_blocks": 0
+    },
+    {
+      "task": "G2",
+      "recorded_guard_blocks": 0,
+      "trace_recomputed_guard_blocks": 4
+    },
+    {
+      "task": "G3",
+      "recorded_guard_blocks": 0,
+      "trace_recomputed_guard_blocks": 2
+    },
+    {
+      "task": "G4",
+      "recorded_guard_blocks": 0,
+      "trace_recomputed_guard_blocks": 3
+    },
+    {
+      "task": "G5",
+      "recorded_guard_blocks": 0,
+      "trace_recomputed_guard_blocks": 1
+    },
+    {
+      "task": "G6",
+      "recorded_guard_blocks": 0,
+      "trace_recomputed_guard_blocks": 9
+    }
+  ],
+  "blocked_calls": [
+    {
+      "task": "G2",
+      "call_id": "eEHEE28V1WW8s4LGbPpAepJZs3vJHX6f",
+      "arguments": {
+        "command": "uv run --frozen python app.py"
+      }
+    },
+    {
+      "task": "G2",
+      "call_id": "ayEp14oOwJOvGGFFi4pxSUqNr17UJWfa",
+      "arguments": {
+        "command": "uv run --frozen python app.py"
+      }
+    },
+    {
+      "task": "G2",
+      "call_id": "d6tLlQChkZkp6kkbVjMJymUsg9itwKoQ",
+      "arguments": {
+        "command": "uv run --frozen python app.py"
+      }
+    },
+    {
+      "task": "G2",
+      "call_id": "0rOlPczhGq0m04aQ0Qegqzyz35GgDun6",
+      "arguments": {
+        "command": "uv run --frozen uvicorn app:app --reload --host 0.0.0.0 --port 8000"
+      }
+    },
+    {
+      "task": "G3",
+      "call_id": "DdTxxdncBwVGmD4iFQzvqdIohIBV3Y3Q",
+      "arguments": {
+        "command": "python app.py"
+      }
+    },
+    {
+      "task": "G3",
+      "call_id": "EE9PXYYJSp0MnLwjTh73GQwvyaoa2rpv",
+      "arguments": {
+        "command": "timeout 10 python app.py || echo \" exited with code $?\""
+      }
+    },
+    {
+      "task": "G4",
+      "call_id": "0PuMnaU3z3lUHJI2GrmGyUpYq9kB2vf1",
+      "arguments": {
+        "command": "/attempt/runs/task-239cddfccf8446f2a83c0e521d6c8376/workspace/.venv/bin/uvicorn app:app --reload --port 8000"
+      }
+    },
+    {
+      "task": "G4",
+      "call_id": "PKnwZHtmmmheoYzsElNNVMSRWXc0f0Gf",
+      "arguments": {
+        "command": "/attempt/runs/task-239cddfccf8446f2a83c0e521d6c8376/workspace/.venv/bin/python -m uvicorn app:app --reload"
+      }
+    },
+    {
+      "task": "G4",
+      "call_id": "0IUKI84rvWs9Ha5rS7J24q7dNun1XQyZ",
+      "arguments": {
+        "command": "/attempt/runs/task-239cddfccf8446f2a83c0e521d6c8376/workspace/.venv/bin/uvicorn app:app --reload"
+      }
+    },
+    {
+      "task": "G5",
+      "call_id": "Kc9sgqt8Xl3X7BwsM6pEFYw3yolHNtyA",
+      "arguments": {
+        "command": "uv run python -m uvicorn app:app --reload --port 8000"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "ctcKzqKaVC7iWE7LKpigymu0XaW2OHaP",
+      "arguments": {
+        "command": "uv run python app.py"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "h8yVg16b5YZc3OSxgU4lWDZj20nMKVOl",
+      "arguments": {
+        "command": "uv run python app.py"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "bTLqYrEvk0qMbSw7dfwPpuLLGAU0PtIa",
+      "arguments": {
+        "command": "uv run python app.py"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "fxEmuBXB5NyXgnaZCM4nuM8XMWqKptLc",
+      "arguments": {
+        "command": "uv run uvicorn app:app --reload --host 0.0.0.0 --port 8000"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "XitfLGNgluNIZKSo3d3t2ZrBgFoXWaFL",
+      "arguments": {
+        "command": "python app.py"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "os1HJFqBxC2eZVng25nuMAjLh6LIqI6A",
+      "arguments": {
+        "command": "python3 app.py"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "vGPpn9hxD0v4R5Fd9sxLw6NaA5OBEU0V",
+      "arguments": {
+        "command": "/attempt/runs/task-080c2f2e795d48c794f0ba0d35e8fb56/workspace/.venv/python app.py"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "81zcyLORbVqvZIZmyF4s2eepIPH0SRAX",
+      "arguments": {
+        "command": "/attempt/runs/task-080c2f2e795d48c794f0ba0d35e8fb56/workspace/.venv/python -m uvicorn app:app --reload --host 0.0.0.0 --port 8000"
+      }
+    },
+    {
+      "task": "G6",
+      "call_id": "raRfBJx4iaK7qQsJmMnqCqSbnhguIlYW",
+      "arguments": {
+        "command": "uv run python app.py"
+      }
+    }
+  ]
+}

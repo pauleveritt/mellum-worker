@@ -37,9 +37,12 @@ title but retained `uvicorn.run(app, reload=True)`. Its final message explicitly
 dismissed the observed launch warning because TestClient and its own tests passed.
 The protected gate correctly refused both tasks; self-reported completion was false.
 
-The runtime/scope changes did not produce a clean screen. No timeout-wrapped stall,
-guard refusal, scope expansion or compaction occurred here, so the screen cannot
-establish those fixes' efficacy. All 240 ordinary payloads carried each dedicated
+The runtime/scope changes did not produce a clean screen. No timeout-wrapped stall
+or compaction occurred here. **Dated correction,2026-11-05:** the original
+counter missed the new refusal wording; [trace audit](guard-count-correction.json)
+finds three intercepted server starts, not zero. Original records/analysis remain
+retained; no usability or budget score changed. These intercepted calls do not
+establish general guard efficacy. All 240 ordinary payloads carried each dedicated
 layout/verification injection exactly once. No outside-hook requests or unknown
 output totals occurred.
 

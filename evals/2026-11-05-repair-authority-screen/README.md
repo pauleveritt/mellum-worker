@@ -32,8 +32,11 @@ were repaired to usable, while G4 still failed startup and stalled. Both tasks
 with initially missing tests added tests. G5 needed two repairs; other tasks used
 one before pass or stall. All300 ordinary payloads carried each dedicated layout/
 verification instruction once. No compaction, outside-hook requests or unknown
-token totals occurred. No guard refusal occurred, so this is not evidence that
-the server guard prevented a hang.
+token totals occurred. **Dated correction,2026-11-05:** the original counter
+missed the new refusal wording. [Trace audit](guard-count-correction.json) finds
+19 intercepted server starts, including a timeout-wrapped launch, not zero.
+Original records/analysis are retained; usability/budgets are unchanged. Repeated
+refusals also cost model requests and do not prove every hang was prevented.
 
 G4 started a server in the background, then ran foreground `tail -f` in the same
 bash call. The follower kept the call open until the180s tool cutoff. The final
