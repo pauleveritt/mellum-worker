@@ -1,0 +1,49 @@
+{
+  "selective": {
+    "n": 0
+  },
+  "gated": {
+    "initial_external_pass": 0,
+    "initial_failures": {
+      "title_override": 6,
+      "project_tests": 2,
+      "favicon": 1,
+      "phase_layout": 1,
+      "startup": 1
+    },
+    "layout_pass": 6,
+    "failed_task_requests": 102,
+    "fully_measured_tasks": 6,
+    "fully_measured_tasks_output": 100798,
+    "unknown_output_tasks": [],
+    "known_failed_task_count": 2,
+    "known_failed_task_output": 42759,
+    "repair_requests": 67,
+    "repair_complete_generations": 67,
+    "repair_output_tokens": 37055,
+    "repair_complete_generation_output_only": 37055,
+    "health_components": {
+      "ruff:pass": 6,
+      "pyrefly:pass": 6,
+      "complexipy:pass": 6
+    },
+    "output_known_scope_distribution": [
+      12155,
+      13627,
+      15243,
+      17014,
+      20102,
+      22657
+    ],
+    "median_elapsed": 145.59550000000002,
+    "total_elapsed": 983.841,
+    "requests_range": [
+      28,
+      52
+    ],
+    "repair_distribution": {
+      "1": 4,
+      "2": 2
+    }
+  }
+}

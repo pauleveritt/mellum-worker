@@ -314,6 +314,12 @@ the tool return; containment and the external cutoff remained necessary
     Diagnose executed behavior, distinguish blocked calls from application
     output, and qualify lifecycle cleanup rather than trusting a timeout prefix.
 
+    **Runtime screen, 2026-11-05:**4/6 usable; G6 explicitly waived the real
+    startup warning after its own tests passed. G4 omitted required tests and
+    regressed previously passing copy during repair. The external gate refused
+    both; clearer observation wording alone did not establish reliable repair
+    ([screen](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-05-runtime-repair-screen/README.md)).
+
 ## The checker rejects a lawful build
 
 23. **An acceptance checker invents a requirement.** A checker can turn a legal

@@ -1,7 +1,7 @@
 ---
 phase: LC
 feature_cycle: LC.36
-lifecycle: active
+lifecycle: closed
 ---
 
 # Runtime Repair Screen Implementation Plan
@@ -12,7 +12,7 @@ lifecycle: active
 **Architecture:** Keep explicit remedies, protected assertions and guardian;
 add a selected fixed screen order to the same collector, preserving default40.
 **Tech Stack:** Existing TypeScript/Python3.14/uv/Pi/local llama.cpp/temporary Docker.
-**Spec:** [Design](../specs/2026-11-05-runtime-repair-screen-design.md).
+**Spec:** [Design](../../specs/2026-11-05-runtime-repair-screen-design.md).
 
 ## Global Constraints
 
@@ -38,15 +38,15 @@ tests/mellum-server-guard.test.mjs; learn/code/tests/test_acceptance_checker.py.
 **Consumes:** existing shell classifier, task injection and startup observation.
 **Produces:** wrapped launches refused; accurate refusal and observed-failure text.
 
-- [ ] Add classifier regressions for timeout5/gtimeout options/nested wrappers,
+- [x] Add classifier regressions for timeout5/gtimeout options/nested wrappers,
   queries, ordinary tests, quoted descriptions and detached launches. Add checker
   cases distinguishing ready=false with exited/live/unknown status. Observe RED.
-- [ ] Strip recognized timeout options/duration before classifying the nested
+- [x] Strip recognized timeout options/duration before classifying the nested
   executable; no new execution allowance. Refusal explicitly says blocked before
   execution and distinguishes endpoint tests from required bounded startup checks.
-- [ ] Scope verify text to current requested task and executed behavior; keep the
+- [x] Scope verify text to current requested task and executed behavior; keep the
   injection lifecycle. Prose earns no grep test: the live screen pressures it.
-- [ ] Make startup failure observation explicit without changing its boolean
+- [x] Make startup failure observation explicit without changing its boolean
   authority. Refresh checker hash; focused node/Python GREEN, changelog/FIXES,
   local atomic commit.
 
@@ -58,17 +58,17 @@ learn/code/tests/test_acceptance_overnight.py; dated screen research protocol.
 **Produces:** configure_mode(mode:str)->str; cohort_config()->dict;
 collection_state(completed:int)->str, used by actual prepare/backend/final status.
 
-- [ ] Add failing consumer tests: actual prepare with fake expensive qualification
+- [x] Add failing consumer tests: actual prepare with fake expensive qualification
   boundaries writes default40/comparison versus6/gated/screen registration,
   exact protocol hash and counts. Check complete6/incomplete5 and screen_only
   even with favorable synthetic comparison summaries; standard decision unchanged.
-- [ ] Add --prepare-screen/--run-screen selection in configure_mode; preserve
+- [x] Add --prepare-screen/--run-screen selection in configure_mode; preserve
   existing modes. Freeze the screen protocol, record cohort_config in preparation
   and backend, reject kind/order mismatch, use selected length for completion.
-- [ ] Verify focused GREEN; preregister fixed6G, all costs/unknowns/semantic limits,
+- [x] Verify focused GREEN; preregister fixed6G, all costs/unknowns/semantic limits,
   no promotion. Local commit; full npm/docs; one fresh whole-cycle review and one
   material RED/GREEN fix pass. Record minors and declined judgments.
-- [ ] Prepare fresh image with --prepare-screen; require all qualification groups
+- [x] Prepare fresh image with --prepare-screen; require all qualification groups
   plus actual startup warning transport and exact frozen screen counts/protocol.
 
 ## Task 3: Fixed screen, diagnosis and closure
@@ -77,9 +77,23 @@ collection_state(completed:int)->str, used by actual prepare/backend/final statu
 **Consumes:** reviewed qualified image and six-task preregistration.
 **Produces:** six retained outcomes or explicit integrity abort; verified shutdown.
 
-- [ ] Run --run-screen with6 fresh gated tasks sequentially; no selected retries.
-- [ ] Analyze complete quality/budget and semantics; preserve unknown output and
+- [x] Run --run-screen with6 fresh gated tasks sequentially; no selected retries.
+- [x] Analyze complete quality/budget and semantics; preserve unknown output and
   failures. A clean screen is a lead only; decide further work from observed faults.
-- [ ] Independently verify shutdown/freeze, package/scan raw locally. Update FIXES,
+- [x] Independently verify shutdown/freeze, package/scan raw locally. Update FIXES,
   close/archive plan with Result, cycle pointer/status, changelog and glossary or
   pathology if a new concept/failure shape was introduced; npm/docs GREEN, commit.
+
+## Result
+
+Closed2026-11-05. Sourcefcdc8a1 qualified; fixed6G finished4/6 usable,23/24
+hidden,health/typing6/6;240 requests/100798 output. All240 payloads carried
+each injection once. Two exhausted model failures; no stalls/deadlines.
+Independent87-resource audit found no owned process/container/volume/listener
+or frozen drift. Screen-only, no efficacy/reliability claim.
+[Evidence](../../../../evals/2026-11-05-runtime-repair-screen/README.md).
+Fresh review two Important issues fixed RED/GREEN; npm667/667, caps4/4, docs clean.
+Terminal timeout query false-block Minor deferred; inherited LC.35 roadmap
+blank-row Minor remains deferred. No new glossary concept or pathology category.
+Next hypothesis: authoritative repair feedback with missing-test/preservation
+guidance; not more repairs or weaker acceptance. Raw/publication held.

@@ -5,6 +5,10 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- Recorded the six-task runtime repair screen: four formal usable results, two
+  refused model failures, complete token accounting and independently verified
+  shutdown. Semantic reservations and the screen-only interpretation are retained.
+
 - The local acceptance collector has an explicit six-task gated screen mode, with frozen cohort metadata and a screen-only decision; the default comparison remains 20 tasks per arm.
 
 

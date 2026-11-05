@@ -1,0 +1,61 @@
+{
+  "ruff": {
+    "status": "pass",
+    "version": "0.16.3",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "ruff==0.16.3",
+      "ruff",
+      "check",
+      "--select",
+      "F,E9",
+      "--extend-exclude",
+      "tests",
+      "--extend-exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": "Using CPython 3.14.2\nCreating virtual environment at: .venv\nwarning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.\n         If the cache and target directories are on different filesystems, hardlinking may not be supported.\n         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.\nInstalled 47 packages in 14ms\nInstalled 1 package in 0.16ms\n"
+  },
+  "pyrefly": {
+    "status": "pass",
+    "version": "1.2.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "pyrefly==1.2.0",
+      "pyrefly",
+      "check",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "Installed 1 package in 0.42ms\n WARN PYTHONPATH environment variable is set to `/attempt/grading/workspace`. Checks in other environments may not include these paths.\n INFO 0 errors\n"
+  },
+  "complexipy": {
+    "status": "pass",
+    "version": "8.3.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "complexipy==8.3.0",
+      "complexipy",
+      "--max-complexity-allowed",
+      "10",
+      "--exclude",
+      "tests",
+      "--exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83d\udc19 complexipy \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\napp.py\n    home 0  \u2705  PASSED  \n\ntests/test_home.py\n    test_home_page 0  \u2705  PASSED  \n\nAll functions are within the allowed complexity.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83c\udf89 Analysis completed! \ud83c\udf89 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n",
+    "stderr": "Installed 1 package in 0.91ms\n"
+  }
+}

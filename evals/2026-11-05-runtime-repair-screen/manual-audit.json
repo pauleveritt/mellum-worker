@@ -1,0 +1,69 @@
+{
+  "scope": "Saved template source/text for manual inspection; no browser visual assessment. Structural hero/welcome proxies do not prove semantics. Registered outcomes unchanged.",
+  "reservations": {
+    "G1": "Literal placeholder: A short welcoming paragraph. Formal registered pass retained.",
+    "G2": "Neutral explanatory intro, weak welcoming tone; formal registered pass retained."
+  },
+  "artifacts": [
+    {
+      "task": "G1",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances.</p>\n    <hr class=\"my-4\">\n    <p>A short welcoming paragraph.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G2",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. Agents can browse complaints and add their own.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G3",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"text-center\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G4",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"container py-5\">\n    <div class=\"text-center mb-5\">\n        <h1 class=\"display-1\">Come in. Sit down. Tell us about our human.</h1>\n        <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances.</p>\n    </div>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "home_response",
+        "hero_tagline",
+        "project_tests"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G5",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances.</p>\n    <hr class=\"my-4\">\n    <p>Start by browsing the <a href=\"/complaints\">Complaints Board</a> or add your own grievance.</p>\n    <a class=\"btn btn-primary btn-lg\" href=\"/complaints\" role=\"button\">Go to Complaints Board</a>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G6",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"container\">\n    <div class=\"p-5 mb-4 bg-light rounded-3\">\n        <div class=\"container-fluid py-5 text-center\">\n            <h1 class=\"display-5 fw-bold\">Come in. Sit down. Tell us about your human.</h1>\n            <p class=\"col-md-8 mx-auto lead text-muted\">\n                AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.\n            </p>\n        </div>\n    </div>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    }
+  ]
+}

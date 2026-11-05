@@ -1,0 +1,21 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--with",
+    "pytest==8.3.4",
+    "sh",
+    "-c",
+    "printf started > \"$1\"; shift; exec \"$@\"",
+    "mellum-check",
+    "/attempt/grading/hidden-grade.started",
+    "pytest",
+    "-q",
+    "-rA",
+    "grader_tests"
+  ],
+  "exit_code": 1,
+  "started": true,
+  "stdout": "F...                                                                     [100%]\n=================================== FAILURES ===================================\n___________________ test_home_still_returns_200_and_tagline ____________________\n\n    def test_home_still_returns_200_and_tagline():\n        response = client.get(\"/\")\n        assert response.status_code == 200\n>       assert TAGLINE in response.text\nE       assert 'Come in. Sit down. Tell us about your human.' in '<!DOCTYPE html>\\n<html lang=\"en\">\\n<head>\\n    <meta charset=\"UTF-8\">\\n    <meta name=\"viewport\" content=\"width=devic...<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>\\n</body>\\n</html>'\nE        +  where '<!DOCTYPE html>\\n<html lang=\"en\">\\n<head>\\n    <meta charset=\"UTF-8\">\\n    <meta name=\"viewport\" content=\"width=devic...<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>\\n</body>\\n</html>' = <Response [200 OK]>.text\n\ngrader_tests/test_phase1_home.py:28: AssertionError\n=============================== warnings summary ===============================\n.venv/lib/python3.14/site-packages/starlette/testclient.py:37\n  /attempt/grading/workspace/.venv/lib/python3.14/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.\n    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]\n\n.venv/lib/python3.14/site-packages/fastapi/routing.py:233\n  /attempt/grading/workspace/.venv/lib/python3.14/site-packages/fastapi/routing.py:233: DeprecationWarning: 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead\n    is_coroutine = asyncio.iscoroutinefunction(dependant.call)\n\ngrader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline\ngrader_tests/test_phase1_home.py::test_home_has_html5_doctype\ngrader_tests/test_phase1_home.py::test_home_html_element_declares_english_language\ngrader_tests/test_phase1_home.py::test_home_still_has_navigation_links\n  /attempt/grading/workspace/.venv/lib/python3.14/site-packages/starlette/templating.py:161: DeprecationWarning: The `name` is not the first parameter anymore. The first parameter should be the `Request` instance.\n  Replace `TemplateResponse(name, {\"request\": request})` by `TemplateResponse(request, name)`.\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n==================================== PASSES ====================================\n=========================== short test summary info ============================\nPASSED grader_tests/test_phase1_home.py::test_home_has_html5_doctype\nPASSED grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language\nPASSED grader_tests/test_phase1_home.py::test_home_still_has_navigation_links\nFAILED grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline\n1 failed, 3 passed, 6 warnings in 0.40s\n",
+  "stderr": ""
+}
