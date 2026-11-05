@@ -82,7 +82,9 @@ def test_bootstrap_installs_exact_versions():
     text = joined(rig.bootstrap_commands(rig.load_pins(), prefix="/opt/rig", repo="/root/mellum-worker"))
     assert "@earendil-works/pi-coding-agent@1.4.0" in text
     assert "uv/0.11.6/install.sh" in text and "python install 3.14.2" in text
-    assert "sync --frozen" in text and "/root/mellum-worker/learn/code/suites/easy/base" in text
+    assert "sync --frozen --project /opt/rig/dependencies" in text
+    assert "cp /root/mellum-worker/learn/code/suites/easy/base/pyproject.toml" in text
+    assert "--project /root/mellum-worker/learn/code/suites/easy/base" not in text  # never inside the fixture
     for pinned in ("ruff@0.16.3", "complexipy@8.3.0", "pyrefly@1.2.0", "pytest@8.3.4"):
         assert pinned in text
 
@@ -173,3 +175,25 @@ def test_tool_versions_without_prefix_uses_path(tmp_path, monkeypatch):
     script.write_text("#!/bin/sh\necho 1.4.0\n"); script.chmod(0o755)
     monkeypatch.setenv("PATH", str(tmp_path / "bin"))
     assert rig.tool_versions(None)["pi"] == "1.4.0"
+
+
+def test_probe_python_lives_under_the_prefix():
+    assert rig.probe_python("/opt/rig") == rig.Path("/opt/rig/dependencies/.venv/bin/python")
+
+
+def test_chown_tree_never_follows_symlinks(tmp_path, monkeypatch):
+    import getpass
+    (tmp_path / "tree/sub").mkdir(parents=True)
+    (tmp_path / "tree/sub/file").write_text("x")
+    (tmp_path / "tree/escape").symlink_to("/etc/hosts")
+    calls = []
+    monkeypatch.setattr(rig.os, "chown", lambda path, uid, gid, *, follow_symlinks=True: calls.append(
+        (Path(path).name, follow_symlinks)))
+    rig.chown_tree(tmp_path / "tree", getpass.getuser())
+    assert {name for name, _ in calls} == {"tree", "sub", "file", "escape"}
+    assert all(follow is False for _, follow in calls)
+
+
+def test_lock_checkout_hides_the_repo_from_the_session_user():
+    assert rig.lock_checkout_commands("/root/mellum-worker") == [
+        "chown -R root:mellum-grade /root/mellum-worker", "chmod -R u=rwX,g=rX,o= /root/mellum-worker"]

@@ -5,10 +5,26 @@ import socket
 import subprocess
 import sys
 import time
+import tempfile
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import isolation
+
+@pytest.fixture
+def shared(tmp_path):
+    """A directory other users can traverse (pytest's own tmp root is private to the operator)."""
+    root = Path(tempfile.mkdtemp(dir="/tmp", prefix="isolation-test-"))
+    root.chmod(0o755)
+    yield root
+    for path in [root, *root.rglob("*")]:
+        if path.is_dir():
+            path.chmod(0o755)
+    import shutil
+    shutil.rmtree(root)
+
 
 LISTENER = ("import socket,time; s=socket.socket(); s.bind(('127.0.0.1',0)); s.listen(); "
             "print(s.getsockname()[1], flush=True); time.sleep(60)")
@@ -70,8 +86,8 @@ def test_listeners_parse():
                     {"pid": 77, "command": "llama-server", "uid": 0, "address": "*:18001", "port": 18001}]
 
 
-def test_isolation_probe_flags_readable_secret(tmp_path):
-    secret, private = tmp_path / "token", tmp_path / "key"
+def test_isolation_probe_flags_readable_secret(shared):
+    secret, private = shared / "token", shared / "key"
     secret.write_text("s"); secret.chmod(0o644)
     private.write_text("k"); private.chmod(0o600)
     result = isolation.isolation_probe("nobody", [secret, private], [os.getpid()])
@@ -93,3 +109,27 @@ def test_preflight_mac_fails_on_a_taken_port():
         child.kill(); child.wait()
     time.sleep(0.2)
     assert isolation.preflight_mac([port])["ok"] is True
+
+
+def test_reachable_honours_parent_traversal_and_group(shared):
+    tmp_path = shared
+    me, gid = os.getuid(), os.getgid()
+    locked = tmp_path / "locked"; locked.mkdir(); locked.chmod(0o700)
+    inside = locked / "oracle.py"; inside.write_text("x"); inside.chmod(0o644)
+    assert isolation.reachable(inside, 99999, set()) is False          # world-readable file, but the dir blocks
+    open_dir = tmp_path / "open"; open_dir.mkdir(); open_dir.chmod(0o755)
+    group_file = open_dir / "g"; group_file.write_text("x"); group_file.chmod(0o640)
+    os.chown(group_file, -1, gid)   # macOS gives new files their directory's group (wheel under /tmp)
+    assert isolation.reachable(group_file, 99999, {gid}) is True         # readable through the group bit
+    assert isolation.reachable(group_file, 99999, set()) is False
+    assert isolation.reachable(group_file, me, set()) is True            # the owner
+    locked.chmod(0o755)
+
+
+def test_isolation_probe_uses_reachability(shared):
+    tmp_path = shared
+    locked = tmp_path / "locked"; locked.mkdir(); locked.chmod(0o700)
+    secret = locked / "token"; secret.write_text("s"); secret.chmod(0o644)
+    assert isolation.isolation_probe("nobody", [secret], [])["ok"] is True
+    locked.chmod(0o755)
+    assert isolation.isolation_probe("nobody", [secret], [])["ok"] is False

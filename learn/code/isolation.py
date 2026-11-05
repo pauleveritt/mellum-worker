@@ -122,19 +122,37 @@ def preflight_mac(ports: list[int] | None = None) -> dict:
     return {"ok": not taken, "listeners": taken}
 
 
+def _permits(info: os.stat_result, uid: int, gids: set[int], bit: int) -> bool:
+    """Whether uid (with supplementary/primary gids) has permission `bit` (4 read, 1 execute) on a file."""
+    if info.st_uid == uid:
+        return bool(info.st_mode & (bit << 6))
+    if info.st_gid in gids:
+        return bool(info.st_mode & (bit << 3))
+    return bool(info.st_mode & bit)
+
+
+def reachable(path: Path, uid: int, gids: set[int]) -> bool:
+    """Whether uid could read path: every parent must be traversable and the file itself readable."""
+    path = Path(path).absolute()
+    try:
+        for parent in reversed(path.parents):
+            if not _permits(parent.stat(), uid, gids, 1):
+                return False
+        return _permits(path.stat(), uid, gids, 4)
+    except FileNotFoundError:
+        return False
+
+
 def isolation_probe(session_user: str, protected: list[Path], pids: list[int]) -> dict:
     """What the session user could reach: protected files it can read, processes it can signal."""
     try:
-        uid = pwd.getpwnam(session_user).pw_uid
+        account = pwd.getpwnam(session_user)
     except KeyError:
         return {"ok": False, "findings": [{"kind": "no_user", "user": session_user}]}
+    uid, gids = account.pw_uid, {account.pw_gid}   # sessions run with their primary group only (drop_privileges)
     findings = []
     for path in protected:
-        try:
-            info = Path(path).stat()
-        except FileNotFoundError:
-            continue
-        if info.st_uid == uid or info.st_mode & 0o004:
+        if reachable(Path(path), uid, gids):
             findings.append({"kind": "readable", "path": str(path)})
     owners = {pid: owner for pid, _, owner, _ in _processes()}
     for pid in pids:

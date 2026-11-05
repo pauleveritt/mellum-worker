@@ -5,6 +5,8 @@ rig, not a replicate (docs/superpowers/specs/2026-11-05-portable-floor-design.md
 """
 import hashlib
 import json
+import os
+import pwd
 import re
 import shlex
 import shutil
@@ -86,7 +88,7 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str, platform: str | No
     bin_dir = f"{prefix}/bin"
     uv = f"{bin_dir}/uv"
     project = f"{repo}/{boot['dependency_project']}"
-    python_dir, grade_cache = f"{prefix}/python", f"{prefix}/cache-grade"
+    python_dir, grade_cache, dependencies = f"{prefix}/python", f"{prefix}/cache-grade", f"{prefix}/dependencies"
     commands = [
         *(["apt-get update && apt-get install -y --no-install-recommends " + " ".join(map(q, boot["apt"]))]
           if linux else []),
@@ -98,12 +100,15 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str, platform: str | No
         f"curl -LsSf https://astral.sh/uv/{boot['uv']}/install.sh | env UV_INSTALL_DIR={q(bin_dir)} UV_NO_MODIFY_PATH=1 sh",
         f"UV_PYTHON_INSTALL_DIR={q(python_dir)} UV_PYTHON_BIN_DIR={q(bin_dir)} {q(uv)} python install {boot['python']}",
         f"PATH={q(bin_dir)}:$PATH {q(bin_dir + '/npm')} install -g --prefix {q(prefix)} {q(boot['pi'])}",
+        # A copy under the prefix: syncing inside the suite fixture would put a .venv in every workspace.
+        f"mkdir -p {q(dependencies)}",
+        f"cp {q(project + '/pyproject.toml')} {q(project + '/uv.lock')} {q(dependencies + '/')}",
         f"UV_CACHE_DIR={q(grade_cache)} UV_PYTHON_INSTALL_DIR={q(python_dir)} {q(uv)} sync --frozen "
-        f"--project {q(project)} --python {boot['python']}",
+        f"--project {q(dependencies)} --python {boot['python']}",
         *(f"UV_CACHE_DIR={q(grade_cache)} UV_PYTHON_INSTALL_DIR={q(python_dir)} "
           f"{q(bin_dir + '/uvx')} {q(f'{name}@{version}')} --version"
           for name, version in boot["checkers"].items()),
-        f"chmod -R a+rX {q(prefix)} {q(project)}",
+        f"chmod -R a+rX {q(prefix)}",
         # Grading runs `uv run --offline` as mellum-grade; the session user may read, never write, its cache.
         *([f"chown -R {GRADE_USER} {q(grade_cache)}"] if linux else []),
     ]
@@ -149,12 +154,35 @@ SESSION_USER = "mellum-session"
 GRADE_USER = "mellum-grade"
 
 
+def lock_checkout_commands(dest: str) -> list[str]:
+    """After the rig users exist: only root and the grading user may read the checkout (hidden tests live there)."""
+    q = shlex.quote
+    return [f"chown -R root:{GRADE_USER} {q(dest)}", f"chmod -R u=rwX,g=rX,o= {q(dest)}"]
+
+
+def chown_tree(path: Path, user: str) -> None:
+    """Give a tree to a rig user without ever following a symlink (lchown), so a planted link cannot redirect it."""
+    account = pwd.getpwnam(user)
+    for target in [Path(path), *Path(path).rglob("*")]:
+        os.chown(target, account.pw_uid, account.pw_gid, follow_symlinks=False)
+
+
+def drop_privileges(user: str) -> dict:
+    """Popen keywords that run as user with only its primary group (no inherited supplementary groups)."""
+    return {"user": user, "group": pwd.getpwnam(user).pw_gid, "extra_groups": []}
+
+
 def user_commands() -> list[str]:
     commands = []
     for user in (SESSION_USER, GRADE_USER):
         commands += [f"id -u {user} >/dev/null 2>&1 || useradd --create-home --shell /bin/bash {user}",
                      f"passwd --lock {user}"]
     return commands
+
+
+def probe_python(prefix: str) -> Path:
+    """The frozen dependency project's interpreter, which runs the acceptance probe."""
+    return Path(prefix) / "dependencies/.venv/bin/python"
 
 
 def user_env(prefix: str, user: str, *, home: str) -> dict[str, str]:

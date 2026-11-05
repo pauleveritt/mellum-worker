@@ -509,8 +509,11 @@ def run_suite(
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
     if user is not None:
-        for path in [run, *run.rglob("*")]:
-            shutil.chown(path, user=user)
+        import rig  # native rig only; the contained image does not ship it
+        # The run root and root's accounting files stay root-owned; the session gets only what Pi writes.
+        (run / "mellum-mode-runs.jsonl").touch()
+        for name in ("workspace", "profile", "sessions", "trace.jsonl", "mellum-mode-runs.jsonl"):
+            rig.chown_tree(run / name, user)
     env = {
         **(base_env if base_env is not None else os.environ),
         "PI_CODING_AGENT_DIR": str(run / "profile"),
@@ -567,7 +570,7 @@ def run_suite(
                     child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
                                              stdout=output, stderr=subprocess.STDOUT,
                                              start_new_session=True,
-                                             **({"user": user} if user is not None else {}))
+                                             **(__import__("rig").drop_privileges(user) if user is not None else {}))
                 groups.append(child.pid)
                 identity = process_identity(child.pid)
                 if identity is not None:

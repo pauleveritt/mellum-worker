@@ -1464,6 +1464,7 @@ def test_without_budget_behaviour_unchanged(tmp_path):
     assert (run_dir / "deadline").is_file()
 
 
+@pytest.mark.skipif(os.geteuid() != 0, reason="dropping supplementary groups needs root, as on a pod")
 def test_run_suite_runs_pi_as_the_given_user(tmp_path):
     run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=PROFILE,
                                 pi_binary=str(FIX / "fake-pi.sh"), user=getpass.getuser())
@@ -1491,3 +1492,24 @@ def test_grade_and_record_matches_run_sessions(tmp_path):
     again = json.loads((run_dir / "run.json").read_text())
     for key in ("passed", "checks_ran", "checks_passed", "checks_total", "code_health", "completion"):
         assert again[key] == original[key]
+
+
+def test_session_user_owns_only_what_pi_writes(tmp_path, monkeypatch):
+    """Root keeps the run root and its accounting files; Pi gets workspace, profile, sessions and its traces."""
+    owned, launched = [], {}
+    import rig
+    monkeypatch.setattr(rig, "chown_tree", lambda path, user: owned.append(path.name))
+    real = subprocess.Popen
+    def spy(argv, **kwargs):
+        launched.update(kwargs)
+        for key in ("user", "group", "extra_groups"):
+            kwargs.pop(key, None)
+        return real(argv, **kwargs)
+    monkeypatch.setattr(harness.subprocess, "Popen", spy)
+    run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi.sh"), user=getpass.getuser())
+    assert sorted(owned) == ["mellum-mode-runs.jsonl", "profile", "sessions", "trace.jsonl", "workspace"]
+    assert run_dir.name not in owned
+    assert launched["user"] == getpass.getuser() and launched["extra_groups"] == []
+    import pwd
+    assert launched["group"] == pwd.getpwnam(getpass.getuser()).pw_gid
