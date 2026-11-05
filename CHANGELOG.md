@@ -44,6 +44,27 @@ Versions match git tags; pin one in both install lines.
   retrying a missing test dir or file. All agnostic — they read the task, never
   the suite.
 
+- **Plan-delegation grounding & verification levers — all off by default.** A
+  second batch of opt-in knobs for the plan loop, measured as a medium lead and
+  one recorded negative (see
+  `docs/superpowers/research/2026-11-06-medium-cap-thinking-digest.md`), shipped
+  behaviour unchanged when unset: `MELLUM_DELEGATE_ARCHITECT_DIRECT=1` tells the
+  architect to read each spec file once (not re-derive) and keep the plan
+  grounded — never prescribe an edit against invented file contents;
+  `MELLUM_DELEGATE_WORKER_DIRECT=1` now also curbs per-turn thinking (one short
+  sentence per tool call) and, when the project has **no** real test files on
+  disk (a filesystem check, not a doc's claim), tells the worker to call out an
+  inapplicable "run the tests" instruction instead of hunting for a missing test
+  dir; `MELLUM_DELEGATE_SMOKE=1` runs an agnostic smoke check after the build
+  (`scripts/mellum-smoke.py`: every `.py` parses, every top-level module imports,
+  every template parses) and re-dispatches one worker to fix a parse/import
+  failure — it catches structural zeros, not incomplete behaviour; and
+  `MELLUM_DELEGATE_DIGEST=1` hands each fresh worker a state digest (file manifest
+  + current contents). On medium, `cap + reduced thinking` lifted the median from
+  the baseline's 15 to 16 with the low-score collapse gone; the digest's inline
+  contents **regressed** it (prefill bloat) and are kept only for a manifest-only
+  follow-up. All agnostic — they read the task and the tree, never the suite.
+
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole
   spec into the smallest ordered chunks, each written as its own `stepNN.md`

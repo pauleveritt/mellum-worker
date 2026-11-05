@@ -600,6 +600,39 @@ test("authorPlanPrompt splits the spec into step docs with the verbatim spec and
 	assert.match(p, /run out/i, "it nudges the architect to write files first and keep reasoning short so it does not run out of output (truncation guard)");
 });
 
+test("authorPlanPrompt adds the don't-overthink + grounded nudge only when MELLUM_DELEGATE_ARCHITECT_DIRECT=1", async () => {
+	const { authorPlanPrompt } = await load();
+	const prev = process.env.MELLUM_DELEGATE_ARCHITECT_DIRECT;
+	try {
+		delete process.env.MELLUM_DELEGATE_ARCHITECT_DIRECT;
+		const off = authorPlanPrompt("build a board");
+		assert.doesNotMatch(off, /read each .* once/i,
+			"off by default — the shipped architect prompt is unchanged (frozen until measured)");
+		assert.doesNotMatch(off, /GROUNDED/,
+			"off by default — no grounding block in the shipped prompt");
+
+		process.env.MELLUM_DELEGATE_ARCHITECT_DIRECT = "1";
+		const on = authorPlanPrompt("build a board");
+		assert.match(on, /read each .* once/i, "don't-overthink: read each spec/notes file once");
+		assert.match(on, /do not re-?read|re-?derive/i, "don't-overthink: no re-reading or re-deriving");
+		assert.match(on, /GROUNDED/, "a grounding block is added");
+		assert.match(on, /never invent the current contents/i,
+			"grounded: do not fabricate the contents of a file an earlier step writes");
+		assert.match(on, /quote the EXACT text/i,
+			"grounded: anchor an edit on the exact text an earlier step was told to write");
+		assert.match(on, /never prescribe an edit to a file no step creates/i,
+			"grounded: no edit against a file nothing creates");
+		// agnostic — the added block names no suite file, framework or value. (The base prompt's
+		// pre-existing "specs/roadmap.md" example is shipped text, out of scope for this nudge.)
+		const added = on.replace(off.replace(/\n\nTask: build a board$/, ""), "").replace(/\n?Task: build a board$/, "");
+		assert.doesNotMatch(added, /app\.py|fastapi|jinja|turbohtml|roadmap\.md/i,
+			"the added grounding block is agnostic — it names no suite file, framework or value");
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_ARCHITECT_DIRECT;
+		else process.env.MELLUM_DELEGATE_ARCHITECT_DIRECT = prev;
+	}
+});
+
 test("listStepDocs returns the step docs by number, no paired test required", async () => {
 	const { listStepDocs } = await load();
 	await inTempCwd(async (dir) => {
@@ -631,15 +664,96 @@ test("planWorkerBrief adds a direct-implementation nudge only when MELLUM_DELEGA
 	const prev = process.env.MELLUM_DELEGATE_WORKER_DIRECT;
 	try {
 		delete process.env.MELLUM_DELEGATE_WORKER_DIRECT;
-		assert.doesNotMatch(planWorkerBrief(steps, 0), /implement it directly/i,
+		assert.doesNotMatch(planWorkerBrief(steps, 0, false), /implement it directly/i,
 			"off by default — the shipped step brief is unchanged (frozen until measured)");
+		assert.doesNotMatch(planWorkerBrief(steps, 0, false), /no test suite|do not run tests/i,
+			"off by default — the shipped brief says nothing about tests");
 		process.env.MELLUM_DELEGATE_WORKER_DIRECT = "1";
-		const b = planWorkerBrief(steps, 0);
-		assert.match(b, /implement it directly/i);
-		assert.match(b, /do not reason at length|re-derive/i, "the nudge curbs re-deriving the earlier steps");
+		// When the project genuinely has NO tests on disk, the worker is told to call out any
+		// instruction to run them and move on — not to hunt for a tests directory.
+		const bNone = planWorkerBrief(steps, 0, false);
+		assert.match(bNone, /implement it directly/i);
+		assert.match(bNone, /do not reason at length|re-derive/i, "the nudge curbs re-deriving the earlier steps");
+		assert.match(bNone, /one short sentence before each/i, "terse-thinking: one sentence per action, so a step costs fewer turns (cap fits)");
+		assert.match(bNone, /no test suite/i, "it states the measured truth: there are no tests");
+		assert.match(bNone, /does not apply/i, "the worker should CALL OUT an inapplicable instruction, not obey it blindly");
+		assert.match(bNone, /do not run tests|search for a tests/i, "no tests-dir hunt");
+		// When tests DO exist, the direct nudge still applies but nothing forbids running them.
+		const bHas = planWorkerBrief(steps, 0, true);
+		assert.match(bHas, /implement it directly/i);
+		assert.doesNotMatch(bHas, /no test suite|does not apply/i,
+			"agnostic — when tests exist, do not tell the worker there are none");
 	} finally {
 		if (prev === undefined) delete process.env.MELLUM_DELEGATE_WORKER_DIRECT;
 		else process.env.MELLUM_DELEGATE_WORKER_DIRECT = prev;
+	}
+});
+
+test("hasTests reads the real tree, not the docs' claims", async () => {
+	const { hasTests } = await load();
+	await inTempCwd(async (dir) => {
+		assert.equal(hasTests(dir), false, "an empty project has no tests");
+		writeFileSync(join(dir, "AGENTS.md"), "Test command: uv run --frozen python -m pytest tests\n");
+		assert.equal(hasTests(dir), false, "a doc CLAIMING a test command does not make tests exist");
+		mkdirSync(join(dir, "tests"));
+		assert.equal(hasTests(dir), false, "an empty tests/ dir still has nothing runnable");
+		writeFileSync(join(dir, "tests", "test_home.py"), "def test_ok():\n    assert True\n");
+		assert.equal(hasTests(dir), true, "a real test_*.py file counts");
+	});
+});
+
+test("planWorkerBrief defaults hasTests to the real cwd", async () => {
+	const { planWorkerBrief } = await load();
+	// smoke: the 2-arg call still works (default param computes from the filesystem) and never throws.
+	assert.match(planWorkerBrief([{ n: 1, doc: "step01.md" }], 0), /step 1 of 1/);
+});
+
+test("planStateDigest lists the project's code files and their current contents, skipping vendor/grader", async () => {
+	const { planStateDigest } = await load();
+	await inTempCwd(async (dir) => {
+		writeFileSync(join(dir, "app.py"), "from fastapi import FastAPI\napp = FastAPI()\n");
+		mkdirSync(join(dir, "templates"));
+		writeFileSync(join(dir, "templates", "base.html"), "<!doctype html><title>X</title>\n");
+		mkdirSync(join(dir, ".venv"));
+		writeFileSync(join(dir, ".venv", "junk.py"), "SHOULD_NOT_APPEAR = 1\n");
+		mkdirSync(join(dir, "grader_tests"));
+		writeFileSync(join(dir, "grader_tests", "g.py"), "HIDDEN = 1\n");
+		const d = planStateDigest(dir);
+		assert.match(d, /app\.py/, "lists the worker's own source");
+		assert.match(d, /templates\/base\.html/);
+		assert.match(d, /app = FastAPI\(\)/, "includes the current contents so the worker needn't re-read");
+		assert.doesNotMatch(d, /SHOULD_NOT_APPEAR/, "skips .venv");
+		assert.doesNotMatch(d, /HIDDEN/, "skips grader_tests");
+	});
+});
+
+test("planStateDigest stays within its byte budget", async () => {
+	const { planStateDigest } = await load();
+	await inTempCwd(async (dir) => {
+		writeFileSync(join(dir, "big.py"), "x = 1  # pad\n".repeat(5000)); // ~65 KB
+		const d = planStateDigest(dir, 2000, 8000);
+		assert.ok(d.length < 9000, `digest is bounded, got ${d.length}`);
+		assert.match(d, /truncated|omitted/i, "says it clipped");
+	});
+});
+
+test("planWorkerBrief appends the state digest only when MELLUM_DELEGATE_DIGEST=1", async () => {
+	const { planWorkerBrief } = await load();
+	const prev = process.env.MELLUM_DELEGATE_DIGEST;
+	try {
+		await inTempCwd(async (dir) => {
+			writeFileSync(join(dir, "app.py"), "app = 1  # BUILT_SO_FAR\n");
+			const steps = [{ n: 1, doc: "step01.md" }, { n: 2, doc: "step02.md" }];
+			delete process.env.MELLUM_DELEGATE_DIGEST;
+			assert.doesNotMatch(planWorkerBrief(steps, 1, true), /Project state|BUILT_SO_FAR/,
+				"off by default — no digest in the shipped brief");
+			process.env.MELLUM_DELEGATE_DIGEST = "1";
+			const b = planWorkerBrief(steps, 1, true);
+			assert.match(b, /Project state/i, "the digest is appended");
+			assert.match(b, /BUILT_SO_FAR/, "with the current file contents");
+		});
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_DIGEST; else process.env.MELLUM_DELEGATE_DIGEST = prev;
 	}
 });
 
@@ -698,6 +812,91 @@ test("doTaskPlan does NOT rethink when the worker finishes under the cap", async
 		});
 	} finally {
 		if (prev === undefined) delete process.env.MELLUM_TURN_CAP; else process.env.MELLUM_TURN_CAP = prev;
+	}
+});
+
+test("smokeCommand is agnostic — parses sources and templates, names no suite value", async () => {
+	const { smokeCommand } = await load();
+	const c = smokeCommand();
+	assert.match(c, /mellum-smoke\.py/, "runs the shipped smoke script");
+	assert.match(c, /\bpython\b/, "via python");
+	assert.doesNotMatch(c, /app\.py|home\.html|complaints|roadmap|tagline|fastapi/i,
+		"agnostic — no suite file, route or value");
+});
+
+test("planSmokeBrief hands over the error verbatim and forbids scope creep", async () => {
+	const { planSmokeBrief } = await load();
+	const b = planSmokeBrief("SMOKE_FAIL: templates/home.html:1: TemplateSyntaxError: expected end of print");
+	assert.match(b, /syntax error/i);
+	assert.match(b, /TemplateSyntaxError/, "the real error is handed over");
+	assert.match(b, /nothing else|do not add|only the/i, "fix just that, no scope creep");
+	assert.match(b, /do not run or search for tests/i, "and don't start the tests hunt");
+});
+
+test("doTaskPlan smoke-checks the build and re-dispatches ONE fix worker on a parse failure (MELLUM_DELEGATE_SMOKE=1)", async () => {
+	const { doTaskPlan, smokeCommand } = await load();
+	const prev = process.env.MELLUM_DELEGATE_SMOKE;
+	process.env.MELLUM_DELEGATE_SMOKE = "1";
+	try {
+		await inTempCwd(async () => {
+			const smoke = smokeCommand();
+			const briefs = [];
+			const authorPlan = async () => { writeFileSync("step01.md", "home\n"); return "ok"; };
+			const worker = async (b) => { briefs.push(b); return "built"; };
+			let smokeCalls = 0;
+			const shell = async (cmd) => {
+				if (cmd === smoke) { smokeCalls++; return { passed: smokeCalls > 1, output: "SMOKE_FAIL: templates/home.html:1: TemplateSyntaxError" }; }
+				return { passed: false, output: "" }; // git off
+			};
+			const r = await doTaskPlan("build it", { authorPlan, worker, shell });
+			assert.equal(briefs.length, 2, "one build worker + one smoke-fix worker");
+			assert.match(briefs[1], /smoke check found a syntax error/i, "the fix worker gets the smoke failure");
+			assert.match(briefs[1], /TemplateSyntaxError/, "with the real error text");
+			assert.match(r, /smoke: a syntax error was found and fixed/i);
+			assert.equal(smokeCalls, 2, "re-checks after the fix");
+		});
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_SMOKE; else process.env.MELLUM_DELEGATE_SMOKE = prev;
+	}
+});
+
+test("doTaskPlan smoke-check passes clean and dispatches no fix worker", async () => {
+	const { doTaskPlan, smokeCommand } = await load();
+	const prev = process.env.MELLUM_DELEGATE_SMOKE;
+	process.env.MELLUM_DELEGATE_SMOKE = "1";
+	try {
+		await inTempCwd(async () => {
+			const smoke = smokeCommand();
+			const briefs = [];
+			const authorPlan = async () => { writeFileSync("step01.md", "home\n"); return "ok"; };
+			const worker = async (b) => { briefs.push(b); return "built"; };
+			const shell = async (cmd) => (cmd === smoke ? { passed: true, output: "SMOKE_OK" } : { passed: false, output: "" });
+			const r = await doTaskPlan("build it", { authorPlan, worker, shell });
+			assert.equal(briefs.length, 1, "no fix worker when the build parses");
+			assert.match(r, /smoke: clean/i);
+		});
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_SMOKE; else process.env.MELLUM_DELEGATE_SMOKE = prev;
+	}
+});
+
+test("doTaskPlan runs NO smoke check when MELLUM_DELEGATE_SMOKE is unset (frozen default)", async () => {
+	const { doTaskPlan, smokeCommand } = await load();
+	const prev = process.env.MELLUM_DELEGATE_SMOKE;
+	delete process.env.MELLUM_DELEGATE_SMOKE;
+	try {
+		await inTempCwd(async () => {
+			const smoke = smokeCommand();
+			let smokeCalled = false;
+			const authorPlan = async () => { writeFileSync("step01.md", "home\n"); return "ok"; };
+			const worker = async () => "built";
+			const shell = async (cmd) => { if (cmd === smoke) smokeCalled = true; return { passed: false, output: "" }; };
+			const r = await doTaskPlan("build it", { authorPlan, worker, shell });
+			assert.equal(smokeCalled, false, "off by default — no smoke pass runs");
+			assert.doesNotMatch(r, /smoke:/i);
+		});
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_SMOKE; else process.env.MELLUM_DELEGATE_SMOKE = prev;
 	}
 });
 

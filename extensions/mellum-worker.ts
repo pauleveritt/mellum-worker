@@ -970,6 +970,20 @@ export function authorSplitTask(task: string, got: number, want: number): string
 
 /** The architect prompt for plan mode: split the spec into step docs only — no tests. */
 export function authorPlanPrompt(task: string): string {
+	// MELLUM_DELEGATE_ARCHITECT_DIRECT=1 adds two nudges, symmetric to the worker-direct one:
+	// (1) don't overthink — read each spec/notes file ONCE instead of re-reading and re-deriving
+	// (the churn that pushed the architect past the deadline); (2) keep the plan GROUNDED — never
+	// invent the contents of a file an earlier step writes, so a step never hands the worker an
+	// edit anchor that cannot match (the root cause of the fabricated-anchor thrash). Default off,
+	// so the shipped architect prompt is byte-identical and frozen until a ladder screen measures it.
+	const direct = process.env.MELLUM_DELEGATE_ARCHITECT_DIRECT === "1";
+	const groundedBlock = direct
+		? "Read each spec or notes file ONCE — do not re-read or re-derive; write the plan directly " +
+		  "from what the spec says. Keep the plan GROUNDED: never invent the current contents of a " +
+		  "file an earlier step writes. When a step edits a file an earlier step created, quote the " +
+		  "EXACT text that earlier step was told to write as the anchor, and never prescribe an edit " +
+		  "to a file no step creates.\n"
+		: "";
 	return (
 		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code and do NOT " +
 		"write any tests.\n" +
@@ -989,8 +1003,9 @@ export function authorPlanPrompt(task: string): string {
 		`ONLY the step docs, ${TODO_FILE} and BRIEF.md — no tests, no implementation files. Before you ` +
 		"stop, confirm the steps are contiguous from 1 and together cover the whole spec.\n" +
 		"Write the step files AS YOU GO — emit step01.md first, then the next, and keep your reasoning " +
-		"between files to a sentence, so you do NOT run out of output before the files are written.\n\n" +
-		`Task: ${task}`
+		"between files to a sentence, so you do NOT run out of output before the files are written.\n" +
+		groundedBlock +
+		`\nTask: ${task}`
 	);
 }
 
@@ -1016,8 +1031,75 @@ export function listStepDocs(cwd: string): PlanStep[] {
 	return steps.sort((a, b) => a.n - b.n);
 }
 
-/** What the plan-mode worker is told: build THIS step from its doc; no test to run. */
-export function planWorkerBrief(steps: PlanStep[], i: number): string {
+/** Whether the project actually has a runnable test on disk right now — pytest-style discovery:
+ * a `test_*.py` / `*_test.py` file anywhere within a few levels (skipping vendor dirs). Agnostic:
+ * it reads the real tree, never a doc's claim (a fixture's AGENTS.md can promise a test command for
+ * tests it does not ship). The plan stage uses this to decide whether a worker should run tests at
+ * all, so the model calls out an inapplicable "run the tests" instruction instead of hunting for a
+ * directory that isn't there. */
+export function hasTests(cwd: string, depth = 4): boolean {
+	const SKIP = new Set([".git", "node_modules", ".venv", "venv", "env", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", "dist", "build", ".tox"]);
+	const isTestFile = (name: string) => /^test_.+\.py$/.test(name) || /.+_test\.py$/.test(name);
+	const walk = (dir: string, d: number): boolean => {
+		let entries;
+		try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return false; }
+		for (const e of entries) {
+			if (e.isFile() && isTestFile(e.name)) return true;
+			if (e.isDirectory() && d > 0 && !SKIP.has(e.name) && !e.name.startsWith(".")) {
+				if (walk(resolve(dir, e.name), d - 1)) return true;
+			}
+		}
+		return false;
+	};
+	return walk(cwd, depth);
+}
+
+/**
+ * A compact digest of what the project already contains — a file manifest plus the verbatim current
+ * contents of the code files, capped. Handed to a fresh worker (MELLUM_DELEGATE_DIGEST=1) so it does
+ * NOT re-`ls`/`find`/`read` the whole tree every step (the cold-start overhead that makes a many-step
+ * plan slow), and so an edit it makes anchors on the EXACT current text instead of a guessed one.
+ * Agnostic: it reads the real tree, naming no suite file or value. Code files only; skips the plan
+ * docs, the spec, and vendor/grader dirs. Empty when nothing is built yet.
+ */
+export function planStateDigest(cwd: string, maxPerFile = 2000, maxTotal = 8000): string {
+	const SKIP = new Set([".venv", "venv", "env", ".git", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", "node_modules", "dist", "build", ".tox", "grader_tests"]);
+	const CODE = /\.(py|html?|j2|jinja2?|css|js|ts)$/i;
+	const files: string[] = [];
+	const walk = (dir: string, rel: string, depth: number): void => {
+		let entries;
+		try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+		for (const e of entries) {
+			if (e.name.startsWith(".")) continue;
+			const r = rel ? `${rel}/${e.name}` : e.name;
+			if (e.isDirectory()) { if (!SKIP.has(e.name) && depth > 0) walk(resolve(dir, e.name), r, depth - 1); }
+			else if (CODE.test(e.name)) files.push(r);
+		}
+	};
+	walk(cwd, "", 5);
+	if (!files.length) return "";
+	files.sort();
+	let out = "## Project state (already built — use this instead of re-reading from disk)\n\nFiles present:\n" + files.map((f) => `- ${f}`).join("\n") + "\n";
+	let total = out.length;
+	for (const f of files) {
+		let body;
+		try { body = readFileSync(resolve(cwd, f), "utf8"); } catch { continue; }
+		const clipped = body.length > maxPerFile ? body.slice(0, maxPerFile) + "\n… (truncated)\n" : body;
+		const block = `\n### ${f}\n\`\`\`\n${clipped}\n\`\`\`\n`;
+		if (total + block.length > maxTotal) { out += "\n(further files omitted to stay within the digest budget — read them directly if a step needs one.)\n"; break; }
+		out += block;
+		total += block.length;
+	}
+	return out;
+}
+
+/** What the plan-mode worker is told: build THIS step from its doc. Whether to run tests is decided
+ * at the plan stage by `tests` (the real tree), never by what a doc claims. */
+export function planWorkerBrief(steps: PlanStep[], i: number, tests: boolean = hasTests(process.cwd())): string {
+	// MELLUM_DELEGATE_DIGEST=1 appends a state digest (manifest + current file contents) so a fresh
+	// worker skips the re-`ls`/`read` cold start and anchors edits on the exact current text. Off by
+	// default (shipped brief frozen); empty on step 1 when nothing is built.
+	const digest = process.env.MELLUM_DELEGATE_DIGEST === "1" ? planStateDigest(process.cwd()) : "";
 	const s = steps[i];
 	// MELLUM_DELEGATE_WORKER_DIRECT=1 adds a terse nudge: the step is already fully
 	// specified by the architect, so the worker should implement it rather than
@@ -1035,9 +1117,17 @@ export function planWorkerBrief(steps: PlanStep[], i: number): string {
 		"outside it. " +
 		(direct
 			? "This step is fully specified: implement it directly from the doc — do not reason at length " +
-			  "or re-derive the earlier steps' decisions; make exactly the change the doc asks for. "
+			  "or re-derive the earlier steps' decisions; make exactly the change the doc asks for. " +
+			  "Think in one short sentence before each tool call, then act — a step should cost a handful " +
+			  "of turns, not a long deliberation. " +
+			  (tests
+				? ""
+				: "This project has no test suite. If an instruction tells you to run the tests, it does " +
+				  "not apply here — say so in one line and move on; do NOT run tests or search for a tests " +
+				  "directory. Make the change and stop. ")
 			: "") +
-		"Implement the step completely, then stop."
+		"Implement the step completely, then stop." +
+		(digest ? "\n\n" + digest : "")
 	);
 }
 
@@ -1051,6 +1141,25 @@ export function planRethinkBrief(steps: PlanStep[], i: number, turns: number, ca
 		`this step from ${s.doc} and BRIEF.md. Make the SIMPLEST change that satisfies its spec, using the ` +
 		`project's ordinary conventions. If a command fails, read the error and fix the cause once; do not ` +
 		`re-run it repeatedly, add dependencies, or build scaffolding. Implement it and stop.`
+	);
+}
+
+/** The agnostic smoke-check command: every .py parses and every template parses, nothing more —
+ * no suite route or value. The plan loop has no gate, so a bare syntax slip (a Jinja `{{ extends }}`
+ * for `{% extends %}`) ships as a silent zero; this one parse pass catches that class without
+ * importing the app. Run in the workspace cwd via the shared shell runner. */
+export function smokeCommand(): string {
+	const script = resolve(dirname(SELF), "..", "scripts", "mellum-smoke.py");
+	return `uv run --with jinja2 python ${JSON.stringify(script)} .`;
+}
+
+/** The fix brief after the smoke check fails: fix exactly the syntax error it named, nothing else. */
+export function planSmokeBrief(error: string): string {
+	return (
+		"A smoke check found a syntax error that breaks the build — the project does not even parse:\n\n" +
+		error.slice(-1200) + "\n\n" +
+		"Fix ONLY that syntax error, in the file and line it names — nothing else. Do not add features, " +
+		"do not touch other files, and do not run or search for tests. Make the one fix and stop."
 	);
 }
 
@@ -1160,12 +1269,31 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 		if (haveGit) await shell(`git add -A && git -c user.email=w@w -c user.name=w commit -q -m "step ${steps[i].n}" --no-verify || true`);
 		lines.push(`step ${steps[i].n}/${steps.length} (${steps[i].doc}): built${rethought ? " · rethought after stall" : ""} · ${stage("worker", wStats, stepWall)}`);
 	}
+	// Smoke check (MELLUM_DELEGATE_SMOKE=1): the plan loop has no gate, so a bare syntax slip ships
+	// as a silent zero. One agnostic parse pass — every .py and template must parse — catches it, and
+	// a failure is handed to ONE fresh worker to fix. A harness guarantee, not a prose rule; default off.
+	let smokeLine: string | undefined;
+	if (process.env.MELLUM_DELEGATE_SMOKE === "1") {
+		const first = await shell(smokeCommand());
+		if (first.passed) {
+			smokeLine = "smoke: clean — every source and template parses";
+		} else {
+			await worker(planSmokeBrief(first.output));
+			if (haveGit) await shell(`git add -A && git -c user.email=w@w -c user.name=w commit -q -m "smoke fix" --no-verify || true`);
+			const second = await shell(smokeCommand());
+			smokeLine = second.passed
+				? "smoke: a syntax error was found and fixed"
+				: `smoke: a syntax error remains after one fix attempt — ${second.output.slice(-200)}`;
+		}
+	}
+
 	const totalWall = secs(t0);
 	return [
 		`handover (plan): ${steps.length} step doc${steps.length === 1 ? "" : "s"} + ${TODO_FILE} + BRIEF.md (no tests).`,
 		`steps built: ${done.size}/${steps.length} — grade with the suite's hidden oracle (there is no per-step gate).`,
 		...(coarse ? [`note: the plan stayed coarse (${steps.length} steps, below the ${minSteps}-step floor for this spec) after the split retries — built as best effort.`] : []),
 		...lines,
+		...(smokeLine ? [smokeLine] : []),
 		`turns/wall: ${stage("architect", authorStats, authorWall)} · total ${totalWall}s`,
 	].join("\n");
 }
