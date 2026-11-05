@@ -23,6 +23,7 @@ from acceptance_containment import check_snapshot
 ORDER = ["selective", "gated"] * 20
 LIMIT = 8 * 60 * 60
 PACKAGE = REPO / "learn/code/acceptance/easy-phase1"
+FOLLOWUP_PROTOCOL = REPO / "docs/superpowers/research/2026-11-05-actionable-acceptance-protocol.md"
 SELECTIVE = ["prompt/name-the-layout", "prompt/python-developer", "prompt/verify-the-spec",
              "guard/foreground-server", "context/trim-tool-output"]
 STOP_REQUESTED = False
@@ -165,10 +166,11 @@ def prepare(batch: Path):
               harness.PROFILE / "models.json", harness.PROFILE / "settings.json",
               REPO / "runs/2026-11-04-local-controlled6/backend-config.json",
               REPO / "docs/superpowers/research/2026-11-04-protected-acceptance-protocol.md"]
+    files.append(FOLLOWUP_PROTOCOL)
     files += [p for p in (harness.SUITES / "easy").rglob("*") if p.is_file()
               and not any(part in containment.OMIT for part in p.parts)]
     package = AcceptancePackage.load(PACKAGE)
-    write_json(batch / "prepared.json", {"qualified": True, "image": image,
+    write_json(batch / "prepared.json", {"qualified": True, "image": image, "protocol": str(FOLLOWUP_PROTOCOL),
         "package_sha256": package.digest, "freeze": freeze_files(files), "at": now(),
         "boundary": boundary["material"], "order": ORDER, "limits": {"task": 600, "stall": 180, "batch": LIMIT}})
 
