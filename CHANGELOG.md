@@ -222,6 +222,9 @@ Versions match git tags; pin one in both install lines.
 - The portable rig's llama.cpp build takes a job count (`build_commands(jobs=…)`).
   A pod's cgroup grants a few CPUs and 50 GB while `nproc` reports the whole host,
   so the unbounded `-j` could start one nvcc per CUDA file and run out of memory.
+- The floor driver's `prepare` writes `prepared.json` readable by root only. The
+  first pod's isolation check found the session user could read it, which the
+  design forbids, so the host failed conformance before any session.
 
 - Log-follow classification distinguishes foreground `nohup` from detachment
   and ignores shell redirection targets when reading executable/options. The

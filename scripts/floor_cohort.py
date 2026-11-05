@@ -123,6 +123,7 @@ def prepare(batch: Path, prefix: str | None) -> dict:
     prepared = {"at": now(), "commit": commit, "pins_digest": rig.pins_digest(pins), "tools": found,
                 "freeze": freeze()}
     write_json(batch / "prepared.json", prepared)
+    (batch / "prepared.json").chmod(0o600)      # protected from the session user (isolation item)
     return prepared
 
 

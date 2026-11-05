@@ -231,3 +231,12 @@ def test_run_one_hands_pi_absolute_paths(batch, monkeypatch):
     with pytest.raises(Stop):
         driver.run_one(Path(batch.name), "M", config, {}, rig.load_pins(), 1)
     assert seen["runs_dir"].is_absolute() and seen["profile"].is_absolute() and seen["budget_log"].is_absolute()
+
+
+def test_prepare_writes_a_file_only_root_can_read(tmp_path, monkeypatch):
+    # The design protects prepared.json from the session user; the pod's isolation item found it 0644.
+    boot = rig.load_pins()["bootstrap"]
+    monkeypatch.setattr(driver.rig, "tool_versions", lambda prefix: {
+        "node": boot["node"]["version"], "pi": boot["pi"].rsplit("@", 1)[-1], "uv": boot["uv"], "python": boot["python"]})
+    driver.prepare(tmp_path, "/opt/rig")
+    assert (tmp_path / "prepared.json").stat().st_mode & 0o077 == 0
