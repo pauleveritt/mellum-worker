@@ -211,7 +211,13 @@ function startsServer(words: string[]): boolean {
 			words.shift();
 			while (words[0]?.startsWith("-") && words[0] !== "--") {
 				const option = words.shift();
-				if (["-s", "--signal", "-k", "--kill-after"].includes(option ?? "")) words.shift();
+				if (["--signal", "--kill-after"].includes(option ?? "")) words.shift();
+				else if (option && !option.startsWith("--")) {
+					// In a short-option cluster, s/k consumes the rest of the
+					// same word, or the next word when its operand is separate.
+					const operand = option.slice(1).search(/[sk]/);
+					if (operand >= 0 && operand === option.length - 2) words.shift();
+				}
 			}
 			if (words[0] === "--") words.shift();
 			if (!/^(?:(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?[smhd]?|inf(?:inity)?)$/i.test(words.shift() ?? "")) return false;

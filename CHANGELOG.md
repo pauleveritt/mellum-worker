@@ -181,7 +181,8 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
-- Foreground-server guards recognize timeout wrappers and clearly distinguish a
+- Foreground-server guards recognize timeout wrappers, including clustered short
+  options, and clearly distinguish a
   blocked call from application output. Guidance preserves required bounded
   startup verification; task verification excludes later tasks, and acceptance
   feedback labels observed launch failures explicitly. Coding benefit awaits

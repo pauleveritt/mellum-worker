@@ -143,16 +143,26 @@ def test_prepare_registers_actual_selected_cohort(tmp_path, monkeypatch, mode, k
     monkeypatch.setattr(acceptance_qualification, "qualify", lambda *a: {"qualified": True})
     monkeypatch.setattr(acceptance_runtime_qualification, "qualify", lambda *a: {"qualified": True})
     monkeypatch.setattr(acceptance_runtime_qualification, "qualify_compaction", lambda *a: {"qualified": True})
+    # Reproduce a clean checkout: tracked inputs exist, ignored evidence does not.
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    for name in ("learn", "extensions", "remedies", "docs", "scripts"):
+        (checkout / name).symlink_to(ROOT / name, target_is_directory=True)
+    monkeypatch.setattr(module, "REPO", checkout)
+    backend = checkout / "runs/2026-11-04-local-controlled6/backend-config.json"
+    backend.parent.mkdir(parents=True)
+    backend.write_text('{"fixture": "backend input"}\n')
     assert module.configure_mode(mode) == "--prepare"
     module.prepare(tmp_path)
     prepared = json.loads((tmp_path / "prepared.json").read_text())
+    assert prepared["freeze"][str(backend)] == module.baseline.sha256(backend)
     assert prepared["order"] == order
     assert prepared["collection"] == module.cohort_config()
     assert prepared["collection"]["kind"] == kind
     assert prepared["collection"]["counts"] == {arm: order.count(arm) for arm in ("selective", "gated")}
     assert prepared["collection"]["n_per_arm"] == (20 if kind == "comparison" else None)
     assert Path(prepared["protocol"]).name == protocol
-    assert prepared["freeze"][prepared["protocol"]] == module.baseline.sha256(Path(prepared["protocol"]))
+    assert prepared["freeze"][str(Path(prepared["protocol"]).resolve())] == module.baseline.sha256(Path(prepared["protocol"]))
     assert module.collection_state(len(order)) == "complete"
     assert module.collection_state(len(order) - 1) == "incomplete"
 

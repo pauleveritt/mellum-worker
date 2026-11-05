@@ -146,3 +146,13 @@ test("timeout wrappers classify the nested command without exempting foreground 
 		"timeout 5 uvicorn demo:app &",
 	]) assert.equal(serverGuard({ toolName: "bash", input: { command } }), undefined, command);
 });
+
+test("timeout short-option clusters consume signal and kill-after operands", () => {
+	for (const command of [
+		"timeout -vs TERM 0 uvicorn demo:app",
+		"timeout -vk 1s 5 uvicorn demo:app",
+		"timeout -vsTERM 0 uv run python app.py",
+		"gtimeout -vk5 0 python main.py",
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } })?.block, true, command);
+	assert.equal(serverGuard({ toolName: "bash", input: { command: "timeout -vs TERM 5 uv run python -m pytest" } }), undefined);
+});
