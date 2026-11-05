@@ -62,11 +62,11 @@ function rig() {
 	};
 }
 
-for (const { install: layout, name: NAME, instruction } of [
- { install: layoutUnit, name: "prompt/name-the-layout", instruction: "Read the project's own spec or notes for where each file and route belongs, and create files at exactly those paths — do not invent your own layout." },
- { install: verification, name: "prompt/verify-the-spec", instruction: "Before you finish, check that every requirement the spec lists is present in your code, and run the project's own tests to confirm — do not finish while a requirement is unimplemented or a test you can run is failing. Reading the files is not verification; run them." },
+for (const { install: layout, name: NAME } of [
+ { install: layoutUnit, name: "prompt/name-the-layout" },
+ { install: verification, name: "prompt/verify-the-spec" },
 ]) {
-const injected = (messages) => messages.filter((m) => text(m).includes(instruction));
+const injected = (messages) => messages.filter((m) => text(m).startsWith(`[Injected remedy: ${NAME}]\n`));
 test(`${NAME}: layout is one visible injected message retained across tool requests, without rewriting the task`, async () => {
 	const r = rig(); layout(r.pi);
 	await r.start("Build the requested page.");

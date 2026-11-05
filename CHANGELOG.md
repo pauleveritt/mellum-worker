@@ -179,6 +179,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- Foreground-server guards recognize timeout wrappers and clearly distinguish a
+  blocked call from application output. Guidance preserves required bounded
+  startup verification; task verification excludes later tasks, and acceptance
+  feedback labels observed launch failures explicitly. Coding benefit awaits
+  the separately frozen six-task screen.
+
 - Startup qualification retains the first launch URL when later log entries
   mention other services, including when its port spans reads or has no newline.
 

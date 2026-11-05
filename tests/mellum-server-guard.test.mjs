@@ -127,3 +127,22 @@ test("serverGuard recognizes launches continued across shell lines", () => {
 	for (const command of ["python \\\n app.py", "uv run --frozen \\\n python app.py"])
 		assert.equal(serverGuard({ toolName: "bash", input: { command } })?.block, true, command);
 });
+
+test("timeout wrappers classify the nested command without exempting foreground launches", () => {
+	for (const command of [
+		"timeout 5 uv run --frozen python app.py",
+		"gtimeout --signal TERM --kill-after=1s 5s uvicorn demo:app --reload",
+		"/usr/bin/timeout -sKILL -k 1 .5 python -m http.server",
+		"env CHECK=1 timeout -- 0s uv run python server.py",
+		"uv run --offline timeout 10 env PORT=8000 uvicorn demo:app",
+		"timeout 5 timeout 2 python main.py",
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } })?.block, true, command);
+	for (const command of [
+		"timeout 5 uv run python -m pytest tests",
+		"timeout 5 uvicorn --help",
+		"gtimeout --version",
+		"timeout --help",
+		"printf '%s' 'timeout 5 uvicorn demo:app'",
+		"timeout 5 uvicorn demo:app &",
+	]) assert.equal(serverGuard({ toolName: "bash", input: { command } }), undefined, command);
+});

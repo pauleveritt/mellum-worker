@@ -158,3 +158,16 @@ def test_candidate_log_cannot_confer_acceptance_or_crash_checker(tmp_path, log):
     result = load_checker()(workspace(tmp_path), Probe(startup={'ready': False, 'log_tail': log}), lambda: 30)
     assert result['status'] == 'fail'
     assert not result['checks']['startup']['passed']
+
+
+@pytest.mark.parametrize(('observed', 'state'), [
+    ({'ready': False, 'launch_exit_code': 3}, 'process exited before readiness'),
+    ({'ready': False, 'launch_exit_code': None}, 'process still running at observation end'),
+    ({'ready': False}, 'launch status unavailable'),
+])
+def test_failed_startup_distinguishes_observed_failure_from_required_behavior(tmp_path, observed, state):
+    result = load_checker()(workspace(tmp_path), Probe(startup=observed), lambda: 30)
+    check = result['checks']['startup']
+    assert check['passed'] is False
+    assert 'Observed startup failure: ready=false' in check['observation']
+    assert state in check['observation']

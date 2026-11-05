@@ -198,15 +198,26 @@ const basename = (word = "") => word.split("/").at(-1) ?? "";
 function startsServer(words: string[]): boolean {
 	words = [...words];
 	// Common launch wrappers; no command is ever executed by the classifier.
-	while (/^[A-Za-z_][A-Za-z_0-9]*=/.test(words[0] ?? "") || ["env", "exec", "command"].includes(words[0])) words.shift();
-	if (basename(words[0]) === "nohup") return false;
-	if (basename(words[0]) === "uv" && words[1] === "run") {
-		words.splice(0, 2);
-		while (words[0]?.startsWith("-")) {
-			const option = words.shift();
-			if (["--directory", "--project", "--python", "--with"].includes(option ?? "")) words.shift();
-		}
+	while (words.length) {
+		if (/^[A-Za-z_][A-Za-z_0-9]*=/.test(words[0]) || ["env", "exec", "command"].includes(basename(words[0]))) {
+			words.shift();
+		} else if (basename(words[0]) === "uv" && words[1] === "run") {
+			words.splice(0, 2);
+			while (words[0]?.startsWith("-")) {
+				const option = words.shift();
+				if (["--directory", "--project", "--python", "--with"].includes(option ?? "")) words.shift();
+			}
+		} else if (["timeout", "gtimeout"].includes(basename(words[0]))) {
+			words.shift();
+			while (words[0]?.startsWith("-") && words[0] !== "--") {
+				const option = words.shift();
+				if (["-s", "--signal", "-k", "--kill-after"].includes(option ?? "")) words.shift();
+			}
+			if (words[0] === "--") words.shift();
+			if (!/^(?:(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?[smhd]?|inf(?:inity)?)$/i.test(words.shift() ?? "")) return false;
+		} else break;
 	}
+	if (basename(words[0]) === "nohup") return false;
 	let executable = basename(words.shift());
 	if (/^python(?:\d+(?:\.\d+)?)?$/.test(executable)) {
 		while (words[0]?.startsWith("-") && !["-m", "-c"].includes(words[0])) words.shift();
@@ -252,10 +263,11 @@ export const serverGuard: Guard = (call) => {
 	return {
 		block: true,
 		reason:
-			"That starts a server in the foreground; it blocks forever and burns your whole time budget. " +
-			"You do not need a running server here — exercise an endpoint in process the way the tests do: " +
+			"Blocked before execution: this foreground server command was not run. This message is not application output. " +
+			"A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: " +
 			'`from starlette.testclient import TestClient; TestClient(app).get("/...")`. ' +
-			"If you truly must run it, start it in the background so it returns at once with a pid you can kill later: " +
+			"For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. " +
+			"If backgrounding, return at once with a pid you can kill later and ensure cleanup: " +
 			`\`${backgroundForm(command as string)}\`.`,
 	};
 };
