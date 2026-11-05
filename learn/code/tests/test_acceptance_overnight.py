@@ -114,3 +114,63 @@ def test_candidate_requires_full_cohort_and_known_budgets():
     assert module.decide({"selective": summary(), "gated": summary(budget=None)}) == "no_decision"
     assert module.decide({"selective": summary(usable=19), "gated": summary()}) == "not_candidate"
     assert module.decide({"selective": summary(), "gated": summary(budget=101)}) == "not_candidate"
+
+
+@pytest.fixture(autouse=True)
+def reset_cohort():
+    # Module globals are also the CLI-selected cohort contract.
+    yield
+    if hasattr(module, "configure_mode"):
+        module.configure_mode("--prepare")
+
+
+@pytest.mark.parametrize("mode,kind,order,protocol", [
+    ("--prepare", "comparison", ["selective", "gated"] * 20,
+     "2026-11-05-actionable-acceptance-protocol.md"),
+    ("--prepare-screen", "screen", ["gated"] * 6,
+     "2026-11-05-runtime-repair-screen-protocol.md"),
+])
+def test_prepare_registers_actual_selected_cohort(tmp_path, monkeypatch, mode, kind, order, protocol):
+    import json
+    import acceptance_qualification
+    import acceptance_runtime_qualification
+    import containment_qualification
+    def build(*args, **kwargs):
+        kwargs["stdout"].write("sha256:" + "a" * 64 + "\n")
+    monkeypatch.setattr(module.subprocess, "run", build)
+    monkeypatch.setattr(module.containment, "image_info", lambda _: {})
+    monkeypatch.setattr(containment_qualification, "qualify", lambda *a: {"qualified": True, "material": {}})
+    monkeypatch.setattr(acceptance_qualification, "qualify", lambda *a: {"qualified": True})
+    monkeypatch.setattr(acceptance_runtime_qualification, "qualify", lambda *a: {"qualified": True})
+    monkeypatch.setattr(acceptance_runtime_qualification, "qualify_compaction", lambda *a: {"qualified": True})
+    assert module.configure_mode(mode) == "--prepare"
+    module.prepare(tmp_path)
+    prepared = json.loads((tmp_path / "prepared.json").read_text())
+    assert prepared["order"] == order
+    assert prepared["collection"] == module.cohort_config()
+    assert prepared["collection"]["kind"] == kind
+    assert prepared["collection"]["counts"] == {arm: order.count(arm) for arm in ("selective", "gated")}
+    assert prepared["collection"]["n_per_arm"] == (20 if kind == "comparison" else None)
+    assert Path(prepared["protocol"]).name == protocol
+    assert prepared["freeze"][prepared["protocol"]] == module.baseline.sha256(Path(prepared["protocol"]))
+    assert module.collection_state(len(order)) == "complete"
+    assert module.collection_state(len(order) - 1) == "incomplete"
+
+
+def test_screen_never_promotes_even_favorable_full_comparison():
+    module.configure_mode("--run-screen")
+    row = {"n": 20, "usable": 20, "output_per_usable": 1, "reconciled": True}
+    assert module.decide({"selective": row, "gated": row}) == "screen_only"
+
+
+@pytest.mark.parametrize("changed", ["order", "collection", "protocol"])
+def test_collect_rejects_wrong_cohort_before_start(tmp_path, changed):
+    import json
+    module.configure_mode("--run-screen")
+    prepared = {"qualified": True, "freeze": {}, "order": list(module.ORDER),
+                "collection": module.cohort_config(), "protocol": str(module.FOLLOWUP_PROTOCOL)}
+    prepared[changed] = {"order": [], "collection": {"kind": "comparison"}, "protocol": "wrong"}[changed]
+    (tmp_path / "prepared.json").write_text(json.dumps(prepared))
+    with pytest.raises(ValueError, match="preparation"):
+        module.collect(tmp_path)
+    assert not (tmp_path / "server-launch.json").exists()

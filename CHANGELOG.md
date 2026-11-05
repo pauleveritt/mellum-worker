@@ -5,6 +5,8 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- The local acceptance collector has an explicit six-task gated screen mode, with frozen cohort metadata and a screen-only decision; the default comparison remains 20 tasks per arm.
+
 
 - The [actionable-feedback follow-up](evals/2026-11-05-actionable-acceptance/README.md)
   records twenty fresh tasks per arm: selective0/20 usable, gated10/20. Clearer

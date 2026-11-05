@@ -20,14 +20,37 @@ from acceptance import AcceptancePackage
 from acceptance_budget import reconcile, summarize
 from acceptance_containment import check_snapshot
 
+KIND = "comparison"
 ORDER = ["selective", "gated"] * 20
 LIMIT = 8 * 60 * 60
 PACKAGE = REPO / "learn/code/acceptance/easy-phase1"
-FOLLOWUP_PROTOCOL = REPO / "docs/superpowers/research/2026-11-05-actionable-acceptance-protocol.md"
+COMPARISON_PROTOCOL = REPO / "docs/superpowers/research/2026-11-05-actionable-acceptance-protocol.md"
+FOLLOWUP_PROTOCOL = COMPARISON_PROTOCOL
 SELECTIVE = ["prompt/name-the-layout", "prompt/python-developer", "prompt/verify-the-spec",
              "guard/foreground-server", "context/trim-tool-output"]
 STOP_REQUESTED = False
 write_json = baseline.write_json
+
+
+def configure_mode(mode: str) -> str:
+    global KIND, ORDER, FOLLOWUP_PROTOCOL
+    screen = mode in {"--prepare-screen", "--run-screen"}
+    KIND = "screen" if screen else "comparison"
+    ORDER = ["gated"] * 6 if screen else ["selective", "gated"] * 20
+    FOLLOWUP_PROTOCOL = (REPO / "docs/superpowers/research/2026-11-05-runtime-repair-screen-protocol.md"
+                         if screen else COMPARISON_PROTOCOL)
+    return mode.removesuffix("-screen") if screen else mode
+
+
+def cohort_config() -> dict:
+    counts = {arm: ORDER.count(arm) for arm in ("selective", "gated")}
+    return {"kind": KIND, "counts": counts,
+            "n_per_arm": counts["gated"] if counts["selective"] == counts["gated"] else None,
+            "concurrency": 1, "deadline_seconds": 600, "open_tool_cutoff_seconds": 180}
+
+
+def collection_state(completed: int) -> str:
+    return "complete" if completed == len(ORDER) else "incomplete"
 
 
 def freeze_files(paths: list[Path]) -> dict[str, str]:
@@ -45,6 +68,8 @@ def may_start(remaining: float) -> bool:
 
 
 def decide(summary: dict) -> str:
+    if KIND == "screen":
+        return "screen_only"
     s, g = summary["selective"], summary["gated"]
     if any(row["n"] != 20 or not row["reconciled"] or row["output_per_usable"] is None for row in (s, g)):
         return "no_decision"
@@ -172,7 +197,7 @@ def prepare(batch: Path):
     package = AcceptancePackage.load(PACKAGE)
     write_json(batch / "prepared.json", {"qualified": True, "image": image, "protocol": str(FOLLOWUP_PROTOCOL),
         "package_sha256": package.digest, "freeze": freeze_files(files), "at": now(),
-        "boundary": boundary["material"], "order": ORDER, "limits": {"task": 600, "stall": 180, "batch": LIMIT}})
+        "boundary": boundary["material"], "order": ORDER, "collection": cohort_config(), "limits": {"task": 600, "stall": 180, "batch": LIMIT}})
 
 
 def live(server, identity, argv, runtime):
@@ -194,7 +219,9 @@ def collect(batch: Path):
     global STOP_REQUESTED
     prepared = json.loads((batch / "prepared.json").read_text())
     verify_files(prepared["freeze"])
-    if not prepared["qualified"] or prepared["order"] != ORDER:
+    if (not prepared["qualified"] or prepared["order"] != ORDER
+            or prepared.get("collection") != cohort_config()
+            or prepared.get("protocol") != str(FOLLOWUP_PROTOCOL)):
         raise ValueError("unqualified or altered preparation")
     if (batch / "server-launch.json").exists():
         raise ValueError("batch already started; retain it and use a fresh batch for a new freeze")
@@ -251,8 +278,7 @@ def collect(batch: Path):
         if "MTL0    : Apple M5 Max" not in text or "MTL0 KV buffer size" not in text or "offloaded 29/29 layers to GPU" not in text:
             raise ValueError("full Metal offload not proven")
         write_json(batch / "backend-live.json", backend)
-        write_json(batch / "backend-config.json", {**old, "collection": {"n_per_arm": 20, "concurrency": 1,
-            "deadline_seconds": 600, "open_tool_cutoff_seconds": 180}, "ownership": str(batch / "server-owner.json")})
+        write_json(batch / "backend-config.json", {**old, "collection": cohort_config(), "ownership": str(batch / "server-owner.json")})
         # A short native generation proves this exact server/client path before counted tasks.
         from acceptance_live_probe import qualify as qualify_live
         if not qualify_live(image, profile, batch / "live-qualification"):
@@ -304,7 +330,7 @@ def collect(batch: Path):
         verify_files(prepared["freeze"]); live(server, identity, argv, runtime)
         if baseline.sha256(weights) != old["model"]["sha256"]:
             raise ValueError("weights changed")
-        write_json(batch / "status.json", {"state": "complete" if len(records) == 40 else "incomplete",
+        write_json(batch / "status.json", {"state": collection_state(len(records)),
             "completed": len(records), "at": now()})
     except BaseException as error:
         write_json(batch / "failure.json", {"type": type(error).__name__, "detail": str(error), "at": now()})
@@ -331,13 +357,13 @@ def interrupted(_signum, _frame):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["--prepare", "--run", "--recover", "--watchdog"])
+    parser.add_argument("command", choices=["--prepare", "--run", "--prepare-screen", "--run-screen", "--recover", "--watchdog"])
     parser.add_argument("batch", type=Path)
     # Modes are option-looking for readability, but parsed as a positional choice.
     raw = sys.argv[1:]
-    if len(raw) != 2 or raw[0] not in {"--prepare", "--run", "--recover", "--watchdog"}:
+    if len(raw) != 2 or raw[0] not in {"--prepare", "--run", "--prepare-screen", "--run-screen", "--recover", "--watchdog"}:
         parser.print_help(); raise SystemExit(2)
-    mode, location = raw; batch = Path(location).resolve()
+    mode, location = raw; mode = configure_mode(mode); batch = Path(location).resolve()
     if mode == "--watchdog":
         watchdog(batch)
     else:
