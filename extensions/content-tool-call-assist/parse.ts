@@ -72,7 +72,7 @@ function listToNamedArgs(list: unknown[], paramNames: string[] | undefined): Rec
  * Guards keep model DATA from being mistaken for a call: the object must carry an `arguments`/`args`
  * key (a bare {"name":"..."} is data, e.g. a cart item), and when `tools` is given the name must be
  * one of them. A list of args is mapped onto the named tool's parameter order; a bare scalar, or a
- * list we cannot map, is rejected so the loop re-prompts rather than sending oMLX an invalid call.
+ * list we cannot map, is rejected so the loop re-prompts rather than sending the server an invalid call.
  */
 export function coerceToolCall(obj: unknown, tools?: ToolParams): ParsedToolCall | undefined {
 	if (!obj || typeof obj !== "object" || Array.isArray(obj)) return undefined;

@@ -79,7 +79,7 @@ and evidence with dated corrections; never edit archived plans.
 - **Run standard — use the two scripts, don't hand-assemble flags.**
   `scripts/screen.sh <rung> <model-id>` is the measurement rig (direct, mediated:
   `tuned`, repeat 3, redispatch 5, effort-ramp, thinking off, **guards on**, the
-  default prompt, the mediated tool set, `--model omlx/<model-id>`).
+  default prompt, the mediated tool set, `--model llamacpp/<model-id>`).
   `scripts/product.sh <rung>` is the shipped worker (`--mode mode`, guards and
   facts on). Both write to `runs/` (git-ignored) and want
   `ladder/scripts/watch_ladder.py` alongside; promote a kept run to

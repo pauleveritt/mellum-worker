@@ -1,8 +1,8 @@
 /**
  * Deep-merge a JSON fragment into a JSON file, by id for arrays of objects.
  *
- *   node scripts/merge-json.mjs ~/.pi/agent/models.json templates/pi/models.omlx.json          # preview
- *   node scripts/merge-json.mjs ~/.pi/agent/models.json templates/pi/models.omlx.json --write  # apply
+ *   node scripts/merge-json.mjs ~/.pi/agent/models.json templates/pi/models.llamacpp.json          # preview
+ *   node scripts/merge-json.mjs ~/.pi/agent/models.json templates/pi/models.llamacpp.json --write  # apply
  *
  * --write copies the target to <target>.bak-mellum-<timestamp> first.
  * Only for plain JSON files. JSONC is not supported; it has comments and

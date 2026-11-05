@@ -36,6 +36,6 @@ Run the line for the user's host and show its output. In Pi Mode,
 before reporting success; a `WARN` or `INFO` line is shown as is.
 
 If it fails: confirm phase 3's server answers, that the host picked
-`omlx/Mellum2.1-12B-A2.5B-Thinking-6bit` (Pi shows it in the status line;
-OpenCode in the session header), and that the brief named the test
-command. Report what you saw; do not loosen any setting to make it pass.
+`llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Pi shows it in the status line),
+and that the brief named the test command. Report what you saw; do not
+loosen any setting to make it pass.

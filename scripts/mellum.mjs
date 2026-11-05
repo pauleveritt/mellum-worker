@@ -5,9 +5,10 @@
  *   node scripts/mellum.mjs learn [--n 10] [--file <jsonl>] [--json]
  *   node scripts/mellum.mjs last [--file <jsonl>] [--json]
  *
- * check compares the oMLX server (GETs only) and the host's provider entry with the measured
- * settings, prints the findings (fails first) or JSON, and exits 1 on any fail. It never
- * writes: a settings fix is printed as the PUT command for you to run.
+ * check confirms the local llama-server is up and serving the measured model at the measured
+ * context window (GETs only), and that the host's provider entry points at it; it prints the
+ * findings (fails first) or JSON, and exits 1 on any fail. It only reads: a fix is printed as
+ * the command to run yourself.
  *
  * learn names what went wrong in the last n runs (default 10) under the current directory,
  * from $MELLUM_MODE_RUNS (or ~/.pi/agent/mellum-mode-runs.jsonl) and

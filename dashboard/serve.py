@@ -19,7 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-DEFAULT_MODEL = os.environ.get("DASH_MODEL", "Mellum2.1-12B-A2.5B-Thinking-6bit")
+DEFAULT_MODEL = os.environ.get("DASH_MODEL", "Mellum2.1-12B-A2.5B-Thinking")
 RUNNING = {}  # rung -> subprocess.Popen, the runs this dashboard launched
 DEFAULT_OUT = "/private/tmp/claude-501/-Users-mac-projects/8aed2d08-ac9d-4f56-9569-c4d3ba627b18/scratchpad/sweep-6bit"
 OUT = os.environ.get("DASH_OUT", DEFAULT_OUT)
@@ -272,7 +272,7 @@ def launch_run(n, model):
         proc = subprocess.Popen(
             ["uv", "run", "python", "-m", "ladder.run_ladder", "--mode", "direct",
              "--profile", "tuned", "--repeat", "1", "--thinking", "off", "--guards",
-             "--rung", str(n), "--model", "omlx/" + model, "--out", "../" + relout],
+             "--rung", str(n), "--model", "llamacpp/" + model, "--out", "../" + relout],
             cwd=os.path.join(REPO, "ladder"), stdout=log, stderr=subprocess.STDOUT,
         )
         mediated = False
@@ -303,7 +303,7 @@ def launch_all(model):
         "uv run python -m ladder.run_ladder --mode direct --profile tuned --repeat 1 "
         "--thinking off --guards --rung $rung --model {model} --pi-extension {feed} "
         "--out ../{out} || true; done"
-    ).format(model=shlex.quote("omlx/" + model), feed=shlex.quote(feed_ext), out=shlex.quote(relout))
+    ).format(model=shlex.quote("llamacpp/" + model), feed=shlex.quote(feed_ext), out=shlex.quote(relout))
     proc = subprocess.Popen(
         ["bash", "-c", inner], cwd=os.path.join(REPO, "ladder"),
         stdout=log, stderr=subprocess.STDOUT, env=os.environ.copy(),

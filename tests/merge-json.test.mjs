@@ -8,7 +8,7 @@ import test from "node:test";
 import { mergeJson } from "../scripts/merge-json.mjs";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "merge-json.mjs");
-const fragment = { providers: { omlx: { baseUrl: "http://127.0.0.1:8001/v1", models: [{ id: "mellum", maxTokens: 16384 }] } } };
+const fragment = { providers: { llamacpp: { baseUrl: "http://127.0.0.1:8001/v1", models: [{ id: "mellum", maxTokens: 16384 }] } } };
 
 function runCli(args) {
 	try {
@@ -24,24 +24,24 @@ function tempDir() {
 
 test("adds the provider when the target has none", () => {
 	const out = mergeJson({ providers: { other: { baseUrl: "x" } } }, fragment);
-	assert.deepEqual(Object.keys(out.providers).sort(), ["omlx", "other"]);
-	assert.deepEqual(out.providers.omlx.models, [{ id: "mellum", maxTokens: 16384 }]);
+	assert.deepEqual(Object.keys(out.providers).sort(), ["llamacpp", "other"]);
+	assert.deepEqual(out.providers.llamacpp.models, [{ id: "mellum", maxTokens: 16384 }]);
 });
 
-test("keeps the user's other models in an existing omlx provider and appends by id", () => {
-	const target = { providers: { omlx: { baseUrl: "http://127.0.0.1:8001/v1", models: [{ id: "gemma", maxTokens: 8192 }] } } };
+test("keeps the user's other models in an existing llamacpp provider and appends by id", () => {
+	const target = { providers: { llamacpp: { baseUrl: "http://127.0.0.1:8001/v1", models: [{ id: "gemma", maxTokens: 8192 }] } } };
 	const out = mergeJson(target, fragment);
-	assert.deepEqual(out.providers.omlx.models.map((m) => m.id), ["gemma", "mellum"]);
-	assert.deepEqual(target.providers.omlx.models.map((m) => m.id), ["gemma"], "input not mutated");
+	assert.deepEqual(out.providers.llamacpp.models.map((m) => m.id), ["gemma", "mellum"]);
+	assert.deepEqual(target.providers.llamacpp.models.map((m) => m.id), ["gemma"], "input not mutated");
 });
 
 test("is idempotent and refreshes an existing entry with the same id", () => {
 	const once = mergeJson({}, fragment);
 	const twice = mergeJson(once, fragment);
 	assert.deepEqual(twice, once);
-	const updated = mergeJson(once, { providers: { omlx: { models: [{ id: "mellum", maxTokens: 4096 }] } } });
-	assert.equal(updated.providers.omlx.models.length, 1);
-	assert.equal(updated.providers.omlx.models[0].maxTokens, 4096);
+	const updated = mergeJson(once, { providers: { llamacpp: { models: [{ id: "mellum", maxTokens: 4096 }] } } });
+	assert.equal(updated.providers.llamacpp.models.length, 1);
+	assert.equal(updated.providers.llamacpp.models[0].maxTokens, 4096);
 });
 
 test("scalar arrays are replaced, not concatenated", () => {
@@ -106,26 +106,28 @@ test("CLI preview writes nothing; --write creates a missing target and backs up 
 	const backups = readdirSync(dir).filter((f) => f.startsWith("existing.json.bak-mellum-"));
 	assert.equal(backups.length, 1, "--write leaves one .bak-mellum- sibling");
 	assert.equal(readFileSync(join(dir, backups[0]), "utf8"), before);
-	assert.deepEqual(JSON.parse(readFileSync(existing, "utf8")).providers.omlx.models, fragment.providers.omlx.models);
+	assert.deepEqual(JSON.parse(readFileSync(existing, "utf8")).providers.llamacpp.models, fragment.providers.llamacpp.models);
 });
 
-test("models-only fragment keeps an existing omlx baseUrl and apiKey", () => {
-	const only = JSON.parse(readFileSync(join(dirname(script), "..", "templates", "pi", "models.omlx.models-only.json"), "utf8"));
-	const target = { providers: { omlx: { baseUrl: "http://127.0.0.1:8000/v1", apiKey: "sk-secret", api: "openai-completions", models: [{ id: "gemma" }] } } };
+test("a models-only fragment keeps an existing llamacpp baseUrl and apiKey", () => {
+	// A fragment carrying only `models` (no baseUrl/apiKey) must leave the
+	// user's connection fields untouched and append the model by id.
+	const only = { providers: { llamacpp: { models: [{ id: "Mellum2.1-12B-A2.5B-Thinking", maxTokens: 16384 }] } } };
+	const target = { providers: { llamacpp: { baseUrl: "http://127.0.0.1:9001/v1", apiKey: "sk-secret", api: "openai-completions", models: [{ id: "gemma" }] } } };
 	const out = mergeJson(target, only);
-	assert.equal(out.providers.omlx.baseUrl, "http://127.0.0.1:8000/v1");
-	assert.equal(out.providers.omlx.apiKey, "sk-secret");
-	assert.deepEqual(out.providers.omlx.models.map((x) => x.id), ["gemma", "Mellum2.1-12B-A2.5B-Thinking-6bit"]);
+	assert.equal(out.providers.llamacpp.baseUrl, "http://127.0.0.1:9001/v1");
+	assert.equal(out.providers.llamacpp.apiKey, "sk-secret");
+	assert.deepEqual(out.providers.llamacpp.models.map((x) => x.id), ["gemma", "Mellum2.1-12B-A2.5B-Thinking"]);
 });
 
 test("preview prints only the merged fragment subtree, not other providers' secrets", () => {
 	const dir = tempDir();
 	const target = join(dir, "models.json");
 	writeFileSync(target, JSON.stringify({ providers: { other: { apiKey: "sk-other" } } }));
-	const frag = join(dirname(script), "..", "templates", "pi", "models.omlx.json");
+	const frag = join(dirname(script), "..", "templates", "pi", "models.llamacpp.json");
 	const r = runCli([target, frag]);
 	assert.equal(r.status, 0);
 	assert.ok(!r.stdout.includes("sk-other"));
-	assert.ok(r.stdout.includes("providers.omlx (after merge):"));
+	assert.ok(r.stdout.includes("providers.llamacpp (after merge):"));
 	assert.ok(r.stdout.includes("preview only"));
 });

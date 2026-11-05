@@ -1,6 +1,6 @@
 # Flow harness — architecture map
 
-How the spec-driven flow drives the FIXED model (Mellum 2.1, 6-bit via oMLX)
+How the spec-driven flow drives the FIXED model (Mellum 2.1, Q4_K_M via llama.cpp)
 through a suite, and where the harness guarantees sit. The agent lives in Pi
 (TypeScript); the Python layer wraps it with the orchestration and grading that
 don't depend on the model behaving.
@@ -21,7 +21,7 @@ flowchart TB
     end
 
     EXAM -.->|freeze| GATE[("plan/gate/phase_N.py<br/>frozen gate = definition of DONE")]
-    ORCH -->|"each tool = an isolated pi sub-agent"| MODEL[["Mellum 2.1 6-bit<br/>via oMLX :8001 (fixed model)"]]
+    ORCH -->|"each tool = an isolated pi sub-agent"| MODEL[["Mellum 2.1 Q4_K_M<br/>via llama.cpp :8001 (fixed model)"]]
 
     ORCH --> SCORE{"score THIS phase"}
     GATE -.->|restore_gate| SCORE

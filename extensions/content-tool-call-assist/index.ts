@@ -316,7 +316,7 @@ function streamWithAssist(
 
 export default function (pi: ExtensionAPI): void {
 	// Endpoint and model are env-configurable so the same plugin can front any
-	// small OpenAI-compatible server (oMLX, mlx_lm.server, ...) for a test.
+	// small OpenAI-compatible server (llama.cpp, mlx_lm.server, ...) for a test.
 	const baseUrl = process.env.ASSIST_BASE_URL ?? "http://127.0.0.1:8001/v1";
 	const modelId = process.env.ASSIST_MODEL_ID ?? "mlx-community--Qwen2.5-Coder-1.5B-Instruct-4bit";
 	pi.registerProvider("content-assist", {

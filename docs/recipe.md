@@ -29,41 +29,38 @@ test, a rename across two files, and three-file changes with a named failing
 test. What it is not: exploration, design, or scoping a task from a symptom
 on its own (see the ladder results below).
 
-## 2. Inference server (oMLX)
+## 2. Inference server (llama.cpp)
 
-Serve it as described in [backends/omlx.md](backends/omlx.md). The converted model is published at
-<https://huggingface.co/pauleveritt/Mellum2.1-12B-A2.5B-Thinking-mlx-6bit>
-(9.9 GB, two safetensors shards, MLX 6-bit), so it can be pulled with
-`hf download pauleveritt/Mellum2.1-12B-A2.5B-Thinking-mlx-6bit` instead of
-converted. Settings: 56,000-token context window, native hybrid cache,
-cache quantization off, one concurrent request.
+Serve it with `uv run scripts/backend.py start` (details in
+[backends/llamacpp.md](backends/llamacpp.md)). It downloads the Q4_K_M GGUF
+(<https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF>, ~7.7 GB)
+on the first run and serves it with `llama-server` on `127.0.0.1:8001`. The
+context window (50,000) and the sampling defaults come from `[tool.mellum]` in
+`pyproject.toml`, so every value the server and the request receive is in one
+place the learner can read.
 
-**Which settings actually apply.** oMLX gives a request's sampling and cap
-values precedence over the per-model profile, except that `force_sampling`
-makes the server's temperature, top_p and top_k win and `forced_ct_kwargs`
-makes the server's listed chat-template keys win. Pi sends `max_tokens`,
+**Which settings actually apply.** llama-server has no admin API and no
+mutable per-model profile: the context window is fixed at launch and the
+sampling is whatever each request carries. Pi sends `max_tokens`,
 `temperature`, `top_p`, `top_k`, `min_p`, `presence_penalty` and
 `repetition_penalty` on every request from its `models.json` entry, and
 with `thinkingFormat: qwen-chat-template` it sends `chat_template_kwargs`
-with `enable_thinking` and `preserve_thinking` true. The archived traces of the Mode and Worker
-phases (A10, A17 and A19, so also A14 and A18–A20) show every Mellum request
-carrying `max_tokens` 16,384, thinking on and sampling 1 / 0.95 / 20, so the
-`baseline` server profile's `max_tokens` 4,096 was overridden; only the
-direct-mode research phases (A3 and earlier), where the ladder sends its own
-request values, ran at 4,096. So:
+with `enable_thinking` and `preserve_thinking` true. The archived traces of
+the Mode and Worker phases (A10, A17 and A19, so also A14 and A18–A20) show
+every Mellum request carrying `max_tokens` 16,384, thinking on and sampling
+1 / 0.95 / 20; only the direct-mode research phases (A3 and earlier), where
+the ladder sends its own request values, ran at a 4,096 cap. So:
 
 | setting | where it is decided | value used |
 | --- | --- | --- |
-| `max_tokens` | Pi `models.json` → `maxTokens`, which wins over the server profile | 16,384 (model-card per-turn budget) in every Mode and Worker request; in direct mode a 4,096 cap cut off one three-file run mid-thought ([phases 1c/1d](../evals/2026-10-09-phase1d-tuned-effective/README.md)) |
-| temperature / top_p / top_k | Pi `models.json` → `samplingParams`, else Pi defaults | Pi default is 1 / 0.95 / 20 (the model card's agentic sampling) |
+| `max_tokens` | Pi `models.json` → `maxTokens` | 16,384 (model-card per-turn budget) in every Mode and Worker request; in direct mode a 4,096 cap cut off one three-file run mid-thought ([phases 1c/1d](../evals/2026-10-09-phase1d-tuned-effective/README.md)) |
+| temperature / top_p / top_k | Pi `models.json` → `samplingParams`, else Pi defaults | 1 / 0.95 / 20 (the model card's agentic sampling) |
 | presence / repetition penalty | request | 0 / 1.0 — 0.5 showed nothing measurable (1c vs 1d: 13/15 vs 14/15, same request and error counts), though that comparison changed the cap at the same time |
-| thinking budget | server profile only | off — a 4,096-per-block budget was never triggered in 15 runs; the request cap is what binds. On a server with `reasoning_parser` set (such as `qwen_3`) a server thinking budget may take effect, unlike in A13 (oMLX builds the budget processor when its output parser knows the think-close token), so `/mellum check` fails when it is on |
-| `max_tool_result_tokens` | server profile only | off — the largest tool result in 30 runs was 2,639 characters; `/mellum check` fails when a cap is set |
-| thinking on/off | request: `chat_template_kwargs` from `thinkingFormat`; a server `forced_ct_kwargs` would override it | on in every Mode and Worker request; the ladder's server profile left `forced_ct_kwargs` unset, and setup step 3 forces it on for clients that send nothing |
+| thinking on/off | request: `chat_template_kwargs` from `thinkingFormat` | on in every Mode and Worker request |
 | thinking level (`thinking:` in the agent file, `--thinking`) | nowhere | inert: Pi's level does not reach an `openai-completions` provider; two runs at "high" and "medium" sent byte-identical requests ([ablation A5](../evals/2026-10-09-ablation-a5-thinking-medium/README.md)) |
-| `thinking_budget` (request field) | a hook can send it (A13's hook, removed from the ladder on 2026-10-13 as inert) | not enforced for this model: oMLX needs a reasoning parser configured to build its budget processor ([A13](../evals/2026-10-09-ablation-a13-budget-medium/README.md)) |
+| context window | `llama-server -c`, from `[tool.mellum]` context | 50,000, fixed at launch; `/mellum check` fails when the launched window is smaller |
 
-Verify with one request through the proxy or Pi's `before_provider_request`
+Verify with one request through Pi's `before_provider_request`
 hook (`ladder/ladder/record-pi.js`) that the values you expect are the values sent;
 the ladder records them per run as `effective_params`.
 
@@ -83,7 +80,7 @@ All of this is written by the setup skill into your user-scope Pi directory: the
   `acceptance: level none` (the parent verifies by running the tests; an
   acceptance contract competed with the reply format and recorded a correct
   run as rejected). Nothing else: no `thinking:` (the level never reaches
-  oMLX), no `allowedAgents:` (the child has no `subagent` tool to narrow),
+  an `openai-completions` provider), no `allowedAgents:` (the child has no `subagent` tool to narrow),
   no `defaultContext:` (pi-subagents' default is `fresh`).
 - `prompts/mellum-worker.md` (v5, 643 characters) — the body, duplicated
   into the agent file; a test keeps them identical. One line of role, six
@@ -112,10 +109,10 @@ All of this is written by the setup skill into your user-scope Pi directory: the
   ([A11](../evals/2026-10-09-ablation-a11-delegated-nointercom/README.md)).
   Every other subagent of yours loses `contact_supervisor` too, so only if
   none of them needs it.
-- `~/.pi/agent/models.json` omlx entry must set `supportsDeveloperRole: false`:
+- `~/.pi/agent/models.json` llamacpp entry must set `supportsDeveloperRole: false`:
   Pi otherwise sends the instructions as a `developer` message for a
   reasoning model on a localhost provider, and the mode replaces either
-  role but older versions of the filter did not. Also `contextWindow 56000`, `maxTokens
+  role but older versions of the filter did not. Also `contextWindow 50000`, `maxTokens
   16384`, `thinkingFormat: qwen-chat-template`.
 
 Try it safely: the setup skill's phase 7 copies a disposable fixture.
@@ -164,9 +161,10 @@ passes. A parent that reads the worker's reply will see either the test
 output pasted, or "produced no output"; on the second, dispatch once more.
 
 What it costs. Wall seconds are from an uncontrolled clock; "prefill" is
-the characters the local server receives per run. On oMLX most of it is
-cache hits (86% of the worker's input tokens in direct mode), so prompt
-length is a token cost more than a wall-clock one. Fifteen runs each; full tables in
+the characters the local server receives per run. Most of it is
+cache hits (86% of the worker's input tokens in direct mode, measured on the
+then-current server), so prompt length is a token cost more than a wall-clock
+one. Fifteen runs each; full tables in
 [ablation-summary.md](../evals/ablation-summary.md).
 
 | setup | pass | wall s | Mellum requests per run (max) | prefill, k chars per run |
@@ -365,25 +363,20 @@ a yes, only the missing lines, never past the 600-character cap, and a line
 you have with another value is reported as a conflict, not rewritten.
 The thresholds are judgement on little data; each message states its count.
 
-`/mellum check` and `scripts/mellum.mjs check` read `/v1/models`,
-`/admin/api/models` and `/admin/api/global-settings` (GET only) and your
-provider entry, and report `server`, `model`, `settings`, `global`,
-`provider`, `advice` and `admin` findings, worst first. The expected values
-are in `templates/omlx-model-settings.json`. A `settings` difference fails
-when no request can undo it: a `serverOnly` key (context window, TurboQuant,
-thinking budget, tool-result cap; a test ties all but TurboQuant, which the
-ladder never set, to its baseline profile), thinking forced off (`forced_ct_kwargs` lists `enable_thinking`
-and the server's `enable_thinking` is false), or, with `force_sampling` on,
-a temperature, top_p or top_k other than `forcedSampling` (1 / 0.95 / 20,
-what Pi sends). A difference in `overridden` (`max_tokens`, thinking,
-penalties), which each request sends, is info. The provider entry is
-compared with the host's template; a different `maxTokens` or sampling
-value fails, since that is what binds. A settings fix prints as the `PUT` to
-run yourself. On each activation Mode reads the same binding settings (one
-second at most, silent when unreadable) and warns once: `Mellum server settings differ:
-<key> <actual> (expected <expected>). Run /mellum check.` The record's
-`server` field (`match`, and the differing keys) lets `learn` tell a run on
-drifted settings apart later.
+`/mellum check` and `scripts/mellum.mjs check` read `/health`, `/v1/models`
+and `/props` (GET only) and your provider entry, and report `server`,
+`model` and `context` findings, worst first. The expected values are in
+`templates/llama-model-settings.json`. llama-server has no admin API and no
+mutable settings, so the check only confirms that the server answers, that
+`Mellum2.1-12B-A2.5B-Thinking` is served, and that the launched context
+window is at least the measured 50,000; a smaller window fails, since the
+runs were measured at 50,000. The provider entry is compared with the host's
+template. A fix prints as the command to run yourself. On each activation
+Mode re-reads the context window (one second at most, silent when
+unreadable) and warns once: `the llama-server context window is <actual>,
+below the measured <expected>. Run /mellum check.` The record's `server`
+field (`match`, and the differing keys) lets `learn` tell a run on a smaller
+window apart later.
 
 ## 5. Measuring
 

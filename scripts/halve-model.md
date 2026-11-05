@@ -29,20 +29,21 @@ For a fair "halved" comparison, convert from the original fp16/bf16 weights.
 
 ## Measure it
 
-1. **Serve it.** oMLX serves every model under its `--model-dir` (`.models/`),
-   so the new dir is picked up (restart oMLX if it does not appear in
-   `GET /v1/models`).
+1. **Serve it.** An MLX re-quant is served by a plain `mlx_lm.server` pointed at
+   the new folder (see [`docs/backends/mlx-lm.md`](../docs/backends/mlx-lm.md));
+   confirm it appears in `GET /v1/models`.
 2. **Run the mediated rung** against it in direct mode — the frozen complete
    test is the lever, so this is the fair test of the smaller worker:
    ```bash
    cd ladder && uv run python -m ladder.run_ladder \
      --mode direct --profile tuned --rung 9 --repeat 3 \
      --acceptance-test <path>/test_phase4.py --redispatch 5 --effort-ramp \
-     --model omlx/<the-halved-model-id> \
+     --provider mlx-lm --base-url http://127.0.0.1:8080/v1 \
+     --model mlx-lm/<the-halved-model-id> \
      --out ../evals/<date>-halved-rung9
    ```
    (`--model` sets the provider and the id the request carries, so it matches
-   what oMLX serves.) Watch it live with `python scripts/watch_ladder.py`.
+   what the server serves.) Watch it live with `python scripts/watch_ladder.py`.
 3. **Compare** 6-bit against the halved run mechanically:
    ```bash
    uv run python scripts/compare_runs.py <6bit-record> <halved-record>

@@ -26,7 +26,7 @@ test("README carries the pinned install line and the status table", () => {
 });
 
 test("every relative markdown link in docs and README resolves", () => {
-	for (const file of ["README.md", "docs/recipe.md", "docs/backends/omlx.md", "docs/backends/ollama.md"]) {
+	for (const file of ["README.md", "docs/recipe.md", "docs/backends/ollama.md"]) {
 		const dir = resolve(ROOT, file, "..");
 		for (const m of read(file).matchAll(/\]\(([^)#:]+)(?:#[^)]*)?\)/g)) {
 			assert.ok(existsSync(resolve(dir, m[1])), `${file}: broken link ${m[1]}`);
@@ -41,7 +41,7 @@ test("README Use it says how to run the setup check in Pi Mode and from the term
 	assert.ok(use.includes("scripts/mellum.mjs check --host pi"), "names the CLI for Pi");
 	for (const fence of use.matchAll(/```bash\n([\s\S]*?)```/g)) assert.doesNotMatch(fence[1], /\w\|\w/, "no a|b alternation in a bash fence");
 	assert.match(use, /exit/i, "says how it exits");
-	assert.ok(use.includes("Mellum server settings differ"), "shows the activation warning");
+	assert.match(use, /below the measured/, "shows the context-window activation warning");
 });
 
 test("README Use it says how to run learn in Pi Mode and from the terminal, after the check", () => {
@@ -69,16 +69,15 @@ test("README Use it says how to see the last run in Pi and from the terminal, af
 	assert.match(last, /no record/, "says bare-Pi runs write no record");
 });
 
-test("README Model settings says which values the provider entry sends per request and which only the server sets", () => {
+test("README Model settings says which values the provider entry sends per request and that the context window is set at launch", () => {
 	const use = read("README.md").split("\n## Use it\n")[1].split("\n## What you get\n")[0];
 	const settings = use.split("**Model settings.**")[1].split("**Check your setup.**")[0];
 	assert.match(settings, /Pi\s+sends[^.]*per\s+request/);
-	assert.match(settings, /force_sampling/);
 	assert.match(settings, /honours/);
-	assert.match(settings, /server-only/);
+	assert.match(settings, /context window[\s\S]*launch/i, "says the context window is fixed at launch");
 	const check = use.split("**Check your setup.**")[1].split("**Learn from your runs.**")[0];
-	assert.match(check, /Mellum server settings differ: (max_context_window|turboquant_kv_enabled) /, "the warning example names a server-only key");
-	assert.match(check, /info/, "says overridden server values are info");
+	assert.match(check, /context window is \d+, below the measured \d+/, "the warning example names the launched context window");
+	assert.match(check, /at least 50,?000/, "says the check wants the measured context window");
 });
 
 test("README What helped follows the rungs 6-9 results, and the results table no longer repeats it", () => {
@@ -122,13 +121,6 @@ test("recipe has a Records, learn and check section with the seven patterns", ()
 		assert.ok(section.includes(`\`${id}\``), `names the ${id} pattern`);
 	}
 	assert.ok(section.includes("server"), "names the record's server field");
-	assert.ok(section.includes("templates/omlx-model-settings.json"), "says where the expected values come from");
-	assert.match(section, /Mellum server settings differ/);
-});
-
-test("the oMLX backend guide lists step 3's server values", () => {
-	const omlx = read("docs/backends/omlx.md");
-	assert.match(omlx, /\| `max_tokens` \| 16384 \|/);
-	assert.match(omlx, /\| `forced_ct_kwargs` \| `\["enable_thinking"\]` \|/);
-	assert.match(omlx, /force_sampling/, "says force_sampling makes the server's sampling win");
+	assert.ok(section.includes("templates/llama-model-settings.json"), "says where the expected values come from");
+	assert.match(section, /context window is <actual>,[\s\S]*below the measured/);
 });

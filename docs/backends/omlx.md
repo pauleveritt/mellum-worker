@@ -1,7 +1,14 @@
-# Backend: oMLX on Apple Silicon
+# Backend: oMLX on Apple Silicon (superseded)
 
-The measured backend. Everything here is what the setup skill's phases 2
-and 3 do, for people who prefer to do it by hand.
+> **Superseded.** The shipped recipe now serves Mellum on the local
+> llama.cpp backend — see [`llamacpp.md`](llamacpp.md) and
+> `uv run scripts/backend.py start`. oMLX support has been retired; this page
+> is kept for historical reference (the shipped pass-rates were measured on
+> it) and for the MLX weights the Apple-Silicon
+> [`mlx-lm.md`](mlx-lm.md) path still uses. The `omlx` provider template and
+> the server-settings check it describes no longer ship.
+
+Everything below is what the retired setup did, for the record.
 
 ## Weights
 

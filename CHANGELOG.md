@@ -140,6 +140,17 @@ Versions match git tags; pin one in both install lines.
   OpenAI-completions server with `--provider`/`--base-url`/`--model` as before.
   `scripts/screen.sh`'s default provider follows.
 
+- **The install docs and setup skill target the local llama.cpp backend.** The
+  README "Model settings" and "Check your setup" sections, `docs/recipe.md`, the
+  `mellum-setup` skill (preflight, weights, server, provider, smoke), and
+  `scripts/product.sh` / `scripts/mellum.mjs` / `scripts/halve-model.md` /
+  `dashboard/serve.py` now describe serving Mellum with
+  `uv run scripts/backend.py start` on `127.0.0.1:8001` and registering the
+  `llamacpp` provider. `/mellum check` confirms the server is up, the model is
+  served, and the launched context window is at least 50,000 — llama-server has
+  no admin API, so there are no mutable server settings to set or drift. Measured
+  pass-rates and research notes keep their oMLX provenance as history.
+
 - **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
   name "next-concept modelling" from an unrelated text-generation paper
   (HazyResearch/ncm) but only re-runs an acceptance test until it passes, so it
@@ -155,6 +166,16 @@ Versions match git tags; pin one in both install lines.
   the score with per-rep lines when it finishes — and the lesson panel steps
   aside while it runs so the feed has the space. It also streams the model's
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
+
+### Removed
+
+- **The oMLX templates.** `templates/pi/models.omlx.json`,
+  `templates/pi/models.omlx.models-only.json` and
+  `templates/omlx-model-settings.json` are gone; `templates/pi/models.llamacpp.json`
+  replaces the provider profile, and the local server has no per-model settings
+  file to ship. The oMLX backend guide (`docs/backends/omlx.md`) is marked
+  superseded and kept for historical reference and the MLX weights the
+  Apple-Silicon path still uses.
 
 ### Fixed
 
