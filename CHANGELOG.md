@@ -6,6 +6,14 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **A shipped Pi provider profile for the local llama.cpp backend**
+  (`templates/pi/models.llamacpp.json`). It is exactly what
+  `scripts/backend.py profile` generates from `[tool.mellum]` — the llama.cpp
+  provider on `127.0.0.1:8001`, model `Mellum2.1-12B-A2.5B-Thinking`, context
+  50000, `maxTokens` 16384 — so you can drop it into `~/.pi/agent/models.json`
+  (or merge it with `scripts/merge-json.mjs`) to point Pi at the backend the
+  worker now uses. A test keeps the template identical to the generator's output.
+
 - **Plan delegation (`MELLUM_DELEGATE_PLAN=1`) — the simplest shape, no per-step
   tests.** The architect splits the spec into small ordered step docs
   (`stepNN.md`, each carrying the verbatim spec it covers and a link back to the
