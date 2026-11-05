@@ -1,0 +1,171 @@
+{
+  "scope": "Unique intercepted tool calls by instance/call ID from actual tool results; assistant quotations excluded. Counts agree with recorded guard_blocks. Interception does not establish model efficacy.",
+  "server": 10,
+  "follower": 0,
+  "tasks": [
+    {
+      "task": "G1",
+      "guard_blocks": 3,
+      "events": [
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:28:57.805Z",
+          "instance": "a89ca7fb-623a-46f6-ba39-34c28b9881d7",
+          "call_id": "IlNdv2xlozmgtXm0lNnFqE5CX01P0hrT",
+          "command": "uv run --frozen python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run --frozen python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        },
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:31:05.863Z",
+          "instance": "a89ca7fb-623a-46f6-ba39-34c28b9881d7",
+          "call_id": "hyQti18el0nkSTK7McJetoo3MIs3NSLf",
+          "command": "uv run --frozen python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run --frozen python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        },
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:31:32.729Z",
+          "instance": "a89ca7fb-623a-46f6-ba39-34c28b9881d7",
+          "call_id": "BUQWmarsYVuWe5imDCEohwjQfJUtn7L6",
+          "command": "uv run --frozen python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run --frozen python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "G2",
+      "guard_blocks": 1,
+      "events": [
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:38:40.338Z",
+          "instance": "04cc7eb9-5e62-4339-b019-580f0b86d1e8",
+          "call_id": "TOwAJgBKKF8EQfiM1fDLdhwWbmN2Kgf8",
+          "command": "uv run uvicorn app:app --reload",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run uvicorn app:app --reload >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "G3",
+      "guard_blocks": 0,
+      "events": []
+    },
+    {
+      "task": "G4",
+      "guard_blocks": 3,
+      "events": [
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:47:34.279Z",
+          "instance": "72cf6d1d-5609-47d6-972b-0fbd13b6e530",
+          "call_id": "0kKyBCaNquHfNjwXfeFEFyl4gh5FDFNW",
+          "command": "uv run python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        },
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:47:54.953Z",
+          "instance": "72cf6d1d-5609-47d6-972b-0fbd13b6e530",
+          "call_id": "qbigGNp3CYLbiyeHyc3H2ltKs7Ajfepw",
+          "command": "uv run python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        },
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:48:06.878Z",
+          "instance": "72cf6d1d-5609-47d6-972b-0fbd13b6e530",
+          "call_id": "S78hHx9noah5xtmkrJDkPGfWEHJ5xYrR",
+          "command": "uv run python -m uvicorn app:app --reload",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run python -m uvicorn app:app --reload >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "G5",
+      "guard_blocks": 0,
+      "events": []
+    },
+    {
+      "task": "G6",
+      "guard_blocks": 3,
+      "events": [
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:58:02.311Z",
+          "instance": "edee376a-dd67-4b09-8ecf-8f99031a6659",
+          "call_id": "rjHXwtio8vwHAipHmCO6tPaHu1dzF2mK",
+          "command": "uv run --frozen python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run --frozen python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        },
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:58:10.557Z",
+          "instance": "edee376a-dd67-4b09-8ecf-8f99031a6659",
+          "call_id": "hvOQj4QIGKtYnTzthSUmgq25o6NS1YSW",
+          "command": "python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        },
+        {
+          "kind": "server",
+          "timestamp": "2026-11-05T10:58:28.654Z",
+          "instance": "edee376a-dd67-4b09-8ecf-8f99031a6659",
+          "call_id": "CtmGDipPD8njiDdspYBjJwTajjUDoqfO",
+          "command": "uv run --frozen python app.py",
+          "refusal": [
+            {
+              "type": "text",
+              "text": "Blocked before execution: this foreground server command was not run. This message is not application output. A timeout wrapper alone does not ensure server-process cleanup. For endpoint behavior, use an in-process test: `from starlette.testclient import TestClient; TestClient(app).get(\"/...\")`. For required startup behavior, use a bounded child process, inspect readiness/logs, and clean up its process group. If backgrounding, return at once with a pid you can kill later and ensure cleanup: `nohup uv run --frozen python app.py >/tmp/mellum-server.log 2>&1 & echo \"server pid $!\"`."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+Fresh reviewer /root/log_follow_final_review,gpt-6-astra high,9ff9a7c..c9ee0b0.
+With fixes, no Critical. Important: foreground nohup does not detach; redirection targets/leading operators misclassified; generated remedy catalog stale. Each reproduced RED; follower-only nohup/redirection fix and regenerated catalog GREEN66 focused, npm671/671, caps4/4, docs clean. Server scanning policy remains unchanged. One fix pass, no re-review.
+Minor deferred: asynchronous unparenthesized AND/OR lists ending & can false-block; native helper lacks automated request2 refusal-content assertion (checks block/nonexecution/count/settlement; raw payloads retained).
+Declined inherited timeout-query/LC35 roadmap row, broad shell/interpreter/env-i grammar, malformed tail arguments beyond declared operands, pending native/freeze/screen evidence. Ledger rulings record scope/costs.

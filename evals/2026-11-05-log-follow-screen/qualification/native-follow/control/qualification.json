@@ -1,0 +1,22 @@
+{
+  "qualified": false,
+  "image": "sha256:300790eca2e16970004b6f2523681ca2bba2f6d81bb5b5b3026d1c2d133381ee",
+  "units": [
+    "guard/foreground-server"
+  ],
+  "run": "runs/2026-11-05-log-follow-screen/batch-v1/native-follow/control/runs/20261105T102622Z-follow-qualification-f61c8d",
+  "guard_blocks": 0,
+  "requests": 1,
+  "execution": {
+    "completion": "stalled",
+    "elapsed_seconds": 6.057,
+    "wall": 6.057,
+    "provider_error": null,
+    "cleanup_ok": true,
+    "exit_code": -9
+  },
+  "fixture_created": true,
+  "blocked_before_execution": false,
+  "trace_sha256": "6d7b72cb696796fd6671af51fc5e00f144a08ba13ddef3424c57244d64229b88",
+  "helper_sha256": "ddf1399f47e9b1b37fca1adaf0698ecb72bbfef5995d5301c5af8a4dd1cb9943"
+}

@@ -5,6 +5,10 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- Recorded the foreground log-follow screen: four formal usable results from six,
+  with both failures and complete budgets retained. The controlled guard probe
+  passed; no model follower attempt occurred, and no default was promoted.
+
 - Added explicit `guard/foreground-log-follow` to refuse foreground tail-follow
   and request finite snapshots. It is selected only by the new research screen,
   whose preparation/backend records include the exact per-arm remedy recipe.
@@ -207,16 +211,16 @@ Versions match git tags; pin one in both install lines.
 - Protected acceptance repair feedback keeps external failures authoritative,
   asks for missing required tests, and lists already-passing requirements to
   preserve. Bounded feedback reserves evidence across failures so a long early
-  log cannot hide a later failure. Checks and the two-repair budget are unchanged; efficacy awaits
-  the fresh repair-authority screen.
+  log cannot hide a later failure. Checks and the two-repair budget are unchanged; the repair-authority screen
+  retained five usable results and one stall from six, without a reliability claim.
 
 
 - Foreground-server guards recognize timeout wrappers, including clustered short
   options, and clearly distinguish a
   blocked call from application output. Guidance preserves required bounded
   startup verification; task verification excludes later tasks, and acceptance
-  feedback labels observed launch failures explicitly. Coding benefit awaits
-  the separately frozen six-task screen.
+  feedback labels observed launch failures explicitly. The runtime screen
+  retained four usable results from six, without establishing comparative benefit.
 
 - Startup qualification retains the first launch URL when later log entries
   mention other services, including when its port spans reads or has no newline.

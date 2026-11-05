@@ -1,0 +1,32 @@
+{
+  "selective": {
+    "n": 0,
+    "usable": 0,
+    "wilson_95": [
+      0.0,
+      1.0
+    ],
+    "requests": 0,
+    "output_tokens": 0,
+    "requests_per_usable": null,
+    "output_per_usable": null,
+    "requests_median": null,
+    "output_median": null,
+    "reconciled": true
+  },
+  "gated": {
+    "n": 6,
+    "usable": 4,
+    "wilson_95": [
+      0.299993315138392,
+      0.9032285888942195
+    ],
+    "requests": 373,
+    "output_tokens": 183186,
+    "requests_per_usable": 93.25,
+    "output_per_usable": 45796.5,
+    "requests_median": 56.0,
+    "output_median": 23217.0,
+    "reconciled": true
+  }
+}

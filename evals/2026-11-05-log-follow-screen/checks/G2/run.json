@@ -1,0 +1,94 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:300790eca2e16970004b6f2523681ca2bba2f6d81bb5b5b3026d1c2d133381ee"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output",
+    "guard/foreground-log-follow",
+    "check/external-acceptance"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+      "sha256": "d68a6b3655663d661dabfd8b975310e8acfda34ce157101b8af67a3d7263151b"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/python-developer.ts",
+      "sha256": "b3aeb9d88d994b8b29dc8c9aa7c0d16907eac6ec8a8aa810ddb2e37949572726"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/verify-the-spec.ts",
+      "sha256": "0f32c5bc4b2cacd56f363cf586eb16fa3706670251f1d98c4bc3da6e9a9a4f4e"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/context/trim-tool-output.ts",
+      "sha256": "02d7802411740a55b7e6ac05d06eb59921a8c8e72c7ab27aa1d96e0db7534199"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-log-follow.ts",
+      "sha256": "93d54122884e139ab9f3cb4a99d4d7759b6adcb94c252ef45a1f0d9154c6e1fb"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/check/external-acceptance.ts",
+      "sha256": "3d221040e21a94b20ed08583d8360ba2549b19814139dbc8504b62846d1d1c50"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 37,
+  "turns": 37,
+  "tool_calls": 34,
+  "tool_errors": 2,
+  "context": 16487,
+  "context_uncached": 7778,
+  "output_tokens": 15004,
+  "wall": 149.982,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 1,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [],
+  "completion": "settled",
+  "elapsed_seconds": 149.982,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": 0
+}

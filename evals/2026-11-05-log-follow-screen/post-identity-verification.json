@@ -1,0 +1,21 @@
+{
+  "owned_resource_records": 88,
+  "remaining_owned_containers": [],
+  "remaining_owned_volumes": [],
+  "server_stopped": true,
+  "controller_stopped": true,
+  "listener_8002": "",
+  "freeze_drift": [],
+  "controller_shutdown": {
+    "at": "2026-11-05T10:58:54.709639+00:00",
+    "owned_server_stopped": true,
+    "listener_8002": "",
+    "guardian_stopped": true
+  },
+  "watchdog_shutdown": {
+    "at": "2026-11-05T10:58:54.388489+00:00",
+    "cutoff_epoch": 1793903274.295778,
+    "server_exit_code": 0
+  },
+  "independent_guardian_pids": []
+}

@@ -1,0 +1,149 @@
+{
+  "scope": "Counts complete dedicated user injection messages by marker prefix; markers quoted in assistant reasoning are retained separately, not counted as duplicate injected messages. Every recorded ordinary provider payload audited; native compaction requests separately counted by relay.",
+  "ordinary_payloads": 369,
+  "all_once": true,
+  "tasks": [
+    {
+      "run": "task-534745b9bd9545a396d213f185909102",
+      "requests": 107,
+      "trace_sha256": "b41bf32b11d39cb0c314b6f56f29cfe79f4e0c18ab7067461a932935454535f4",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 92,
+        "verify-the-spec": 92
+      },
+      "around_compaction": {
+        "before": {
+          "requests": 93,
+          "name-the-layout": [
+            1
+          ],
+          "verify-the-spec": [
+            1
+          ]
+        },
+        "after": {
+          "requests": 14,
+          "name-the-layout": [
+            1
+          ],
+          "verify-the-spec": [
+            1
+          ]
+        }
+      }
+    },
+    {
+      "run": "task-0d3afdee89034766b6fec6d725f861a7",
+      "requests": 37,
+      "trace_sha256": "1af63518c22f4696b1e747c24c210885f9deee5c93dcaaa42cf0658c84e00183",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-81be75e3e73640c5be1f48ccf45d7be0",
+      "requests": 60,
+      "trace_sha256": "d1ac243049de335d276956a7234850c75dcb7ce16c88d3e937b3f1be947b1452",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-975e66ab3b8c4ae5888af42bd0e5a78b",
+      "requests": 52,
+      "trace_sha256": "3929b065540f5ab9130165e35a1344f718bc4892ae5ce3d5d7cf2f72c5b7bad8",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-5ccd78d2832e484e8577b93e54f0f9fc",
+      "requests": 39,
+      "trace_sha256": "b194cb8d5cbb33d4dbde37c3b4bb75977cb4982cc38c747cd693b792742e1099",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-6861687b7f34465dae4dc64d2fa26c28",
+      "requests": 74,
+      "trace_sha256": "11f759b88ec62e2ecdc3c9f3cd68f0d2e8a538b230424a8afdf08def7776d84a",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      },
+      "around_compaction": {
+        "before": {
+          "requests": 56,
+          "name-the-layout": [
+            1
+          ],
+          "verify-the-spec": [
+            1
+          ]
+        },
+        "after": {
+          "requests": 18,
+          "name-the-layout": [
+            1
+          ],
+          "verify-the-spec": [
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

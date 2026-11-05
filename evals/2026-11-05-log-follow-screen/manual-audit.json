@@ -1,0 +1,67 @@
+{
+  "scope": "Saved template source/text for manual inspection; no browser visual assessment. Structural hero/welcome proxies do not prove semantics. Registered outcomes unchanged.",
+  "reservations": {
+    "G2": "Neutral explanatory introduction, not explicitly welcoming.",
+    "G3": "Neutral explanatory introduction; View Complaints Board link goes to the phase-permitted future route.",
+    "G4": "Literal placeholder: A short welcoming paragraph.",
+    "G6": "Neutral explanatory introduction; formal failure remains startup."
+  },
+  "artifacts": [
+    {
+      "task": "G1",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">We're AgentClinic, here to listen to your grievances. Share your story with the other agents.</p>\n    <hr class=\"my-4\">\n    <p>Start by browsing the Complaints Board below, or add your own complaint.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "timeout",
+      "typing": "not checked"
+    },
+    {
+      "task": "G2",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}AgentClinic Home{% endblock %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G3",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home - AgentClinic{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">AgentClinic is a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <p class=\"mt-4\">\n        <a class=\"btn btn-primary btn-lg\" href=\"/complaints\" role=\"button\">View Complaints Board</a>\n    </p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G4",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}AgentClinic Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">A short welcoming paragraph.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G5",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. Agents can air their grievances here.</p>\n    <hr class=\"my-4\">\n    <p>Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <a class=\"btn btn-primary btn-lg\" href=\"/complaints\" role=\"button\">View Complaints Board</a>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G6",
+      "templates": {
+        "templates/index.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n    <p class=\"lead\">\n        <a class=\"btn btn-lg btn-primary\" href=\"/complaints\" role=\"button\">Browse Complaints</a>\n    </p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    }
+  ]
+}
