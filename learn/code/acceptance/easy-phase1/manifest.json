@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "checker": "checker.py",
+  "timeout": 30,
+  "requirements": {
+    "fastapi_app": "Root app.py exports FastAPI app",
+    "home_response": "GET / returns 200 with tagline",
+    "shared_layout": "Home uses templates/base.html",
+    "html5": "HTML5 doctype",
+    "english": "English document language",
+    "viewport": "Responsive viewport",
+    "bootstrap_css": "Bootstrap 5 CDN CSS in head",
+    "bootstrap_bundle": "Bootstrap 5 CDN bundle ends body",
+    "favicon": "Specified Python favicon",
+    "default_title": "Base title defaults to AgentClinic",
+    "title_override": "Child can override title",
+    "navbar_brand": "Navbar has brand",
+    "nav_home": "Navbar links Home",
+    "nav_complaints": "Navbar links Complaints",
+    "hero_tagline": "Hero with tagline; structural proxy",
+    "welcome_paragraph": "Welcome paragraph; tone manual",
+    "guarded_reload": "Reload server call under main guard",
+    "startup": "Documented launch serves home",
+    "project_tests": "Nonempty passing project tests",
+    "base_integrity": "Frozen base inputs preserved",
+    "phase_layout": "Phase 1 file layout"
+  },
+  "files": {
+    "checker.py": "d5a8164d6cb72fb31711112c6ad9f1f4afb6b2713038a1447dfb5263d624973a",
+    "public/uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884",
+    "public/pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+    "public/.gitignore": "4409b253ac33acb862192f9cad8583ed3fe0bac938082a6cfa784d7cf0d185ef",
+    "public/AGENTS.md": "e1b95ace215013b76cd7043d64df5bf7955453b11516c454b9881676891dd2ca",
+    "public/specs/mission.md": "df464c1f7801e38994ebc30a9e01cbc839fe7ff71c422b7c7b83a6c113a9e6fc",
+    "public/specs/tech-stack.md": "321ee9a48f521ad876e18599f883a539ba538c7f1e567e77871427454f0372cd",
+    "public/specs/roadmap.md": "670e36dcb2778e426092d9030c074f01a5015f2e8932868d9764b5fcae24a638"
+  },
+  "spec_hashes": {
+    "public/uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884",
+    "public/pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+    "public/.gitignore": "4409b253ac33acb862192f9cad8583ed3fe0bac938082a6cfa784d7cf0d185ef",
+    "public/AGENTS.md": "e1b95ace215013b76cd7043d64df5bf7955453b11516c454b9881676891dd2ca",
+    "public/specs/mission.md": "df464c1f7801e38994ebc30a9e01cbc839fe7ff71c422b7c7b83a6c113a9e6fc",
+    "public/specs/tech-stack.md": "321ee9a48f521ad876e18599f883a539ba538c7f1e567e77871427454f0372cd",
+    "public/specs/roadmap.md": "670e36dcb2778e426092d9030c074f01a5015f2e8932868d9764b5fcae24a638"
+  },
+  "base_hashes": {
+    "uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884",
+    "pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+    ".gitignore": "4409b253ac33acb862192f9cad8583ed3fe0bac938082a6cfa784d7cf0d185ef",
+    "AGENTS.md": "e1b95ace215013b76cd7043d64df5bf7955453b11516c454b9881676891dd2ca",
+    "specs/mission.md": "df464c1f7801e38994ebc30a9e01cbc839fe7ff71c422b7c7b83a6c113a9e6fc",
+    "specs/tech-stack.md": "321ee9a48f521ad876e18599f883a539ba538c7f1e567e77871427454f0372cd",
+    "specs/roadmap.md": "670e36dcb2778e426092d9030c074f01a5015f2e8932868d9764b5fcae24a638"
+  },
+  "limits": [
+    "Hero and welcome meaning use structural proxies plus manual audit.",
+    "CDN version checked from URL; no internet fetch.",
+    "Direct or aliased uvicorn.run under main guard; indirect startup helpers need checker qualification before use."
+  ]
+}
