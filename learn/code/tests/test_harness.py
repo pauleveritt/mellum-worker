@@ -1469,3 +1469,25 @@ def test_run_suite_runs_pi_as_the_given_user(tmp_path):
                                 pi_binary=str(FIX / "fake-pi.sh"), user=getpass.getuser())
     assert json.loads((run_dir / "launch.json").read_text())["user"] == getpass.getuser()
     assert json.loads((run_dir / "execution.json").read_text())["termination_reason"] == "exited"
+
+
+def test_run_suite_uses_the_given_base_environment(tmp_path, monkeypatch):
+    monkeypatch.setenv("FROM_DRIVER", "leaked")
+    base = {"PATH": os.environ["PATH"], "HOME": str(tmp_path / "session-home"), "UV_CACHE_DIR": "/rig/cache"}
+    run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-home.sh"), base_env=base)
+    recorded = (run_dir / "workspace/env.txt").read_text()
+    assert f"HOME={tmp_path / 'session-home'}" in recorded and "UV_CACHE_DIR=/rig/cache" in recorded
+    assert "FROM_DRIVER=\n" in recorded
+
+
+def test_grade_and_record_matches_run_sessions(tmp_path):
+    suite = harness.load_suite(SUITES, "add")
+    [(run_dir, *_)] = harness._run_sessions(suite, runs_dir=tmp_path / "runs", pi_binary=str(FIX / "fake-pi.sh"),
+                                            repeat=1, grade_run=False, deadline=None, profile=PROFILE)
+    original = json.loads((run_dir / "run.json").read_text())
+    (run_dir / "run.json").unlink()
+    harness.grade_and_record(run_dir, suite, grade_run=False, grade_versions=None, arm="bare", deadline=None)
+    again = json.loads((run_dir / "run.json").read_text())
+    for key in ("passed", "checks_ran", "checks_passed", "checks_total", "code_health", "completion"):
+        assert again[key] == original[key]

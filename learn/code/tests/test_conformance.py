@@ -143,3 +143,11 @@ def test_unpinned_tools_fail_tooling(server, host):
 def test_unstable_server_fails_stability(server, host):
     server[0].status = 503
     assert run_check(server, host)["items"]["stability"]["passed"] is False
+
+
+def test_post_check_reruns_identity_stability_and_tooling(server, host):
+    handler, endpoint = server
+    result = conformance.post_check(host["pins"], endpoint, model=host["model"], prefix=host["prefix"])
+    assert result["passed"] is True and set(result["items"]) == {"identity", "stability", "tooling"}
+    handler.build_info = "b1-other"
+    assert conformance.post_check(host["pins"], endpoint, model=host["model"], prefix=host["prefix"])["passed"] is False

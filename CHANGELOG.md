@@ -5,6 +5,16 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- Added a portable measurement rig for the Vanilla floor (LC.39) that needs no
+  Docker. One pin card (`scripts/rig/pins.json`) fixes the build, weights,
+  server flags, sampling and tool bootstrap. Each host passes a conformance
+  check that writes a host card before any session counts. Sessions run
+  natively on the inference host, as an unprivileged user on a pod, behind a
+  local proxy. The proxy ends a session at 120 requests or 64,000 output
+  tokens, so the outcome no longer depends on how fast the GPU is; wall clock
+  is only a safety net. `scripts/floor_cohort.py` collects and reports the
+  preregistered cohort and never rents or stops hardware itself.
+
 - Recorded the foreground log-follow screen: four formal usable results from six,
   with both failures and complete budgets retained. The controlled guard probe
   passed; no model follower attempt occurred, and no default was promoted.

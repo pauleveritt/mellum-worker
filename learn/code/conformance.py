@@ -166,3 +166,11 @@ def check(pins: dict, endpoint: str, *, perplexity_binary: Path, model: Path, re
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     Path(out).write_text(json.dumps(card, indent=2) + "\n")
     return card
+
+
+def post_check(pins: dict, endpoint: str, *, model: Path, prefix: str | None) -> dict:
+    """After a rental's last session: the server, its weights and the tools must still be as pinned."""
+    items = {"identity": _identity(pins, endpoint, model, None), "stability": _stability(endpoint),
+             "tooling": _tooling(pins, prefix)}
+    return {"passed": all(item["passed"] for item in items.values()), "items": items,
+            "checked_at": datetime.now(UTC).isoformat()}

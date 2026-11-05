@@ -449,6 +449,7 @@ def run_suite(
     user: str | None = None,
     budget_log: Path | None = None,
     wall_safety: float | None = None,
+    base_env: dict | None = None,
 ) -> Path:
     # LC.39: with wall_safety, the clock only guards against a hung host; the
     # proxy's budget (budget_log) is what ends a session.
@@ -511,7 +512,7 @@ def run_suite(
         for path in [run, *run.rglob("*")]:
             shutil.chown(path, user=user)
     env = {
-        **os.environ,
+        **(base_env if base_env is not None else os.environ),
         "PI_CODING_AGENT_DIR": str(run / "profile"),
         "MELLUM_TRACE_FILE": str(trace),
         "MELLUM_TRACE_RUN_ID": run.name,
@@ -1012,6 +1013,85 @@ def score_workspace(workspace: Path, suite: Suite) -> tuple[bool, str]:
     return passed, tail
 
 
+def grade_and_record(run_dir: Path, suite: Suite, *, grade_run: bool, grade_versions: dict[str, str] | None,
+                     arm: str, deadline: float | None, remedies: list[str] = (), extras: list[Path] = (),
+                     single_prompt: bool = False, specs: str | None = None, stall: float | None = None,
+                     isolation_image: str | None = None) -> tuple:
+    """Grade a finished session and write its run.json; LC.39 runs this as the grading user."""
+    execution = json.loads((run_dir / "execution.json").read_text())
+    can_grade = execution["cleanup_ok"]
+    if isolation_image and can_grade:
+        from containment import grade_contained
+        grades, scored = grade_contained(run_dir, suite, isolation_image, grade_versions)
+    else:
+        grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
+              grade(run_dir / "workspace")) if grade_run and can_grade else []
+        scored = (score_details(run_dir, suite, versions=grade_versions) if grade_versions else
+              score_details(run_dir, suite)) if can_grade else None
+    tests_passed, tail, missing, checks_ran = (scored if scored is not None else
+        (False, "cleanup failed; grading withheld", list(suite.expected), False))
+    failed_checks = len(missing)
+    quality_ok = all(
+        ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
+    ) if grades else None
+    health_status = "not checked" if quality_ok is None else "pass" if quality_ok else "fail"
+    if (run_dir / "grade.json").is_file():
+        diagnostics = json.loads((run_dir / "grade.json").read_text())
+        if any(diagnostics[name]["status"] == "not checked" for name in ("ruff", "complexipy")):
+            health_status = "not checked"
+    grading_error = bool(grade_run and health_status == "not checked")
+    if (run_dir / "hidden-grade.json").is_file():
+        grading_error = grading_error or not json.loads((run_dir / "hidden-grade.json").read_text()).get("started")
+    contaminated = (run_dir / "contaminated").exists()
+    metrics = report(run_dir)
+    over = record_failures(metrics, suite.record)
+    passed = tests_passed and quality_ok is not False and not contaminated and not over
+    leaked_file = run_dir / "leaked.json"
+    if leaked_file.is_file():
+        metrics["leaked"] = json.loads(leaked_file.read_text())
+    layout_file = run_dir / "layout.json"
+    if layout_file.is_file():
+        metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
+    model_file = run_dir / "model.txt"
+    record = {
+        "isolation": {"backend": "temporary-docker", "image": isolation_image} if isolation_image else {"backend": "unconfined"},
+        "instrumentation_error": "mellum-trace:" in (run_dir / "stdout.txt").read_text(errors="replace"),
+        "suite": suite.name,
+        "arm": arm,
+        "model": model_file.read_text().strip() if model_file.is_file() else None,
+        "remedies": list(remedies),
+        "extensions": extension_record(list(extras)),
+        "single_prompt": single_prompt,
+        "specs": specs,
+        "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
+        "machine": machine_label(),
+        "deadline": deadline,
+        "stall": stall,
+        "stalled": (json.loads((run_dir / "stalled").read_text())
+                    if (run_dir / "stalled").exists() else None),
+        "passed": passed,
+        "tests_passed": tests_passed,
+        "quality_ok": quality_ok,
+        "code_health": health_status,
+        "grading_infrastructure_error": grading_error,
+        "contaminated": contaminated,
+        "failed_checks": failed_checks,
+        "checks_ran": checks_ran,
+        "checks_passed": len(suite.expected) - len(missing) if checks_ran else 0,
+        "checks_total": len(suite.expected),
+        "missing_checks": missing,
+        "check_groups": check_groups(suite.expected, missing),
+        "record_failures": over,
+        **{key: value for key, value in metrics.items()
+           if key != "final_reply"},
+        **execution_outcome(run_dir),
+    }
+    (run_dir / "run.json").write_text(json.dumps(record, indent=2) + "\n")
+    from baseline import render_scorecard
+    print(render_scorecard([{**record, "run_id": run_dir.name}]), flush=True)
+    return passed, tail, grades, metrics, tests_passed, quality_ok, contaminated
+
+
 def _run_sessions(
     suite: Suite,
     *,
@@ -1039,7 +1119,7 @@ def _run_sessions(
         runner = run_suite
         containment_options = {}
         if isolation_image:
-            from containment import run_contained, grade_contained
+            from containment import run_contained
             runner = run_contained
             containment_options["image"] = isolation_image
             if gate_package is not None:
@@ -1051,76 +1131,10 @@ def _run_sessions(
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
                             context_files=context_files, **containment_options)
-        execution = json.loads((run_dir / "execution.json").read_text())
-        can_grade = execution["cleanup_ok"]
-        if isolation_image and can_grade:
-            grades, scored = grade_contained(run_dir, suite, isolation_image, grade_versions)
-        else:
-            grades = (grade(run_dir / "workspace", versions=grade_versions) if grade_versions else
-                  grade(run_dir / "workspace")) if grade_run and can_grade else []
-            scored = (score_details(run_dir, suite, versions=grade_versions) if grade_versions else
-                  score_details(run_dir, suite)) if can_grade else None
-        tests_passed, tail, missing, checks_ran = (scored if scored is not None else
-            (False, "cleanup failed; grading withheld", list(suite.expected), False))
-        failed_checks = len(missing)
-        quality_ok = all(
-            ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
-        ) if grades else None
-        health_status = "not checked" if quality_ok is None else "pass" if quality_ok else "fail"
-        if (run_dir / "grade.json").is_file():
-            diagnostics = json.loads((run_dir / "grade.json").read_text())
-            if any(diagnostics[name]["status"] == "not checked" for name in ("ruff", "complexipy")):
-                health_status = "not checked"
-        grading_error = bool(grade_run and health_status == "not checked")
-        if (run_dir / "hidden-grade.json").is_file():
-            grading_error = grading_error or not json.loads((run_dir / "hidden-grade.json").read_text()).get("started")
-        contaminated = (run_dir / "contaminated").exists()
-        metrics = report(run_dir)
-        over = record_failures(metrics, suite.record)
-        passed = tests_passed and quality_ok is not False and not contaminated and not over
-        leaked_file = run_dir / "leaked.json"
-        if leaked_file.is_file():
-            metrics["leaked"] = json.loads(leaked_file.read_text())
-        layout_file = run_dir / "layout.json"
-        if layout_file.is_file():
-            metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
-        model_file = run_dir / "model.txt"
-        record = {
-            "isolation": {"backend": "temporary-docker", "image": isolation_image} if isolation_image else {"backend": "unconfined"},
-            "instrumentation_error": "mellum-trace:" in (run_dir / "stdout.txt").read_text(errors="replace"),
-            "suite": suite.name,
-            "arm": arm,
-            "model": model_file.read_text().strip() if model_file.is_file() else None,
-            "remedies": list(remedies),
-            "extensions": extension_record(list(extras)),
-            "single_prompt": single_prompt,
-            "specs": specs,
-            "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
-            "machine": machine_label(),
-            "deadline": deadline,
-            "stall": stall,
-            "stalled": (json.loads((run_dir / "stalled").read_text())
-                        if (run_dir / "stalled").exists() else None),
-            "passed": passed,
-            "tests_passed": tests_passed,
-            "quality_ok": quality_ok,
-            "code_health": health_status,
-            "grading_infrastructure_error": grading_error,
-            "contaminated": contaminated,
-            "failed_checks": failed_checks,
-            "checks_ran": checks_ran,
-            "checks_passed": len(suite.expected) - len(missing) if checks_ran else 0,
-            "checks_total": len(suite.expected),
-            "missing_checks": missing,
-            "check_groups": check_groups(suite.expected, missing),
-            "record_failures": over,
-            **{key: value for key, value in metrics.items()
-               if key != "final_reply"},
-            **execution_outcome(run_dir),
-        }
-        (run_dir / "run.json").write_text(json.dumps(record, indent=2) + "\n")
-        from baseline import render_scorecard
-        print(render_scorecard([{**record, "run_id": run_dir.name}]), flush=True)
+        passed, tail, grades, metrics, tests_passed, quality_ok, contaminated = grade_and_record(
+            run_dir, suite, grade_run=grade_run, grade_versions=grade_versions, arm=arm, remedies=remedies,
+            extras=extras, single_prompt=single_prompt, specs=specs, deadline=deadline, stall=stall,
+            isolation_image=isolation_image)
         results.append((run_dir, passed, tail, grades, metrics,
                         tests_passed, quality_ok, contaminated))
     return results
