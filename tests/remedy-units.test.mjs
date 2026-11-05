@@ -20,6 +20,7 @@ function fakePi() {
 }
 
 const GUARDS = [
+	"foreground-log-follow",
 	"foreground-server",
 	"repeat-loops",
 	"outside-workspace",
@@ -260,4 +261,25 @@ test("context/trim-tool-output trims a tool result too big for the context and s
 	assert.match(text, /offset/);
 	assert.equal(pi.fire("tool_result", { type: "tool_result", toolName: "read", input: {}, content: [{ type: "text", text: "small" }] }), undefined);
 	assert.equal(pi.fire("tool_result", { type: "tool_result", toolName: "write", input: {}, content: [{ type: "text", text: big }] }), undefined, "only output a model asked to see is trimmed");
+});
+
+
+test("guard/foreground-log-follow blocks compound foreground follows and preserves finite reads", async () => {
+ const pi = fakePi();
+ (await import("../remedies/guard/foreground-log-follow.ts")).default(pi);
+ for (const command of [
+  "uvicorn service:app & echo ready && tail -f /tmp/service.log",
+  "tail -F worker.log", "tail --follow=name worker.log", "tail -vf worker.log",
+  "tail -n 20 -f worker.log", "env RUN=1 /usr/bin/tail --follow worker.log",
+  "timeout 5 tail -f worker.log", "uv run --offline tail -F worker.log",
+  "(tail -f worker.log) | cat",
+ ]) assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command } })?.block, true, command);
+ for (const command of [
+  "tail -n 50 worker.log", "tail -c 100 worker.log", "tail --lines 50 worker.log",
+  "tail -- --follow", "tail -n -f worker.log", "tail --bytes -f worker.log",
+  "tail --help", "tail -f --help", "tail --version", "tail -F --version",
+  "printf '%s' 'tail -f worker.log'", "rg 'tail -f' .", "tail -f worker.log &",
+  "(tail -f worker.log | cat) & echo ready",
+ ]) assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command } }), undefined, command);
+ assert.equal(pi.fire("tool_call", { toolName: "read", input: { path: "tail -f" } }), undefined);
 });

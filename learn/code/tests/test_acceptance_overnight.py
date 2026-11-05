@@ -128,7 +128,7 @@ def reset_cohort():
     ("--prepare", "comparison", ["selective", "gated"] * 20,
      "2026-11-05-actionable-acceptance-protocol.md"),
     ("--prepare-screen", "screen", ["gated"] * 6,
-     "2026-11-05-repair-authority-screen-protocol.md"),
+     "2026-11-05-log-follow-screen-protocol.md"),
 ])
 def test_prepare_registers_actual_selected_cohort(tmp_path, monkeypatch, mode, kind, order, protocol):
     import json
@@ -159,6 +159,14 @@ def test_prepare_registers_actual_selected_cohort(tmp_path, monkeypatch, mode, k
     assert prepared["order"] == order
     assert prepared["collection"] == module.cohort_config()
     assert prepared["collection"]["kind"] == kind
+    expected = [*module.SELECTIVE,
+                *(["guard/foreground-log-follow"] if kind == "screen" else []),
+                "check/external-acceptance"]
+    assert prepared["collection"]["remedies"]["gated"] == expected
+    if kind == "comparison":
+        assert prepared["collection"]["remedies"]["selective"] == module.SELECTIVE
+    else:
+        assert set(prepared["collection"]["remedies"]) == {"gated"}
     assert prepared["collection"]["counts"] == {arm: order.count(arm) for arm in ("selective", "gated")}
     assert prepared["collection"]["n_per_arm"] == (20 if kind == "comparison" else None)
     assert Path(prepared["protocol"]).name == protocol

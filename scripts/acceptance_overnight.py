@@ -37,16 +37,23 @@ def configure_mode(mode: str) -> str:
     screen = mode in {"--prepare-screen", "--run-screen"}
     KIND = "screen" if screen else "comparison"
     ORDER = ["gated"] * 6 if screen else ["selective", "gated"] * 20
-    FOLLOWUP_PROTOCOL = (REPO / "docs/superpowers/research/2026-11-05-repair-authority-screen-protocol.md"
+    FOLLOWUP_PROTOCOL = (REPO / "docs/superpowers/research/2026-11-05-log-follow-screen-protocol.md"
                          if screen else COMPARISON_PROTOCOL)
     return mode.removesuffix("-screen") if screen else mode
+
+
+def selected_remedies(arm: str) -> list[str]:
+    return [*SELECTIVE,
+            *(["guard/foreground-log-follow"] if KIND == "screen" and arm == "gated" else []),
+            *(["check/external-acceptance"] if arm == "gated" else [])]
 
 
 def cohort_config() -> dict:
     counts = {arm: ORDER.count(arm) for arm in ("selective", "gated")}
     return {"kind": KIND, "counts": counts,
             "n_per_arm": counts["gated"] if counts["selective"] == counts["gated"] else None,
-            "concurrency": 1, "deadline_seconds": 600, "open_tool_cutoff_seconds": 180}
+            "concurrency": 1, "deadline_seconds": 600, "open_tool_cutoff_seconds": 180,
+            "remedies": {arm: selected_remedies(arm) for arm, count in counts.items() if count}}
 
 
 def collection_state(completed: int) -> str:
@@ -290,7 +297,7 @@ def collect(batch: Path):
             if STOP_REQUESTED or not may_start(cutoff_at - time.monotonic()):
                 break
             verify_files(prepared["freeze"]); verify_files(profile_hashes); live(server, identity, argv, runtime)
-            names, extras = harness.resolve_extras(",".join(SELECTIVE + (["check/external-acceptance"] if arm == "gated" else [])), [])
+            names, extras = harness.resolve_extras(",".join(selected_remedies(arm)), [])
             before = (batch / "server.log").stat().st_size
             write_json(batch / "status.json", {"state": "running", "completed": len(records), "index": index + 1, "arm": arm, "at": now()})
             result = harness._run_sessions(harness.load_suite(harness.SUITES, "easy"), runs_dir=batch / arm,

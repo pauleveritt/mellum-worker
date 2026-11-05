@@ -5,6 +5,11 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- Added explicit `guard/foreground-log-follow` to refuse foreground tail-follow
+  and request finite snapshots. It is selected only by the new research screen,
+  whose preparation/backend records include the exact per-arm remedy recipe.
+  Worker, presets and the default comparison recipe remain unchanged.
+
 
 
 - Recorded the repair-authority screen: five formal usable results from six,

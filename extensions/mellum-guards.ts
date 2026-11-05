@@ -195,7 +195,7 @@ const SERVER_EXECUTABLES = new Set(["uvicorn", "gunicorn", "hypercorn", "daphne"
 const QUERY_FLAGS = new Set(["--help", "--version", "-h", "-V"]);
 const basename = (word = "") => word.split("/").at(-1) ?? "";
 
-function startsServer(words: string[]): boolean {
+function unwrappedWords(words: string[]): string[] | undefined {
 	words = [...words];
 	// Common launch wrappers; no command is ever executed by the classifier.
 	while (words.length) {
@@ -220,9 +220,15 @@ function startsServer(words: string[]): boolean {
 				}
 			}
 			if (words[0] === "--") words.shift();
-			if (!/^(?:(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?[smhd]?|inf(?:inity)?)$/i.test(words.shift() ?? "")) return false;
+			if (!/^(?:(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?[smhd]?|inf(?:inity)?)$/i.test(words.shift() ?? "")) return undefined;
 		} else break;
 	}
+	return words;
+}
+
+function startsServer(input: string[]): boolean {
+ const words = unwrappedWords(input);
+ if (!words) return false;
 	if (basename(words[0]) === "nohup") return false;
 	let executable = basename(words.shift());
 	if (/^python(?:\d+(?:\.\d+)?)?$/.test(executable)) {
@@ -255,6 +261,41 @@ export function isBackgrounded(command: string): boolean {
 export function isForegroundServer(command: string | undefined): boolean {
 	return !!command && shellCommands(command).some(({ words, background }) => !background && startsServer(words));
 }
+
+/** Foreground tail-follow is a wait, even when a different command detached. */
+function followsLog(input: string[]): boolean {
+ const words = unwrappedWords(input);
+ if (!words || basename(words.shift()) !== "tail") return false;
+ let follow = false;
+ for (let i = 0; i < words.length; i++) {
+  const word = words[i];
+  if (word === "--") break;
+  if (QUERY_FLAGS.has(word)) return false;
+  if (["--lines", "--bytes"].includes(word)) { i++; continue; }
+  if (word === "--follow" || word.startsWith("--follow=")) follow = true;
+  else if (word.startsWith("-") && !word.startsWith("--")) {
+   const options = word.slice(1);
+   for (let j = 0; j < options.length; j++) {
+    if ("fF".includes(options[j])) follow = true;
+    if ("nc".includes(options[j])) {
+     if (j === options.length - 1) i++;
+     break;
+    }
+   }
+  }
+ }
+ return follow;
+}
+
+export const logFollowGuard: Guard = (call) => {
+ if (call.toolName !== "bash") return undefined;
+ const command = commandOf(call.input);
+ if (!command || !shellCommands(command).some(({ words, background }) => !background && followsLog(words))) return undefined;
+ return { block: true, reason:
+  "Blocked before execution: this foreground log-follow command was not run. This message is not application output. " +
+  "Use a finite log snapshot such as tail -n 50, not follow mode. " +
+  "Verify required startup with bounded readiness/log checks and clean up owned processes; backgrounding a server does not bound later commands." };
+};
 
 /** The non-blocking form: detached, logs aside, prints the pid to kill later. */
 export function backgroundForm(command: string): string {
