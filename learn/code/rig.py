@@ -5,6 +5,9 @@ rig, not a replicate (docs/superpowers/specs/2026-11-05-portable-floor-design.md
 """
 import hashlib
 import json
+import re
+import shlex
+import subprocess
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -58,3 +61,105 @@ def server_argv(pins: dict, *, binary: str, model: str, port: int, threads: int,
              "-ctk", s["cache_type_k"], "-ctv", s["cache_type_v"], "-ngl", str(s["gpu_layers"]),
              "-lv", str(s["log_verbosity"]), "--log-file", log]
     return argv
+
+
+# Host commands. Every string is built from the pin card, so no shell script can
+# drift from it. They run on a fresh Linux pod as root, over SSH, in order.
+
+def checkout_commands(repo_url: str, commit: str, dest: str) -> list[str]:
+    q = shlex.quote
+    return [f"git clone --no-checkout {q(repo_url)} {q(dest)}",
+            f"git -C {q(dest)} checkout --detach {q(commit)}",
+            f'test "$(git -C {q(dest)} rev-parse HEAD)" = {q(commit)}']
+
+
+def bootstrap_commands(pins: dict, *, prefix: str, repo: str) -> list[str]:
+    q = shlex.quote
+    boot = pins["bootstrap"]
+    platform = pins["allowlist"]["platform"]
+    node = f"node-v{boot['node']['version']}-{platform}"
+    tarball = f"{prefix}/{node}.tar.xz"
+    bin_dir = f"{prefix}/bin"
+    uv = f"{bin_dir}/uv"
+    project = f"{repo}/{boot['dependency_project']}"
+    commands = [
+        "apt-get update && apt-get install -y --no-install-recommends " + " ".join(map(q, boot["apt"])),
+        f"mkdir -p {q(bin_dir)}",
+        f"curl -fsSL -o {q(tarball)} https://nodejs.org/dist/v{boot['node']['version']}/{node}.tar.xz",
+        f"echo {q(boot['node']['sha256'][platform] + '  ' + tarball)} | sha256sum --check",
+        f"tar -xJf {q(tarball)} -C {q(prefix)}",
+        *(f"ln -sf {q(f'{prefix}/{node}/bin/{tool}')} {q(f'{bin_dir}/{tool}')}" for tool in ("node", "npm", "npx")),
+        f"curl -LsSf https://astral.sh/uv/{boot['uv']}/install.sh | env UV_INSTALL_DIR={q(bin_dir)} UV_NO_MODIFY_PATH=1 sh",
+        f"UV_PYTHON_BIN_DIR={q(bin_dir)} {q(uv)} python install {boot['python']}",
+        f"PATH={q(bin_dir)}:$PATH {q(bin_dir + '/npm')} install -g --prefix {q(prefix)} {q(boot['pi'])}",
+        f"{q(uv)} sync --frozen --project {q(project)} --python {boot['python']}",
+        *(f"{q(bin_dir + '/uvx')} {q(f'{name}@{version}')} --version"
+          for name, version in boot["checkers"].items()),
+        f"chmod -R a+rX {q(prefix)} {q(project)}",
+    ]
+    return commands
+
+
+def build_commands(pins: dict, *, prefix: str) -> list[str]:
+    q = shlex.quote
+    build = pins["build"]
+    source = f"{prefix}/llama.cpp-{build['tag']}"
+    return [
+        f"git clone --no-checkout {q(build['repo'])} {q(source)}",
+        f"git -C {q(source)} checkout --detach {q(build['commit'])}",
+        f"cmake -S {q(source)} -B {q(source + '/build')} -DGGML_CUDA=ON -DGGML_NATIVE=OFF "
+        f"-DCMAKE_CUDA_ARCHITECTURES={q(build['cuda_architectures'])} -DCMAKE_BUILD_TYPE=Release",
+        f"cmake --build {q(source + '/build')} --target llama-server llama-perplexity -j",
+        *(f"ln -sf {q(f'{source}/build/bin/{tool}')} {q(f'{prefix}/bin/{tool}')}"
+          for tool in ("llama-server", "llama-perplexity")),
+        f"{q(prefix + '/bin/llama-server')} --version 2>&1 | grep -F "
+        f"{q('build ' + build['tag'].removeprefix('b') + ', commit ' + build['commit'][:9])}",
+    ]
+
+
+def fetch_weights_commands(pins: dict, *, dest: str) -> list[str]:
+    q = shlex.quote
+    w = pins["weights"]
+    path = f"{dest}/{w['file']}"
+    return [f"mkdir -p {q(dest)}",
+            f"curl -fL --retry 3 -o {q(path)} https://huggingface.co/{w['repo']}/resolve/{w['revision']}/{w['file']}",
+            f"echo {q(w['sha256'] + '  ' + path)} | sha256sum --check"]
+
+
+def serve_commands(pins: dict, *, binary: str, model: str, port: int, threads: int, log: str) -> list[str]:
+    argv = server_argv(pins, binary=binary, model=model, port=port, threads=threads, log=log)
+    return [f"tmux new-session -d -s mellum-rig {shlex.quote(shlex.join(argv))}"]
+
+
+def stop_server_commands() -> list[str]:
+    return ["tmux kill-session -t mellum-rig"]
+
+
+SESSION_USER = "mellum-session"
+GRADE_USER = "mellum-grade"
+
+
+def user_commands() -> list[str]:
+    commands = []
+    for user in (SESSION_USER, GRADE_USER):
+        commands += [f"id -u {user} >/dev/null 2>&1 || useradd --create-home --shell /bin/bash {user}",
+                     f"passwd --lock {user}"]
+    return commands
+
+
+VERSION = re.compile(r"\d+\.\d+\.\d+")
+
+
+def tool_versions(prefix: str) -> dict[str, str | None]:
+    """Read back the bootstrap's own tools. Checkers run through `uvx name@version`, so their version is the pin."""
+    probes = {"node": "node", "pi": "pi", "uv": "uv", "python": "python3.14"}
+    versions = {}
+    for name, binary in probes.items():
+        path = Path(prefix) / "bin" / binary
+        try:
+            out = subprocess.run([str(path), "--version"], capture_output=True, text=True, timeout=30)
+            match = VERSION.search(out.stdout + out.stderr) if out.returncode == 0 else None
+        except (OSError, subprocess.TimeoutExpired):
+            match = None
+        versions[name] = match.group() if match else None
+    return versions
