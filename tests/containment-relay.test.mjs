@@ -96,7 +96,7 @@ test('proxy forwards the rewritten body and response bytes unchanged', async () 
     assert.equal(status, 200);
     assert.ok(bytes.equals(reply));
     assert.deepEqual(received.stream_options, {include_usage: true});
-    assert.deepEqual(rows.map(r => r.boundary), ['ready', 'created', 'rewritten', 'headers', 'complete']);
+    assert.deepEqual(rows.map(r => r.boundary), ['ready', 'created', 'rewritten', 'headers', 'complete', 'usage']);
     assert.equal(rows[1].method, 'POST'); assert.equal(rows[1].path, '/v1/chat/completions');
     assert.ok(rows[1].timestamp);
   } finally { await proxy.close(); server.close(); }
@@ -114,4 +114,66 @@ test('proxy refuses non-inference routes without contacting the server', async (
 
 test('proxy refuses a non-loopback target', async () => {
   await assert.rejects(proxyRelay({listen: 0, target: 'http://example.com/', log: () => {}}), /loopback/);
+});
+
+// --- Proxy session budget (LC.39). ---
+import {usageFrom} from '../scripts/containment/relay.mjs';
+
+const sse = tokens => Buffer.from(`data: {"choices":[{"delta":{"content":"a"}}]}\n\n` +
+  `data: {"choices":[],"usage":{"prompt_tokens":5,"completion_tokens":${tokens}}}\n\ndata: [DONE]\n\n`);
+const budget = (requests, outputTokens) => ({requests, outputTokens, unknownCharge: 16384});
+
+test('usageFrom reads the final SSE usage chunk and a JSON body', () => {
+  assert.equal(usageFrom(sse(42), 'text/event-stream'), 42);
+  assert.equal(usageFrom(Buffer.from('{"usage":{"completion_tokens":7}}'), 'application/json'), 7);
+  assert.equal(usageFrom(Buffer.from('data: {"choices":[]}\n\n'), 'text/event-stream'), null);
+  assert.equal(usageFrom(Buffer.from('garbage'), 'application/json'), null);
+});
+
+test('budget refuses the request after the limit, never the one in flight', async () => {
+  let serverHits = 0;
+  const {server, url} = await upstream((q, s) => { serverHits++; s.writeHead(200, {'content-type': 'text/event-stream'}); s.end(sse(10)); });
+  const rows = [];
+  const proxy = await proxyRelay({listen: 0, target: url, log: row => rows.push(row), budget: budget(2, 1000)});
+  try {
+    assert.equal((await post(proxy.port, '/v1/chat/completions', {stream: true})).status, 200);
+    assert.equal((await post(proxy.port, '/v1/chat/completions', {stream: true})).status, 200);
+    const refused = await post(proxy.port, '/v1/chat/completions', {stream: true});
+    assert.equal(refused.status, 429);
+    assert.deepEqual(JSON.parse(refused.bytes.toString()), {error: 'session budget exhausted'});
+    await post(proxy.port, '/v1/chat/completions', {stream: true});
+    assert.equal(serverHits, 2);
+    assert.equal(rows.filter(r => r.boundary === 'budget_exhausted').length, 1);
+    assert.equal(rows.filter(r => r.boundary === 'created').length, 2);
+    assert.deepEqual(rows.filter(r => r.boundary === 'usage').map(r => r.charged), [10, 10]);
+  } finally { await proxy.close(); server.close(); }
+});
+
+test('budget charges unknown usage when the stream resets', async () => {
+  const {server, url} = await upstream((q, s) => {
+    s.writeHead(200, {'content-type': 'text/event-stream'});
+    s.write('data: {"choices":[]}\n\n'); setTimeout(() => s.socket.destroy(), 10);
+  });
+  const rows = [];
+  const proxy = await proxyRelay({listen: 0, target: url, log: row => rows.push(row), budget: budget(10, 100000)});
+  try {
+    await post(proxy.port, '/v1/chat/completions', {stream: true}).catch(() => {});
+    await new Promise(r => setTimeout(r, 50));
+    const usage = rows.filter(r => r.boundary === 'usage');
+    assert.equal(usage.length, 1);
+    assert.equal(usage[0].outputTokens, null); assert.equal(usage[0].charged, 16384);
+  } finally { await proxy.close(); server.close(); }
+});
+
+test('budget counts output across requests', async () => {
+  const {server, url} = await upstream((q, s) => { s.writeHead(200, {'content-type': 'text/event-stream'}); s.end(sse(60)); });
+  const rows = [];
+  const proxy = await proxyRelay({listen: 0, target: url, log: row => rows.push(row), budget: budget(120, 100)});
+  try {
+    assert.equal((await post(proxy.port, '/v1/chat/completions', {stream: true})).status, 200);
+    assert.equal((await post(proxy.port, '/v1/chat/completions', {stream: true})).status, 200);
+    assert.equal((await post(proxy.port, '/v1/chat/completions', {stream: true})).status, 429);
+    const exhausted = rows.find(r => r.boundary === 'budget_exhausted');
+    assert.equal(exhausted.requests, 2); assert.equal(exhausted.outputTokens, 120);
+  } finally { await proxy.close(); server.close(); }
 });

@@ -132,13 +132,47 @@ export function rewriteRequest(body) {
   return Buffer.from(JSON.stringify(value));
 }
 
+/** Output tokens a response reports: the last SSE usage chunk, or a JSON body's usage; null if none. */
+export function usageFrom(bytes, contentType = '') {
+  const read = value => (typeof value?.usage?.completion_tokens === 'number' ? value.usage.completion_tokens : null);
+  const text = bytes.toString('utf8');
+  if (contentType.includes('text/event-stream')) {
+    let found = null;
+    for (const line of text.split('\n')) {
+      if (!line.startsWith('data:')) continue;
+      const data = line.slice(5).trim();
+      if (!data || data === '[DONE]') continue;
+      try { const tokens = read(JSON.parse(data)); if (tokens !== null) found = tokens; } catch { /* partial frame */ }
+    }
+    return found;
+  }
+  try { return read(JSON.parse(text)); } catch { return null; }
+}
+
+const KEEP_RESPONSE = 2 * 1024 * 1024;
+
 /** Native sessions (LC.39): a loopback HTTP proxy in front of llama-server, one per session. */
-export async function proxyRelay({listen, target, log = () => {}}) {
+export async function proxyRelay({listen, target, log = () => {}, budget = null}) {
   const url = loopbackTarget(target);
+  const spent = {requests:0, outputTokens:0};
+  let exhausted = false;
+  const charge = (id, outputTokens) => {
+    const charged = outputTokens ?? budget?.unknownCharge ?? 0;
+    spent.outputTokens += charged;
+    record('usage', id, {outputTokens, charged});
+  };
   const record = (boundary, id, fields = {}) => log({boundary, id, timestamp:new Date().toISOString(), ...fields});
   const server = http.createServer(async (req, res) => {
     if (!allowedRoute(req.method, req.url)) { res.writeHead(403).end(); return; }
     const id = randomUUID(), started = performance.now();
+    const inference = req.method === 'POST';
+    if (inference && budget && (spent.requests >= budget.requests || spent.outputTokens >= budget.outputTokens)) {
+      if (!exhausted) { exhausted = true; record('budget_exhausted', null, {...spent}); }
+      for await (const chunk of req) void chunk;
+      res.writeHead(429, {'content-type':'application/json'}).end(JSON.stringify({error:'session budget exhausted'}));
+      return;
+    }
+    if (inference) spent.requests += 1;
     record('created', id, {method:req.method, path:req.url});
     let body = Buffer.alloc(0);
     try {
@@ -162,19 +196,26 @@ export async function proxyRelay({listen, target, log = () => {}}) {
       for (const key of ['content-type', 'content-encoding', 'content-length'])
         if (up.headers[key] !== undefined) headers[key] = up.headers[key];
       res.writeHead(up.statusCode, headers);
-      let bytes = 0;
+      let bytes = 0; const kept = [];
       try {
-        for await (const chunk of up) { bytes += chunk.length; if (!res.write(chunk)) await once(res, 'drain'); }
+        for await (const chunk of up) {
+          bytes += chunk.length;
+          if (inference && bytes <= KEEP_RESPONSE) kept.push(chunk);
+          if (!res.write(chunk)) await once(res, 'drain');
+        }
         record('complete', id, {bytes, elapsedMs:performance.now()-started});
+        if (inference) charge(id, bytes <= KEEP_RESPONSE ? usageFrom(Buffer.concat(kept), up.headers['content-type'] ?? '') : null);
         res.end();
       } catch (error) {
         record('stream_error', id, {code:safeCode(error), elapsedMs:performance.now()-started});
+        if (inference) charge(id, null);
         res.destroy();
       }
     });
     upstream.setTimeout(600000, () => upstream.destroy(Object.assign(new Error(), {code:'ETIMEDOUT'})));
     upstream.on('error', error => {
       record('request_error', id, {code:safeCode(error), elapsedMs:performance.now()-started});
+      if (inference && !res.headersSent) charge(id, null);
       if (res.headersSent) res.destroy(); else res.writeHead(502, {'x-mellum-transport-id':id}).end();
     });
     res.on('close', () => { if (!res.writableFinished) upstream.destroy(); });
@@ -235,7 +276,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   else if (process.argv[2] === 'proxy') {
     const argv = process.argv.slice(3), file = flag(argv, '--log');
     const log = row => appendFileSync(file, JSON.stringify(row)+'\n');
-    const proxy = await proxyRelay({listen:Number(flag(argv, '--listen', '0')), target:flag(argv, '--target'), log});
+    const limit = name => (flag(argv, name) === undefined ? null : Number(flag(argv, name)));
+    const budget = limit('--max-requests') === null ? null
+      : {requests:limit('--max-requests'), outputTokens:limit('--max-output'), unknownCharge:limit('--unknown-charge')};
+    const proxy = await proxyRelay({listen:Number(flag(argv, '--listen', '0')), target:flag(argv, '--target'), log, budget});
     for (const signal of ['SIGTERM','SIGINT']) process.on(signal, () => proxy.close().then(() => process.exit(0)));
   } else {
     const [cid,target,file] = process.argv.slice(3);
