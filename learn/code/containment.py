@@ -89,12 +89,19 @@ def extract_regular(stream, destination: Path, *, max_bytes=512 * 1024**2, max_m
 def source_hashes() -> dict:
     paths = [*SCRIPTS.glob("*"), *(REPO / "learn/code").glob("containment*.py"),
              REPO / "learn/code/harness.py", REPO / "learn/code/baseline.py",
+             *(REPO / "learn/code").glob("acceptance*.py"),
              * (REPO / "extensions").rglob("*.ts"),
              *(p for p in (REPO / "remedies").rglob("*") if p.is_file()),
              REPO / "learn/code/suites/easy/base/pyproject.toml",
              REPO / "learn/code/suites/easy/base/uv.lock"]
     return {str(p.relative_to(REPO)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in paths if p.is_file()}
+
+
+def image_instrument_sources() -> list[Path]:
+    return [REPO / "learn/code" / name for name in (
+        "harness.py", "baseline.py", "containment.py", "acceptance.py",
+        "acceptance_containment.py", "acceptance_probe.py")]
 
 
 def build_image() -> str:
@@ -104,10 +111,10 @@ def build_image() -> str:
         shutil.copytree(SCRIPTS, context, dirs_exist_ok=True)
         shutil.copytree(REPO / "extensions", context / "instrument/extensions")
         shutil.copytree(REPO / "remedies", context / "instrument/remedies")
-        for name in ("harness.py", "baseline.py", "containment.py"):
-            target = context / "instrument/learn/code" / name
+        for source in image_instrument_sources():
+            target = context / "instrument/learn/code" / source.name
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(REPO / "learn/code" / name, target)
+            shutil.copy2(source, target)
         deps = context / "dependencies"
         deps.mkdir()
         for name in ("pyproject.toml", "uv.lock"):
@@ -151,8 +158,8 @@ class Container:
             raise
         return self
 
-    def exec_argv(self, *args: str, user="1000:1000", env=None) -> list[str]:
-        argv = ["docker", "exec", "--user", user]
+    def exec_argv(self, *args: str, user="1000:1000", env=None, interactive=False) -> list[str]:
+        argv = ["docker", "exec", *(["-i"] if interactive else []), "--user", user]
         for key, value in (env or {}).items():
             argv += ["--env", f"{key}={value}"]
         return [*argv, self.cid, *map(str, args)]
@@ -196,6 +203,12 @@ class Container:
                 process.kill()
                 process.wait()
                 raise
+
+    def snapshot(self, path: str, destination: Path):
+        try:
+            self.export(path, destination)
+        finally:
+            docker("unpause", self.cid, stdout=subprocess.DEVNULL)
 
     def __exit__(self, *_):
         if self.relay is not None:
@@ -294,6 +307,17 @@ def contained_extras(paths) -> list[str]:
 def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
                   inference_target="http://127.0.0.1:8002", **options) -> Path:
     from baseline import write_json
+    from acceptance import AcceptancePackage, Gate
+    from acceptance_containment import run_model_with_gate, check_snapshot, snapshot_digest
+    protected = any(Path(p).name == "external-acceptance.ts" for p in options.get("extras", ()))
+    package_path = options.pop("gate_package", None)
+    if protected != bool(package_path):
+        raise ValueError("protected remedy and qualified external controller package must be enabled together")
+    if protected and len(suite.prompts) != 1:
+        raise ValueError("protected adapter supports one task per session")
+    package = AcceptancePackage.load(package_path) if protected else None
+    task_id = uuid.uuid4().hex
+    run_name = "task-" + task_id
     runs_dir.mkdir(parents=True, exist_ok=True)
     control = runs_dir / (".container-" + uuid.uuid4().hex)
     with tempfile.TemporaryDirectory(prefix="mellum-seed-") as temporary:
@@ -309,22 +333,36 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             raise ValueError("temporary contained runner does not accept spec variants")
         write_json(seed / "input.json", {"suite": suite_data(suite), "options": {
             **{k: v for k, v in options.items() if k in {"arm", "deadline", "stall", "single_prompt", "context_files"}},
-            "extras": contained_extras(options.get("extras", ()))}})
+            "extras": contained_extras(options.get("extras", ())),
+            **({"run_name": run_name, "gate_config": {"task_id": task_id}} if protected else {})}})
+        if protected:
+            (seed / "gate").mkdir()
         with Container(image, control) as container:
             container.seed(seed)
             container.start_relay(inference_target)
             output_path = control / "execution-output.txt"
             host_started = time.monotonic()
+            gate = Gate(task_id, package, host_started + (options.get("deadline") or 600)) if protected else None
             host_timeout = False
+            host_integrity_error = None
             with output_path.open("w") as output:
                 try:
-                    result = run_bounded_command(container.exec_argv("uv", "run", "--no-project", "--python", "3.14.2",
-                        "python", "/opt/entry.py", "model"), stdout=output, stderr=subprocess.STDOUT,
-                        timeout=options.get("deadline") or 600)
+                    argv = container.exec_argv("uv", "run", "--no-project", "--python", "3.14.2", "python", "/opt/entry.py", "model")
+                    if gate:
+                        result = run_model_with_gate(container, argv, gate,
+                            f"/attempt/runs/{run_name}/workspace", control, output)
+                    else:
+                        result = run_bounded_command(argv, stdout=output, stderr=subprocess.STDOUT,
+                            timeout=options.get("deadline") or 600)
                 except subprocess.TimeoutExpired:
                     host_timeout = True
+                except ValueError as error:
+                    if gate is None:
+                        raise
+                    host_integrity_error = str(error)
+                    write_json(control / "integrity-error.json", {"detail": str(error)})
             host_elapsed = time.monotonic() - host_started
-            if not host_timeout and result.returncode:
+            if not host_timeout and not host_integrity_error and result.returncode:
                 raise RuntimeError(f"contained execution failed; inspect {output_path}")
             container.export("/attempt/runs", control / "export")
         candidates = list((control / "export/runs").iterdir())
@@ -336,14 +374,31 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
         (run / "owner.json").unlink(missing_ok=True)
         write_json(run / "containment.json", {"backend": "temporary-docker", "image": image,
                    "control": str(control), "container_removed": True})
-        if host_timeout:
+        if host_timeout or host_integrity_error:
             execution = {"elapsed_seconds":round(host_elapsed,3), "exit_code":124,
-                         "termination_reason":"deadline", "cleanup_ok":False, "host_watchdog":True}
+                         "termination_reason":"integrity_error" if host_integrity_error else "deadline",
+                         "cleanup_ok":False, "host_watchdog":True}
         else:
             execution = json.loads((run / "execution.json").read_text())
         execution["inner_cleanup_ok"] = execution.get("cleanup_ok")
         execution["cleanup_ok"] = True  # The whole model container was removed.
         write_json(run / "execution.json", execution)
+        if gate:
+            from harness import execution_outcome
+            completion = execution_outcome(run)["completion"]
+            if host_integrity_error:
+                gate.status = "integrity_error"
+            elif completion != "settled":
+                gate.status = completion if completion in {"deadline", "stalled"} else "model_error"
+            elif gate.status != "verified" and gate.status in {"pending", "repairing"}:
+                gate.status = "integrity_error"
+            final = check_snapshot(run / "workspace", package, image, control / "final-check", gate.remaining())
+            decision = gate.apply(final, snapshot_digest(run / "workspace"), final=True)
+            write_json(control / "gate-journal.json", gate.journal)
+            write_json(run / "acceptance.json", decision)
+            write_json(run / "acceptance-journal.json", gate.journal)
+            execution["elapsed_seconds"] = round(time.monotonic() - host_started, 3)
+            write_json(run / "execution.json", execution)
         if container.relay.returncode not in (0, -15):
             raise RuntimeError("relay failed; attempt requires review")
         return run

@@ -8,6 +8,7 @@ import math
 import re
 import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 
 
@@ -136,6 +137,7 @@ class Gate:
         self.status = status
         self.finalized |= final
         receipt = {"schema": 1, "task_id": self.task_id, "sequence": len(self.journal) + 1,
+                   "timestamp": datetime.now(UTC).isoformat(),
                    "package_sha256": self.package.digest, "snapshot_sha256": snapshot_sha256,
                    "status": status, "continue": continuation, "repairs": self.repairs,
                    "final": final, "feedback": feedback, "remaining_seconds": self.remaining(),

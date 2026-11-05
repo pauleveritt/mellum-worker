@@ -61,6 +61,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Finishes with lint or type errors | `check/code-quality`: Runs the quality checks before finishing | unit-tested; not measured on the suites | `/remedy on check/code-quality` |
+| Reports completion before external requirements pass | `check/external-acceptance`: Requests a protected external check and continues only for bounded repairs | under qualification; no measured reliability claim | `/remedy on check/external-acceptance` |
 
 ### Workflows
 

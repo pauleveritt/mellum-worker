@@ -444,8 +444,20 @@ def run_suite(
     specs: str | None = None,
     extras: list[Path] = (),
     context_files: bool = False,
+    run_name: str | None = None,
+    gate_config: dict | None = None,
 ) -> Path:
-    run = new_run(runs_dir, suite.name)
+    protected = any(Path(path).name == "external-acceptance.ts" for path in extras)
+    if protected and (not gate_config or not re.fullmatch(r"[a-f0-9]{32}", gate_config.get("task_id", ""))
+                      or not run_name or str(runs_dir) != "/attempt/runs"):
+        raise ValueError("protected acceptance requires a contained external controller")
+    if run_name is not None:
+        if not re.fullmatch(r"task-[a-f0-9]{32}", run_name):
+            raise ValueError("invalid host run name")
+        run = Path(runs_dir) / run_name
+        run.mkdir(parents=True)
+    else:
+        run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
     workspace.mkdir()
     shutil.copytree(profile, run / "profile")
@@ -494,6 +506,9 @@ def run_suite(
         "MELLUM_TRACE_RUN_ID": run.name,
     }
     env.pop("VIRTUAL_ENV", None)   # else uv warns in the workspace venv
+    env.pop("MELLUM_EXTERNAL_ACCEPTANCE_TASK", None)
+    if protected:
+        env["MELLUM_EXTERNAL_ACCEPTANCE_TASK"] = gate_config["task_id"]
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
@@ -986,6 +1001,7 @@ def _run_sessions(
     context_files: bool = False,
     grade_versions: dict[str, str] | None = None,
     isolation_image: str | None = None,
+    gate_package: Path | None = None,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
@@ -996,6 +1012,8 @@ def _run_sessions(
             from containment import run_contained, grade_contained
             runner = run_contained
             containment_options["image"] = isolation_image
+            if gate_package is not None:
+                containment_options["gate_package"] = gate_package
         run_dir = runner(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,

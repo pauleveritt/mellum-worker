@@ -11,6 +11,11 @@ Versions match git tags; pin one in both install lines.
   a settle-time pass requires a final independent artifact check. The contained
   runtime adapter and measured remedy remain in development.
 
+- Added opt-in `check/external-acceptance` for contained measurements: protected
+  snapshot checks, bounded same-task repair, final independent verification and
+  retained integrity failures. It requires an external controller and leaves
+  the thin worker and existing presets unchanged; reliability is unmeasured.
+
 - Defined the external acceptance gate in the glossary, distinguishing protected
   completion checks and bounded repairs from independent hidden grading. The
   proposed gate is not implemented yet.
