@@ -579,6 +579,7 @@ test("authorPlanPrompt splits the spec into step docs with the verbatim spec and
 	assert.match(p, /todo\.md/i);
 	assert.match(p, /do NOT write (any )?tests|no test files/i, "the plan mode writes no tests");
 	assert.doesNotMatch(p, /test_step/i, "no per-step test files are requested");
+	assert.match(p, /run out/i, "it nudges the architect to write files first and keep reasoning short so it does not run out of output (truncation guard)");
 });
 
 test("listStepDocs returns the step docs by number, no paired test required", async () => {
@@ -622,11 +623,30 @@ test("doTaskPlan runs one worker per step doc, ticks todo and checkpoints, with 
 	});
 });
 
-test("doTaskPlan refuses when the architect writes no step docs", async () => {
+test("doTaskPlan retries the architect when it writes no step docs, then runs the recovered plan", async () => {
 	const { doTaskPlan } = await load();
 	await inTempCwd(async () => {
-		const authorPlan = async () => "nothing written";
+		const tasks = [];
+		// Attempt 1 writes nothing (the output-token truncation); attempt 2 writes the docs.
+		const authorPlan = async (t) => {
+			tasks.push(t);
+			if (tasks.length >= 2) { writeFileSync("step01.md", "home\n"); writeFileSync("step02.md", "board\n"); return "wrote 2"; }
+			return "truncated — nothing written";
+		};
+		const r = await doTaskPlan("build it", { authorPlan, worker: async () => "built", shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(tasks.length, 2, "the architect is re-dispatched after writing no docs");
+		assert.match(tasks[1], /RETRY|wrote no|write .*first|run out/i, "the retry carries feedback about the miss");
+		assert.match(r, /steps built: 2\/2/, "the recovered plan runs");
+	});
+});
+
+test("doTaskPlan refuses only after the retries are exhausted", async () => {
+	const { doTaskPlan, MAX_AUTHOR_RETRIES } = await load();
+	await inTempCwd(async () => {
+		let calls = 0;
+		const authorPlan = async () => { calls++; return "nothing written"; };
 		const r = await doTaskPlan("x", { authorPlan, worker: async () => "built", shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(calls, MAX_AUTHOR_RETRIES + 1, "one initial attempt plus the retry budget");
 		assert.match(r, /no step(NN)?\.?md|no step docs/i);
 	});
 });

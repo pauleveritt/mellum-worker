@@ -15,6 +15,11 @@ Versions match git tags; pin one in both install lines.
   oracle, applied at the end. It is the arm that measures whether the per-step
   test machinery of `MELLUM_DELEGATE_STEPS=1` is worth its complexity. Default
   (unset), `MELLUM_DELEGATE_STEPS=1` and `MELLUM_DELEGATE_PHASED=1` are unchanged.
+  The architect pass now has a **retry guard**: the fixed model sometimes spends
+  its whole output budget reasoning and truncates before writing any `stepNN.md`,
+  which left the run with no plan to build; it is now re-dispatched with feedback
+  (write the files first, keep reasoning short) up to twice before the run gives
+  up, and the author prompt itself nudges writing the step files as it goes.
 
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole

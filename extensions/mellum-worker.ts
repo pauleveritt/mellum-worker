@@ -905,6 +905,24 @@ export async function doTaskSteps(task: string, deps: DoTaskStepsDeps = {}): Pro
 
 export interface PlanStep { n: number; doc: string; }
 
+/**
+ * How many times the architect is re-dispatched if it wrote no stepNN.md files. The fixed small
+ * model sometimes spends its whole output budget reasoning and truncates before writing anything;
+ * this is the harness guard for that (a guarantee, not a prose rule) — retry with feedback.
+ */
+export const MAX_AUTHOR_RETRIES = 2;
+
+/** The feedback-augmented task for a re-dispatched architect that wrote no step docs. Agnostic. */
+export function authorRetryTask(task: string): string {
+	return (
+		"RETRY — your previous attempt wrote NO stepNN.md files. Most likely you spent your whole " +
+		"output budget reasoning before writing anything. This time write the files FIRST: emit " +
+		"step01.md immediately, then step02.md, and so on, keeping any reasoning between files to a " +
+		"sentence. The files are the only thing that matters — write them before you run out.\n\n" +
+		task
+	);
+}
+
 /** The architect prompt for plan mode: split the spec into step docs only — no tests. */
 export function authorPlanPrompt(task: string): string {
 	return (
@@ -924,7 +942,9 @@ export function authorPlanPrompt(task: string): string {
 		`Then write ${TODO_FILE} — a checklist with ONE UNCHECKED line per step, in order (- [ ] step01 — ` +
 		"<title>). And write BRIEF.md — 2 to 4 sentences on what to build overall and which files. Write " +
 		`ONLY the step docs, ${TODO_FILE} and BRIEF.md — no tests, no implementation files. Before you ` +
-		"stop, confirm the steps are contiguous from 1 and together cover the whole spec.\n\n" +
+		"stop, confirm the steps are contiguous from 1 and together cover the whole spec.\n" +
+		"Write the step files AS YOU GO — emit step01.md first, then the next, and keep your reasoning " +
+		"between files to a sentence, so you do NOT run out of output before the files are written.\n\n" +
 		`Task: ${task}`
 	);
 }
@@ -988,10 +1008,18 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
 
 	const t0 = Date.now();
-	const authorReport = await authorPlan(task);
-	const steps = listStepDocs(cwd);
+	// Guard: the architect sometimes truncates (output-token limit) before writing any stepNN.md.
+	// Re-dispatch it with feedback rather than abort — a harness guarantee, not a prose rule.
+	let authorReport = await authorPlan(task);
+	let steps = listStepDocs(cwd);
+	let authorAttempts = 1;
+	while (!steps.length && authorAttempts <= MAX_AUTHOR_RETRIES) {
+		authorAttempts++;
+		authorReport = await authorPlan(authorRetryTask(task));
+		steps = listStepDocs(cwd);
+	}
 	if (!steps.length) {
-		return `delegate(plan): the architect wrote no stepNN.md step docs, so there is no plan to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
+		return `delegate(plan): the architect wrote no stepNN.md step docs after ${authorAttempts} attempts, so there is no plan to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
 	}
 	const authorWall = secs(t0);
 	const authorStats = latestRunStats(cwd);
