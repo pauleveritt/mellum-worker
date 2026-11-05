@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- Added the host-side acceptance contract and bounded repair state machine.
+  Incomplete checks, changed checker packages and expired deadlines fail closed;
+  a settle-time pass requires a final independent artifact check. The contained
+  runtime adapter and measured remedy remain in development.
+
 - Defined the external acceptance gate in the glossary, distinguishing protected
   completion checks and bounded repairs from independent hidden grading. The
   proposed gate is not implemented yet.
