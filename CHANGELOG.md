@@ -140,6 +140,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **`mellum last` no longer reads "Server: differs" on every llama.cpp run.** A
+  llama.cpp record stores server liveness (`up`, `nCtx`) and no oMLX settings
+  `match`, so the absent match key always fell through to "differs" and looked
+  like a misconfigured server. It now reports the liveness it actually recorded —
+  `up, ctx 50,176` or `down` — and keeps "settings match" / "differs" only for the
+  oMLX records that carry a match.
 - **`/challenge submit` works for contributors, not only the repo owner.** It
   pushed the branch straight to the upstream repo, which a contributor cannot
   do — the push failed with a 403. It now finds your GitHub login, creates your
