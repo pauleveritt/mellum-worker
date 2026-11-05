@@ -177,3 +177,14 @@ test('budget counts output across requests', async () => {
     assert.equal(exhausted.requests, 2); assert.equal(exhausted.outputTokens, 120);
   } finally { await proxy.close(); server.close(); }
 });
+
+test('proxy records the max_tokens each request sent', async () => {
+  const {server, url} = await upstream((q, s) => { s.writeHead(200, {'content-type': 'text/event-stream'}); s.end(sse(1)); });
+  const rows = [];
+  const proxy = await proxyRelay({listen: 0, target: url, log: row => rows.push(row)});
+  try {
+    await post(proxy.port, '/v1/chat/completions', {stream: true, max_tokens: 16384});
+    await post(proxy.port, '/v1/chat/completions', {stream: true});
+    assert.deepEqual(rows.filter(r => r.boundary === 'rewritten').map(r => r.max_tokens), [16384, null]);
+  } finally { await proxy.close(); server.close(); }
+});

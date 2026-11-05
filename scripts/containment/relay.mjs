@@ -183,7 +183,11 @@ export async function proxyRelay({listen, target, log = () => {}, budget = null}
         chunks.push(chunk);
       }
       body = Buffer.concat(chunks);
-      if (req.method === 'POST') { body = rewriteRequest(body); record('rewritten', id, {added:['stream_options.include_usage']}); }
+      if (req.method === 'POST') {
+        body = rewriteRequest(body);
+        const sent = JSON.parse(body.toString('utf8')).max_tokens;
+        record('rewritten', id, {added:['stream_options.include_usage'], max_tokens:typeof sent === 'number' ? sent : null});
+      }
     } catch (error) {
       record('request_error', id, {code:safeCode(error), elapsedMs:performance.now()-started});
       res.writeHead(400).end(); return;
