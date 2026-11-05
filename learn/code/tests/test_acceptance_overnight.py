@@ -128,7 +128,7 @@ def reset_cohort():
     ("--prepare", "comparison", ["selective", "gated"] * 20,
      "2026-11-05-actionable-acceptance-protocol.md"),
     ("--prepare-screen", "screen", ["gated"] * 6,
-     "2026-11-05-runtime-repair-screen-protocol.md"),
+     "2026-11-05-repair-authority-screen-protocol.md"),
 ])
 def test_prepare_registers_actual_selected_cohort(tmp_path, monkeypatch, mode, kind, order, protocol):
     import json

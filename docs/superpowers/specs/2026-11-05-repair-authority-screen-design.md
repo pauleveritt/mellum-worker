@@ -22,7 +22,7 @@ failed observations. Do not prescribe suite files, routes or expected values in
 generic guidance. Candidate logs remain bounded, sanitized untrusted diagnostics.
 Existing8000-character feedback cap and all gate-state invariants remain.
 
-Tests exercise actual HostAcceptance receipt production: generic passing names
+Tests exercise actual Gate receipt production: generic passing names
 are included separately, their observations are not repeated, failing diagnostic
 observations remain, and two-repair/final-state/boundedness contracts hold. Prose
 is pressure-tested by actual model behavior, not mirrored with literal tests.

@@ -37,7 +37,7 @@ def configure_mode(mode: str) -> str:
     screen = mode in {"--prepare-screen", "--run-screen"}
     KIND = "screen" if screen else "comparison"
     ORDER = ["gated"] * 6 if screen else ["selective", "gated"] * 20
-    FOLLOWUP_PROTOCOL = (REPO / "docs/superpowers/research/2026-11-05-runtime-repair-screen-protocol.md"
+    FOLLOWUP_PROTOCOL = (REPO / "docs/superpowers/research/2026-11-05-repair-authority-screen-protocol.md"
                          if screen else COMPARISON_PROTOCOL)
     return mode.removesuffix("-screen") if screen else mode
 

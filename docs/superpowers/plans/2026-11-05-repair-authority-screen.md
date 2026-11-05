@@ -33,7 +33,7 @@ lifecycle: active
 **Files:** learn/code/acceptance.py; learn/code/tests/test_acceptance.py;
 scripts/acceptance_overnight.py; learn/code/tests/test_acceptance_overnight.py;
 CHANGELOG.md; local FIXES.md.
-**Consumes:** HostAcceptance.apply(result,snapshot_sha256,final=False)->receipt.
+**Consumes:** Gate.apply(result,snapshot_sha256,final=False)->receipt.
 **Produces:** same receipt schema/authority, separate passing-name checklist.
 
 - [ ] Add failing receipt test with generic passing/failing names: failed

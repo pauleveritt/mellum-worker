@@ -184,6 +184,11 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+- Protected acceptance repair feedback keeps external failures authoritative,
+  asks for missing required tests, and lists already-passing requirements to
+  preserve. Checks and the two-repair budget are unchanged; efficacy awaits
+  the fresh repair-authority screen.
+
 
 - Foreground-server guards recognize timeout wrappers, including clustered short
   options, and clearly distinguish a

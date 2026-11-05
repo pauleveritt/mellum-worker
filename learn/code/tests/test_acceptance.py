@@ -146,3 +146,15 @@ def test_repair_feedback_requires_agnostic_cleanup_and_current_task_scope(tmp_pa
     for answer in ('app.py', 'models.py', '/complaints', 'uvicorn', 'phase 1', 'one test passed'):
         assert answer not in feedback
     assert len(feedback) <= 8000
+
+
+def test_repair_receipt_separates_failed_evidence_from_passing_names(tmp_path):
+    gate = Gate("task", package(tmp_path), time.monotonic() + 600)
+    receipt = gate.apply(verdict(False), "a" * 64)
+    feedback = receipt["feedback"]
+    assert "[FAIL] home: observed response" in feedback
+    assert "[PASS] tests" in feedback
+    assert "one test passed" not in feedback
+    assert feedback.index("[FAIL]") < feedback.index("[PASS]")
+    assert receipt["status"] == "repairing" and receipt["continue"]
+    assert receipt["repairs"] == 1 and len(feedback) <= 8000
