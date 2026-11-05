@@ -97,7 +97,7 @@ export async function hostRelay(input, output, target, log = () => {}) {
           send({type:'failure',id,code:safeCode(error)}).catch(() => {});
           clearTimeout(timer); active.delete(id);
         });
-        record('created', id);
+        record('created', id, {method:frame.method, path:frame.path});
       } else {
         const entry = active.get(frame.id);
         const tombstone = used.get(frame.id);

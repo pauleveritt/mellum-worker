@@ -129,6 +129,10 @@ export function installRecorder(pi, options = {}) {
   // when a compaction was allowed to run.
   pi.on('session_before_compact', event =>
     record({type:'before_compact', reason: event?.reason ?? null}));
+  pi.on('session_compact', event => record({type:'compact_complete', reason:event.reason,
+    usage:event.compactionEntry?.usage ?? null, tokensBefore:event.compactionEntry?.tokensBefore ?? null}, null));
+  pi.on('session_compact_failed', event => record({type:'compact_failed', reason:event.reason,
+    aborted:event.aborted ?? null, errorMessage:event.errorMessage ?? null}, null));
   pi.on('tool_call', event => { record({type:'tool_call', toolName:event.toolName, input:event.input, ...toolFields(event)}); });
   pi.on('tool_result', event => { record({type:'tool_result', toolName:event.toolName, isError:event.isError, content:event.content, ...toolFields(event)}); });
   pi.on('tool_execution_start', event => { record({type:'tool_execution_start', toolName:event.toolName, args:event.args, ...toolFields(event)}); });

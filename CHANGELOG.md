@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- Added a fixed twenty-per-arm local acceptance comparison controller with
+  complete inference reconciliation, compaction telemetry, a separate safety
+  watchdog and recovery of partial task files. Its preregistration blocks
+  decisions on incomplete cohorts or unknown budgets; collection is pending.
+
 - Added a public-spec-derived Phase 1 acceptance package with isolated runtime
   probes and mutation qualification. Structural hero/welcome checks retain
   explicit semantic limits; hidden grading stays independent.

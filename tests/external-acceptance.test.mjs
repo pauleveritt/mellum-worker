@@ -17,6 +17,13 @@ test('protected acceptance requires a controller before any inference', () => {
   assert.throws(() => install({on() {}}, {taskId: ''}), /controller/);
 });
 
+test('disabled live discovery is inert; enabling without a controller rejects inference', () => {
+  const handlers = {};
+  const pi = {isRemedyEnabled: () => false, on(name, fn) {handlers[name] = fn;}};
+  assert.doesNotThrow(() => install(pi, {taskId: ''}));
+  assert.throws(() => handlers.before_provider_request({}), /controller/);
+});
+
 test('pass settles without a model continuation', async () => {
   const {handlers, requests} = fixture([{status:'verified', continue:false}]);
   assert.equal(await handlers.agent_before_settle({}), undefined);

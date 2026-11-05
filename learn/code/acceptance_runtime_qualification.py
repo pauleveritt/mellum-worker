@@ -3,14 +3,16 @@ import argparse
 import hashlib
 import json
 import shutil
+import subprocess
 import threading
 import time
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import harness
 from baseline import write_json
-from containment import run_contained
+from containment import Container, agent_environment, run_contained
 
 
 class Provider(BaseHTTPRequestHandler):
@@ -101,6 +103,68 @@ def qualify(image: str, output: Path) -> dict:
              "image": image, "cases": results}
     write_json(output / "qualification.json", proof)
     return proof
+
+
+def qualify_compaction(image: str, output: Path) -> dict:
+    output.mkdir(parents=True, exist_ok=False)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Provider)
+    server.kind, server.payloads = "compact", []
+    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    profile = output / "seed/profile"; profile.mkdir(parents=True)
+    models = json.loads((harness.PROFILE / "models.json").read_text())
+    models["providers"]["llamacpp"]["baseUrl"] = "http://127.0.0.1:8002/v1"
+    write_json(profile / "models.json", models)
+    write_json(profile / "settings.json", {"quietStartup": True, "lastChangelogVersion": "1.4.0",
+                                          "compaction": {"enabled": False, "keepRecentTokens": 2000, "reserveTokens": 16000}})
+    (output / "seed/workspace").mkdir()
+    driver = r'''
+import {spawn} from 'node:child_process';
+import {createInterface} from 'node:readline';
+import {writeFileSync} from 'node:fs';
+const args=['--mode','rpc','--no-approve','--no-extensions','--no-skills','--no-context-files',
+ '--no-prompt-templates','--no-themes','--provider','llamacpp','--model','Mellum2.1-12B-A2.5B-Thinking',
+ '-e','/opt/instrument/extensions/mellum-recorder.ts'];
+const child=spawn('pi',args,{cwd:'/attempt/workspace',env:{...process.env,PI_CODING_AGENT_DIR:'/attempt/profile',
+ MELLUM_TRACE_FILE:'/attempt/trace.jsonl'},stdio:['pipe','pipe','inherit']});
+const rows=[];let settled=0,compact;
+const send=value=>child.stdin.write(JSON.stringify(value)+'\n');
+const timer=setTimeout(()=>child.kill('SIGKILL'),60000);
+send({type:'prompt',message:'Qualification context. '+ 'Remember the project facts and previous discussion. '.repeat(1800)});
+for await(const line of createInterface({input:child.stdout})) {
+ let row;try {row=JSON.parse(line);}catch {continue;}
+ rows.push(row);
+ if(row.type==='agent_settled') {
+   if(++settled<3) send({type:'prompt',message:'Additional context. '+ 'Keep these independent details for later summary. '.repeat(1800)});
+   else send({type:'compact'});
+ }
+ if(row.type==='response' && row.command==='compact') {compact=row;child.stdin.end();child.kill('SIGTERM');break;}
+}
+clearTimeout(timer);child.kill('SIGTERM');
+writeFileSync('/attempt/rpc-observation.json',JSON.stringify({settled,compact,rows}));
+'''
+    try:
+        control = output / (".container-" + uuid.uuid4().hex)
+        with Container(image, control) as container:
+            container.seed(output / "seed"); container.start_relay(f"http://127.0.0.1:{server.server_port}")
+            with (output / "driver.log").open("w") as log:
+                container.execute("node", "--input-type=module", "-e", driver,
+                    timeout=75, stdout=log, stderr=subprocess.STDOUT)
+            container.export("/attempt", output / "export")
+        root = output / "export/attempt"
+        observation = json.loads((root / "rpc-observation.json").read_text())
+        trace = [json.loads(line) for line in (root / "trace.jsonl").read_text().splitlines()]
+        requests = sum(r.get("type") == "provider_request" for r in trace)
+        completions = [r for r in trace if r.get("type") == "compact_complete"]
+        relay = [json.loads(line) for line in (control / "relay.jsonl").read_text().splitlines()]
+        total = sum(r.get("boundary") == "created" for r in relay)
+        proof = {"qualified": bool(observation.get("compact", {}).get("success")) and total > requests
+                    and bool(completions) and completions[0].get("usage", {}).get("output", 0) > 0,
+                 "image": image, "normal_requests": requests, "relay_requests": total,
+                 "compaction": observation.get("compact"), "compaction_events": completions}
+        write_json(output / "qualification.json", proof)
+        return proof
+    finally:
+        server.shutdown(); server.server_close(); thread.join(timeout=3)
 
 
 if __name__ == "__main__":

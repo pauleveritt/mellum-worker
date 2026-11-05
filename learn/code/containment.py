@@ -241,6 +241,30 @@ def remove_owned(identity: dict):
         docker("volume", "rm", volume, stdout=subprocess.DEVNULL)
 
 
+def preserve_owned(identity: dict, control: Path):
+    """Best-effort bounded forensic export before deleting an orphan model task."""
+    from baseline import write_json
+    destination = control / "emergency-export"
+    if destination.exists():
+        return
+    ids = docker("ps", "--all", "--quiet", "--no-trunc", "--filter",
+                 f"label={LABEL}={identity['owner']}", capture_output=True, text=True).stdout.split()
+    for cid in ids:
+        actual = json.loads(docker("inspect", cid, capture_output=True, text=True).stdout)[0]
+        if actual["Image"] != identity["image"] or actual["Config"]["Labels"].get(LABEL) != identity["owner"]:
+            raise RuntimeError("container ownership mismatch")
+        try:
+            if actual["State"]["Running"] and not actual["State"]["Paused"]:
+                docker("pause", cid, stdout=subprocess.DEVNULL, timeout=10)
+            with tempfile.TemporaryFile() as archive:
+                docker("cp", cid + ":/attempt/runs", "-", stdout=archive, stderr=subprocess.PIPE, timeout=30)
+                archive.seek(0)
+                extract_regular(archive, destination)
+            write_json(control / "emergency-export.json", {"preserved": True})
+        except (ValueError, RuntimeError, subprocess.SubprocessError) as error:
+            write_json(control / "emergency-export.json", {"preserved": False, "error": str(error)})
+
+
 def recover(root: Path):
     from baseline import process_identity, write_json
     # Only host-created controls at known orchestration levels have authority.
@@ -264,6 +288,8 @@ def recover(root: Path):
         owner = identity["host_owner"]
         if process_identity(owner["pid"]) == owner:
             raise RuntimeError("contained attempt has an active owner")
+        if control.parent.name.startswith(".container-"):
+            preserve_owned(identity, control.parent)
         remove_owned(identity)
         write_json(control.parent / "removed.json", {"removed": True, "recovered": True})
 
@@ -344,6 +370,7 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             host_started = time.monotonic()
             gate = Gate(task_id, package, host_started + (options.get("deadline") or 600)) if protected else None
             host_timeout = False
+            host_interrupted = False
             host_integrity_error = None
             with output_path.open("w") as output:
                 try:
@@ -356,13 +383,15 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
                             timeout=options.get("deadline") or 600)
                 except subprocess.TimeoutExpired:
                     host_timeout = True
+                except KeyboardInterrupt:
+                    host_interrupted = True
                 except ValueError as error:
                     if gate is None:
                         raise
                     host_integrity_error = str(error)
                     write_json(control / "integrity-error.json", {"detail": str(error)})
             host_elapsed = time.monotonic() - host_started
-            if not host_timeout and not host_integrity_error and result.returncode:
+            if not host_timeout and not host_interrupted and not host_integrity_error and result.returncode:
                 raise RuntimeError(f"contained execution failed; inspect {output_path}")
             container.export("/attempt/runs", control / "export")
         candidates = list((control / "export/runs").iterdir())
@@ -374,9 +403,10 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
         (run / "owner.json").unlink(missing_ok=True)
         write_json(run / "containment.json", {"backend": "temporary-docker", "image": image,
                    "control": str(control), "container_removed": True})
-        if host_timeout or host_integrity_error:
+        if host_timeout or host_interrupted or host_integrity_error:
             execution = {"elapsed_seconds":round(host_elapsed,3), "exit_code":124,
-                         "termination_reason":"integrity_error" if host_integrity_error else "deadline",
+                         "termination_reason":("integrity_error" if host_integrity_error else
+                                               "interrupted" if host_interrupted else "deadline"),
                          "cleanup_ok":False, "host_watchdog":True}
         else:
             execution = json.loads((run / "execution.json").read_text())

@@ -128,6 +128,49 @@ def test_exported_control_filenames_are_never_recovery_authority(tmp_path, monke
     assert baseline.reap_stale_runs(tmp_path) == []
 
 
+def test_recovery_preserves_partial_model_evidence_before_removal(tmp_path, monkeypatch):
+    import baseline
+    owner = "a" * 32
+    image = "sha256:" + "b" * 64
+    control = tmp_path / (".container-" + "c" * 32)
+    control.mkdir()
+    identity = {"owner": owner, "image": image, "host_owner": {"pid": 9999, "start": "dead"},
+                "policy": containment.create_argv(image, owner), "volume_policy": containment.volume_argv(owner)}
+    (control / "container.json").write_text(json.dumps(identity))
+    events = []
+    monkeypatch.setattr(baseline, "process_identity", lambda pid: None)
+    monkeypatch.setattr(containment, "preserve_owned", lambda i, p: events.append(("preserve", p)), raising=False)
+    monkeypatch.setattr(containment, "remove_owned", lambda i: events.append(("remove", None)))
+    containment.recover(tmp_path)
+    assert events == [("preserve", control), ("remove", None)]
+
+
+def test_interrupted_task_exports_partial_run(tmp_path, monkeypatch):
+    import harness
+    from types import SimpleNamespace
+    profile = tmp_path / "profile"; profile.mkdir()
+    for name in ("models.json", "settings.json"):
+        (profile / name).write_text("{}")
+    class FakeContainer:
+        def __init__(self, image, control):
+            self.control = control; control.mkdir(); self.relay = SimpleNamespace(returncode=0)
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def seed(self, source): pass
+        def start_relay(self, target): pass
+        def exec_argv(self, *args): return []
+        def export(self, source, destination):
+            run = destination / "runs/partial"; run.mkdir(parents=True)
+            (run / "workspace").mkdir()
+    def interrupt(*args, **kwargs): raise KeyboardInterrupt()
+    monkeypatch.setattr(containment, "Container", FakeContainer)
+    monkeypatch.setattr(containment, "run_bounded_command", interrupt)
+    suite = harness.Suite(name="interrupt-fixture", prompts=["fixture"], tests=tmp_path / "none", start=None)
+    run = containment.run_contained(suite, image="unused", runs_dir=tmp_path / "runs", profile=profile)
+    assert (run / "workspace").is_dir()
+    assert json.loads((run / "execution.json").read_text())["termination_reason"] == "interrupted"
+
+
 def test_trusted_collection_requires_qualified_containment_before_preflight(monkeypatch):
     import harness
     monkeypatch.setattr(harness, "BASELINE_RUNS", Path("/must-not-create"))

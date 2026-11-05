@@ -33,14 +33,20 @@ async function exchange(request:Request):Promise<Reply> {
 
 export function install(pi:PiLike, options:{taskId?:string; exchange?:(request:Request)=>Promise<any>} = {}):void {
   const taskId = options.taskId ?? process.env.MELLUM_EXTERNAL_ACCEPTANCE_TASK;
-  if (!taskId || !/^[a-zA-Z0-9_-]{1,100}$/.test(taskId))
-    throw new Error('external acceptance requires a qualified external controller');
+  const requireController = () => {
+    if (!taskId || !/^[a-zA-Z0-9_-]{1,100}$/.test(taskId))
+      throw new Error('external acceptance requires a qualified external controller');
+  };
+  // The live menu discovers disabled units. Its gated hook validates only on use.
+  if (!pi.isRemedyEnabled || pi.isRemedyEnabled()) requireController();
+  pi.on('before_provider_request', requireController);
   let sequence = 0, pending = false;
   pi.on('agent_before_settle', async () => {
+    requireController();
     if (pending) throw new Error('overlapping acceptance request');
     pending = true;
     try {
-      const request = {task_id:taskId, request_id:randomUUID().replaceAll('-', ''), sequence:++sequence};
+      const request = {task_id:taskId!, request_id:randomUUID().replaceAll('-', ''), sequence:++sequence};
       const reply = await (options.exchange ?? exchange)(request);
       if (!reply || reply.task_id !== taskId || reply.request_id !== request.request_id ||
           typeof reply.continue !== 'boolean' ||

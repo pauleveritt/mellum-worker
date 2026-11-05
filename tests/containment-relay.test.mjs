@@ -32,7 +32,9 @@ test('late frames after upstream refusal do not break a subsequent valid request
   const input=new PassThrough(), output=new PassThrough(), frames=[];
   output.on('data', chunk=>frames.push(...chunk.toString().trim().split('\n').map(JSON.parse)));
   const failed=Promise.withResolvers(), complete=Promise.withResolvers();
+  const created=[];
   const running=hostRelay(input,output,`http://127.0.0.1:${port}`, row=>{
+    if(row.boundary==='created') created.push(row);
     if(row.boundary==='request_error') failed.resolve();
     if(row.boundary==='complete') complete.resolve();
   });
@@ -48,5 +50,6 @@ test('late frames after upstream refusal do not break a subsequent valid request
     await Promise.race([complete.promise, running.then(()=>{throw new Error('relay ended early');})]);
     input.end(); await running;
     assert.equal(Buffer.concat(frames.filter(f=>f.id===next&&f.type==='data').map(f=>Buffer.from(f.data,'base64'))).toString(),'stream bytes');
+    assert.ok(created.length === 2 && created.every(r=>r.method==='GET' && r.path==='/health'));
   } finally { input.destroy(); output.destroy(); server.closeAllConnections(); server.close(); }
 });

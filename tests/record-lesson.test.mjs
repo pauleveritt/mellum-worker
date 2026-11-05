@@ -36,3 +36,13 @@ test("the recorder notes an attempted compaction", () => {
   assert.deepEqual(rows.map((r) => r.type), ["instance_start", "before_compact"]);
   assert.equal(rows[1].reason, "threshold");
 });
+
+test("the recorder records compaction usage and failure without counting normal agent turns", () => {
+  const {handlers:h,rows} = capture();
+  h.session_compact({reason:'manual', compactionEntry:{usage:{input:100,output:12},tokensBefore:100}});
+  h.session_compact_failed({reason:'overflow',aborted:false,errorMessage:'failed'});
+  assert.deepEqual(rows.slice(1).map(r=>r.type), ['compact_complete','compact_failed']);
+  assert.deepEqual(rows[1].usage, {input:100,output:12});
+  assert.equal(rows[1].requestId,null);
+  assert.equal(rows[2].aborted,false);
+});
