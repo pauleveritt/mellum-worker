@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- Defined the external acceptance gate in the glossary, distinguishing protected
+  completion checks and bounded repairs from independent hidden grading. The
+  proposed gate is not implemented yet.
+
 - The [controlled local remedy comparison](evals/2026-11-04-local-controlled6/README.md)
   records six sessions per arm, external project-test rechecks, full inference
   accounting and supplementary startup diagnostics. Neither arm met the fixed

@@ -505,3 +505,11 @@ An external check that executes the documented application startup command,
 waits for the expected response within a fixed limit, and cleans up the process.
 An in-process test can pass while this launch path fails; passing one does not
 establish the other.
+
+### External acceptance gate
+
+A completion decision made by a checker supplied independently of the coding
+worker. The proposed protected gate keeps its tests, assertions, counters and
+receipt authority outside candidate execution, checks the final artifact, and
+allows only a bounded number of repairs within one shared task deadline. It is
+distinct from the hidden grader, whose failures are never repair feedback.
