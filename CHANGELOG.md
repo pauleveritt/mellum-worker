@@ -140,6 +140,13 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **Bare `pi` no longer breaks when your own Node is too old.** The installer
+  kept your Node on PATH and left `~/.local/bin/pi` as a symlink with a
+  `#!/usr/bin/env node` shebang, so running `pi` outside `run.sh` picked up the
+  system Node — and a Node older than Pi's engines (`>=22.19`) crashed before Pi
+  started. Where a private Node is installed, the installer now writes a `pi`
+  wrapper that always runs Pi under that Node, so `pi` behaves the same inside
+  `run.sh` and out.
 - **`mellum last` no longer reads "Server: differs" on every llama.cpp run.** A
   llama.cpp record stores server liveness (`up`, `nCtx`) and no oMLX settings
   `match`, so the absent match key always fell through to "differs" and looked

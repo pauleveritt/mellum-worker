@@ -190,6 +190,28 @@ ensure_pi() {
     [[ "$(pi_version)" == "$PI_VERSION" ]] || echo "[WARN] pi reports $(pi_version), expected $PI_VERSION."
 }
 
+# npm installs ~/.local/bin/pi as a symlink with a `#!/usr/bin/env node`
+# shebang, so bare `pi` run outside run.sh takes whatever node is first on
+# PATH — the user's own. When that node is older than Pi's engines (>=22.19)
+# it crashes before it starts. Where a private node exists, replace the
+# symlink with a wrapper that always runs Pi under that node, so `pi` works
+# the same inside run.sh and out.
+use_private_node_for_pi() {
+    [[ -x "$NODE_DIR/bin/node" ]] || return 0
+    local cli="$HOME/.local/lib/node_modules/$PI_PACKAGE/dist/bundle/cli.js"
+    [[ -f "$cli" ]] || return 0
+    rm -f "$HOME/.local/bin/pi"
+    cat > "$HOME/.local/bin/pi" <<EOF
+#!/bin/sh
+# Written by mellum-worker install.sh: pin Pi to the private node so a system
+# node older than Pi's engines can't break a bare \`pi\`. See issue #9.
+exec "$NODE_DIR/bin/node" "$cli" "\$@"
+EOF
+    chmod 755 "$HOME/.local/bin/pi"
+    hash -r
+    echo "[OK] pi runs under the private Node.js at $NODE_DIR/bin/node."
+}
+
 # Give base Pi the mellum-worker harness (/mellum, worker prompt, guards) from
 # this clone, so the Pi the learner runs is the worker, not bare Pi.
 ensure_harness() {
@@ -344,6 +366,7 @@ fi
 retire_old
 ensure_node
 ensure_pi
+use_private_node_for_pi
 ensure_harness
 
 echo
