@@ -7,8 +7,10 @@ progressed rapidly, but the truth remains: small models need agents that help th
 
 ## For the impatient
 
-Clone the repo and run the installer from its root — then Pi's guided setup
-takes over (weights, server, your first answer):
+Clone the repo and run the installer from its root. On macOS/Linux it then
+takes over — the weights, the server and your first answer. On Windows
+`install.bat` only checks the prerequisites (llama-server and Node); you fetch
+the weights and start the server yourself:
 
 **macOS / Linux**
 ```bash
@@ -23,6 +25,9 @@ git clone https://github.com/andrevanzuydam/mellum-worker.git
 cd mellum-worker
 .\install.bat
 ```
+
+You need about 10 GB free for the `Q4_K_M` weights; a GPU with 8 GB or more
+helps (it ran on an 8 GB card), and CPU works without one.
 
 ## Who it's for
 
@@ -41,8 +46,8 @@ one page.
 
 ## Start here
 
-Start with the **[Getting started](getting-started/index.md)** track: five steps that go from llama.cpp to a graded
-eval harness. After that, any [lesson](lessons/index.md) stands alone and lists what you need first, and
+Start with the **[Getting started](getting-started/index.md)** track: six steps that go from llama.cpp to a graded
+eval harness and the remedy units. After that, any [lesson](lessons/index.md) stands alone and lists what you need first, and
 [The Challenge](challenge/index.md) is where you test what you have learnt.
 
 ## Where to go

@@ -48,7 +48,7 @@ grows.
 | 5 · Archive & audit | | | ● |
 | 6 · Database report (SQLite) | | | ● |
 | 7 · Visits report | | | ● |
-| 4 · Schema migrations | | | ● |
+| 8 · Schema migrations | | | ● |
 | **Hidden checks** | **4** | **18** | **34** |
 
 Each level has its own page — what to build, the trap to clear and the checks:
@@ -69,6 +69,10 @@ baseline: the same model at full precision on a rented GPU, rebuilt with
 | Vanilla Pi | 0/3 | 0/3 | 0/3 |
 | The Baseline Worker | 1/3 | 2/3 | 0/3 |
 | Vanilla Pi, BF16 on vLLM (the replicable baseline) | 1/3 | 1/3 | 0/3 |
+
+These are the figures as last measured here; the full run-by-run record is the
+[Scoreboard](../scoreboard.md), and the findings lessons' own numbers are being
+re-measured, so a page can lag during the rebuild.
 
 A pass means every hidden check passed. Anything less is a fail, and the
 record tells you which checks were missing and why.
@@ -111,8 +115,7 @@ uv run python learn/code/harness.py run --suite hard --remedy preset:hard --exte
 
 `--suite` picks the tier, `--remedy` takes units or a preset, and `--repeat`
 the count. Hard's orchestration (plan, examine, code, frozen gates) runs through
-`learn/code/flow_run.py --suite hard`; the [Lessons](../lessons/index.md) show
-how.
+`learn/code/flow_run.py --suite hard`.
 
 ## Tips
 

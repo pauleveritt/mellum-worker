@@ -82,7 +82,7 @@ start_server() {
 if ! start_server; then
     # Say why: backend.py names the cause (an old llama-server, a busy port...).
     [ -s "${START_LOG:-}" ] && tail -n 15 "$START_LOG" >&2
-    echo "[ERROR] the server did not start; see learn/getting-started/troubleshoot." >&2
+    echo "[ERROR] the server did not start; see learn/getting-started/troubleshoot.md." >&2
     exit 1
 fi
 uv run scripts/backend.py status || true

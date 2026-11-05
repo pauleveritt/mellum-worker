@@ -94,6 +94,9 @@ hard: FAIL (n=1; run /var/folders/...; 11 requests, 10 tool calls, 2 tool errors
 2/3 suites passed
 ```
 
+The `run` path is under your temp dir — `/var/folders/...` on macOS,
+`/tmp/mellum-eval-runs/` on Linux.
+
 A `FAIL` does not stop the run; the session stays on disk and its test tail is
 printed to stderr. `--repeat 2` runs a suite twice and states its n.
 

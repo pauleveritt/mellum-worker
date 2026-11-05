@@ -335,9 +335,13 @@ harness, with every claim labelled by the evidence behind it:
 3. [Eval suites and the telemetry](learn/getting-started/eval-suites.md) — three
    AgentClinic suites with hidden graders and known-good/broken qualification,
    graded with `ruff`, `pyrefly` and `complexipy`, and read from the trace.
-4. [Extensions and Remedy Units](learn/getting-started/extensions.md) — what a
-   Pi extension and a remedy unit are, presets, and `/mellum` as one bundle.
-5. [Troubleshoot](learn/getting-started/troubleshoot.md).
+4. [The Harness](learn/getting-started/the-harness.md) — write a mini harness
+   that runs Pi in a fresh folder and scores it, the instrument every lesson's
+   before/after line uses.
+5. [Extensions and Remedy Units](learn/getting-started/extensions.md) — what a
+   Pi extension and a remedy unit are, presets, and the worker as a command
+   tool.
+6. [Troubleshoot](learn/getting-started/troubleshoot.md).
 
 From there, see the [Lessons](learn/lessons/index.md) index, or go straight to
 [The Challenge](learn/challenge/index.md).

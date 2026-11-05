@@ -109,7 +109,7 @@ bundle. The `worker` arm.
 
 <!-- zensical-glossary-aliases: Baseline Pi, bare Pi, plain Pi -->
 Pi with no worker extension and no remedies: Pi’s base system prompt, the
-built-in tools and no worker guards or facts. The `bare` arm, and what
+built-in tools and no worker guards or facts. The `vanilla` arm, and what
 `/challenge <tier>:vanilla` runs.
 
 ### Arm
@@ -118,6 +118,11 @@ One configuration in an experiment. The arms are `vanilla` (no worker
 extension, the floor), `bare` (the worker loaded but mode off), `worker`
 (Mellum mode on) and `strip-thinking`. To remove one remediation you drop a
 `--remedy` unit from the stack — that is the ablation now, not a per-arm knob.
+
+### Floor
+
+The simplest arm: Vanilla Pi with no worker extension and no remedies — the
+baseline every remedy is measured against. The `vanilla` arm.
 
 ### Ablation
 
@@ -220,6 +225,17 @@ profile.
 The small eval harness learners build in Getting started step 3, kept in
 `learn/code/`. It is not the ladder.
 
+### Ladder
+
+The staged eval rig in `ladder/`: it runs the model through rungs of rising
+difficulty and records the pass rate at each. The measured numbers come from
+here.
+
+### Rung
+
+One stage of the ladder — a single task at a fixed difficulty the model is
+scored on.
+
 ### Eval suite
 
 A project under `learn/code/suites/`: a base project, the constitution
@@ -280,6 +296,12 @@ divide by the number of prompts before comparing suites of different length.
 The sum of the model’s output tokens in a session, from the trace usage.
 
 ## Pi and agents
+
+### Pi
+
+The coding agent this course runs the model inside: it holds the system prompt,
+the tools and the loop, and the worker is one extension loaded into it. From
+earendil-works.
 
 ### Pi extension
 

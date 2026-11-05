@@ -2,7 +2,7 @@
 title: Extensions and Remedy Units
 track: getting-started
 position: 5
-prerequisites: [getting-started/suite]
+prerequisites: [getting-started/eval-suites]
 authors: [Paul Everitt, Andre van Zuydam]
 backends: [llamacpp]
 ---
@@ -63,7 +63,8 @@ while an ordinary event error is reported and Pi continues.
 ## A remedy unit
 
 A remedy unit is one remedy in one file under `remedies/<kind>/`, where the
-kind is `guard`, `nudge`, `context`, `tool`, `check` or `workflow`. It has one
+kind is `guard`, `nudge`, `context`, `prompt`, `tool`, `check`, `delegate` or
+`workflow`. It has one
 role: it installs one behaviour on Pi's hooks and nothing else. It also
 exports a `meta` record (the pathology it fixes, what it does, its lesson and
 its evidence); the remedies table in [The Challenge](../challenge/index.md)
@@ -78,9 +79,9 @@ import { createLoopBreaker } from "../../extensions/mellum-guards.ts";
 import { installGuard, type PiLike, type UnitMeta } from "../install.ts";
 
 export const meta: UnitMeta = {
-	pathology: "Repeats the same call over and over (245 identical `ls -R` calls in one run)",
-	does: "Blocks a call made 5 times in a row with nothing changed in between",
-	lesson: "E1",
+	pathology: "Repeats the same call with nothing changed",
+	does: "Blocks a call made 5 times in a row unchanged",
+	lesson: "E3",
 	evidence: "ladder: part of the guard set behind phase 2b's 15/15",
 };
 
@@ -111,10 +112,10 @@ A preset is a named list of units in `remedies/presets/<name>.json`.
 
 | Preset | Units | What it is |
 | --- | --- | --- |
-| `easy` | 7 | Repair think-tags, trim tool output, four guards (repeat loops, stay in the workspace, whole-file rewrites, foreground servers) and `context/narrow-tools` |
-| `medium` | 13 | `easy` plus project facts, the short prompt, the empty-turn nudge, background commands, the docs lookup and the quality check |
-| `hard` | 13 | The same list as `medium` today |
-| `baseline-worker` | 6 | The worker's own list: narrow tools, project facts, three guards (repeat loops, stay in the workspace, foreground servers) and the empty-turn nudge |
+| `easy` | 4 | Three prompt fragments — name the layout, the Python-developer frame, verify the whole spec — and the foreground-server guard |
+| `medium` | 4 | The same four units as `easy` today |
+| `hard` | 4 | The same four units as `easy` today |
+| `baseline-worker` | 5 | The worker's own set: narrow tools, the empty-turn nudge, and three guards (repeat loops, outside the workspace, foreground servers) |
 
 ## Two ways to apply them
 
@@ -133,22 +134,21 @@ on and off in the running session, as
 [Working With Pi](working-with-pi.md#remedy-switch-remedy-units-on-and-off)
 shows. Use it to watch a unit act; use `--remedy` when you want a score.
 
-## The worker is the baseline-worker preset
+## The worker is a command tool, not a bundle
 
-The Mellum worker, `extensions/mellum-worker.ts`, does what the `baseline-worker`
-preset does, as one bundle. A test loads the preset's units in order and
-checks that they send the same request as the worker's headless mode and make
-the same guard decisions as the worker's guard set.
-
-`/mellum` adds what a bundle needs to run beside another model:
+The Mellum worker, `extensions/mellum-worker.ts`, is only the `/mellum` command
+and the mode machinery. It switches the model to Mellum for a span, drops the
+pre-marker history so Mellum never sees the parent's turns, counts the span and
+writes the run record — and swaps **nothing** into the request: not the prompt,
+not the tools, no project facts, no guards. The prompt, the narrowed tool set
+and every guard are remedy units you add explicitly; `baseline-worker` above is
+the set that equals the old bundle, inspectable like any other preset.
 
 | Lever | Hook or event | What the callback does |
 | --- | --- | --- |
 | Command | `registerCommand("mellum")` | One-shot `/mellum <task>`, or `/mellum on` / `off`. |
-| Prompt | `before_provider_request` | Replaces the system message with the worker prompt and filters the messages the model sees. |
-| Tools | `setActiveTools` | Selects the tools the model may call. |
-| Guards | `tool_call` | Returns `{ block: true, reason }` to stop a call. |
-| Guards | `turn_end` and `agent_before_settle` | Recognise an empty final turn and return `continue: true` with a nudge. |
+| History | `before_provider_request` | Keeps the system prompt and tools; drops the pre-marker turns (mode-integrity), so Mellum sees only the span. |
+| Span | `tool_call`, `turn_end` | Counts calls and output tokens for the `/mellum off` summary and the run record — it does not block. |
 | Context | `context` | Collapses the worker span into one handoff block for the parent. |
 | Restore | `agent_settled` | Notification-only boundary: the span has ended, so the extension restores the previous model and tools. |
 
@@ -162,7 +162,8 @@ learn/code/clinic "/mellum Reply with the single word: ready."
 
 ## Prompts, tools and guards are mechanisms
 
-Those are three separate levers, even though the worker pulls all three:
+Those are three separate levers, and each is a remedy unit — the worker pulls
+none of them:
 
 - the **prompt** is text the extension installs;
 - the **tool set** is the list Pi exposes to the model;
@@ -179,7 +180,7 @@ extension or an MCP server has added tools. It is not measured on its own.
 A model can hang a whole run by searching the machine instead of its
 workspace: `grep -rl pattern /Users /var /tmp …` crawls everything and keeps
 the tool call open. The runaway search guard is now the
-`guard/outside-workspace` unit, part of `easy` and `baseline-worker`: it
+`guard/outside-workspace` unit, part of `baseline-worker`: it
 blocks a recursive search that names a path outside the workspace. It covers
 searches only; a write by absolute path is not covered yet.
 

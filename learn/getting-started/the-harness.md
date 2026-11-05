@@ -33,9 +33,8 @@ to see what the provided one does for you.
 
 **Badge:** `conjecture`
 
-A harness runs a model on a task and scores the result. You have used
-`learn/code/harness.py` for every Easy lesson, and its score line was the
-evidence each lesson read. A score only means something if the instrument
+A harness runs a model on a task and scores the result. The Easy lessons use
+`learn/code/harness.py`, and its score line is the evidence each one reads. A score only means something if the instrument
 behind it is sound: if a run could see the tests it is graded on, reuse a
 previous run's files, or pick up your own `~/.pi` settings, the same line
 would print and mean nothing.
@@ -158,6 +157,9 @@ prints a score line:
 ```text
 easy: PASS (n=1; run /var/folders/...; 1 request, 3 tool calls, 0 tool errors)
 ```
+
+The `run` path sits under your temp dir — `/var/folders/...` on macOS,
+`/tmp/mellum-eval-runs/` on Linux.
 
 `n=1` is one session: one workspace, one trace, one score. That is the
 default, and it is an observation, not a rate. With `--repeat 3`, each repeat

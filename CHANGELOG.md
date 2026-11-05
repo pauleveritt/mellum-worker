@@ -153,6 +153,17 @@ Versions match git tags; pin one in both install lines.
   directory (`learn/challenges/`, task prompts and base docs — not the linked
   `challenge/` pages) was also published as unlinked pages and counted in the
   sitemap; it is now excluded from the build.
+- **Course pages corrected.** `extensions.md` now says the worker is a command
+  tool, not a bundle — it swaps no prompt, tools, facts or guards; those are
+  remedy units — and its preset table and kinds list match the files. The
+  glossary separates the `vanilla` floor from the `bare` arm and adds entries
+  for Pi, the ladder, a rung and the floor. The troubleshooting page covers the
+  llama.cpp build flavors (`MELLUM_LLAMA_FLAVOR`), GPU offload (`MELLUM_NGL`) and
+  `backend.py verify`/`kill`, drops the `--port 8001` clash with the course
+  server, and notes atomic Fedora. The scoreboard uses the current guard unit
+  names, and the Getting Started step count, the installer hand-off wording and
+  the eval-run paths now read consistently across the home page, the README and
+  the pages.
 - **`/challenge submit` works for contributors, not only the repo owner.** It
   pushed the branch straight to the upstream repo, which a contributor cannot
   do — the push failed with a 403. It now finds your GitHub login, creates your
