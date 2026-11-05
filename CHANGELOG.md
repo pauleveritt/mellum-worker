@@ -140,6 +140,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **The scoreboard shows one vocabulary for renamed units.** Guard units were
+  renamed (e.g. `guard/break-repeat-loops` → `guard/repeat-loops`), but recorded
+  run evidence keeps the old names, so the same stack appeared under two names and
+  retired names showed on the page. The board now folds retired names to their
+  current ones when it reads a run and when it records one, without rewriting the
+  evidence, so old and new runs of a stack group together.
 - **Bare `pi` no longer breaks when your own Node is too old.** The installer
   kept your Node on PATH and left `~/.local/bin/pi` as a symlink with a
   `#!/usr/bin/env node` shebang, so running `pi` outside `run.sh` picked up the

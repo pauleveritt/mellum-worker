@@ -54,6 +54,34 @@ def test_stack_includes_a_non_bare_arm_so_a_worker_run_never_reads_as_bare(tmp_p
     assert bare["stack"] == [], "a bare run with no units stays bare"
 
 
+def test_stack_label_normalizes_retired_unit_names_to_their_current_ones(tmp_path):
+    # Guard units were renamed (8ed336f); recorded run.json evidence keeps the old
+    # names and is immutable. The board must show one vocabulary so the same stack
+    # groups together, without rewriting the evidence.
+    old = scoreboard.entry_from_run(_run_dir(tmp_path, "old", extensions=[], remedies=[
+        "guard/break-repeat-loops", "guard/stay-in-workspace", "guard/block-foreground-server"]))
+    assert old["stack"] == [
+        "guard/foreground-server", "guard/outside-workspace", "guard/repeat-loops"], old["stack"]
+    new = scoreboard.entry_from_run(_run_dir(tmp_path, "new", extensions=[], remedies=[
+        "guard/repeat-loops", "guard/outside-workspace", "guard/foreground-server"]))
+    assert old["stack"] == new["stack"], "retired and current names must group as one stack"
+
+
+def test_load_entries_folds_retired_names_in_already_stored_stacks(tmp_path):
+    # Entries recorded before the rename kept the old names in their stored stack.
+    # Loading must fold them so an old entry groups with its current-name twin
+    # instead of forming a separate, phantom stack on the board.
+    board = tmp_path / "board"
+    (board / "entries").mkdir(parents=True)
+    (board / "entries" / "old.json").write_text(json.dumps({
+        "suite": "hard", "model": "m", "passed": True, "turns": 1, "wall": 1.0,
+        "stack": ["guard/stay-in-workspace", "guard/break-repeat-loops",
+                  "guard/refuse-whole-file-rewrite"]}))
+    e = scoreboard.load_entries(board)[0]
+    assert e["stack"] == [
+        "guard/outside-workspace", "guard/repeat-loops", "guard/whole-file-rewrite"], e["stack"]
+
+
 def test_record_writes_one_file_per_run_and_is_idempotent(tmp_path):
     board = tmp_path / "board"
     a = _run_dir(tmp_path, "run-a")

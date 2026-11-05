@@ -29,14 +29,32 @@ def _basename(path: str) -> str:
     return os.path.basename(path).removesuffix(".ts")
 
 
+# Guard units were renamed to shorter names (8ed336f). Recorded run.json evidence
+# keeps the old names and is immutable, so map retired names to current ones here:
+# the board then shows one vocabulary and old and new runs of the same stack group
+# together, without rewriting the evidence.
+RETIRED_UNIT_NAMES = {
+    "guard/break-repeat-loops": "guard/repeat-loops",
+    "guard/stay-in-workspace": "guard/outside-workspace",
+    "guard/block-foreground-server": "guard/foreground-server",
+    "guard/refuse-whole-file-rewrite": "guard/whole-file-rewrite",
+}
+
+
+def fold_retired(units) -> list[str]:
+    """Current names for a unit list, deduped and sorted — the stable stack key."""
+    return sorted({RETIRED_UNIT_NAMES.get(u, u) for u in (units or [])})
+
+
 def stack_label(rec: dict) -> list[str]:
     """The remedy units and mellum extensions a run used, deduped and sorted (a stable key).
 
     The remedy names come from ``remedies``; the worker extensions from ``extensions`` (only
     the ``mellum-*`` ones, never the recorder, which is harness plumbing). Sorting makes the
-    label order-independent so the same stack always groups together.
+    label order-independent so the same stack always groups together. Retired unit names are
+    folded to their current ones so a rename never splits one stack into two.
     """
-    units = list(rec.get("remedies") or [])
+    units = [RETIRED_UNIT_NAMES.get(u, u) for u in (rec.get("remedies") or [])]  # fold at the end
     for ext in rec.get("extensions") or []:
         base = _basename(ext.get("path", ""))
         if base.startswith("mellum-") and "recorder" not in base and "record" != base:
@@ -126,9 +144,13 @@ def load_entries(board) -> list[dict]:
     if entries.is_dir():
         for p in sorted(entries.glob("*.json")):
             try:
-                out.append(json.loads(p.read_text()))
+                e = json.loads(p.read_text())
             except (OSError, json.JSONDecodeError):
                 continue
+            # Entries recorded before a unit rename kept the old names; fold them so an
+            # old entry groups with its current-name twin instead of a phantom stack.
+            e["stack"] = fold_retired(e.get("stack"))
+            out.append(e)
     return out
 
 

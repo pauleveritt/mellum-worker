@@ -23,7 +23,7 @@ Every Mellum worker run ever measured, split by tier.
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `a2227186` | 6/6 | 17 | 76s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `quality` | `2d12c19f` | 1/1 | 21 | 64s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `f966018c` | 1/1 | 21 | 67s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/repeat-loops` · `guard/whole-file-rewrite` · `guard/outside-workspace` | `4700735e` | 3/3 | 62 | 229s |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | `4700735e` | 3/3 | 62 | 229s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | `—` | 2/3 | 14 | 41s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `—` | 2/3 | 17 | 71s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `—` | 2/3 | 27 | 116s |
@@ -47,9 +47,9 @@ Every Mellum worker run ever measured, split by tier.
 
 | date | model | stack | result | turns | wall | run |
 |---|---|---|---|---|---|---|
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/repeat-loops` · `guard/whole-file-rewrite` · `guard/outside-workspace` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/repeat-loops` · `guard/whole-file-rewrite` · `guard/outside-workspace` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/repeat-loops` · `guard/whole-file-rewrite` · `guard/outside-workspace` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | pass | 27 | 116s | `20261031T220809Z-easy-ebf6d9` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 25 | 100s | `20261031T220624Z-easy-495b50` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | pass | 57 | 211s | `20261031T220249Z-easy-8b6aea` |
