@@ -195,6 +195,10 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+- Log-follow classification distinguishes foreground `nohup` from detachment
+  and ignores shell redirection targets when reading executable/options. The
+  generated remedy catalog includes the new opt-in unit.
+
 - Guard reports recognize current blocked-before-execution refusals while
   retaining legacy text and call deduplication. Dated trace audits correct the
   prior two screens to three and nineteen intercepted calls; original scores

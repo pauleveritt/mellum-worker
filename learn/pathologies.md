@@ -124,6 +124,7 @@ entries below.
    [gate screen](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
    **Follow-up,2026-11-05:** LC.37 G4 detached its server but then blocked on
    foreground `tail -f`;180s open-tool cutoff retained it as a model stall.
+   A log follower can keep a tool call open even after the server detaches.
    Detaching one command does not bound the rest of the shell input
    ([screen](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-05-repair-authority-screen/README.md)).
    **Answer:** a brief that names the check (`pytest`, `TestClient`) stops it

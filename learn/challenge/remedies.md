@@ -18,6 +18,7 @@ row is one problem and the unit that answers it; the last column is the
 
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
+| Waits on foreground log-follow after backgrounding a server | `guard/foreground-log-follow`: Blocks foreground tail-follow and requests a finite log snapshot | LC.37 G4 stalled on tail-follow; unit-tested, pending a fresh screen | `/remedy on guard/foreground-log-follow` |
 | Starts a foreground server and hangs to the deadline | `guard/foreground-server`: Blocks a foreground server start and shows the background form | screen: the hang recurs in the vLLM baseline's web-app rungs; unmeasured as a remedy | `/remedy on guard/foreground-server` |
 | Searches the whole machine and hangs the run | `guard/outside-workspace`: Blocks a recursive search outside the workspace | screen: recorded hangs; searches only, writes are not covered | `/remedy on guard/outside-workspace` |
 | Repeats the same call with nothing changed | `guard/repeat-loops`: Blocks a call made 5 times in a row unchanged | ladder: part of the guard set behind phase 2b's 15/15 | `/remedy on guard/repeat-loops` |

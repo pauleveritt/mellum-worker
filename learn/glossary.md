@@ -513,3 +513,10 @@ worker. The opt-in protected gate keeps its tests, assertions, counters and
 receipt authority outside candidate execution, checks the final artifact, and
 allows only a bounded number of repairs within one shared task deadline. It is
 distinct from the hidden grader, whose failures are never repair feedback.
+
+### Log follower
+
+A command such as `tail -f` that keeps waiting for new log output instead of
+returning a finite snapshot. It can hold a coding tool call open even after the
+server itself was started in the background. The explicit
+`guard/foreground-log-follow` remedy requests finite snapshots instead.
