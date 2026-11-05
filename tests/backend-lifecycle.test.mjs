@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { chmodSync, copyFileSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -112,6 +112,12 @@ test("kill ends every process with the server's name, whatever started it", {
     : ["/bin/sleep", "/usr/bin/sleep"].find((p) => existsSync(p));
   copyFileSync(src, exe);
   chmodSync(exe, 0o755);
+  // On Apple Silicon the kernel SIGKILLs a copied system binary whose signature
+  // no longer matches its new path, so the stand-in died before kill could find
+  // it (a race with detection — the flaky macOS failure). An ad-hoc re-sign lets
+  // the copy run. Harmless no-op where copies run unsigned (Linux, the copied
+  // node on Windows).
+  if (process.platform === "darwin") spawnSync("codesign", ["-s", "-", "-f", exe], { stdio: "ignore" });
   const args = WIN ? ["-e", "setTimeout(() => {}, 60000)"] : ["60"];
   const sleepers = [1, 2].map(() => spawn(exe, args, { stdio: "ignore" }));
   const exited = sleepers.map((c) => new Promise((ok) => c.on("exit", ok)));
