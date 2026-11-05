@@ -173,6 +173,9 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- Startup qualification retains the first launch URL when later log entries
+  mention other services, including when its port spans reads or has no newline.
+
 - Protected acceptance repair now receives bounded, sanitized startup diagnostics
   with the launch exit status, instead of losing the actual runtime warning.
   Generic feedback calls for removing out-of-scope additions and reverting

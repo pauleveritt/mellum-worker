@@ -86,15 +86,19 @@ def startup():
         launch_exit_code = None
         try:
             until = time.monotonic() + 9
-            port, overlap = None, ""
+            port, overlap, pending_url = None, "", ""
             with log.open("rb") as observation:
                 while child.poll() is None and time.monotonic() < until:
                     chunk = observation.read(4096)
-                    text = overlap + chunk.decode(errors="replace")
-                    match = re.search(r"http://(?:0\.0\.0\.0|127\.0\.0\.1|localhost|\[::\]):(\d+)", text)
-                    if match:
-                        port = match[1]
-                    overlap = text[-256:]
+                    if port is None or pending_url:
+                        text = (pending_url or overlap) + chunk.decode(errors="replace")
+                        match = re.search(r"http://(?:0\.0\.0\.0|127\.0\.0\.1|localhost|\[::\]):(\d+)", text)
+                        if match:
+                            port = match[1]
+                            # Finish this URL across reads, but never select a later URL.
+                            # Probe the provisional port too: launchers need not print a newline.
+                            pending_url = match[0] if match.end() == len(text) and len(port) < 5 else ""
+                        overlap = text[-256:]
                     if port:
                         try:
                             with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=.3) as response:
