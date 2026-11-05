@@ -1529,3 +1529,26 @@ def test_run_once_hands_primary_mode_the_run_model(monkeypatch, tmp_path):
                         plain=True, model="vllm/m")
     pi_calls = [a for a in launched if "--model" in a]
     assert pi_calls and all(a[a.index("--model") + 1] == "vllm/m" for a in pi_calls)
+
+
+def test_primary_mode_drops_an_installed_copy_of_the_worker(monkeypatch, tmp_path):
+    """The primary baseline is 'no worker': an installed mellum-worker package must not load into it."""
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    seen = []
+    monkeypatch.setattr(
+        run_ladder.subprocess, "run",
+        lambda args, **kw: sp.CompletedProcess(args, 0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    monkeypatch.setattr(run_ladder, "mirror_agent_dir",
+                        lambda s, d, t, **kw: seen.append(kw) or d)
+    rung = Rung(1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True))
+    for plain in (False, True):
+        run_ladder.run_once(rung, "primary", "baseline", 1, tmp_path / "out", 5, {}, False,
+                            plain=plain)
+    assert seen == [{"exclude_packages": ("mellum-worker",)}] * 2

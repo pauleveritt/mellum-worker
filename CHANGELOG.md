@@ -209,6 +209,10 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+- The ladder's `--mode primary` baseline no longer loads an installed copy of
+  `mellum-worker` from `~/.pi/agent`, as the `mode` runs already did. The
+  primary baseline is defined as "no worker", so a globally installed one was a
+  leak into it.
 - `mellum-worker.ts` now loads once per Pi session. When a user-level package and
   a project's `.pi/extensions` entry both load it, the second copy stays out
   instead of registering a duplicate `/mellum:1` and a second set of hooks (on

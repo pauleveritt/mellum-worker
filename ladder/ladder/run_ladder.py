@@ -592,7 +592,10 @@ def run_once(
     trace = scratch / "trace.jsonl"
     if mode == "primary":
         agent_dir = mirror_agent_dir(
-            pi_agent_dir or Path.home() / ".pi" / "agent", scratch / "pi-agent", [ws]
+            pi_agent_dir or Path.home() / ".pi" / "agent",
+            scratch / "pi-agent",
+            [ws],
+            exclude_packages=("mellum-worker",),
         )
         env = child_env(dict(os.environ), str(trace), agent_dir, offline=False)
         args = build_pi_primary_args(rung.sentence, plain, model)
