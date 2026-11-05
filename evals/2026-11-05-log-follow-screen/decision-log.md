@@ -69,4 +69,3 @@ Preserved before deleting the completed plans’ scratch workspaces. These are e
 - Ruling: stop after fixed6 rather than retry ordinary model failures — no new collector/guard defect observed, no follower attempt to falsify coverage — cost if wrong: a larger cohort might reveal another correctable defect; reliability stays unproven.
 
 - Ruling: keep registered formal scores and flag semantic reservations separately — structural gate accepts G4 placeholder; no post-hoc scoring change — cost if wrong: formal usable may overstate human-perceived quality unless reservations read.
-
