@@ -125,7 +125,7 @@ def run_model_with_gate(container, argv: list[str], gate: Gate, workspace: str,
                 seen.add(request["request_id"])
                 previous_raw = raw
                 check_control = control / f"check-{gate.checks + 1}"
-                container.snapshot(workspace, check_control / "snapshot")
+                container.snapshot(workspace, check_control / "snapshot", deadline_at=gate.deadline_at)
                 snapshot = check_control / "snapshot/workspace"
                 result = check_snapshot(snapshot, gate.package, container.image, check_control,
                                         min(gate.package.timeout, gate.remaining()))

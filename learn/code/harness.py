@@ -1002,6 +1002,7 @@ def _run_sessions(
     grade_versions: dict[str, str] | None = None,
     isolation_image: str | None = None,
     gate_package: Path | None = None,
+    audit_package: Path | None = None,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
@@ -1014,6 +1015,8 @@ def _run_sessions(
             containment_options["image"] = isolation_image
             if gate_package is not None:
                 containment_options["gate_package"] = gate_package
+            if audit_package is not None:
+                containment_options["audit_package"] = audit_package
         run_dir = runner(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,

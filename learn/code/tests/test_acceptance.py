@@ -74,7 +74,7 @@ def test_shared_deadline_is_not_reset(tmp_path):
     {"status": "pass", "checks": {**verdict()["checks"], "extra": {"passed": True}}},
     {"status": "pass", "checks": {"home": {"passed": 1}, "tests": {"passed": True}}},
     {"status": "pass", "checks": verdict(False)["checks"]},
-    {"status": "unknown"},
+    {"status": "unknown"}, {"status": []}, {"status": {}},
 ])
 def test_invalid_result_is_terminal_and_never_accepted(tmp_path, bad):
     gate = Gate("task", package(tmp_path), time.monotonic() + 600)

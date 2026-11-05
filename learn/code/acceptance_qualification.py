@@ -94,14 +94,17 @@ MUTATIONS = [
 def qualify(image: str, output: Path, *, first_only=False) -> dict:
     output.mkdir(parents=True, exist_ok=False)
     package = AcceptancePackage.load(PACKAGE)
-    cases = [("valid-a", None), ("valid-b", None)]
+    cases = [("valid-a", None), ("valid-b", None), ("valid-variable-title", None)]
     cases += [(f"omit-{key}", (key, path, before, after)) for key, path, before, after in MUTATIONS]
     cases += [("omit-shared_layout", "shared_layout"), ("omit-phase_layout", "phase_layout"),
-              ("early-exit", "early-exit"), ("plugin-skip", "plugin-skip"), ("syntax", "syntax"),
+              ("early-exit", "early-exit"), ("plugin-skip", "plugin-skip"), ("forged-tests", "forged-tests"), ("syntax", "syntax"),
               ("import-server", "import-server"), ("forge-result", "forge-result")]
     results = []
     for name, mutation in cases[:1] if first_only else cases:
         root = fixture(output / name / "workspace", variant=name == "valid-b")
+        if name == "valid-variable-title":
+            (root / "templates/base.html").write_text(BASE.replace(
+                '{% block title %}AgentClinic{% endblock %}', '{{ page_title|default("AgentClinic") }}'))
         expected = None
         if isinstance(mutation, tuple):
             expected, path, before, after = mutation
@@ -119,6 +122,9 @@ def qualify(image: str, output: Path, *, first_only=False) -> dict:
         elif mutation == "plugin-skip":
             expected = "project_tests"
             (root / "tests/conftest.py").write_text('import pytest\npytest.skip("skip", allow_module_level=True)\n')
+        elif mutation == "forged-tests":
+            expected = "project_tests"
+            (root / "tests/conftest.py").write_text('from pathlib import Path\nimport os\nPath("/tmp/probe-tests.xml").write_text(\'<testsuites><testsuite tests="1" failures="0" errors="0" skipped="0"/></testsuites>\')\nos._exit(0)\n')
         elif mutation == "syntax":
             expected = "guarded_reload"; (root / "app.py").write_text("syntax broken!!\n")
         elif mutation == "import-server":

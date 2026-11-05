@@ -114,6 +114,21 @@ def test_host_watchdog_bounds_stalled_or_stopped_commands(code):
         containment.run_bounded_command([sys.executable, "-c", code], timeout=.1)
 
 
+def test_snapshot_transport_obeys_absolute_deadline(tmp_path, monkeypatch):
+    import time
+    original_run = subprocess.run
+    def fake_docker(*args, **kwargs):
+        if args[0] == "cp":
+            return original_run([sys.executable, "-c", "import time; time.sleep(5)"], **kwargs)
+        return subprocess.CompletedProcess(args, 0)
+    monkeypatch.setattr(containment, "docker", fake_docker)
+    container = containment.Container("image", tmp_path / "control"); container.cid = "fixture"
+    started = time.monotonic()
+    with pytest.raises(subprocess.TimeoutExpired):
+        container.export("/attempt/runs", tmp_path / "export", deadline_at=started + .05)
+    assert time.monotonic() - started < .5
+
+
 def test_exported_control_filenames_are_never_recovery_authority(tmp_path, monkeypatch):
     import baseline
     artifact = tmp_path / "vanilla-easy-batch/attempt-01/run/workspace"
@@ -159,7 +174,7 @@ def test_interrupted_task_exports_partial_run(tmp_path, monkeypatch):
         def seed(self, source): pass
         def start_relay(self, target): pass
         def exec_argv(self, *args): return []
-        def export(self, source, destination):
+        def export(self, source, destination, **kwargs):
             run = destination / "runs/partial"; run.mkdir(parents=True)
             (run / "workspace").mkdir()
     def interrupt(*args, **kwargs): raise KeyboardInterrupt()
@@ -169,6 +184,43 @@ def test_interrupted_task_exports_partial_run(tmp_path, monkeypatch):
     run = containment.run_contained(suite, image="unused", runs_dir=tmp_path / "runs", profile=profile)
     assert (run / "workspace").is_dir()
     assert json.loads((run / "execution.json").read_text())["termination_reason"] == "interrupted"
+
+
+def test_control_acceptance_shares_real_deadline_and_precedes_hidden_grading(tmp_path, monkeypatch):
+    import time
+    import harness
+    import acceptance_containment
+    from test_acceptance import package
+    from types import SimpleNamespace
+    profile = tmp_path / "profile"; profile.mkdir()
+    for name in ("models.json", "settings.json"):
+        (profile / name).write_text("{}")
+    observed = []
+    class FakeContainer:
+        def __init__(self, image, control):
+            control.mkdir(); self.relay = SimpleNamespace(returncode=0)
+        def __enter__(self): return self
+        def __exit__(self, *args): time.sleep(.02)
+        def seed(self, source): pass
+        def start_relay(self, target): pass
+        def exec_argv(self, *args): return []
+        def export(self, source, destination, **kwargs):
+            time.sleep(.02)
+            run = destination / "runs/control"; run.mkdir(parents=True)
+            (run / "workspace").mkdir()
+            (run / "execution.json").write_text(json.dumps({"elapsed_seconds": 0, "cleanup_ok": True}))
+    def audit(snapshot, package, image, control, timeout):
+        observed.append(timeout); time.sleep(.02)
+        return {"status": "fail", "checks": {}}
+    monkeypatch.setattr(containment, "Container", FakeContainer)
+    monkeypatch.setattr(containment, "run_bounded_command", lambda *a, **k: SimpleNamespace(returncode=0))
+    monkeypatch.setattr(acceptance_containment, "check_snapshot", audit)
+    suite = harness.Suite(name="audit-fixture", prompts=["fixture"], tests=tmp_path / "none", start=None)
+    run = containment.run_contained(suite, image="unused", runs_dir=tmp_path / "runs", profile=profile,
+                                    audit_package=package(tmp_path).root, deadline=600)
+    assert 0 < observed[0] < 599.97
+    assert json.loads((run / "acceptance.json").read_text())["result"]["status"] == "fail"
+    assert json.loads((run / "execution.json").read_text())["elapsed_seconds"] >= .06
 
 
 def test_trusted_collection_requires_qualified_containment_before_preflight(monkeypatch):

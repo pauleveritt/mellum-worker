@@ -13,7 +13,6 @@ import sys
 import time
 import urllib.request
 import uuid
-import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -47,7 +46,7 @@ def home():
 
 
 def titles():
-    from jinja2 import Environment, FileSystemLoader, nodes
+    from jinja2 import Environment, FileSystemLoader, nodes, meta
     environment = Environment(loader=FileSystemLoader("templates"))
     source = environment.loader.get_source(environment, "base.html")[0]
     tree = environment.parse(source)
@@ -57,6 +56,10 @@ def titles():
     overridden = False
     for node in tree.find_all(nodes.Block):
         child = '{% extends "base.html" %}{% block ' + node.name + ' %}' + marker + '{% endblock %}'
+        rendered = environment.from_string(child).render(**context)
+        overridden |= Titles(rendered).title.strip() == marker
+    for variable in meta.find_undeclared_variables(tree) - {"request"}:
+        child = '{% extends "base.html" %}{% set ' + variable + ' = "' + marker + '" %}'
         rendered = environment.from_string(child).render(**context)
         overridden |= Titles(rendered).title.strip() == marker
     return {"default": default, "overridden": overridden}
@@ -90,14 +93,21 @@ def startup():
 
 
 def tests():
-    result = subprocess.run(["uv", "run", "--offline", "--frozen", "python", "-m", "pytest", "tests", "-q",
-        "--junitxml=/tmp/probe-tests.xml"], capture_output=True, timeout=5)
-    path = Path("/tmp/probe-tests.xml")
-    totals = {key: 0 for key in ("tests", "failures", "errors", "skipped")}
-    if path.is_file():
-        suites = list(ET.parse(path).getroot().iter("testsuite"))
-        totals = {key: sum(int(s.attrib.get(key, 0)) for s in suites) for key in totals}
-    return {"exit_code": result.returncode, **totals}
+    import tempfile
+    with tempfile.TemporaryFile() as output:
+        result = subprocess.run(["uv", "run", "--offline", "--frozen", "python", "-I", "/opt/pytest_probe.py"],
+            stdout=output, stderr=subprocess.STDOUT, timeout=5)
+        output.seek(0); raw = output.read(1024 * 1024 + 1)
+    try:
+        data = json.loads(raw) if len(raw) <= 1024 * 1024 else None
+        if (not isinstance(data, dict) or data.get("completed") is not True
+                or any(type(data.get(k)) is not int or data[k] < 0
+                       for k in ("tests", "passed", "failures", "errors", "skipped"))
+                or data.get("exit_code") != result.returncode):
+            raise ValueError("missing completed pytest observation")
+        return data
+    except (ValueError, UnicodeDecodeError):
+        return {"probe_error": "pytest did not return a valid completed report"}
 
 
 if __name__ == "__main__":

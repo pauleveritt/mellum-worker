@@ -45,7 +45,7 @@ does not manufacture forty outcomes after broken measurement.
 ## Qualification and freeze
 
 Before launch: immutable image build, containment/hidden-grader qualification,
-two correct acceptance variants and individual seeded omissions, hostile
+three correct acceptance variants and individual seeded omissions, hostile
 candidate observations, actual-Pi pass/repair/exhaust/tamper exchanges and
 forced compaction accounting. Setup uses a fake provider and is not evidence
 of Mellum quality. Record all qualifications, package/source hashes and image.

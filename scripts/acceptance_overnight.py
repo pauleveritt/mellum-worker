@@ -79,7 +79,7 @@ def lines(path: Path) -> list[dict]:
 
 def recover_owned(batch: Path):
     # These are host-created control locations; never recurse into exported artifacts.
-    for arm in ("selective", "gated"):
+    for arm in ("selective", "gated", "live-qualification"):
         parent = batch / arm
         for control in parent.glob(".container-*"):
             for name in ("check-1", "check-2", "check-3", "final-check"):
@@ -100,16 +100,44 @@ def recover_owned(batch: Path):
 
 
 def watchdog(batch: Path):
-    owner = json.loads((batch / "server-owner.json").read_text())
-    cutoff = owner["cutoff_epoch"]
-    while time.time() < cutoff:
-        if baseline.process_identity(owner["controller"]["pid"]) != owner["controller"]:
-            break
-        time.sleep(1)
-    stop_owned(owner["server"])
-    stop_owned(owner["controller"])
-    recover_owned(batch)
-    write_json(batch / "watchdog-shutdown.json", {"at": now(), "cutoff_epoch": cutoff})
+    # This independent process launches/owns inference, so a controller death
+    # between spawn and ownership persistence cannot orphan a server.
+    launch = json.loads((batch / "server-launch.json").read_text())
+    controller = launch["controller"]
+    if baseline.process_identity(controller["pid"]) != controller:
+        return
+    server = None
+    unexpected = False
+    with (batch / "server.log").open("w") as log:
+        try:
+            server = subprocess.Popen(launch["argv"], stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+            identity = baseline.process_identity(server.pid)
+            write_json(batch / "server-owner.json", {**launch, "server": identity, "started_at": now()})
+            while server.poll() is None and not (batch / "stop-requested.json").exists():
+                if time.time() >= launch["cutoff_epoch"] or baseline.process_identity(controller["pid"]) != controller:
+                    unexpected = True; break
+                time.sleep(.2)
+        finally:
+            if server is not None:
+                if server.poll() is None:
+                    server.terminate()
+                try:
+                    server.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    server.kill(); server.wait(timeout=5)
+            if unexpected:
+                stop_owned(controller)
+                recover_owned(batch)
+            write_json(batch / "watchdog-shutdown.json", {"at": now(), "cutoff_epoch": launch["cutoff_epoch"],
+                "server_exit_code": server.returncode if server is not None else None})
+
+
+class OwnedServer:
+    def __init__(self, identity):
+        self.identity, self.pid = identity, identity["pid"]
+
+    def poll(self):
+        return None if baseline.process_identity(self.pid) == self.identity else 0
 
 
 def prepare(batch: Path):
@@ -131,6 +159,7 @@ def prepare(batch: Path):
         raise ValueError("actual Pi gate qualification failed")
     if not qualify_compaction(image, batch / "compaction")["qualified"]:
         raise ValueError("actual Pi compaction qualification failed")
+    containment.image_info(image)
     files = [REPO / path for path in containment.source_hashes()]
     files += [Path(__file__), *(PACKAGE / name for name, _ in AcceptancePackage.load(PACKAGE).files),
               harness.PROFILE / "models.json", harness.PROFILE / "settings.json",
@@ -165,7 +194,7 @@ def collect(batch: Path):
     verify_files(prepared["freeze"])
     if not prepared["qualified"] or prepared["order"] != ORDER:
         raise ValueError("unqualified or altered preparation")
-    if (batch / "server-owner.json").exists():
+    if (batch / "server-launch.json").exists():
         raise ValueError("batch already started; retain it and use a fresh batch for a new freeze")
     image = prepared["image"]
     containment.image_info(image)
@@ -188,22 +217,27 @@ def collect(batch: Path):
     write_json(profile / "models.json", models)
     shutil.copy2(harness.PROFILE / "settings.json", profile / "settings.json")
     profile_hashes = freeze_files(list(profile.iterdir()))
-    log = (batch / "server.log").open("w")
-    server = subprocess.Popen(argv, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-    identity = baseline.process_identity(server.pid)
     cutoff_at = time.monotonic() + LIMIT
-    write_json(batch / "server-owner.json", {"server": identity, "controller": baseline.process_identity(os.getpid()),
-        "argv": argv, "started_at": now(), "cutoff_epoch": time.time() + LIMIT})
-    guardian = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--watchdog", str(batch.resolve())],
-        start_new_session=True, stdout=(batch / "watchdog.log").open("w"), stderr=subprocess.STDOUT)
+    write_json(batch / "server-launch.json", {"controller": baseline.process_identity(os.getpid()),
+        "argv": argv, "cutoff_epoch": time.time() + LIMIT})
+    guardian = None
+    identity = None
+    server = None
     records = []
     try:
+        guardian = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--watchdog", str(batch.resolve())],
+            start_new_session=True, stdout=(batch / "watchdog.log").open("w"), stderr=subprocess.STDOUT)
         until = time.monotonic() + 240
         while True:
-            if server.poll() is not None:
+            if guardian.poll() is not None:
+                raise ValueError("inference guardian exited")
+            if identity is None and (batch / "server-owner.json").exists():
+                identity = json.loads((batch / "server-owner.json").read_text())["server"]
+                server = OwnedServer(identity)
+            if server is not None and server.poll() is not None:
                 raise ValueError("inference startup failed")
             try:
-                if baseline.read_json_url("http://127.0.0.1:8002", "/health") == {"status": "ok"}:
+                if server is not None and baseline.read_json_url("http://127.0.0.1:8002", "/health") == {"status": "ok"}:
                     break
             except SystemExit:
                 pass
@@ -234,7 +268,8 @@ def collect(batch: Path):
             result = harness._run_sessions(harness.load_suite(harness.SUITES, "easy"), runs_dir=batch / arm,
                 pi_binary="/usr/local/bin/pi", repeat=1, grade_run=True, deadline=600, stall=180,
                 arm="vanilla", profile=profile, grade_versions=prepared["boundary"]["runtime"]["checkers"],
-                isolation_image=image, remedies=names, extras=extras, gate_package=PACKAGE if arm == "gated" else None)
+                isolation_image=image, remedies=names, extras=extras, gate_package=PACKAGE if arm == "gated" else None,
+                audit_package=PACKAGE if arm == "selective" else None)
             run = Path(result[0][0])
             record = json.loads((run / "run.json").read_text())
             with (batch / "server.log").open("rb") as source:
@@ -243,13 +278,8 @@ def collect(batch: Path):
             control = Path(json.loads((run / "containment.json").read_text())["control"])
             journal = json.loads((run / "acceptance-journal.json").read_text()) if arm == "gated" else []
             budget = reconcile(segment, lines(control / "relay.jsonl"), lines(run / "trace.jsonl"), journal)
-            if arm == "gated":
-                acceptance = json.loads((run / "acceptance.json").read_text())["result"]
-                gate_status = json.loads((run / "acceptance.json").read_text())["status"]
-            else:
-                elapsed = record["elapsed_seconds"]
-                acceptance = check_snapshot(run / "workspace", package, image, batch / arm / ("audit-" + run.name), max(0, 600 - elapsed))
-                gate_status = "control"
+            acceptance = json.loads((run / "acceptance.json").read_text())["result"]
+            gate_status = json.loads((run / "acceptance.json").read_text())["status"]
             layout = json.loads((run / "layout.json").read_text())
             usable = (acceptance["status"] == "pass" and record["checks_ran"]
                 and record["checks_passed"] == record["checks_total"] and record["code_health"] == "pass"
@@ -277,14 +307,17 @@ def collect(batch: Path):
         write_json(batch / "failure.json", {"type": type(error).__name__, "detail": str(error), "at": now()})
         raise
     finally:
-        stop_owned(identity)
-        server.wait(timeout=15)
-        guardian.terminate(); guardian.wait(timeout=10)
-        log.close()
+        write_json(batch / "stop-requested.json", {"at": now()})
+        if guardian is not None:
+            try:
+                guardian.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                stop_owned(identity)
+                guardian.terminate(); guardian.wait(timeout=10)
         recover_owned(batch)
         listener = subprocess.run(["lsof", "-nP", "-iTCP:8002", "-sTCP:LISTEN"], capture_output=True, text=True).stdout
-        write_json(batch / "shutdown.json", {"at": now(), "owned_server_stopped": server.poll() is not None,
-            "server_exit_code": server.returncode, "listener_8002": listener, "guardian_stopped": guardian.poll() is not None})
+        write_json(batch / "shutdown.json", {"at": now(), "owned_server_stopped": identity is None or baseline.process_identity(identity["pid"]) != identity,
+            "listener_8002": listener, "guardian_stopped": guardian is None or guardian.poll() is not None})
 
 
 def interrupted(_signum, _frame):

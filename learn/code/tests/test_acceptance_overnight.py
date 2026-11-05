@@ -46,6 +46,66 @@ def test_recovery_includes_control_arm_audits_without_scanning_artifacts(tmp_pat
     assert audit in visited
 
 
+def test_recovery_includes_live_qualification_task(tmp_path, monkeypatch):
+    live = tmp_path / "live-qualification"; live.mkdir()
+    visited = []
+    monkeypatch.setattr(module.containment, "recover", lambda path: visited.append(path))
+    module.recover_owned(tmp_path)
+    assert live in visited
+
+
+def test_guardian_owns_launch_and_stops_server_if_ownership_write_fails(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    identity = {"pid": 9999, "start": "fixture"}
+    (tmp_path / "server-launch.json").write_text(__import__("json").dumps({
+        "controller": identity, "argv": ["fixture"], "cutoff_epoch": 1e15}))
+    calls = []
+    class Process:
+        pid = 1234
+        returncode = 0
+        def poll(self): return None
+        def terminate(self): calls.append("terminate")
+        def wait(self, timeout=None): calls.append("wait"); return 0
+        def kill(self): calls.append("kill")
+    monkeypatch.setattr(module.baseline, "process_identity", lambda pid: identity)
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *a, **k: Process())
+    monkeypatch.setattr(module, "write_json", lambda *a, **k: (_ for _ in ()).throw(OSError("write failed")))
+    with pytest.raises(OSError, match="write failed"):
+        module.watchdog(tmp_path)
+    assert "terminate" in calls and "wait" in calls
+
+
+def test_real_guardian_stops_owned_dummy_server_on_controller_death(tmp_path):
+    import json
+    import subprocess
+    import time
+    controller = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    guardian = None
+    server_identity = None
+    try:
+        (tmp_path / "server-launch.json").write_text(json.dumps({
+            "controller": module.baseline.process_identity(controller.pid),
+            "argv": [sys.executable, "-c", "import time; time.sleep(60)"],
+            "cutoff_epoch": time.time() + 30}))
+        guardian = subprocess.Popen([sys.executable, str(ROOT / "scripts/acceptance_overnight.py"),
+                                     "--watchdog", str(tmp_path)], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        until = time.monotonic() + 5
+        while not (tmp_path / "server-owner.json").exists():
+            assert guardian.poll() is None
+            assert time.monotonic() < until
+            time.sleep(.02)
+        server_identity = json.loads((tmp_path / "server-owner.json").read_text())["server"]
+        controller.terminate(); controller.wait(timeout=5)
+        guardian.wait(timeout=10)
+        assert guardian.returncode == 0, guardian.stderr.read()
+        assert module.baseline.process_identity(server_identity["pid"]) != server_identity
+        assert (tmp_path / "watchdog-shutdown.json").is_file()
+    finally:
+        if controller.poll() is None: controller.kill(); controller.wait()
+        if server_identity is not None: module.stop_owned(server_identity)
+        if guardian is not None and guardian.poll() is None: guardian.kill(); guardian.wait()
+
+
 def test_candidate_requires_full_cohort_and_known_budgets():
     def summary(n=20, usable=18, budget=100):
         return {"n": n, "usable": usable, "output_per_usable": budget, "reconciled": True}

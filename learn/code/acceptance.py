@@ -106,6 +106,8 @@ class Gate:
             status = "integrity_error"
         elif self.remaining() <= 0:
             status = "deadline"
+        elif not isinstance(status, str):
+            status = "checker_error"
         elif status in {"pass", "fail"}:
             if (not isinstance(checks, dict) or set(checks) != set(self.package.requirements)
                     or any(not isinstance(item, dict) or type(item.get("passed")) is not bool

@@ -11,6 +11,11 @@ Versions match git tags; pin one in both install lines.
   watchdog and recovery of partial task files. Its preregistration blocks
   decisions on incomplete cohorts or unknown budgets; collection is pending.
 
+- Hardened acceptance qualification against forged JUnit/early exit, malformed
+  checker statuses and variable-based page titles. Both arms share the same
+  host deadline and final audit placement; bounded snapshots and a server-owning
+  guardian close the reviewed timeout and startup cleanup gaps.
+
 - Added a public-spec-derived Phase 1 acceptance package with isolated runtime
   probes and mutation qualification. Structural hero/welcome checks retain
   explicit semantic limits; hidden grading stays independent.

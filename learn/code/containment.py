@@ -191,24 +191,28 @@ class Container:
             time.sleep(.1)
         raise RuntimeError("contained inference relay failed to start")
 
-    def export(self, path: str, destination: Path):
-        docker("pause", self.cid, stdout=subprocess.DEVNULL)
-        with subprocess.Popen(["docker", "cp", self.cid + ":" + path, "-"],
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
-            try:
-                extract_regular(process.stdout, destination)
-                if process.wait(timeout=30):
-                    raise RuntimeError("container export failed")
-            except BaseException:
-                process.kill()
-                process.wait()
-                raise
+    def export(self, path: str, destination: Path, *, deadline_at: float | None = None):
+        until = deadline_at if deadline_at is not None else time.monotonic() + 30
+        def remaining():
+            value = until - time.monotonic()
+            if value <= 0:
+                raise subprocess.TimeoutExpired("snapshot export", 0)
+            return value
+        docker("pause", self.cid, stdout=subprocess.DEVNULL, timeout=remaining())
+        # Spool first: extracting a live pipe can block before a wait timeout.
+        with tempfile.TemporaryFile() as archive:
+            docker("cp", self.cid + ":" + path, "-", stdout=archive,
+                   stderr=subprocess.PIPE, timeout=remaining())
+            remaining(); archive.seek(0)
+            extract_regular(archive, destination)
+            remaining()
 
-    def snapshot(self, path: str, destination: Path):
+    def snapshot(self, path: str, destination: Path, *, deadline_at: float | None = None):
         try:
-            self.export(path, destination)
+            self.export(path, destination, **({"deadline_at": deadline_at} if deadline_at is not None else {}))
         finally:
-            docker("unpause", self.cid, stdout=subprocess.DEVNULL)
+            docker("unpause", self.cid, stdout=subprocess.DEVNULL,
+                   timeout=max(.01, min(3, deadline_at - time.monotonic())) if deadline_at is not None else 3)
 
     def __exit__(self, *_):
         if self.relay is not None:
@@ -337,11 +341,13 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
     from acceptance_containment import run_model_with_gate, check_snapshot, snapshot_digest
     protected = any(Path(p).name == "external-acceptance.ts" for p in options.get("extras", ()))
     package_path = options.pop("gate_package", None)
+    audit_path = options.pop("audit_package", None)
     if protected != bool(package_path):
         raise ValueError("protected remedy and qualified external controller package must be enabled together")
     if protected and len(suite.prompts) != 1:
         raise ValueError("protected adapter supports one task per session")
     package = AcceptancePackage.load(package_path) if protected else None
+    audit_package = AcceptancePackage.load(audit_path) if audit_path else None
     task_id = uuid.uuid4().hex
     run_name = "task-" + task_id
     runs_dir.mkdir(parents=True, exist_ok=True)
@@ -368,7 +374,8 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             container.start_relay(inference_target)
             output_path = control / "execution-output.txt"
             host_started = time.monotonic()
-            gate = Gate(task_id, package, host_started + (options.get("deadline") or 600)) if protected else None
+            deadline_at = host_started + (options.get("deadline") or 600)
+            gate = Gate(task_id, package, deadline_at) if protected else None
             host_timeout = False
             host_interrupted = False
             host_integrity_error = None
@@ -393,7 +400,9 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             host_elapsed = time.monotonic() - host_started
             if not host_timeout and not host_interrupted and not host_integrity_error and result.returncode:
                 raise RuntimeError(f"contained execution failed; inspect {output_path}")
-            container.export("/attempt/runs", control / "export")
+            # Retaining evidence may consume cleanup time after an expired task;
+            # it grants no extra acceptance or inference allowance.
+            container.export("/attempt/runs", control / "export", deadline_at=deadline_at + 30)
         candidates = list((control / "export/runs").iterdir())
         if len(candidates) != 1 or not candidates[0].is_dir():
             raise RuntimeError("ambiguous contained attempt export")
@@ -427,6 +436,12 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             write_json(control / "gate-journal.json", gate.journal)
             write_json(run / "acceptance.json", decision)
             write_json(run / "acceptance-journal.json", gate.journal)
+            execution["elapsed_seconds"] = round(time.monotonic() - host_started, 3)
+            write_json(run / "execution.json", execution)
+        elif audit_package:
+            final = check_snapshot(run / "workspace", audit_package, image, control / "final-check",
+                                   max(0, deadline_at - time.monotonic()))
+            write_json(run / "acceptance.json", {"status": "control", "result": final})
             execution["elapsed_seconds"] = round(time.monotonic() - host_started, 3)
             write_json(run / "execution.json", execution)
         if container.relay.returncode not in (0, -15):
