@@ -211,3 +211,23 @@ def test_freeze_names_only_files_that_exist():
     frozen = driver.freeze()
     assert frozen and all((ROOT / path).is_file() for path in frozen)
     assert str(driver.harness.RECORDER.relative_to(ROOT)) in frozen   # the recorder every session loads
+
+
+def test_run_one_hands_pi_absolute_paths(batch, monkeypatch):
+    """Pi runs with cwd = the workspace, so a relative run or profile path resolves under it and breaks."""
+    seen = {}
+    class Stop(Exception):
+        pass
+    def capture(suite, **options):
+        seen.update(options)
+        raise Stop()
+    monkeypatch.chdir(batch.parent)
+    monkeypatch.setattr(driver.isolation, "preflight_mac", lambda ports: {"ok": True, "listeners": []})
+    monkeypatch.setattr(driver, "start_proxy", lambda config, pins, log: (type("P", (), {
+        "terminate": lambda self: None, "wait": lambda self, timeout=None: 0, "kill": lambda self: None})(), 1))
+    monkeypatch.setattr(driver.harness, "run_suite", capture)
+    config = {"pod": False, "prefix": None, "rental_id": "r1", "endpoint": "http://127.0.0.1:1",
+              "server_log": str(batch / "server.log")}
+    with pytest.raises(Stop):
+        driver.run_one(Path(batch.name), "M", config, {}, rig.load_pins(), 1)
+    assert seen["runs_dir"].is_absolute() and seen["profile"].is_absolute() and seen["budget_log"].is_absolute()

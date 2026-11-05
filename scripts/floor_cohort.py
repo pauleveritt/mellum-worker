@@ -197,6 +197,7 @@ def run_one(batch: Path, name: str, config: dict, card: dict, pins: dict, index:
     the session owns only what Pi writes, and is swept before anything is read back. Grading runs on
     a fresh copy owned by the grading user, and root assembles the record from root's own files.
     """
+    batch = Path(batch).resolve()      # Pi runs with cwd = the workspace; every path it is given must be absolute
     pod, prefix = config["pod"], config["prefix"]
     if not pod:
         preflight = isolation.preflight_mac(STARTUP_PORTS)
