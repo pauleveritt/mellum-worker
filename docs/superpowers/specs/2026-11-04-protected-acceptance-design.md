@@ -11,6 +11,10 @@ review; no implementation or overnight collection has started.
 The user chose an explicit additive remedy, protected external tests, bounded
 repairs, local inference, complete budget reporting and shutdown at completion.
 The numerical limits and implementation choices below are the author's calls.
+2026-11-04 revision before implementation or collection: the user made more
+time available for a higher n. Increase the proposed cohort from six to twenty
+per arm and the safety cutoff from two to eight hours. No observed outcomes
+informed this revision.
 The hidden grader remains an independent outcome measure; its code, results
 and failures never become repair feedback.
 
@@ -147,7 +151,7 @@ checker mutation qualification, containment qualification and actual Pi
 pass/fail/repair/exhaustion/compaction probes all pass. Freeze all sources,
 images, model and checker packages before the first counted task.
 
-Preregister **six fresh tasks per arm**, sequential and alternating S,G:
+Preregister **twenty fresh tasks per arm**, sequential and alternating S,G:
 S is the prior selective five remedies, G is S plus the new gate. Evaluate both
 arms with the same final acceptance package, hidden grader, code-health checks,
 layout and external project-test rerun. Only G receives acceptance feedback.
@@ -158,16 +162,21 @@ and q8_0 K/V unchanged; coding concurrency remains one.
 Primary usable outcome requires all acceptance requirements, all hidden checks,
 health, layout, nonempty project tests, settled un-aborted completion and no
 integrity issue. Report each component as well as the intersection. G is only
-a Phase 1 candidate if it reaches at least **5/6 usable tasks**, has at least
+a Phase 1 candidate if it reaches at least **18/20 usable tasks**, has at least
 as many usable tasks as S, and uses no more total output tokens per usable task
 than S (undefined when there are none). Report request cost separately. If
 neither meets the rule, promote neither; no extra retries or mid-batch fixes.
-This small single-task experiment cannot establish multi-phase trust.
+Report Wilson 95% intervals for each usable fraction and descriptive request/
+token distributions; the selection rule is an operational threshold, not a
+powered statistical superiority test. More repetitions of this one task
+cannot establish multi-phase or cross-task trust.
 
-Proposed independent batch limit: **two hours from inference-server launch**,
-including live qualification. This limit is pending the user's timing answer;
-do not treat silence as approval. A batch cut short is incomplete, not six
-failures or a favorable smaller cohort. No new task starts without its full
+Independent batch safety limit: **eight hours from inference-server launch**,
+including live qualification. This is the author's bound using the user's
+expanded time allowance, not a request to keep inference running for eight
+hours. Forty tasks have a maximum coding/check allowance of six hours forty
+minutes. A batch cut short is incomplete, not a favorable smaller cohort.
+Do not extend n or stop early based on quality. No new task starts without its full
 600-second allowance plus 60 seconds for cleanup. Setup builds happen before
 starting inference. A separate identity-checked watchdog and finally-path
 cleanup stop owned inference and containers on success, failure or cutoff.
@@ -175,11 +184,12 @@ Verify no owned listener/container/volume remains. Never kill unrelated
 listeners. No Runpod resource is started. Raw evidence stays local under the
 user's upload hold.
 
-## Excludes and open decision
+## Excludes and review
 
 No new prompts, retuning, extra remedies, parallel coding, later phases,
 automatic preset promotion, grader rewrites or hosted spend. No claim that
 old verify/acceptance extensions now satisfy this protected contract.
 
-Only the overnight hard-stop preference remains a user decision. Other values
-above are proposed engineering defaults, available for correction at review.
+The larger n, 18/20 quality bar and eight-hour safety cutoff are proposed
+engineering defaults using the additional time offered by the user. Confirm
+the implementation plan before collection; no runs exist under this protocol.
