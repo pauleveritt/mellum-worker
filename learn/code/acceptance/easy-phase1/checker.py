@@ -144,7 +144,18 @@ def evaluate(snapshot, probe, remaining):
     source = (snapshot / "app.py").read_text(errors="replace") if (snapshot / "app.py").is_file() else ""
     check("guarded_reload", guarded_reload(source), "uvicorn.run(reload=True) must be guarded by __name__ == __main__")
     startup = observe("startup", 12)
-    check("startup", startup.get("ready") is True, "Documented uv run --frozen python app.py must serve GET / with reload")
+    launch_exit = startup.get("launch_exit_code")
+    if type(launch_exit) is not int or not -255 <= launch_exit <= 255:
+        launch_exit = "unknown or still running"
+    log = startup.get("log_tail", startup.get("probe_error", ""))
+    if not isinstance(log, str):
+        log = ""
+    log = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", log[-4096:])
+    log = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", log)
+    diagnostic = json.dumps(re.sub(r"\s+", " ", log).strip()[-350:], ensure_ascii=False)
+    check("startup", startup.get("ready") is True,
+          "Documented uv run --frozen python app.py must serve GET / with reload; "
+          f"launch exit={launch_exit}; untrusted candidate log tail: {diagnostic}")
     tests = observe("tests", 6)
     check("project_tests", tests.get("exit_code") == 0 and type(tests.get("tests")) is int
           and tests["tests"] > tests.get("skipped", tests["tests"])

@@ -136,3 +136,13 @@ def test_duplicate_final_receipt_cannot_reaffirm_acceptance(tmp_path):
 def test_invalid_repair_allowance_is_rejected(tmp_path, repairs):
     with pytest.raises(ValueError):
         Gate("task", package(tmp_path), time.monotonic() + 600, max_repairs=repairs)
+
+
+def test_repair_feedback_requires_agnostic_cleanup_and_current_task_scope(tmp_path):
+    gate = Gate('task', package(tmp_path), time.monotonic() + 600)
+    feedback = gate.apply(verdict(False), 'a' * 64)['feedback'].lower()
+    for instruction in ('current task', 'remove', 'out-of-scope', 'revert', 'protected', 'later', 'untrusted'):
+        assert instruction in feedback
+    for answer in ('app.py', 'models.py', '/complaints', 'uvicorn', 'phase 1', 'one test passed'):
+        assert answer not in feedback
+    assert len(feedback) <= 8000

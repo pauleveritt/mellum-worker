@@ -70,31 +70,49 @@ def titles():
     return {"default": default, "overridden": overridden}
 
 
+def read_log_tail(log: Path) -> str:
+    with log.open("rb") as source:
+        source.seek(0, os.SEEK_END)
+        source.seek(max(0, source.tell() - 4096))
+        return source.read(4096).decode(errors="replace")
+
+
 def startup():
     log = Path("/tmp/probe-startup.log")
     with log.open("w") as output:
         child = subprocess.Popen(["uv", "run", "--offline", "--frozen", "python", "app.py"],
             stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         ready = False
+        launch_exit_code = None
         try:
             until = time.monotonic() + 9
-            while child.poll() is None and time.monotonic() < until:
-                match = re.search(r"http://(?:0\.0\.0\.0|127\.0\.0\.1|localhost|\[::\]):(\d+)", log.read_text())
-                if match:
-                    try:
-                        with urllib.request.urlopen(f"http://127.0.0.1:{match[1]}/", timeout=.3) as response:
-                            if response.status == 200:
-                                ready = True; break
-                    except OSError:
-                        pass
-                time.sleep(.1)
+            port, overlap = None, ""
+            with log.open("rb") as observation:
+                while child.poll() is None and time.monotonic() < until:
+                    chunk = observation.read(4096)
+                    text = overlap + chunk.decode(errors="replace")
+                    match = re.search(r"http://(?:0\.0\.0\.0|127\.0\.0\.1|localhost|\[::\]):(\d+)", text)
+                    if match:
+                        port = match[1]
+                    overlap = text[-256:]
+                    if port:
+                        try:
+                            with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=.3) as response:
+                                if response.status == 200:
+                                    ready = True; break
+                        except OSError:
+                            pass
+                    if len(chunk) < 4096:
+                        time.sleep(.1)
+            launch_exit_code = child.poll()
         finally:
             try: os.killpg(child.pid, signal.SIGTERM)
             except ProcessLookupError: pass
             try: child.wait(timeout=1)
             except subprocess.TimeoutExpired:
                 os.killpg(child.pid, signal.SIGKILL); child.wait(timeout=1)
-    return {"ready": ready, "exit_code": child.returncode}
+    return {"ready": ready, "exit_code": child.returncode,
+            "launch_exit_code": launch_exit_code, "log_tail": read_log_tail(log)}
 
 
 def tests():

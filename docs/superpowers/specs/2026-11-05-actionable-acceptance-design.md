@@ -20,7 +20,8 @@ investigating feedback, not a claim that revised wording will fix the model.
 ## Changes
 
 1. Preserve a bounded candidate launch log tail in the fixed startup probe.
-   Read at most4096 bytes for log inspection; do not read an unbounded log.
+   Read at most4096 bytes per read; bound retained data and inspection by the
+   existing deadline rather than loading an unbounded log.
    Preserve launch exit status before cleanup separately from termination status.
    The host checker includes at most350 sanitized diagnostic characters in the
    startup observation, JSON quoted and labelled untrusted. Invalid/missing log

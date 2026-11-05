@@ -173,6 +173,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- Protected acceptance repair now receives bounded, sanitized startup diagnostics
+  with the launch exit status, instead of losing the actual runtime warning.
+  Generic feedback calls for removing out-of-scope additions and reverting
+  protected inputs; candidate logs remain untrusted. Coding benefit awaits the
+  separately registered follow-up comparison.
+
 - The foreground-server guard now distinguishes executable launches from library
   mentions in Python diagnostics and test commands, and checks compound commands
   without letting an unrelated read or background job exempt a foreground start.
