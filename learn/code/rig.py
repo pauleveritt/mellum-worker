@@ -82,6 +82,7 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str) -> list[str]:
     bin_dir = f"{prefix}/bin"
     uv = f"{bin_dir}/uv"
     project = f"{repo}/{boot['dependency_project']}"
+    python_dir, grade_cache = f"{prefix}/python", f"{prefix}/cache-grade"
     commands = [
         "apt-get update && apt-get install -y --no-install-recommends " + " ".join(map(q, boot["apt"])),
         f"mkdir -p {q(bin_dir)}",
@@ -90,12 +91,16 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str) -> list[str]:
         f"tar -xJf {q(tarball)} -C {q(prefix)}",
         *(f"ln -sf {q(f'{prefix}/{node}/bin/{tool}')} {q(f'{bin_dir}/{tool}')}" for tool in ("node", "npm", "npx")),
         f"curl -LsSf https://astral.sh/uv/{boot['uv']}/install.sh | env UV_INSTALL_DIR={q(bin_dir)} UV_NO_MODIFY_PATH=1 sh",
-        f"UV_PYTHON_BIN_DIR={q(bin_dir)} {q(uv)} python install {boot['python']}",
+        f"UV_PYTHON_INSTALL_DIR={q(python_dir)} UV_PYTHON_BIN_DIR={q(bin_dir)} {q(uv)} python install {boot['python']}",
         f"PATH={q(bin_dir)}:$PATH {q(bin_dir + '/npm')} install -g --prefix {q(prefix)} {q(boot['pi'])}",
-        f"{q(uv)} sync --frozen --project {q(project)} --python {boot['python']}",
-        *(f"{q(bin_dir + '/uvx')} {q(f'{name}@{version}')} --version"
+        f"UV_CACHE_DIR={q(grade_cache)} UV_PYTHON_INSTALL_DIR={q(python_dir)} {q(uv)} sync --frozen "
+        f"--project {q(project)} --python {boot['python']}",
+        *(f"UV_CACHE_DIR={q(grade_cache)} UV_PYTHON_INSTALL_DIR={q(python_dir)} "
+          f"{q(bin_dir + '/uvx')} {q(f'{name}@{version}')} --version"
           for name, version in boot["checkers"].items()),
         f"chmod -R a+rX {q(prefix)} {q(project)}",
+        # Grading runs `uv run --offline` as mellum-grade; the session user may read, never write, its cache.
+        f"chown -R {GRADE_USER} {q(grade_cache)}",
     ]
     return commands
 
@@ -145,6 +150,13 @@ def user_commands() -> list[str]:
         commands += [f"id -u {user} >/dev/null 2>&1 || useradd --create-home --shell /bin/bash {user}",
                      f"passwd --lock {user}"]
     return commands
+
+
+def user_env(prefix: str, user: str, *, home: str) -> dict[str, str]:
+    """The environment a rig user runs with: pinned tools first, uv pointed at the prefix."""
+    return {"PATH": f"{prefix}/bin:/usr/local/bin:/usr/bin:/bin", "HOME": home, "USER": user, "LANG": "C.UTF-8",
+            "UV_PYTHON_INSTALL_DIR": f"{prefix}/python", "UV_PYTHON_DOWNLOADS": "never",
+            "UV_CACHE_DIR": f"{prefix}/cache-grade" if user == GRADE_USER else f"{home}/.cache/uv"}
 
 
 VERSION = re.compile(r"\d+\.\d+\.\d+")

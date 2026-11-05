@@ -136,3 +136,22 @@ def test_tool_versions_reads_each_tool(tmp_path):
 def test_tool_versions_reports_missing_tool(tmp_path):
     (tmp_path / "bin").mkdir()
     assert rig.tool_versions(str(tmp_path))["node"] is None
+
+
+def test_bootstrap_puts_python_and_grade_cache_under_prefix():
+    commands = rig.bootstrap_commands(rig.load_pins(), prefix="/opt/rig", repo="/root/mellum-worker")
+    install = next(c for c in commands if "python install" in c)
+    assert "UV_PYTHON_INSTALL_DIR=/opt/rig/python" in install
+    sync = next(c for c in commands if "sync --frozen" in c)
+    assert "UV_CACHE_DIR=/opt/rig/cache-grade" in sync and "UV_PYTHON_INSTALL_DIR=/opt/rig/python" in sync
+    assert all("UV_CACHE_DIR=/opt/rig/cache-grade" in c for c in commands if "uvx" in c)
+    assert commands[-1] == "chown -R mellum-grade /opt/rig/cache-grade"
+
+
+def test_user_env_points_uv_at_prefix():
+    grade = rig.user_env("/opt/rig", rig.GRADE_USER, home="/home/mellum-grade")
+    session = rig.user_env("/opt/rig", rig.SESSION_USER, home="/home/mellum-session")
+    assert grade["PATH"].split(":")[0] == "/opt/rig/bin" and grade["HOME"] == "/home/mellum-grade"
+    assert grade["UV_PYTHON_INSTALL_DIR"] == "/opt/rig/python" and grade["UV_PYTHON_DOWNLOADS"] == "never"
+    assert grade["UV_CACHE_DIR"] == "/opt/rig/cache-grade"
+    assert session["UV_CACHE_DIR"] == "/home/mellum-session/.cache/uv"
