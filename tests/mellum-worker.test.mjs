@@ -279,9 +279,9 @@ test("runRecord builds the JSONL line for a span from the same fields as the han
 		{ role: "toolResult", toolCallId: "2", toolName: "bash", isError: true, content: [{ type: "text", text: "Command exited with code 2" }] },
 		{ role: "assistant", timestamp: ts("29:13.636"), usage: { input: 143, cacheRead: 5120, output: 355 }, content: [{ type: "text", text: "done" }] },
 	];
-	const rec = runRecord("Write a hello world python file with a unit test", span, { endedAt: ts("29:27.031"), cwd: "/p/ac-demo", model: "omlx/Mellum" });
+	const rec = runRecord("Write a hello world python file with a unit test", span, { endedAt: ts("29:27.031"), cwd: "/p/ac-demo", model: "llamacpp/Mellum" });
 	assert.equal(rec.task, "Write a hello world python file with a unit test");
-	assert.equal(rec.model, "omlx/Mellum");
+	assert.equal(rec.model, "llamacpp/Mellum");
 	assert.equal(rec.cwd, "/p/ac-demo");
 	assert.equal(rec.startedAt, "2026-10-09T19:28:52.217Z");
 	assert.equal(rec.endedAt, "2026-10-09T19:29:27.031Z");
@@ -299,7 +299,7 @@ test("runRecord builds the JSONL line for a span from the same fields as the han
 const asst = (blocks, extra = {}) => ({ role: "assistant", content: blocks, ...extra });
 const call = (id, name, args) => ({ type: "toolCall", id, name, arguments: args });
 const res = (id, name, isError = false) => ({ role: "toolResult", toolCallId: id, toolName: name, isError, content: [{ type: "text", text: isError ? "Command exited with code 2" : "ok" }] });
-const metaBase = { endedAt: Date.parse("2026-10-09T20:42:00Z"), cwd: "/p/ac-demo", model: "omlx/Mellum" };
+const metaBase = { endedAt: Date.parse("2026-10-09T20:42:00Z"), cwd: "/p/ac-demo", model: "llamacpp/Mellum" };
 
 function span2042() {
 	const bash = (id, command, failed) => [asst([call(id, "bash", { command })]), res(id, "bash", failed)];
@@ -423,7 +423,7 @@ test("withFacts is idempotent: a message already ending with the block gets no s
 
 test("runRecord carries facts from the meta, and omits the field when there is none", async () => {
 	const { runRecord } = await import("../extensions/mellum-record.ts");
-	const meta = { endedAt: 1, cwd: "/p", model: "omlx/M" };
+	const meta = { endedAt: 1, cwd: "/p", model: "llamacpp/M" };
 	const rec = runRecord("t", [], { ...meta, facts: { source: "detected", testCommand: "uv run --offline python -m pytest -q", chars: 50 } });
 	assert.deepEqual(rec.facts, { source: "detected", testCommand: "uv run --offline python -m pytest -q", chars: 50 });
 	assert.equal("facts" in JSON.parse(JSON.stringify(runRecord("t", [], meta))), false);
@@ -457,7 +457,7 @@ test("parseSubcommand: on, off, check and learn [n] are commands; anything longe
 
 test("runRecord carries the server settings check from the meta, and omits the field when there is none", async () => {
 	const { runRecord } = await import("../extensions/mellum-record.ts");
-	const meta = { endedAt: 1, cwd: "/p", model: "omlx/M" };
+	const meta = { endedAt: 1, cwd: "/p", model: "llamacpp/M" };
 	const diffs = [{ key: "max_context_window", expected: 56000, actual: 32768 }];
 	assert.deepEqual(runRecord("t", [], { ...meta, server: { match: false, diffs } }).server, { match: false, diffs });
 	assert.deepEqual(runRecord("t", [], { ...meta, server: { match: null, diffs: [] } }).server, { match: null, diffs: [] });

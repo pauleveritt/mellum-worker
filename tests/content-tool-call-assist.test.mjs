@@ -17,7 +17,7 @@ test("coerceToolCall keeps a well-formed named-args object", () => {
 });
 
 test("coerceToolCall maps a POSITIONAL list onto the tool's parameter order", () => {
-	// the live 1.5B failure: it emits {"tool":"write","args":["a.py","hi"]} — a list, which oMLX
+	// the live 1.5B failure: it emits {"tool":"write","args":["a.py","hi"]} — a list, which the server
 	// then rejects with 422 'arguments must be a JSON object, got list'. Map it to named args.
 	const call = coerceToolCall({ tool: "write", args: ["a.py", "print(1)"] }, TOOLS);
 	assert.deepEqual(call, { name: "write", arguments: { path: "a.py", content: "print(1)" } });
