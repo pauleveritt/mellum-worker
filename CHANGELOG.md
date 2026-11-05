@@ -146,6 +146,13 @@ Versions match git tags; pin one in both install lines.
   like a misconfigured server. It now reports the liveness it actually recorded —
   `up, ctx 50,176` or `down` — and keeps "settings match" / "differs" only for the
   oMLX records that carry a match.
+- **The site points to itself, not an old copy.** `site_url` (and so every
+  canonical link and sitemap URL) referenced `pauleveritt.github.io`, which still
+  serves a stale copy, so search engines were sent there instead of the live
+  site. It now points at `andrevanzuydam.github.io`. The challenge *fixture*
+  directory (`learn/challenges/`, task prompts and base docs — not the linked
+  `challenge/` pages) was also published as unlinked pages and counted in the
+  sitemap; it is now excluded from the build.
 - **`/challenge submit` works for contributors, not only the repo owner.** It
   pushed the branch straight to the upstream repo, which a contributor cannot
   do — the push failed with a 403. It now finds your GitHub login, creates your

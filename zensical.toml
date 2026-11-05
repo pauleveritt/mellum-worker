@@ -1,11 +1,14 @@
 [project]
 site_name = "Small AI Learning Center"
-site_url = "https://pauleveritt.github.io/mellum-worker/"
+site_url = "https://andrevanzuydam.github.io/mellum-worker/"
 site_description = "Small coding models, measured: problems, fixes, evidence."
 repo_url = "https://github.com/andrevanzuydam/mellum-worker"
 docs_dir = "learn"
 site_dir = "site"
-exclude_docs = "code/"
+exclude_docs = """
+code/
+challenges/
+"""
 extra_css = ["stylesheets/extra.css"]
 extra_javascript = ["javascripts/badges.js"]
 nav = [
