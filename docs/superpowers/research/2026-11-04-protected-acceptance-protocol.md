@@ -45,7 +45,7 @@ does not manufacture forty outcomes after broken measurement.
 ## Qualification and freeze
 
 Before launch: immutable image build, containment/hidden-grader qualification,
-three correct acceptance variants and individual seeded omissions, hostile
+four correct acceptance variants and individual seeded omissions, hostile
 candidate observations, actual-Pi pass/repair/exhaust/tamper exchanges and
 forced compaction accounting. Setup uses a fake provider and is not evidence
 of Mellum quality. Record all qualifications, package/source hashes and image.
@@ -76,3 +76,20 @@ Retain local traces, request logs, snapshots, checks and failures in ignored
 Audit welcoming tone/hero semantics manually and label these structural
 proxies; passing finite checks is not proof of arbitrary correctness.
 No defaults or presets are promoted automatically by this experiment.
+
+## Dated qualification correction before the replacement cohort
+
+2026-11-05 UTC (still Nov 4 locally): `final-batch` was stopped after one
+completed control and during the first gated task. Manual inspection exposed
+false failures for a `hero-*` container and a title override retaining a site
+prefix. The control also had a genuine default-title miss, so this correction
+does not convert its result into a success. The gated task was interrupted;
+neither task enters the replacement cohort. Keep both artifacts and budgets,
+including any incomplete generation, as qualification costs with no decision.
+
+Correct and qualify those lawful variants, and reconstruct layout on the host
+for interrupted attempts. `qualified-batch-v2` repeats all qualification and
+starts twenty fresh tasks per arm under the unchanged arms, usability rule,
+candidate threshold and fixed order. Preserve the aborted batch rather than
+rewriting or rescoring it as counted evidence. This is an instrument correction
+before a new freeze, not a favorable-outcome stopping rule.

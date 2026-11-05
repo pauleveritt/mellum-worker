@@ -137,7 +137,8 @@ def evaluate(snapshot, probe, remaining):
               f"Navbar requires {text} link to {href}; target need not exist in Phase 1")
     tagline = "Come in. Sit down. Tell us about your human."
     sections = doc.root.all("section") + [n for n in doc.root.all("div") if any(
-        c in n.attrs.get("class", "").split() for c in ("hero", "jumbotron", "p-5"))]
+        c in {"hero", "jumbotron", "p-5"} or c.startswith("hero-")
+        for c in n.attrs.get("class", "").split())]
     check("hero_tagline", any(tagline in n.text() and any(n.all(tag) for tag in ("h1", "h2", "h3"))
                              for n in sections), "Structural hero proxy: section/hero block with heading and tagline")
     check("welcome_paragraph", any(n.text() and tagline not in n.text() for n in doc.root.all("p")),

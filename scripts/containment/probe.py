@@ -57,11 +57,11 @@ def titles():
     for node in tree.find_all(nodes.Block):
         child = '{% extends "base.html" %}{% block ' + node.name + ' %}' + marker + '{% endblock %}'
         rendered = environment.from_string(child).render(**context)
-        overridden |= Titles(rendered).title.strip() == marker
+        overridden |= marker in Titles(rendered).title and Titles(rendered).title.strip() != default
     for variable in meta.find_undeclared_variables(tree) - {"request"}:
         child = '{% extends "base.html" %}{% set ' + variable + ' = "' + marker + '" %}'
         rendered = environment.from_string(child).render(**context)
-        overridden |= Titles(rendered).title.strip() == marker
+        overridden |= marker in Titles(rendered).title and Titles(rendered).title.strip() != default
     return {"default": default, "overridden": overridden}
 
 

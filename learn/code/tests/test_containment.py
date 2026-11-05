@@ -177,13 +177,16 @@ def test_interrupted_task_exports_partial_run(tmp_path, monkeypatch):
         def export(self, source, destination, **kwargs):
             run = destination / "runs/partial"; run.mkdir(parents=True)
             (run / "workspace").mkdir()
+            (run / "workspace/unexpected.py").write_text("# retained\n")
     def interrupt(*args, **kwargs): raise KeyboardInterrupt()
     monkeypatch.setattr(containment, "Container", FakeContainer)
     monkeypatch.setattr(containment, "run_bounded_command", interrupt)
-    suite = harness.Suite(name="interrupt-fixture", prompts=["fixture"], tests=tmp_path / "none", start=None)
+    suite = harness.Suite(name="interrupt-fixture", prompts=["fixture"], tests=tmp_path / "none", start=None,
+                          layout={"allow": ["allowed.py"], "ignore": []})
     run = containment.run_contained(suite, image="unused", runs_dir=tmp_path / "runs", profile=profile)
     assert (run / "workspace").is_dir()
     assert json.loads((run / "execution.json").read_text())["termination_reason"] == "interrupted"
+    assert json.loads((run / "layout.json").read_text())["out_of_layout"] == ["unexpected.py"]
 
 
 def test_control_acceptance_shares_real_deadline_and_precedes_hidden_grading(tmp_path, monkeypatch):

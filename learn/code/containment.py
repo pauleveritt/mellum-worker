@@ -408,6 +408,14 @@ def run_contained(suite, *, image: str, runs_dir: Path, profile: Path,
             raise RuntimeError("ambiguous contained attempt export")
         run = runs_dir / candidates[0].name
         shutil.move(candidates[0], run)
+        if suite.layout is not None:
+            from harness import file_hashes, layout_report
+            pristine = {}
+            if suite.root and (suite.root / "base").is_dir():
+                pristine.update(file_hashes(suite.root / "base"))
+            if suite.start:
+                pristine.update(file_hashes(suite.start))
+            write_json(run / "layout.json", layout_report(run / "workspace", pristine, suite.layout))
         # These are host-authored controls, not authority imported from the agent.
         (run / "owner.json").unlink(missing_ok=True)
         write_json(run / "containment.json", {"backend": "temporary-docker", "image": image,

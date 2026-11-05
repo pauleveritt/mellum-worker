@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- Corrected acceptance false failures for hero class variants and page titles
+  retaining a site-name prefix. Interrupted contained tasks now receive a host
+  layout report so their evidence and budgets remain reportable.
+
 - Added a fixed twenty-per-arm local acceptance comparison controller with
   complete inference reconciliation, compaction telemetry, a separate safety
   watchdog and recovery of partial task files. Its preregistration blocks

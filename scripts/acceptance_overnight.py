@@ -278,6 +278,7 @@ def collect(batch: Path):
             control = Path(json.loads((run / "containment.json").read_text())["control"])
             journal = json.loads((run / "acceptance-journal.json").read_text()) if arm == "gated" else []
             budget = reconcile(segment, lines(control / "relay.jsonl"), lines(run / "trace.jsonl"), journal)
+            write_json(run / "budget.json", budget)
             acceptance = json.loads((run / "acceptance.json").read_text())["result"]
             gate_status = json.loads((run / "acceptance.json").read_text())["status"]
             layout = json.loads((run / "layout.json").read_text())

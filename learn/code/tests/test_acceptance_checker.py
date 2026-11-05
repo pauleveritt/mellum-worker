@@ -67,6 +67,11 @@ def test_valid_variants_accept_optional_attributes_and_markup_order(tmp_path):
         assert result["status"] == "pass", result
 
 
+def test_hero_class_variants_are_not_false_failures(tmp_path):
+    html = HTML.replace("<section>", '<div class="hero-unit">').replace("</section>", "</div>")
+    assert load_checker()(workspace(tmp_path), Probe(html), lambda: 30)["status"] == "pass"
+
+
 @pytest.mark.parametrize("before,after,requirement", [
     ("<!doctype html>", "", "html5"), ('lang="en"', 'lang="fr"', "english"),
     ('width=device-width', 'width=900', "viewport"),

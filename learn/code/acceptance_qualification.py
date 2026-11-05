@@ -94,7 +94,8 @@ MUTATIONS = [
 def qualify(image: str, output: Path, *, first_only=False) -> dict:
     output.mkdir(parents=True, exist_ok=False)
     package = AcceptancePackage.load(PACKAGE)
-    cases = [("valid-a", None), ("valid-b", None), ("valid-variable-title", None)]
+    cases = [("valid-a", None), ("valid-b", None), ("valid-variable-title", None),
+             ("valid-prefixed-title-hero", None)]
     cases += [(f"omit-{key}", (key, path, before, after)) for key, path, before, after in MUTATIONS]
     cases += [("omit-shared_layout", "shared_layout"), ("omit-phase_layout", "phase_layout"),
               ("early-exit", "early-exit"), ("plugin-skip", "plugin-skip"), ("forged-tests", "forged-tests"), ("syntax", "syntax"),
@@ -105,6 +106,10 @@ def qualify(image: str, output: Path, *, first_only=False) -> dict:
         if name == "valid-variable-title":
             (root / "templates/base.html").write_text(BASE.replace(
                 '{% block title %}AgentClinic{% endblock %}', '{{ page_title|default("AgentClinic") }}'))
+        if name == "valid-prefixed-title-hero":
+            (root / "templates/base.html").write_text(BASE.replace(
+                '{% block title %}AgentClinic{% endblock %}', 'AgentClinic{% block title %}{% endblock %}'))
+            (root / "templates/home.html").write_text(HOME.replace('<section>', '<div class="hero-unit">').replace('</section>', '</div>'))
         expected = None
         if isinstance(mutation, tuple):
             expected, path, before, after = mutation
