@@ -16,6 +16,7 @@ from acceptance import AcceptancePackage
 from baseline import write_json
 from harness import sweep_workspace
 from isolation import RIG_USERS, sweep_user
+from rig import chown_tree, drop_privileges
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "scripts/containment"
 OPERATIONS = {"home", "titles", "startup", "tests"}
@@ -37,8 +38,7 @@ class NativeProbe:
         for name in ("probe.py", "pytest_probe.py"):
             shutil.copy2(SCRIPTS / name, self.root / name)
         if self.user is not None:
-            for path in [self.root, *self.root.rglob("*")]:
-                shutil.chown(path, user=self.user)
+            chown_tree(self.root, self.user)
         return self
 
     def __exit__(self, *args):
@@ -62,7 +62,7 @@ class NativeProbe:
         with tempfile.TemporaryFile() as output:
             child = subprocess.Popen(argv, cwd=self.root / "workspace", env=env, stdin=subprocess.PIPE,
                                      stdout=output, stderr=subprocess.STDOUT, start_new_session=True,
-                                     **({"user": self.user} if self.user is not None else {}))
+                                     **(drop_privileges(self.user) if self.user is not None else {}))
             try:
                 child.communicate(json.dumps(inputs).encode(), timeout=remaining)
             except subprocess.TimeoutExpired:
@@ -86,7 +86,8 @@ class NativeProbe:
 
 
 def check_snapshot_native(snapshot: Path, package: AcceptancePackage, control: Path, timeout: float, *,
-                          user: str | None, python: Path, env: dict | None = None) -> dict:
+                          user: str | None, python: Path, env: dict | None = None,
+                          uncontained: bool = False) -> dict:
     """Run the package's frozen checker against a snapshot, with candidate code in NativeProbe."""
     control = Path(control)
     control.mkdir(parents=True, exist_ok=True)
@@ -111,7 +112,7 @@ def check_snapshot_native(snapshot: Path, package: AcceptancePackage, control: P
                 result = {"status": "checker_error", "detail": f"{type(error).__name__}: {error}"[:2000]}
         if not package.verify():
             result = {"status": "integrity_error"}
-    if user is None:
+    if uncontained:      # the Mac host: candidate code ran as the operator, not a rig user
         result = {**result, "uncontained": True}
     write_json(control / "checker-result.json", result)
     return result

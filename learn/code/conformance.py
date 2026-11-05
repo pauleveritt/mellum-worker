@@ -42,6 +42,52 @@ def identity_problems(props: dict, slots: list[dict], pins: dict) -> list[str]:
     return problems
 
 
+def parse_nvidia_smi(text: str) -> dict:
+    """`nvidia-smi --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits`."""
+    rows = [[part.strip() for part in line.split(",")] for line in text.strip().splitlines() if line.strip()]
+    name, vram, driver, capability = rows[0]
+    return {"name": name, "vram_mib": int(float(vram)), "driver": driver, "compute_capability": capability,
+            "count": len(rows)}
+
+
+def gpu_info() -> dict:
+    out = subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total,driver_version,compute_cap",
+                          "--format=csv,noheader,nounits"], capture_output=True, text=True, timeout=60)
+    return parse_nvidia_smi(out.stdout)
+
+
+def allowlist_problems(gpu: dict, pins: dict) -> list[str]:
+    if gpu.get("name") == "metal":
+        return []                     # the Mac host is named in the design, not rented
+    allow, problems = pins["allowlist"], []
+    version = lambda text: tuple(int(part) for part in str(text).split(".")[:2])
+    if gpu.get("count") != allow["gpu_count"]:
+        problems.append(f"{gpu.get('count')} GPUs, allowlist {allow['gpu_count']}")
+    if version(gpu.get("compute_capability", "0.0")) < version(allow["min_compute_capability"]):
+        problems.append(f"compute capability {gpu.get('compute_capability')} below {allow['min_compute_capability']}")
+    if int(str(gpu.get("driver", "0")).split(".")[0]) < allow["min_driver_major"]:
+        problems.append(f"driver {gpu.get('driver')} below {allow['min_driver_major']}")
+    return problems
+
+
+def flags_problems(argv: list[str], pins: dict) -> list[str]:
+    """The launched server command must carry every pinned flag (binary, paths, port and threads may vary)."""
+    expected = rig.server_argv(pins, binary="_", model="_", port=0, threads=0, log="_")
+    variable = {"-m", "--port", "-t", "-tb", "--log-file"}
+    problems, at = [], 1
+    while at < len(expected):
+        flag = expected[at]
+        takes_value = at + 1 < len(expected) and not expected[at + 1].startswith("-")
+        if flag not in argv:
+            problems.append(f"server command lacks {flag}")
+        elif takes_value and flag not in variable:
+            given = argv[argv.index(flag) + 1] if argv.index(flag) + 1 < len(argv) else None
+            if given != expected[at + 1]:
+                problems.append(f"server command has {flag} {given}, pinned {expected[at + 1]}")
+        at += 2 if takes_value else 1
+    return problems
+
+
 def _get(endpoint: str, route: str):
     with urllib.request.urlopen(endpoint + route, timeout=30) as response:
         return json.loads(response.read())
@@ -71,16 +117,19 @@ def _item(passed: bool, detail) -> dict:
     return {"passed": bool(passed), "detail": detail}
 
 
-def _identity(pins, endpoint, model, reference_template):
+def _identity(pins, endpoint, model, reference_template, server_command=None):
     props, slots = _get(endpoint, "/props"), _get(endpoint, "/slots")
     problems = identity_problems(props, slots, pins)
+    if server_command is not None:
+        problems += flags_problems(list(server_command), pins)
     if _sha256(model) != pins["weights"]["sha256"]:
         problems.append("model file hash is not the pinned sha256")
     template = hashlib.sha256(str(props.get("chat_template", "")).encode()).hexdigest()
     if reference_template is not None and template != reference_template:
         problems.append("chat template hash differs from the reference host")
     return _item(not problems, {"problems": problems, "build_info": props.get("build_info"),
-                                "chat_template_sha256": template, "slots": len(slots)})
+                                "chat_template_sha256": template, "slots": len(slots),
+                                "server_command": list(server_command) if server_command is not None else None})
 
 
 def _capacity(pins, endpoint):
@@ -147,9 +196,13 @@ def _isolation(session_user, protected, pids):
 
 def check(pins: dict, endpoint: str, *, perplexity_binary: Path, model: Path, reference_ppl: float | None,
           tolerance: float, host: dict, out: Path, prefix: str | None, session_user: str | None = None,
-          protected: tuple = (), pids: tuple = (), reference_template: str | None = None) -> dict:
+          protected: tuple = (), pids: tuple = (), reference_template: str | None = None,
+          gpu: dict | None = None, server_command: list[str] | None = None) -> dict:
     started = time.monotonic()
-    items = {"identity": _identity(pins, endpoint, model, reference_template),
+    gpu = gpu if gpu is not None else {"name": host.get("gpu") or "metal"}
+    items = {"allowlist": _item(not allowlist_problems(gpu, pins), {"gpu": gpu,
+                                                                  "problems": allowlist_problems(gpu, pins)}),
+             "identity": _identity(pins, endpoint, model, reference_template, server_command),
              "capacity": _capacity(pins, endpoint)}
     items["protocol"], sample = _protocol(endpoint)
     timings = sample.get("timings", {})
@@ -160,7 +213,7 @@ def check(pins: dict, endpoint: str, *, perplexity_binary: Path, model: Path, re
     items["tooling"] = _tooling(pins, prefix)
     items["isolation"] = _isolation(session_user, protected, pids)
     card = {"schema": "mellum-host-card/1", "passed": all(item["passed"] for item in items.values()),
-            "pins_digest": rig.pins_digest(pins), "items": items, **host,
+            "pins_digest": rig.pins_digest(pins), "items": items, **host, "gpu": gpu,
             "checked_at": datetime.now(UTC).isoformat(), "check_seconds": round(time.monotonic() - started, 3),
             "post_check": None, "stopped": None}
     Path(out).parent.mkdir(parents=True, exist_ok=True)

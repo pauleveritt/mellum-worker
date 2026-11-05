@@ -109,7 +109,7 @@ def test_check_against_fake_server(server, host):
     card = run_check(server, host)
     assert card["passed"] is True, card["items"]
     assert set(card["items"]) == {"identity", "capacity", "protocol", "numerics", "throughput", "stability",
-                                  "tooling", "isolation"}
+                                  "tooling", "isolation", "allowlist"}
     assert card["items"]["numerics"]["detail"]["perplexity"] == 7.1234
     assert card["items"]["numerics"]["detail"]["role"] == "reference"
     assert card["pins_digest"] == rig.pins_digest(host["pins"])
@@ -151,3 +151,37 @@ def test_post_check_reruns_identity_stability_and_tooling(server, host):
     assert result["passed"] is True and set(result["items"]) == {"identity", "stability", "tooling"}
     handler.build_info = "b1-other"
     assert conformance.post_check(host["pins"], endpoint, model=host["model"], prefix=host["prefix"])["passed"] is False
+
+
+H100 = "NVIDIA H100 80GB HBM3, 81559, 575.51.03, 9.0\n"
+
+
+def test_parse_nvidia_smi():
+    assert conformance.parse_nvidia_smi(H100) == {"name": "NVIDIA H100 80GB HBM3", "vram_mib": 81559,
+                                                  "driver": "575.51.03", "compute_capability": "9.0", "count": 1}
+
+
+def test_allowlist_item():
+    pins = rig.load_pins()
+    gpu = conformance.parse_nvidia_smi(H100)
+    assert conformance.allowlist_problems(gpu, pins) == []
+    assert conformance.allowlist_problems({**gpu, "compute_capability": "7.5"}, pins)
+    assert conformance.allowlist_problems({**gpu, "driver": "550.1"}, pins)
+    assert conformance.allowlist_problems({**gpu, "count": 2}, pins)
+    assert conformance.allowlist_problems({"name": "metal"}, pins) == []   # the Mac host, named in the spec
+
+
+def test_flags_problems():
+    pins = rig.load_pins()
+    argv = rig.server_argv(pins, binary="llama-server", model="/m.gguf", port=18001, threads=8, log="/l")
+    assert conformance.flags_problems(argv, pins) == []
+    wrong = [("auto" if a == "on" else a) for a in argv]
+    assert any("-fa" in p for p in conformance.flags_problems(wrong, pins))
+    assert conformance.flags_problems([a for a in argv if a != "--no-kv-unified"], pins)
+
+
+def test_check_records_flags_when_given_the_server_command(server, host):
+    pins = host["pins"]
+    argv = rig.server_argv(pins, binary="llama-server", model=str(host["model"]), port=1, threads=8, log="/l")
+    card = run_check(server, host, server_command=[(a if a != "on" else "auto") for a in argv])
+    assert card["items"]["identity"]["passed"] is False

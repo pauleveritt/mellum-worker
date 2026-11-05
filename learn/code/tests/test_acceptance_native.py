@@ -74,3 +74,33 @@ def test_native_probe_works_on_a_copy(tmp_path, probe_python):
                                        user=None, python=probe_python) as probe:
         probe.run("tests", {}, 30)
     assert sorted(p.relative_to(tmp_path / "good") for p in (tmp_path / "good").rglob("*")) == before
+
+
+def test_uncontained_is_explicit_not_inferred(tmp_path, probe_python):
+    fixture(tmp_path / "good")
+    package = AcceptancePackage.load(PACKAGE)
+    pod = acceptance_native.check_snapshot_native(tmp_path / "good", package, tmp_path / "pod", 90, user=None,
+                                                  python=probe_python, uncontained=False)
+    mac = acceptance_native.check_snapshot_native(tmp_path / "good", package, tmp_path / "mac", 90, user=None,
+                                                  python=probe_python, uncontained=True)
+    assert "uncontained" not in pod and mac["uncontained"] is True
+
+
+def test_native_probe_drops_supplementary_groups(tmp_path, probe_python, monkeypatch):
+    import getpass, pwd
+    fixture(tmp_path / "good")
+    launched = {}
+    real = subprocess.Popen
+    def spy(argv, **kwargs):
+        launched.update(kwargs)
+        for key in ("user", "group", "extra_groups"):
+            kwargs.pop(key, None)
+        return real(argv, **kwargs)
+    monkeypatch.setattr(acceptance_native.subprocess, "Popen", spy)
+    monkeypatch.setattr(acceptance_native.shutil, "chown", lambda *a, **k: None)
+    monkeypatch.setattr(acceptance_native, "chown_tree", lambda *a, **k: None)
+    me = getpass.getuser()
+    with acceptance_native.NativeProbe(tmp_path / "good", tmp_path / "control", deadline_at=time.monotonic() + 60,
+                                       user=me, python=probe_python) as probe:
+        probe.run("titles", {}, 30)
+    assert launched["user"] == me and launched["extra_groups"] == [] and launched["group"] == pwd.getpwnam(me).pw_gid
