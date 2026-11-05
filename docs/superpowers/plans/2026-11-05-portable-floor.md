@@ -363,7 +363,7 @@ assert not floor.portability(rows(budget=3), rows(budget=0))["portable"]
 Each rental stops for the user's yes in chat. The driver runs in `tmux` on its host. The operator shows it in a visible Terminal tab over SSH, with the watcher following the newest trace.
 
 - [ ] **Step 1:** Run `run BATCH M` on the Mac. Expected: three counted sessions, or invalid ones replaced within the cap.
-- [ ] **Step 2:** **Rental A.** Read Runpod capacity through the MCP and propose one allowlisted Ampere or Ada GPU with its price, region and expected hours. **Wait for yes.** Create the pod. Over SSH, run Task 2's checkout, users, bootstrap, build, fetch and serve commands.
+- [ ] **Step 2:** **Rental A.** Read Runpod capacity through the MCP and propose one allowlisted Ampere or Ada GPU with its price, region and expected hours. **Wait for yes.** Create the pod. Over SSH, run Task 2's commands in this order: users, checkout, `lock_checkout_commands`, bootstrap, build, fetch, serve. Put the batch outside `/root` (for example `/srv/mellum/<batch>`), since the session user must traverse it. *(Dated 2026-11-05, after the final review: the order and the lock close the hidden-oracle and ownership findings.)*
 - [ ] **Step 3:** Run `prepare`, then `host BATCH A`, calibrating the numerics tolerance against the Mac reference, then `run BATCH A` and `post-check BATCH A`.
 - [ ] **Step 4:** Copy the batch back. Stop the pod through the MCP, read back its state, and run `record-stop`. Report any billed storage to the user.
 - [ ] **Step 5:** **Rental B.** Repeat for one Hopper or Blackwell GPU, with the same stop for yes and the same steps.

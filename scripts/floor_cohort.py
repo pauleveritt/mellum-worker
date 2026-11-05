@@ -82,8 +82,10 @@ def append_event(batch: Path, event: dict) -> None:
 
 def rentals(batch: Path, name: str) -> list[Path]:
     root = batch / "hosts" / name
+    # By when conformance checked the rental, never by file mtime: post-check and record-stop rewrite cards.
     return sorted((p for p in root.iterdir() if (p / "host-card.json").is_file()),
-                  key=lambda p: (p / "host-card.json").stat().st_mtime) if root.is_dir() else []
+                  key=lambda p: json.loads((p / "host-card.json").read_text()).get("checked_at", "")) \
+        if root.is_dir() else []
 
 
 def latest_rental(batch: Path, name: str) -> tuple[Path, dict, dict]:
@@ -92,6 +94,19 @@ def latest_rental(batch: Path, name: str) -> tuple[Path, dict, dict]:
         raise SystemExit(f"host {name} has no host card; run `host` first")
     folder = found[-1]
     return folder, json.loads((folder / "host-card.json").read_text()), json.loads((folder / "host.json").read_text())
+
+
+def traversable(path: Path) -> bool:
+    """Whether a user other than the owner can reach path: every component needs o+x."""
+    path = Path(path).absolute()
+    return all(part.stat().st_mode & 0o001 for part in [*reversed(path.parents), path])
+
+
+def hidden_files() -> list[Path]:
+    """What the session must never read: the hidden tests and the acceptance checker."""
+    suite = harness.load_suite(harness.SUITES, "easy")
+    return [*(p for p in Path(suite.tests).rglob("*") if p.is_file()),
+            REPO / "learn/code/acceptance/easy-phase1/checker.py"]
 
 
 # --- prepare and host ------------------------------------------------------------------------
@@ -119,15 +134,22 @@ def host(batch: Path, name: str, args) -> dict:
               "model": args.model, "server_log": args.server_log, "pod": pod,
               "perplexity_binary": args.perplexity_binary or f"{args.prefix}/bin/llama-perplexity"}
     write_json(folder / "host.json", config)
-    protected = [Path(args.server_log), batch, Path.home() / ".ssh"] if pod else []
+    protected = [Path(args.server_log), batch / "prepared.json", Path.home() / ".ssh", *hidden_files()] if pod else []
     pids = [int(p) for p in args.pids.split(",")] if args.pids else []
+    server_command = None
+    if pids:
+        import shlex
+        command = subprocess.run(["ps", "-o", "command=", "-p", str(pids[0])], capture_output=True, text=True).stdout
+        server_command = shlex.split(command.strip()) if command.strip() else None
+    gpu = conformance.gpu_info() if pod else {"name": "metal"}
     return conformance.check(pins, config["endpoint"], perplexity_binary=Path(config["perplexity_binary"]),
                              model=Path(args.model), reference_ppl=args.reference_ppl, tolerance=args.tolerance,
                              host={"provider": args.provider, "region": args.region, "rental_id": args.rental_id,
                                    "price_per_hour": args.price_per_hour, "threads": args.threads, "gpu": args.gpu},
                              out=folder / "host-card.json", prefix=args.prefix,
                              session_user=rig.SESSION_USER if pod else None, protected=tuple(protected),
-                             pids=tuple(pids), reference_template=args.reference_template)
+                             pids=tuple(pids), reference_template=args.reference_template, gpu=gpu,
+                             server_command=server_command)
 
 
 # --- one session -----------------------------------------------------------------------------
@@ -168,21 +190,26 @@ def lines(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()] if path.is_file() else []
 
 
-def probe_python(prefix: str | None) -> Path:
-    return REPO / rig.load_pins()["bootstrap"]["dependency_project"] / ".venv/bin/python"
-
-
 def run_one(batch: Path, name: str, config: dict, card: dict, pins: dict, index: int) -> dict:
-    """Run, grade and judge one counted-candidate session on this host."""
+    """Run, grade and judge one session on this host.
+
+    Ownership (final review, Critical 1): the run root and root's accounting files stay root-owned;
+    the session owns only what Pi writes, and is swept before anything is read back. Grading runs on
+    a fresh copy owned by the grading user, and root assembles the record from root's own files.
+    """
     pod, prefix = config["pod"], config["prefix"]
-    sessions = batch / name / "sessions"
-    sessions.mkdir(parents=True, exist_ok=True)
-    work = Path(tempfile.mkdtemp(prefix="floor-session-", dir=batch / name))
     if not pod:
         preflight = isolation.preflight_mac(STARTUP_PORTS)
         if not preflight["ok"]:
-            return {"type": "session", "host": name, "rental_id": config["rental_id"], "run": None, "index": index,
-                    "state": "invalid", "reason": "Mac preflight found a listener", "preflight": preflight}
+            raise SystemExit(f"Mac preflight found a listener the session needs: {preflight['listeners']}; "
+                             "free it and rerun (no session was started)")
+    elif not traversable(batch):
+        raise SystemExit(f"{batch} is not traversable by {rig.SESSION_USER}; put the batch outside /root")
+    sessions, grading = batch / name / "sessions", batch / name / "grading"
+    for folder in (sessions, grading):
+        folder.mkdir(parents=True, exist_ok=True)
+        folder.chmod(0o711)
+    work = Path(tempfile.mkdtemp(prefix="floor-session-", dir=batch / name))     # root-only: the proxy log lives here
     proxy_log = work / "proxy.jsonl"
     proxy, port = start_proxy(config, pins, proxy_log)
     server_log = Path(config["server_log"])
@@ -204,49 +231,89 @@ def run_one(batch: Path, name: str, config: dict, card: dict, pins: dict, index:
             proxy.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proxy.kill()
-    shutil.copy2(proxy_log, run / "proxy.jsonl")
+    sweep = isolation.sweep_user(rig.SESSION_USER) if pod else None      # before anything is read back
     execution = json.loads((run / "execution.json").read_text())
-    sweep = isolation.sweep_user(rig.SESSION_USER) if pod else {"ok": bool(execution.get("cleanup_ok"))}
+    if sweep is None:
+        sweep = {"ok": bool(execution.get("cleanup_ok"))}
+    shutil.copy2(proxy_log, run / "proxy.jsonl")
     with server_log.open("rb") as source:
         source.seek(offset)
         segment = source.read().decode(errors="replace")
     (run / "backend-segment.log").write_text(segment)
     budget = reconcile(segment, lines(run / "proxy.jsonl"), lines(run / "trace.jsonl"), [])
     write_json(run / "budget.json", budget)
+    copy = grading / run.name
+    shutil.copytree(run, copy, symlinks=True)
+    python = rig.probe_python(prefix) if prefix else Path(sys.executable)
     if pod:
-        for path in [run, *run.rglob("*")]:
-            shutil.chown(path, user=rig.GRADE_USER)
+        rig.chown_tree(copy, rig.GRADE_USER)
         grade_env = rig.user_env(prefix, rig.GRADE_USER, home=f"/home/{rig.GRADE_USER}")
-        subprocess.run([str(probe_python(prefix)), str(Path(__file__).resolve()), "_grade", str(run)],
-                       env=grade_env, user=rig.GRADE_USER, check=True, timeout=1800, cwd="/")
+        subprocess.run([str(python), str(Path(__file__).resolve()), "_grade", str(copy), "--python", str(python)],
+                       env=grade_env, check=False, timeout=1800, cwd="/", **rig.drop_privileges(rig.GRADE_USER))
         grade_sweep = isolation.sweep_user(rig.GRADE_USER)
         sweep = {**sweep, "ok": sweep["ok"] and grade_sweep["ok"], "grade": grade_sweep}
     else:
-        grade(run)
+        grade(copy, uncontained=True, python=python)
+    problems = collect_grades(copy, run)
+    shutil.rmtree(copy, ignore_errors=True)
     record = floor.session_record(run, card)
     recovered = floor.transport_recovered(lines(run / "proxy.jsonl"), record["completion"] or "")
     state, reason = floor.validity(execution, budget, sweep, recovered, post_check="pending")
+    if problems and state == "counted":
+        state, reason = "invalid", "grading outputs refused: " + "; ".join(problems)
     shutil.rmtree(work, ignore_errors=True)
     return {"type": "session", "host": name, "rental_id": config["rental_id"], "run": str(run), "index": index,
             "state": state, "reason": reason, "record": record, "sweep_ok": sweep["ok"],
             "load": {"start": load_start, "end": os.getloadavg()}}
 
 
-def grade(run: Path) -> None:
-    """Hidden grading and the observe-only acceptance audit; on a pod this runs as the grading user."""
+GRADE_OUTPUTS = {"run.json": True, "acceptance.json": True, "grade.json": False, "hidden-grade.json": False}
+
+
+def collect_grades(copy: Path, run: Path) -> list[str]:
+    """Bring the grading user's outputs into the root-owned run root, never through a symlink.
+
+    Completion and timing come from root's own execution record, not from the grading copy."""
+    problems = []
+    for name, required in GRADE_OUTPUTS.items():
+        source = copy / name
+        if source.is_symlink():
+            problems.append(f"{name} is a symlink")
+            continue
+        if not source.is_file():
+            if required:
+                problems.append(f"{name} is missing")
+            continue
+        descriptor = os.open(source, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        with os.fdopen(descriptor, "rb") as handle:
+            (run / name).write_bytes(handle.read(16 * 1024 * 1024))
+    if (run / "run.json").is_file():
+        record = json.loads((run / "run.json").read_text())
+        record.update(harness.execution_outcome(run))
+        write_json(run / "run.json", record)
+    return problems
+
+
+def _acceptance(run: Path, uncontained: bool, python: Path | None = None) -> None:
     from acceptance import AcceptancePackage
     from acceptance_native import check_snapshot_native
     from acceptance_qualification import PACKAGE
-    pins = rig.load_pins()
     package = AcceptancePackage.load(PACKAGE)
-    if package.digest != pins["acceptance_package_sha256"]:
+    if package.digest != rig.load_pins()["acceptance_package_sha256"]:
         raise SystemExit("acceptance package is not the pinned package")
+    result = check_snapshot_native(run / "workspace", package, run / "acceptance-control", package.timeout,
+                                   user=None, python=python or Path(sys.executable), env=dict(os.environ),
+                                   uncontained=uncontained)
+    write_json(run / "acceptance.json", {"status": "control", "result": result})
+
+
+def grade(run: Path, *, uncontained: bool, python: Path | None = None) -> None:
+    """Acceptance audit on the pristine tree, then hidden grading; on a pod this runs as the grading user."""
+    pins = rig.load_pins()
+    _acceptance(run, uncontained, python=python)
     harness.grade_and_record(run, harness.load_suite(harness.SUITES, "easy"), grade_run=True,
                              grade_versions=pins["bootstrap"]["checkers"], arm="vanilla", deadline=None,
                              stall=pins["session"]["open_tool_seconds"])
-    result = check_snapshot_native(run / "workspace", package, run / "acceptance-control", package.timeout,
-                                   user=None, python=probe_python(None), env=dict(os.environ))
-    write_json(run / "acceptance.json", {"status": "control", "result": result})
 
 
 # --- the cohort ------------------------------------------------------------------------------
@@ -272,7 +339,7 @@ def run(batch: Path, name: str) -> None:
             return
         if prepared.get("freeze"):
             verify_freeze(prepared["freeze"])
-        event = run_one(batch, name, config, card, pins, len(mine) + 1)
+        event = {**run_one(batch, name, config, card, pins, len(mine) + 1), "index": len(mine) + 1}
         append_event(batch, event)
         if event["state"] == "invalid" and not floor.may_replace({"replacements": invalid}):
             append_event(batch, {"type": "host_stopped", "host": name,
@@ -303,12 +370,15 @@ def report(batch: Path) -> dict:
     for name in floor.PLAN:
         for folder in rentals(batch, name):
             cards[(name, folder.name)] = json.loads((folder / "host-card.json").read_text())
-    records = []
+    records, excluded = [], []
     for event in events(batch):
-        if event["type"] != "session" or event["state"] != "counted":
+        if event["type"] != "session":
             continue
         post = cards.get((event["host"], event["rental_id"]), {}).get("post_check")
-        if post == "failed":
+        if event["state"] != "counted" or post == "failed":
+            excluded.append({"host": event["host"], "rental_id": event["rental_id"], "index": event.get("index"),
+                             "run": event.get("run"), "reason": event["reason"] if event["state"] != "counted"
+                             else "host failed the post-cohort conformance check"})
             continue
         reason = "post-check unavailable" if post is None else event["reason"]
         records.append({**event["record"], "host": event["host"], "rental_id": event["rental_id"],
@@ -319,13 +389,14 @@ def report(batch: Path) -> dict:
     portability = (floor.portability(a, b) if a and b else
                    {"portable": None, "reasons": ["needs counted sessions on both CUDA hosts"]})
     write_json(batch / "records.json", records)
+    write_json(batch / "excluded.json", excluded)
     write_json(batch / "summary.json", summary)
     write_json(batch / "portability.json", portability)
-    (batch / "scorecard.md").write_text(scorecard(summary, records, portability))
+    (batch / "scorecard.md").write_text(scorecard(summary, records, portability, excluded))
     return summary
 
 
-def scorecard(summary: dict, records: list[dict], portability: dict) -> str:
+def scorecard(summary: dict, records: list[dict], portability: dict, excluded: list[dict] = ()) -> str:
     def table(title, rows, row_summary):
         low, high = row_summary["wilson_95"]
         checks = sorted({name for r in rows for name in r.get("acceptance_checks", {})})
@@ -343,6 +414,11 @@ def scorecard(summary: dict, records: list[dict], portability: dict) -> str:
         parts.append(table(f"Host {name}", [r for r in records if r["host"] == name], row_summary))
     parts.append(table("Pooled A+B", [r for r in records if r["host"] in floor.CUDA_HOSTS], summary["pooled_cuda"]))
     parts.append(table("Pooled A+B+M", records, summary["pooled_all"]))
+    endings = [r for r in records if r.get("completion") == "budget"]
+    parts.append("## Budget endings\n\n" + ("\n".join(f"- Host {r['host']}: `{r['run']}`" for r in endings)
+                                             or "None.") + "\n")
+    parts.append("## Invalid sessions\n\n" + ("\n".join(f"- Host {e['host']} session {e['index']}: {e['reason']}"
+                                                         f" (`{e['run']}`)" for e in excluded) or "None.") + "\n")
     verdict = {True: "pooling allowed", False: "not portable", None: "not yet readable"}[portability["portable"]]
     parts.append(f"## Portability\n\n{verdict}. {'; '.join(portability['reasons'])}\n")
     return "\n".join(parts)
@@ -365,7 +441,8 @@ def main(argv=None) -> int:
     p.add_argument("rental"); p.add_argument("--state", required=True)
     p.add_argument("--storage-billing", choices=["yes", "no"], required=True)
     p = sub.add_parser("report"); p.add_argument("batch", type=Path)
-    p = sub.add_parser("_grade"); p.add_argument("run", type=Path)
+    p = sub.add_parser("_grade"); p.add_argument("run", type=Path); p.add_argument("--python", type=Path)
+    p.add_argument("--uncontained", action="store_true")
     args = parser.parse_args(argv)
     if args.command == "prepare":
         args.batch.mkdir(parents=True, exist_ok=True); prepare(args.batch, args.prefix)
@@ -381,7 +458,7 @@ def main(argv=None) -> int:
     elif args.command == "report":
         print(json.dumps(report(args.batch), indent=2))
     elif args.command == "_grade":
-        grade(args.run)
+        grade(args.run, uncontained=args.uncontained, python=args.python)
     return 0
 
 

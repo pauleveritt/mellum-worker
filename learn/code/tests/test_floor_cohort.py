@@ -129,3 +129,79 @@ def test_record_stop_writes_the_read_back_state(batch):
     driver.record_stop(batch, "A", "r1", state="EXITED", storage_billing=True)
     card = json.loads((batch / "hosts/A/r1/host-card.json").read_text())
     assert card["stopped"]["state"] == "EXITED" and card["stopped"]["storage_billing"] is True
+
+
+# --- final-review fixes ---
+
+def test_latest_rental_is_the_newest_check_not_the_newest_write(batch):
+    add_host(batch, "A", rental="old")
+    old = batch / "hosts/A/old/host-card.json"
+    card = json.loads(old.read_text()); card["checked_at"] = "2026-11-05T01:00:00+00:00"; old.write_text(json.dumps(card))
+    add_host(batch, "A", rental="new")
+    new = batch / "hosts/A/new/host-card.json"
+    card = json.loads(new.read_text()); card["checked_at"] = "2026-11-05T02:00:00+00:00"; new.write_text(json.dumps(card))
+    driver.record_stop(batch, "A", "old", state="EXITED", storage_billing=False)   # rewrites the old card last
+    assert driver.latest_rental(batch, "A")[0].name == "new"
+
+
+def test_mac_preflight_failure_stops_before_any_session(batch, monkeypatch):
+    add_host(batch, "M")
+    monkeypatch.setattr(driver.isolation, "preflight_mac", lambda ports: {"ok": False, "listeners": [{"port": 8000}]})
+    config = {"pod": False, "prefix": None, "rental_id": "r1"}
+    with pytest.raises(SystemExit, match="preflight"):
+        driver.run_one(batch, "M", config, {}, rig.load_pins(), 1)
+    assert driver.events(batch) == []
+
+
+def test_report_retains_invalid_sessions_and_budget_endings(batch, monkeypatch):
+    add_host(batch, "M")
+    calls = []
+    run_one = scripted([("invalid", "sweep or preflight failed"), ("counted", ""), ("counted", ""), ("counted", "")], calls)
+    def with_budget(*args):
+        event = run_one(*args)
+        if args[-1] == 2:
+            event["record"] = {**event["record"], "completion": "budget"}
+        return event
+    monkeypatch.setattr(driver, "run_one", with_budget)
+    driver.run(batch, "M")
+    driver.report(batch)
+    excluded = json.loads((batch / "excluded.json").read_text())
+    assert [(e["host"], e["index"], e["reason"]) for e in excluded] == [("M", 1, "sweep or preflight failed")]
+    scorecard = (batch / "scorecard.md").read_text()
+    assert "Invalid sessions" in scorecard and "Budget endings" in scorecard and "run-2" in scorecard
+
+
+def test_traversable(tmp_path):
+    import tempfile
+    root = Path(tempfile.mkdtemp(dir="/tmp", prefix="traverse-"))
+    try:
+        root.chmod(0o755); (root / "batch").mkdir(); (root / "batch").chmod(0o755)
+        assert driver.traversable(root / "batch") is True
+        root.chmod(0o700)
+        assert driver.traversable(root / "batch") is False
+    finally:
+        root.chmod(0o755); (root / "batch").rmdir(); root.rmdir()
+
+
+def test_grade_runs_acceptance_on_the_pristine_tree_before_hidden_grading(tmp_path, monkeypatch):
+    order = []
+    monkeypatch.setattr(driver, "_acceptance", lambda run, uncontained, **k: order.append(("acceptance", uncontained)))
+    monkeypatch.setattr(driver.harness, "grade_and_record", lambda run, suite, **k: order.append(("hidden", None)))
+    driver.grade(tmp_path, uncontained=False)
+    assert order == [("acceptance", False), ("hidden", None)]
+
+
+def test_collect_grades_refuses_symlinks_and_keeps_root_completion(tmp_path):
+    run, copy = tmp_path / "run", tmp_path / "copy"
+    run.mkdir(); copy.mkdir()
+    (run / "execution.json").write_text(json.dumps({"termination_reason": "budget", "cleanup_ok": True,
+                                                    "exit_code": None, "elapsed_seconds": 1.0}))
+    (run / "trace.jsonl").write_text("")
+    (copy / "run.json").write_text(json.dumps({"completion": "settled", "checks_ran": True}))
+    (copy / "acceptance.json").write_text(json.dumps({"status": "control", "result": {"status": "pass"}}))
+    (copy / "grade.json").symlink_to("/etc/hosts")
+    problems = driver.collect_grades(copy, run)
+    assert problems == ["grade.json is a symlink"]
+    assert not (run / "grade.json").exists()
+    assert json.loads((run / "run.json").read_text())["completion"] == "budget"   # root's execution, not the copy's
+    assert json.loads((run / "acceptance.json").read_text())["result"]["status"] == "pass"
