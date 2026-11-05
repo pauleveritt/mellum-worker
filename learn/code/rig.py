@@ -115,7 +115,8 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str, platform: str | No
     return commands
 
 
-def build_commands(pins: dict, *, prefix: str) -> list[str]:
+def build_commands(pins: dict, *, prefix: str, jobs: int | None = None) -> list[str]:
+    """jobs bounds the build: a pod's cgroup grants fewer CPUs and less memory than nproc reports."""
     q = shlex.quote
     build = pins["build"]
     source = f"{prefix}/llama.cpp-{build['tag']}"
@@ -124,7 +125,7 @@ def build_commands(pins: dict, *, prefix: str) -> list[str]:
         f"git -C {q(source)} checkout --detach {q(build['commit'])}",
         f"cmake -S {q(source)} -B {q(source + '/build')} -DGGML_CUDA=ON -DGGML_NATIVE=OFF "
         f"-DCMAKE_CUDA_ARCHITECTURES={q(build['cuda_architectures'])} -DCMAKE_BUILD_TYPE=Release",
-        f"cmake --build {q(source + '/build')} --target llama-server llama-perplexity -j",
+        f"cmake --build {q(source + '/build')} --target llama-server llama-perplexity -j" + (f" {jobs}" if jobs else ""),
         *(f"ln -sf {q(f'{source}/build/bin/{tool}')} {q(f'{prefix}/bin/{tool}')}"
           for tool in ("llama-server", "llama-perplexity")),
         f"{q(prefix + '/bin/llama-server')} --version 2>&1 | grep -F "

@@ -209,6 +209,10 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+- The portable rig's llama.cpp build takes a job count (`build_commands(jobs=…)`).
+  A pod's cgroup grants a few CPUs and 50 GB while `nproc` reports the whole host,
+  so the unbounded `-j` could start one nvcc per CUDA file and run out of memory.
+
 - Log-follow classification distinguishes foreground `nohup` from detachment
   and ignores shell redirection targets when reading executable/options. The
   generated remedy catalog includes the new opt-in unit.

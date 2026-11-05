@@ -97,6 +97,16 @@ def test_build_commands_pin_commit_and_native_off():
     assert "build 11669" in text  # the built binary must report the pinned build
 
 
+def test_build_commands_bound_parallelism():
+    # A pod's cgroup grants a few CPUs and 50 GB while nproc reports the whole host, so an
+    # unbounded `-j` starts one nvcc per CUDA file and can exhaust memory.
+    commands = rig.build_commands(rig.load_pins(), prefix="/opt/rig", jobs=8)
+    build = next(c for c in commands if c.startswith("cmake --build"))
+    assert build.endswith(" -j 8")
+    unbounded = next(c for c in rig.build_commands(rig.load_pins(), prefix="/opt/rig") if c.startswith("cmake --build"))
+    assert unbounded.endswith(" -j")
+
+
 def test_fetch_weights_checks_hash():
     commands = rig.fetch_weights_commands(rig.load_pins(), dest="/root/models")
     assert "/resolve/4159d684ffdb09ba89dc2a58feb3e75c54eef036/" in commands[-2]
