@@ -446,7 +446,15 @@ def run_suite(
     context_files: bool = False,
     run_name: str | None = None,
     gate_config: dict | None = None,
+    user: str | None = None,
+    budget_log: Path | None = None,
+    wall_safety: float | None = None,
 ) -> Path:
+    # LC.39: with wall_safety, the clock only guards against a hung host; the
+    # proxy's budget (budget_log) is what ends a session.
+    timeout_reason = "deadline"
+    if wall_safety is not None:
+        deadline, timeout_reason = wall_safety, "wall_safety"
     protected = any(Path(path).name == "external-acceptance.ts" for path in extras)
     if protected and (not gate_config or not re.fullmatch(r"[a-f0-9]{32}", gate_config.get("task_id", ""))
                       or not run_name or str(runs_dir) != "/attempt/runs"):
@@ -499,6 +507,9 @@ def run_suite(
     (run / "model.txt").write_text(f"{provider}/{model}\n")
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
+    if user is not None:
+        for path in [run, *run.rglob("*")]:
+            shutil.chown(path, user=user)
     env = {
         **os.environ,
         "PI_CODING_AGENT_DIR": str(run / "profile"),
@@ -531,7 +542,9 @@ def run_suite(
         for prompt in prompts:
             remaining = None if deadline is None else deadline - (time.monotonic() - started)
             if remaining is not None and remaining <= 0:
-                (run / "deadline").write_text("hit\n")
+                (run / timeout_reason).write_text("hit\n")
+                if timeout_reason == "wall_safety":
+                    termination_reason = timeout_reason
                 break
             # The spec-derived contract scopes itself to the phase this prompt names.
             env["ACCEPTANCE_PROMPT"] = prompt
@@ -541,7 +554,7 @@ def run_suite(
                 session_id=session_id, session_dir=sessions, extras=extras,
                 context_files=context_files,
             )
-            write_json(run / "launch.json", {"argv": argv, "arm": arm,
+            write_json(run / "launch.json", {"argv": argv, "arm": arm, "user": user,
                        "extras": list(map(str, extras)), "context_files": context_files,
                        "arm_env":settings["env"], "mode_runs_file":env["MELLUM_MODE_RUNS"]})
             print(f"Run {run.name}: {workspace}", flush=True)
@@ -552,7 +565,8 @@ def run_suite(
                 with (run / "stdout.txt").open("a") as output:
                     child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
                                              stdout=output, stderr=subprocess.STDOUT,
-                                             start_new_session=True)
+                                             start_new_session=True,
+                                             **({"user": user} if user is not None else {}))
                 groups.append(child.pid)
                 identity = process_identity(child.pid)
                 if identity is not None:
@@ -560,7 +574,8 @@ def run_suite(
                 write_json(run / "owner.json", ownership)
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
-            ended = wait_or_stall(child, run, trace, remaining, stall)
+            ended = wait_or_stall(child, run, trace, remaining, stall,
+                                  budget_log=budget_log, timeout_reason=timeout_reason)
             execution_ended = time.monotonic()
             termination_reason = ended or "exited"
             if ended:
@@ -594,32 +609,44 @@ def run_suite(
     return run
 
 
-def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
-                  stall: float | None) -> str | None:
-    """Wait for one Pi child; end it at the deadline, or when a command stalls.
+def budget_exhausted(budget_log: Path | None) -> bool:
+    try:
+        return budget_log is not None and '"boundary":"budget_exhausted"' in budget_log.read_text()
+    except FileNotFoundError:
+        return False
 
-    Returns "deadline" or "stalled" when the session was ended, else None.
+
+def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
+                  stall: float | None, *, budget_log: Path | None = None,
+                  timeout_reason: str = "deadline") -> str | None:
+    """Wait for one Pi child; end it at the deadline, when a command stalls, or on budget.
+
+    Returns timeout_reason ("deadline" or "wall_safety"), "stalled" or "budget"
+    when the session was ended, else None.
     """
-    if stall is None:
+    if stall is None and budget_log is None:
         try:
             child.wait(timeout=remaining)
             return None
         except subprocess.TimeoutExpired:
-            reason = "deadline"
+            reason = timeout_reason
     else:
         until = None if remaining is None else time.monotonic() + remaining
         reason = None
         while child.poll() is None:
             if until is not None and time.monotonic() >= until:
-                reason = "deadline"
+                reason = timeout_reason
                 break
-            open_call = open_tool_call(trace.read_text().splitlines(), time.time())
+            if budget_exhausted(budget_log):
+                reason = "budget"
+                break
+            open_call = open_tool_call(trace.read_text().splitlines(), time.time()) if stall is not None else None
             if open_call and open_call[0] >= stall:
                 (run / "stalled").write_text(json.dumps(
                     {"seconds": open_call[0], "limit": stall, "command": open_call[1]}) + "\n")
                 reason = "stalled"
                 break
-            time.sleep(1)
+            time.sleep(0.25 if budget_log is not None else 1)
         if reason is None:
             return None
     try:
@@ -627,8 +654,8 @@ def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
     except ProcessLookupError:
         pass
     child.wait()
-    if reason == "deadline":
-        (run / "deadline").write_text("hit\n")
+    if reason in ("deadline", "wall_safety"):
+        (run / reason).write_text("hit\n")
     return reason
 
 
@@ -921,7 +948,7 @@ def execution_outcome(run: Path) -> dict:
     terminal_error = bool(assistants and assistants[-1].get("stopReason") in ("error", "aborted"))
     clean_settlement = bool(settlements and settlements[-1].get("aborted") is False)
     reason = execution["termination_reason"]
-    completion = (reason if reason in ("stalled", "deadline") else
+    completion = (reason if reason in ("stalled", "deadline", "budget", "wall_safety") else
                   "settled" if execution["exit_code"] == 0 and execution["cleanup_ok"]
                   and clean_settlement and not terminal_error else "error")
     return {"completion": completion, "elapsed_seconds": execution["elapsed_seconds"],

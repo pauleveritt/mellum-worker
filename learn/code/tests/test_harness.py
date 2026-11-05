@@ -1417,3 +1417,55 @@ def test_report_counts_current_blocked_before_execution_guards(tmp_path, refusal
              "content": [{"type": "text", "text": refusal}]}}]
     (tmp_path / "trace.jsonl").write_text("\n".join(json.dumps(row) for row in rows) + "\n")
     assert harness.report(tmp_path)["guard_blocks"] == 1
+
+
+# --- LC.39: native sessions end on the proxy's budget, wall clock is a safety net ---
+import getpass
+import threading
+
+
+def slow_run(tmp_path, **options):
+    return harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+                             profile=PROFILE, pi_binary=str(FIX / "fake-pi-slow.sh"), **options)
+
+
+def test_run_suite_ends_on_budget_row(tmp_path):
+    budget_log = tmp_path / "proxy.jsonl"
+    budget_log.write_text('{"boundary":"ready","id":null}\n')
+    def exhaust():
+        time.sleep(0.5)
+        with budget_log.open("a") as log:
+            log.write('{"boundary":"budget_exhausted","id":null,"requests":120,"outputTokens":9}\n')
+    threading.Thread(target=exhaust, daemon=True).start()
+    started = time.monotonic()
+    run_dir = slow_run(tmp_path, budget_log=budget_log, wall_safety=20)
+    assert time.monotonic() - started < 6
+    assert json.loads((run_dir / "execution.json").read_text())["termination_reason"] == "budget"
+
+
+def test_run_suite_wall_safety_is_its_own_reason(tmp_path):
+    run_dir = slow_run(tmp_path, budget_log=tmp_path / "absent.jsonl", wall_safety=0.5)
+    assert json.loads((run_dir / "execution.json").read_text())["termination_reason"] == "wall_safety"
+    assert (run_dir / "wall_safety").is_file() and not (run_dir / "deadline").exists()
+
+
+def test_execution_outcome_reports_budget_and_wall_safety(tmp_path):
+    run_dir = slow_run(tmp_path, budget_log=tmp_path / "absent.jsonl", wall_safety=0.5)
+    assert harness.execution_outcome(run_dir)["completion"] == "wall_safety"
+    execution = json.loads((run_dir / "execution.json").read_text())
+    execution["termination_reason"] = "budget"
+    (run_dir / "execution.json").write_text(json.dumps(execution))
+    assert harness.execution_outcome(run_dir)["completion"] == "budget"
+
+
+def test_without_budget_behaviour_unchanged(tmp_path):
+    run_dir = slow_run(tmp_path, deadline=0.5)
+    assert json.loads((run_dir / "execution.json").read_text())["termination_reason"] == "deadline"
+    assert (run_dir / "deadline").is_file()
+
+
+def test_run_suite_runs_pi_as_the_given_user(tmp_path):
+    run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi.sh"), user=getpass.getuser())
+    assert json.loads((run_dir / "launch.json").read_text())["user"] == getpass.getuser()
+    assert json.loads((run_dir / "execution.json").read_text())["termination_reason"] == "exited"
