@@ -118,7 +118,7 @@ test("troubleshooting is a standalone Getting Started page", () => {
 test("the home page links the Introduction and counts five lessons", () => {
   const index = page("index.md");
   assert.match(index, /\[Introduction\]\(introduction\/index\.md\): Demystifying/);
-  assert.match(index, /five steps/);
+  assert.match(index, /six steps/);
   assert.doesNotMatch(index, /three (lessons|steps)/);
 });
 
