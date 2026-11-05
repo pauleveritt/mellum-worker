@@ -28,6 +28,14 @@ def parse_perplexity(text: str) -> float:
     return float(match[1])
 
 
+CHUNK = re.compile(r"\[(\d+)\](nan|-?inf|[0-9]+(?:\.[0-9]+)?)")
+
+
+def perplexity_chunks(text: str) -> list[float | None]:
+    """Per-chunk values llama-perplexity prints ([1]14.46,[2]nan,...); a non-finite chunk is None."""
+    return [float(value) if value not in ("nan", "inf", "-inf") else None for _, value in CHUNK.findall(text)]
+
+
 def identity_problems(props: dict, slots: list[dict], pins: dict) -> list[str]:
     problems = []
     if props.get("build_info") != pins["build"]["build_info"]:
@@ -169,9 +177,15 @@ def _numerics(perplexity_binary, model, reference_ppl, tolerance):
     argv = [str(perplexity_binary), "-m", str(model), "-f", str(PPL_TEXT), "-c", "2048", "-ngl", "999"]
     try:
         out = subprocess.run(argv, capture_output=True, text=True, timeout=3600)
-        value = parse_perplexity(out.stdout + out.stderr)
-    except (OSError, subprocess.TimeoutExpired, ValueError) as error:
+    except (OSError, subprocess.TimeoutExpired) as error:
         return _item(False, {"error": str(error)})
+    text = out.stdout + out.stderr
+    try:
+        value = parse_perplexity(text)
+    except ValueError as error:
+        chunks = perplexity_chunks(text)
+        return _item(False, {"error": str(error), "chunks": chunks,
+                             "nan_chunks": sum(chunk is None for chunk in chunks), "exit_code": out.returncode})
     if reference_ppl is None:
         return _item(True, {"perplexity": value, "role": "reference", "text_sha256": _sha256(PPL_TEXT)})
     drift = abs(value - reference_ppl) / reference_ppl

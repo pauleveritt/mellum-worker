@@ -185,3 +185,11 @@ def test_check_records_flags_when_given_the_server_command(server, host):
     argv = rig.server_argv(pins, binary="llama-server", model=str(host["model"]), port=1, threads=8, log="/l")
     card = run_check(server, host, server_command=[(a if a != "on" else "auto") for a in argv])
     assert card["items"]["identity"]["passed"] is False
+
+
+def test_numerics_records_chunks_when_the_estimate_is_nan(server, host):
+    host["perplexity"].write_text("#!/bin/sh\necho '[1]14.4634,[2]nan,[3]nan,'\n"
+                                  "echo 'E Unexpected negative standard deviation of log(prob)' >&2\n")
+    item = run_check(server, host)["items"]["numerics"]
+    assert item["passed"] is False
+    assert item["detail"]["chunks"] == [14.4634, None, None] and item["detail"]["nan_chunks"] == 2
