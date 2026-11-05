@@ -20,7 +20,9 @@ needs missing tests, create them without weakening existing checks. Preserve
 requirements already passing; provide their names as a compact checklist after
 failed observations. Do not prescribe suite files, routes or expected values in
 generic guidance. Candidate logs remain bounded, sanitized untrusted diagnostics.
-Existing8000-character feedback cap and all gate-state invariants remain.
+Existing8000-character feedback cap and all gate-state invariants remain. Reserve
+a fair bounded diagnostic share across failures before spending remaining space
+on passing names; explicitly mark clipped observations.
 
 Tests exercise actual Gate receipt production: generic passing names
 are included separately, their observations are not repeated, failing diagnostic

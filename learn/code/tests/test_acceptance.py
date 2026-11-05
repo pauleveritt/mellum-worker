@@ -158,3 +158,21 @@ def test_repair_receipt_separates_failed_evidence_from_passing_names(tmp_path):
     assert feedback.index("[FAIL]") < feedback.index("[PASS]")
     assert receipt["status"] == "repairing" and receipt["continue"]
     assert receipt["repairs"] == 1 and len(feedback) <= 8000
+
+
+def test_repair_feedback_cap_retains_later_failed_evidence(tmp_path):
+    oracle = package(tmp_path)
+    path = oracle.root / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest["requirements"]["second"] = "second required behavior"
+    path.write_text(json.dumps(manifest))
+    gate = Gate("task", AcceptancePackage.load(oracle.root), time.monotonic() + 600)
+    result = verdict(False)
+    result["checks"]["home"]["observation"] = "x" * 7400
+    result["checks"]["second"] = {"passed": False, "observation": "distinct second failure evidence"}
+    feedback = gate.apply(result, "a" * 64)["feedback"]
+    assert "[FAIL] home: " in feedback
+    assert "[FAIL] second: distinct second failure evidence" in feedback
+    assert "[truncated]" in feedback
+    assert "one test passed" not in feedback
+    assert len(feedback) <= 8000

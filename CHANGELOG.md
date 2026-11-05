@@ -186,7 +186,8 @@ Versions match git tags; pin one in both install lines.
 ### Fixed
 - Protected acceptance repair feedback keeps external failures authoritative,
   asks for missing required tests, and lists already-passing requirements to
-  preserve. Checks and the two-repair budget are unchanged; efficacy awaits
+  preserve. Bounded feedback reserves evidence across failures so a long early
+  log cannot hide a later failure. Checks and the two-repair budget are unchanged; efficacy awaits
   the fresh repair-authority screen.
 
 
