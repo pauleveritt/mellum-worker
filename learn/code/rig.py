@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 import shlex
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -73,10 +74,13 @@ def checkout_commands(repo_url: str, commit: str, dest: str) -> list[str]:
             f'test "$(git -C {q(dest)} rev-parse HEAD)" = {q(commit)}']
 
 
-def bootstrap_commands(pins: dict, *, prefix: str, repo: str) -> list[str]:
+def bootstrap_commands(pins: dict, *, prefix: str, repo: str, platform: str | None = None) -> list[str]:
+    """Install the pinned tools. A pod is the allowlist platform; the Mac is darwin-arm64 (no apt, no rig users)."""
     q = shlex.quote
     boot = pins["bootstrap"]
-    platform = pins["allowlist"]["platform"]
+    platform = platform or pins["allowlist"]["platform"]
+    linux = platform.startswith("linux")
+    sha256_check = "sha256sum --check" if linux else "shasum -a 256 --check"
     node = f"node-v{boot['node']['version']}-{platform}"
     tarball = f"{prefix}/{node}.tar.xz"
     bin_dir = f"{prefix}/bin"
@@ -84,10 +88,11 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str) -> list[str]:
     project = f"{repo}/{boot['dependency_project']}"
     python_dir, grade_cache = f"{prefix}/python", f"{prefix}/cache-grade"
     commands = [
-        "apt-get update && apt-get install -y --no-install-recommends " + " ".join(map(q, boot["apt"])),
+        *(["apt-get update && apt-get install -y --no-install-recommends " + " ".join(map(q, boot["apt"]))]
+          if linux else []),
         f"mkdir -p {q(bin_dir)}",
         f"curl -fsSL -o {q(tarball)} https://nodejs.org/dist/v{boot['node']['version']}/{node}.tar.xz",
-        f"echo {q(boot['node']['sha256'][platform] + '  ' + tarball)} | sha256sum --check",
+        f"echo {q(boot['node']['sha256'][platform] + '  ' + tarball)} | {sha256_check}",
         f"tar -xJf {q(tarball)} -C {q(prefix)}",
         *(f"ln -sf {q(f'{prefix}/{node}/bin/{tool}')} {q(f'{bin_dir}/{tool}')}" for tool in ("node", "npm", "npx")),
         f"curl -LsSf https://astral.sh/uv/{boot['uv']}/install.sh | env UV_INSTALL_DIR={q(bin_dir)} UV_NO_MODIFY_PATH=1 sh",
@@ -100,7 +105,7 @@ def bootstrap_commands(pins: dict, *, prefix: str, repo: str) -> list[str]:
           for name, version in boot["checkers"].items()),
         f"chmod -R a+rX {q(prefix)} {q(project)}",
         # Grading runs `uv run --offline` as mellum-grade; the session user may read, never write, its cache.
-        f"chown -R {GRADE_USER} {q(grade_cache)}",
+        *([f"chown -R {GRADE_USER} {q(grade_cache)}"] if linux else []),
     ]
     return commands
 
@@ -162,12 +167,14 @@ def user_env(prefix: str, user: str, *, home: str) -> dict[str, str]:
 VERSION = re.compile(r"\d+\.\d+\.\d+")
 
 
-def tool_versions(prefix: str) -> dict[str, str | None]:
-    """Read back the bootstrap's own tools. Checkers run through `uvx name@version`, so their version is the pin."""
+def tool_versions(prefix: str | None) -> dict[str, str | None]:
+    """Read back the bootstrap's own tools (from PATH when prefix is None).
+
+    Checkers run through `uvx name@version`, so their version is the pin."""
     probes = {"node": "node", "pi": "pi", "uv": "uv", "python": "python3.14"}
     versions = {}
     for name, binary in probes.items():
-        path = Path(prefix) / "bin" / binary
+        path = Path(prefix) / "bin" / binary if prefix is not None else (shutil.which(binary) or binary)
         try:
             out = subprocess.run([str(path), "--version"], capture_output=True, text=True, timeout=30)
             match = VERSION.search(out.stdout + out.stderr) if out.returncode == 0 else None

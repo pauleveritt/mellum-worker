@@ -155,3 +155,21 @@ def test_user_env_points_uv_at_prefix():
     assert grade["UV_PYTHON_INSTALL_DIR"] == "/opt/rig/python" and grade["UV_PYTHON_DOWNLOADS"] == "never"
     assert grade["UV_CACHE_DIR"] == "/opt/rig/cache-grade"
     assert session["UV_CACHE_DIR"] == "/home/mellum-session/.cache/uv"
+
+
+def test_bootstrap_on_the_mac_skips_apt_and_rig_users():
+    commands = rig.bootstrap_commands(rig.load_pins(), prefix="/Users/me/.mellum-rig", repo="/repo",
+                                      platform="darwin-arm64")
+    text = joined(commands)
+    assert "apt-get" not in text and "chown" not in text
+    assert "node-v24.22.1-darwin-arm64.tar.xz" in text
+    assert "654ba79de6155647e22321932b45f2a1ccb705976cc337c9b8e278beb085a628" in text
+    assert "shasum -a 256 --check" in text  # macOS has no sha256sum
+
+
+def test_tool_versions_without_prefix_uses_path(tmp_path, monkeypatch):
+    (tmp_path / "bin").mkdir()
+    script = tmp_path / "bin/pi"
+    script.write_text("#!/bin/sh\necho 1.4.0\n"); script.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path / "bin"))
+    assert rig.tool_versions(None)["pi"] == "1.4.0"
