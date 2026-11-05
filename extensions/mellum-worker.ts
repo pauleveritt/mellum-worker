@@ -45,7 +45,8 @@ import { isInjectedRemedy, WORKER_TASK_QUERY } from "./mellum-task.ts";
 export const MARK_ON = "[mellum-worker on]";
 export const MARK_OFF = "[mellum-worker off]";
 export const BOOTSTRAP_MARKER = "superpowers:using-superpowers bootstrap for pi";
-export const WORKER_TOOLS = ["read", "grep", "find", "ls", "bash", "edit", "write"];
+export const WORKER_CLAIM = "mellum-worker:claim";
+export const WORKER_TOOLS =["read", "grep", "find", "ls", "bash", "edit", "write"];
 const DEFAULT_MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
 
 const INSTRUCTION_ROLES = new Set(["system", "developer"]);
@@ -300,6 +301,15 @@ const readIfExists = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : u
  * `options.fetch` replaces the global fetch for the server checks (tests pass a fake).
  */
 export default function (pi: any, options: { startTimeoutMs?: number; fetch?: typeof fetch } = {}) {
+	// One copy per session. A user-level package and a project's .pi/extensions entry can both load this
+	// file; the first claims the session on Pi's event bus (shared by every extension, dropped on reload)
+	// and a later copy stays out, so there is no /mellum:1 and no second set of hooks. A host with no bus
+	// has only the one copy to worry about.
+	const claim: { taken: boolean } = { taken: false };
+	pi.events?.emit(WORKER_CLAIM, claim);
+	if (claim.taken) return;
+	pi.events?.on(WORKER_CLAIM, (other: { taken: boolean }) => { other.taken = true; });
+
 	let active = false;
 	let interactive = false;
 	let saved: { model: any; tools: string[] } | undefined;

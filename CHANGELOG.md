@@ -209,6 +209,12 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+- `mellum-worker.ts` now loads once per Pi session. When a user-level package and
+  a project's `.pi/extensions` entry both load it, the second copy stays out
+  instead of registering a duplicate `/mellum:1` and a second set of hooks (on
+  Pi 1.1.0 the duplicate silently dropped the command). The first copy claims
+  the session on Pi's event bus, which a reload resets. Only copies that carry
+  this guard see each other: an older vendored copy still registers its own.
 - The portable rig's llama.cpp build takes a job count (`build_commands(jobs=…)`).
   A pod's cgroup grants a few CPUs and 50 GB while `nproc` reports the whole host,
   so the unbounded `-j` could start one nvcc per CUDA file and run out of memory.
