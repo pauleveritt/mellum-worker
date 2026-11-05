@@ -14,6 +14,7 @@ import platform
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import signal
@@ -154,8 +155,166 @@ def arm_settings(arm: str) -> dict:
     return {"extension": EXTENSION, "env": env}
 
 
+# Windows has no ps, lsof, killpg or SIGKILL: processes are listed through CIM,
+# a run's "group" is the tree under the Pi child (orphans keep their parent's
+# pid), and a kill is taskkill /T /F, which ends the whole tree at once.
+WINDOWS = os.name == "nt"
+KILL_SIGNALS = (signal.SIGTERM,) if WINDOWS else (signal.SIGTERM, signal.SIGKILL)
+# A Windows child's job object, by its pid. A process stays in its job after its
+# parent exits, so the job finds a server the model backgrounded from a shell
+# that is gone, which a parent-pid walk cannot.
+JOBS: dict[int, int] = {}
+
+if WINDOWS:
+    import ctypes
+    from ctypes import wintypes
+
+    _K32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    _K32.CreateJobObjectW.restype = wintypes.HANDLE
+    _K32.CreateJobObjectW.argtypes = (ctypes.c_void_p, wintypes.LPCWSTR)
+    _K32.AssignProcessToJobObject.argtypes = (wintypes.HANDLE, wintypes.HANDLE)
+    _K32.QueryInformationJobObject.argtypes = (
+        wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD, ctypes.c_void_p)
+    _K32.TerminateJobObject.argtypes = (wintypes.HANDLE, wintypes.UINT)
+    _NTDLL = ctypes.WinDLL("ntdll")
+    _NTDLL.NtResumeProcess.argtypes = (wintypes.HANDLE,)
+
+    class _JobPids(ctypes.Structure):
+        _fields_ = [("assigned", wintypes.DWORD), ("listed", wintypes.DWORD),
+                    ("ids", ctypes.c_size_t * 4096)]
+
+    class _JobLimits(ctypes.Structure):  # JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+        _fields_ = [("per_process_time", ctypes.c_int64), ("per_job_time", ctypes.c_int64),
+                    ("flags", wintypes.DWORD), ("min_ws", ctypes.c_size_t),
+                    ("max_ws", ctypes.c_size_t), ("active_limit", wintypes.DWORD),
+                    ("affinity", ctypes.c_size_t), ("priority", wintypes.DWORD),
+                    ("scheduling", wintypes.DWORD), ("io", ctypes.c_uint64 * 6),
+                    ("process_memory", ctypes.c_size_t), ("job_memory", ctypes.c_size_t),
+                    ("peak_process", ctypes.c_size_t), ("peak_job", ctypes.c_size_t)]
+
+    _K32.SetInformationJobObject.argtypes = (
+        wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD)
+
+
+def start_child(argv: list[str], **kwargs) -> subprocess.Popen:
+    """Start a child in a group of its own: a session on POSIX, a job object on Windows.
+
+    On Windows the child starts suspended and resumes only once it is in its
+    job, so nothing it starts can escape the job.
+    """
+    argv = native_argv(argv)
+    if not WINDOWS:
+        return subprocess.Popen(argv, start_new_session=True, **kwargs)
+    child = subprocess.Popen(argv, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                             | 0x00000004, **kwargs)  # CREATE_SUSPENDED
+    handle = int(child._handle)  # type: ignore[attr-defined]
+    job = _K32.CreateJobObjectW(None, None)
+    if job:
+        # Stopping a run on Windows is a hard kill, so no sweep runs: have the OS end
+        # the job's processes when the harness, which holds the job's handle, dies.
+        limits = _JobLimits(flags=0x2000)  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        _K32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
+    if job and _K32.AssignProcessToJobObject(job, handle):
+        JOBS[child.pid] = job
+    _NTDLL.NtResumeProcess(handle)
+    return child
+
+
+def job_pids(job: int) -> list[int]:
+    """The live processes in a Windows job object."""
+    pids = _JobPids()
+    if not _K32.QueryInformationJobObject(job, 3, ctypes.byref(pids), ctypes.sizeof(pids), None):
+        return []  # 3: JobObjectBasicProcessIdList
+    return [int(pids.ids[i]) for i in range(pids.listed)]
+
+
+def native_argv(argv: list[str]) -> list[str]:
+    """On Windows, run an npm .cmd shim's script with node directly, and a .sh through bash.
+
+    Pi installs as pi.cmd, and cmd.exe would mangle a multi-line prompt that
+    holds < > % or quotes. Elsewhere the argv is returned unchanged.
+    """
+    if not WINDOWS:
+        return argv
+    if argv[0].lower().endswith(".sh") and Path(argv[0]).is_file():
+        # Windows cannot start a shell script itself; run it through bash (Git Bash).
+        return [shutil.which("bash") or "bash", *argv]
+    found = shutil.which(argv[0])
+    if found is None:
+        return argv
+    if found.lower().endswith((".cmd", ".bat")):
+        shim = Path(found).read_text(errors="ignore")
+        script = re.search(r'"%dp0%\\([^"]+\.[cm]?js)"', shim)
+        if script:
+            base = Path(found).parent
+            node = base / "node.exe"
+            launcher = str(node) if node.is_file() else (shutil.which("node") or "node")
+            return [launcher, str(base / script.group(1)), *argv[1:]]
+    return [found, *argv[1:]]
+
+
+def windows_processes() -> list[dict]:
+    """Every live process on Windows: ProcessId, ParentProcessId, ExecutablePath, CommandLine."""
+    query = ("Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,"
+             "ExecutablePath,CommandLine | ConvertTo-Json -Compress")
+    try:
+        out = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", query],
+                             capture_output=True, text=True, check=False, timeout=60).stdout
+        rows = json.loads(out or "[]")
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return []
+    return rows if isinstance(rows, list) else [rows]
+
+
+def _command(row: dict) -> str:
+    return (row.get("CommandLine") or row.get("ExecutablePath") or "").strip()
+
+
+def windows_tree(root: int) -> list[tuple[int, str]]:
+    """The live processes under `root` (and root itself), by parent pid."""
+    rows = windows_processes()
+    children: dict[int, list[dict]] = {}
+    for row in rows:
+        children.setdefault(row["ParentProcessId"], []).append(row)
+    found = [(row["ProcessId"], _command(row)) for row in rows if row["ProcessId"] == root]
+    stack, seen = [root], {root, os.getpid()}
+    while stack:
+        for row in children.get(stack.pop(), []):
+            pid = row["ProcessId"]
+            if pid not in seen:
+                seen.add(pid)
+                found.append((pid, _command(row)))
+                stack.append(pid)
+    return [(pid, command) for pid, command in found if pid != os.getpid()]
+
+
+def kill_tree(pid: int) -> None:
+    """End a process and everything under it (on Windows, its whole job). Never raises."""
+    if WINDOWS:
+        if pid in JOBS:
+            _K32.TerminateJobObject(JOBS[pid], 1)
+        try:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)],
+                           capture_output=True, check=False, timeout=60)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        return
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        pass
+
+
 def group_members(pgid: int) -> list[tuple[int, str]]:
     """Every live process in one process group, by pid and command line."""
+    if WINDOWS:
+        if pgid not in JOBS:
+            return windows_tree(pgid)
+        pids = set(job_pids(JOBS[pgid])) - {os.getpid()}
+        if not pids:
+            return []
+        commands = {row["ProcessId"]: _command(row) for row in windows_processes()}
+        return [(pid, commands.get(pid, "")) for pid in sorted(pids)]
     out = subprocess.run(["ps", "-A", "-o", "pid=,pgid=,command="],
                          capture_output=True, text=True, check=False).stdout
     members = []
@@ -181,6 +340,12 @@ def sweep_group(pgid: int, grace: float = 1.0) -> list[tuple[int, str]]:
         return []
 
     def signal_all(signal_number: int) -> None:
+        if WINDOWS:
+            if pgid in JOBS:
+                _K32.TerminateJobObject(JOBS[pgid], 1)
+            for pid, _ in group_members(pgid):
+                kill_tree(pid)
+            return
         # killpg is the right call, but a sandboxed or re-parented group can
         # refuse it, so fall back to each pid. The sweep must never raise.
         try:
@@ -194,7 +359,7 @@ def sweep_group(pgid: int, grace: float = 1.0) -> list[tuple[int, str]]:
             except OSError:
                 pass
 
-    for signal_number in (signal.SIGTERM, signal.SIGKILL):
+    for signal_number in KILL_SIGNALS:
         signal_all(signal_number)
         deadline = time.monotonic() + grace
         while time.monotonic() < deadline:
@@ -207,6 +372,15 @@ def sweep_group(pgid: int, grace: float = 1.0) -> list[tuple[int, str]]:
 def workspace_members(workspace: Path) -> list[tuple[int, str]]:
     """Every live process whose working directory is inside `workspace`."""
     root = os.path.realpath(workspace)
+    if WINDOWS:
+        # Windows does not expose another process's cwd; a server the model
+        # left behind runs the workspace's .venv python or names a workspace path.
+        needle = os.path.normcase(root)
+        return [(row["ProcessId"], _command(row)) for row in windows_processes()
+                if row["ProcessId"] != os.getpid()
+                and needle in os.path.normcase(" ".join(
+                    (row.get(key) or "").replace("/", "\\")
+                    for key in ("ExecutablePath", "CommandLine")))]
     out = subprocess.run(["lsof", "-w", "-d", "cwd", "-F", "pn"],
                          capture_output=True, text=True, check=False).stdout
     pids, pid = [], None
@@ -238,8 +412,13 @@ def sweep_workspace(workspace: Path, grace: float = 1.0) -> list[tuple[int, str]
     sweep must never raise.
     """
     found = workspace_members(workspace)
-    for signal_number in (signal.SIGTERM, signal.SIGKILL):
+    if not found:
+        return []  # nothing left: skip the kill-and-recheck (each listing takes ~1 s on Windows)
+    for signal_number in KILL_SIGNALS:
         for pid, _ in workspace_members(workspace):
+            if WINDOWS:
+                kill_tree(pid)
+                continue
             try:
                 os.kill(pid, signal_number)
             except OSError:
@@ -337,7 +516,8 @@ def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str
     for name in names:
         path = REMEDIES / f"{name}.ts"
         if not path.is_file():
-            known = sorted(str(q.relative_to(REMEDIES).with_suffix(""))
+            # as_posix: unit names use "/" on every OS (guard/repeat-loops, not guard\repeat-loops)
+            known = sorted(q.relative_to(REMEDIES).with_suffix("").as_posix()
                            for q in REMEDIES.glob("*/*.ts"))
             raise SystemExit(f"no remedy unit {name!r}; known: {', '.join(known)}")
         paths.append(path)
@@ -514,8 +694,7 @@ def run_suite(
             )
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
-                child = subprocess.Popen(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
-                                         start_new_session=True)
+                child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
                 groups.append(child.pid)
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
@@ -566,10 +745,7 @@ def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
             time.sleep(1)
         if reason is None:
             return None
-    try:
-        os.killpg(child.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
+    kill_tree(child.pid)
     child.wait()
     if reason == "deadline":
         (run / "deadline").write_text("hit\n")
@@ -608,9 +784,10 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
     )
     results = []
     for name, command in commands:
+        # The tools print UTF-8; Windows would decode it as its ANSI code page and lose the output.
         result = subprocess.run(
             command, cwd=workspace, capture_output=True, text=True, check=False,
-            env=grade_env(workspace),
+            encoding="utf-8", errors="replace", env=grade_env(workspace),
         )
         output = [line for line in (result.stdout + result.stderr).splitlines()
                   if line.strip()]
@@ -1005,6 +1182,17 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def utf8_relaunch_argv(argv: list[str], utf8_mode: int) -> list[str] | None:
+    """The command that reruns the harness in UTF-8 mode, or None when not needed.
+
+    Traces, specs and records are UTF-8, but Windows reads files in its ANSI
+    code page unless Python runs in UTF-8 mode.
+    """
+    if not WINDOWS or utf8_mode:
+        return None
+    return [sys.executable, "-X", "utf8", *argv]
+
+
 def main(argv: list[str] | None = None) -> int:
     # A stopped run (SIGTERM, as /lesson sends) unwinds normally, so its sweep runs.
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
@@ -1062,4 +1250,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    relaunch = utf8_relaunch_argv(sys.argv, sys.flags.utf8_mode)
+    if relaunch is not None:
+        # PYTHONUTF8 carries UTF-8 mode on to the grader subprocesses too.
+        sys.exit(subprocess.run(relaunch, env={**os.environ, "PYTHONUTF8": "1"}).returncode)
     sys.exit(main())

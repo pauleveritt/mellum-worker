@@ -149,6 +149,32 @@ Versions match git tags; pin one in both install lines.
 - **The scoreboard page has its own illustration.** `scoreboard.webp` was a
   byte-for-byte copy of the pathologies image; it is now the leaderboard-and-
   stopwatch robot its prompt describes.
+- **Challenge runs work on Windows.** The harness used `ps`, `lsof`, `killpg`
+  and `SIGKILL`, so `harness.py run` crashed on Windows before the model did
+  anything. On Windows each Pi session now runs in a job object, so a server
+  the model leaves behind is still found and ended; Pi's npm `.cmd` shim is run
+  straight through node, so cmd.exe cannot mangle a multi-line prompt; and the
+  harness reruns itself in UTF-8 mode, so it can read the model's trace.
+- **More Windows fixes.** `/mellum learn` and `/mellum last` now count runs from
+  a project's subfolders on Windows (the folder match assumed `/`); with no
+  `HOME` set (PowerShell), run records go to your home folder, not into the
+  project; `backend.py profile` writes `models.json` with LF, so regenerating it
+  no longer shows as a change; stopping a challenge run (a hard kill on Windows)
+  now also ends every process its session started; the "unknown remedy" message
+  lists unit names with `/`; and a `--pi-binary` shell script runs through bash.
+  `guard/outside-workspace` no longer blocks a search inside your project when
+  the model writes its path the Git Bash way (`/c/...`, `C:/...`), and still
+  blocks one on another drive. The flow runner (`flow_run.py`, Hard's
+  orchestration) and `loop_run.py` start and stop Pi the same Windows-safe way
+  as the harness.
+  Text files now check out with LF on every OS (`.gitattributes`), as the docs
+  and their parsers expect.
+- **Lessons open on a Windows checkout.** With git's `core.autocrlf` on, the
+  lesson pages have CRLF line endings, so `/start` and `/lesson` crashed reading
+  their front matter (and would have lost each step's commands). The lesson
+  parser now reads CRLF and LF pages alike. Inside a lesson's `project/<number>`
+  folder the lesson panel is now found on Windows too (the folder check assumed
+  `/` separators).
 - **A current llama-server that reads as too old no longer refuses to start.**
   `backend.py` parsed some Linux `llama-server --version` strings as a build
   below the 9482 minimum and then blocked, so `run.sh` failed with "server did

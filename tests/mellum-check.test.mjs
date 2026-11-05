@@ -115,7 +115,7 @@ test("serverNCtx reads default_generation_settings.n_ctx, undefined when absent"
 test("readProvider pi: the llamacpp baseUrl comes from the file", () => {
 	const reads = [];
 	const r = readProvider("pi", "/home/user", (p) => (reads.push(p), fixture("pi-models.json")));
-	assert.deepEqual(reads, ["/home/user/.pi/agent/models.json"]);
+	assert.deepEqual(reads, [join("/home/user", ".pi", "agent", "models.json")]);
 	assert.equal(r.baseUrl, BASE);
 	assert.equal(r.error, undefined);
 });
@@ -203,7 +203,7 @@ test("serverCheck: GETs /health then /props and returns up with the context wind
 test("gatherInputs reads the host config and GETs /health, /props and /models from its baseUrl", async () => {
 	const urls = [];
 	const config = { providers: { llamacpp: { baseUrl: "http://h:9/v1" } } };
-	const files = { "/home/u/.pi/agent/models.json": JSON.stringify(config) };
+	const files = { [join("/home/u", ".pi", "agent", "models.json")]: JSON.stringify(config) };
 	const got = await gatherInputs("pi", {
 		home: "/home/u",
 		read: (p) => files[p],

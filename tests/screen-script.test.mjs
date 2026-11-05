@@ -1,4 +1,6 @@
-import { test } from "node:test";
+import { test as nodeTest } from "node:test";
+// These drive a Linux/macOS shell script with fake tools on a POSIX PATH; Windows never runs it.
+const test = (name, fn) => nodeTest(name, { skip: process.platform === "win32" && "a Linux/macOS shell script" }, fn);
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";

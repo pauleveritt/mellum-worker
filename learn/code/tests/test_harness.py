@@ -508,7 +508,7 @@ def test_medium_ships_both_spec_variants():
 
 def test_the_split_keeps_the_roadmaps_phases():
     suite = harness.load_suite(harness.SUITES, "medium")
-    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text()
+    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text(encoding="utf-8")
     blocks, current = {}, None
     for line in roadmap.splitlines():
         if line.startswith("## Phase"):
@@ -521,7 +521,7 @@ def test_the_split_keeps_the_roadmaps_phases():
     assert sorted(blocks) == ["phase-1", "phase-2", "phase-3", "phase-4"]
     split = harness.load_variant(suite, "split")
     for name, lines in blocks.items():
-        text = (split / "specs" / f"{name}.md").read_text()
+        text = (split / "specs" / f"{name}.md").read_text(encoding="utf-8")
         for line in lines:
             assert line in text, f"{name} lost: {line}"
 
@@ -549,7 +549,7 @@ def test_medium_base_ships_a_phase1_smoke_test():
 
 def test_medium_asks_for_the_home_page_in_process():
     suite = harness.load_suite(harness.SUITES, "medium")
-    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text()
+    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text(encoding="utf-8")
     assert "TestClient" in roadmap, "the roadmap never asks for an in-process check"
     split = (harness.load_variant(suite, "split") / "specs" / "phase-1.md").read_text()
     assert "TestClient" in split
@@ -931,6 +931,8 @@ def test_a_run_sweeps_the_processes_it_leaves_behind():
             child.kill()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="finds the server by its cwd (lsof); Windows has no such "
+                    "lookup and uses a job object instead: see the windows_ tests")
 def test_a_run_sweeps_a_server_started_in_its_own_session(tmp_path):
     # Pi's bash tool starts each command detached (a new session and process
     # group), so a server the model starts is outside Pi's group and survives
@@ -968,6 +970,8 @@ def test_a_session_never_reads_the_callers_stdin(tmp_path):
     assert seen.read_text() == ""
 
 
+@pytest.mark.skipif(os.name == "nt", reason="a SIGTERM stop; Windows stops with a hard kill, covered by "
+                    "test_a_killed_harness_takes_its_sessions_processes_with_it")
 def test_a_stopped_run_still_sweeps_its_workspace(tmp_path):
     # /lesson stops a run it no longer shows (the learner pressed p mid-run).
     # On 2026-10-29 the stopped run's server kept port 8000: SIGTERM ended the
@@ -999,7 +1003,7 @@ def test_the_think_tag_repair_is_a_unit_not_a_default():
     argv = harness.pi_argv("pi", PROFILE, harness.RECORDER, "p", "m", "go",
                            extension=harness.EXTENSION, extras=[Path("/x/unit.ts")])
     loaded = [argv[i + 1] for i, a in enumerate(argv) if a == "-e"]
-    assert loaded == [str(harness.EXTENSION), "/x/unit.ts", str(harness.RECORDER)]
+    assert loaded == [str(harness.EXTENSION), str(Path("/x/unit.ts")), str(harness.RECORDER)]
 
 
 def test_a_group_with_nothing_left_reports_nothing(tmp_path):
@@ -1165,3 +1169,127 @@ def test_relative_runs_dir_and_profile_are_made_absolute_before_pi_runs(tmp_path
     harness.main(["run", "--suites-dir", str(SUITES), "--suite", "add", "--runs-dir", "runs/x", "--profile", "prof"])
     assert seen["runs_dir"] == tmp_path / "runs" / "x"
     assert seen["profile"] == tmp_path / "prof"
+
+
+# Windows: no ps, lsof, killpg or SIGKILL, and Pi is an npm .cmd shim.
+windows_only = pytest.mark.skipif(os.name != "nt", reason="Windows process handling")
+
+SHIM = ('@ECHO off\r\nGOTO start\r\n:start\r\nendLocal & goto #_undefined_# 2>NUL || '
+        r'title %COMSPEC% & "%_prog%"  "%dp0%\node_modules\pkg\dist\cli.js" %*' '\r\n')
+
+
+@windows_only
+def test_an_npm_shim_runs_its_script_with_node_directly(tmp_path, monkeypatch):
+    # cmd.exe would mangle a multi-line prompt holding < > % and quotes.
+    (tmp_path / "pi.cmd").write_text(SHIM)
+    (tmp_path / "node.exe").write_text("")
+    monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
+    argv = harness.native_argv(["pi", "--flag", "a <b>\n%c%"])
+    assert argv == [str(tmp_path / "node.exe"),
+                    str(tmp_path / "node_modules" / "pkg" / "dist" / "cli.js"),
+                    "--flag", "a <b>\n%c%"]
+
+
+def test_native_argv_leaves_other_platforms_alone(monkeypatch):
+    monkeypatch.setattr(harness, "WINDOWS", False)
+    assert harness.native_argv(["pi", "x"]) == ["pi", "x"]
+
+
+def _alive(pid: int) -> bool:
+    return any(row["ProcessId"] == pid for row in harness.windows_processes())
+
+
+@windows_only
+def test_a_windows_workspace_sweep_ends_a_process_left_inside_it(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    child = harness.start_child([sys.executable, "-c", "import time; time.sleep(120)",
+                                 str(workspace / "app.py")], cwd=workspace)
+    try:
+        found = harness.sweep_workspace(workspace)
+        assert child.pid in [pid for pid, _ in found]
+        child.wait(timeout=10)
+    finally:
+        child.kill()
+
+
+@windows_only
+def test_a_windows_group_sweep_ends_a_child_its_parent_left_behind(tmp_path):
+    marker = tmp_path / "orphan.pid"
+    parent = harness.start_child([sys.executable, "-c", textwrap.dedent(f"""
+        import subprocess, sys
+        orphan = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        open({str(marker)!r}, "w").write(str(orphan.pid))
+        """)])
+    parent.wait(timeout=30)
+    orphan = int(marker.read_text())
+    try:
+        found = harness.sweep_group(parent.pid)
+        assert orphan in [pid for pid, _ in found]
+        assert not _alive(orphan)
+    finally:
+        harness.kill_tree(orphan)
+
+
+def test_windows_relaunches_in_utf8_mode(monkeypatch):
+    # Traces are UTF-8; Windows reads files in its ANSI code page by default.
+    monkeypatch.setattr(harness, "WINDOWS", True)
+    argv = harness.utf8_relaunch_argv(["harness.py", "run"], utf8_mode=0)
+    assert argv == [sys.executable, "-X", "utf8", "harness.py", "run"]
+
+
+def test_utf8_mode_or_other_platforms_need_no_relaunch(monkeypatch):
+    monkeypatch.setattr(harness, "WINDOWS", False)
+    assert harness.utf8_relaunch_argv(["harness.py"], utf8_mode=0) is None
+    monkeypatch.setattr(harness, "WINDOWS", True)
+    assert harness.utf8_relaunch_argv(["harness.py"], utf8_mode=1) is None
+
+
+@windows_only
+def test_a_shell_script_pi_runs_through_bash_on_windows(tmp_path):
+    # Windows cannot start a .sh file itself; a --pi-binary script runs through bash.
+    script = tmp_path / "fake-pi.sh"
+    script.write_text("#!/bin/sh\necho hi\n")
+    argv = harness.native_argv([str(script), "--flag"])
+    assert Path(argv[0]).name.lower() in ("bash", "bash.exe")
+    assert argv[1:] == [str(script), "--flag"]
+
+
+@windows_only
+def test_a_killed_harness_takes_its_sessions_processes_with_it(tmp_path):
+    # Stopping a run on Windows is a hard kill: no SIGTERM, so no sweep runs.
+    # The job object is set to end its processes when the harness that holds it dies.
+    marker = tmp_path / "grandchild.pid"
+    # The session: starts a grandchild, records its pid (path as argv[1]), then waits.
+    session = tmp_path / "session.py"
+    session.write_text(textwrap.dedent("""
+        import subprocess, sys, time
+        g = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        open(sys.argv[1], "w").write(str(g.pid))
+        time.sleep(120)
+        """))
+    # The harness stand-in: starts the session in a job, then waits to be killed.
+    holder_py = tmp_path / "holder.py"
+    holder_py.write_text(textwrap.dedent("""
+        import sys, time
+        sys.path.insert(0, sys.argv[1])
+        import harness
+        harness.start_child([sys.executable, sys.argv[2], sys.argv[3]])
+        time.sleep(120)
+        """))
+    holder = subprocess.Popen([sys.executable, str(holder_py), str(HERE.parent),
+                               str(session), str(marker)])
+    try:
+        deadline = time.monotonic() + 30
+        while not marker.exists() and time.monotonic() < deadline:
+            time.sleep(0.2)
+        grandchild = int(marker.read_text())
+        assert any(row["ProcessId"] == grandchild for row in harness.windows_processes())
+        holder.kill()
+        holder.wait(timeout=10)
+        time.sleep(1)
+        assert not any(row["ProcessId"] == grandchild for row in harness.windows_processes())
+    finally:
+        holder.kill()
+        if marker.exists():
+            harness.kill_tree(int(marker.read_text()))

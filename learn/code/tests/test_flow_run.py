@@ -9,6 +9,34 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import flow_run
 
 
+posix_only = pytest.mark.skipif(sys.platform == "win32", reason="killpg: Windows ends a job object")
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows job objects")
+def test_reap_group_on_windows_ends_the_session_and_what_it_started(tmp_path):
+    import textwrap
+    import time
+    marker = tmp_path / "grandchild.pid"
+    session = tmp_path / "session.py"
+    session.write_text(textwrap.dedent("""
+        import subprocess, sys, time
+        g = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        open(sys.argv[1], "w").write(str(g.pid))
+        time.sleep(120)
+        """))
+    child = flow_run.harness.start_child([sys.executable, str(session), str(marker)])
+    deadline = time.monotonic() + 30
+    while not marker.exists() and time.monotonic() < deadline:
+        time.sleep(0.2)
+    grandchild = int(marker.read_text())
+    flow_run.reap_group(child.pid)
+    child.wait(timeout=10)
+    live = {row["ProcessId"] for row in flow_run.harness.windows_processes()}
+    assert grandchild not in live
+    flow_run.reap_group(child.pid)  # again, on a job with nothing left: must not raise
+
+
+@posix_only
 def test_reap_group_swallows_eperm_and_no_such_process(monkeypatch):
     # EPERM crashed a whole best-of-N run: the pid was recycled into a group we do not own.
     for exc in (PermissionError(1, "Operation not permitted"), ProcessLookupError()):
@@ -18,6 +46,7 @@ def test_reap_group_swallows_eperm_and_no_such_process(monkeypatch):
         flow_run.reap_group(12345)  # must not raise
 
 
+@posix_only
 def test_reap_group_signals_the_group_on_the_happy_path(monkeypatch):
     calls = []
     monkeypatch.setattr(flow_run.os, "killpg", lambda pid, sig: calls.append((pid, sig)))
@@ -423,15 +452,15 @@ def test_revert_keeps_a_gate_frozen_after_the_last_checkpoint(tmp_path):
 def test_no_pi_session_in_the_flow_reads_stdin():
     # Pi with -p appends piped stdin to its prompt (the 2026-10-29 lesson-check
     # fault), so every Pi the flow starts gets no stdin.
-    source = (Path(__file__).resolve().parents[1] / "flow_run.py").read_text()
-    launches = re.findall(r"subprocess\.Popen\(argv[^)]*\)", source)
+    source = (Path(__file__).resolve().parents[1] / "flow_run.py").read_text(encoding="utf-8")
+    launches = re.findall(r"(?:subprocess\.Popen|harness\.start_child)\(argv[^)]*\)", source)
     assert launches and all("stdin=subprocess.DEVNULL" in call for call in launches), launches
 
 
 def test_every_pi_in_the_flow_loads_the_think_tag_adapter():
     # Same reason as the harness: a host that returns reasoning as <think> text
     # must not change the model's context (research note 2026-10-29-lan-reasoning-leak).
-    source = (Path(__file__).resolve().parents[1] / "flow_run.py").read_text()
+    source = (Path(__file__).resolve().parents[1] / "flow_run.py").read_text(encoding="utf-8")
     recorders = source.count('"-e", str(recorder)')
     assert recorders == 2
     assert source.count('"-e", str(harness.THINK_TAGS)') == recorders

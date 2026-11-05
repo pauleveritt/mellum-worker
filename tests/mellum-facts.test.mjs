@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { basename } from "node:path";
 import test from "node:test";
 import { readProjectFacts, factsBlock } from "../extensions/mellum-facts.ts";
 
@@ -14,7 +15,7 @@ const FALLBACK = "Test command: uv run --offline python -m pytest -q";
 const PYTEST = '[project]\nname = "x"\n[dependency-groups]\ndev = ["pytest"]\n';
 
 function io(files) {
-	return { read: (p) => files[p.split("/").pop()] };
+	return { read: (p) => files[basename(p)] }; // basename: the path is joined with "\" on Windows
 }
 const sum = (bullets) => bullets.reduce((n, b) => n + b.length, 0);
 

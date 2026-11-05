@@ -1335,7 +1335,7 @@ export function openSpan(messages: Msg[]): { task: string; span: Msg[] } | undef
 }
 
 function runsFile(): string | undefined {
-	const file = modeRunsFile(process.env, process.env.HOME ?? ".");
+	const file = modeRunsFile(process.env, home()); // not "."; PowerShell sets no HOME
 	return file === undefined ? undefined : resolve(file);
 }
 

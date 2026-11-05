@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const tutor = () => import("../extensions/mellum-lessons.ts");
-const ROOT = new URL("..", import.meta.url).pathname;
+// fileURLToPath, not .pathname: on Windows .pathname is "/C:/...", which join() turns into "C:\C:\...".
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 test("a run is summarised from its run.json files: passes, and why each failure failed", async () => {
 	const { summariseRuns } = await tutor();
@@ -80,9 +82,10 @@ test("prepareProject sets up project/<number> with the lesson's starting files, 
 	assert.equal(dir, join(root, "project", "E6"));
 	assert.equal(readFileSync(join(dir, "pyproject.toml"), "utf8"), "[project]\nname='d'\n");
 	assert.equal(readFileSync(join(dir, "TASK.md"), "utf8"), "Build it.\n\nThen test it.\n");
-	assert.match(readFileSync(join(dir, ".pi", "extensions", "remedies.ts"), "utf8"), /extensions\/mellum-remedies\.ts/);
-	assert.match(readFileSync(join(dir, ".pi", "extensions", "lessons.ts"), "utf8"), /extensions\/mellum-lesson-tutor\.ts/);
-	assert.match(readFileSync(join(dir, ".pi", "extensions", "worker.ts"), "utf8"), /extensions\/mellum-worker\.ts/);
+	// The shim names an absolute path, so on Windows its separators are (escaped) backslashes.
+	assert.match(readFileSync(join(dir, ".pi", "extensions", "remedies.ts"), "utf8"), /extensions[\\/]+mellum-remedies\.ts/);
+	assert.match(readFileSync(join(dir, ".pi", "extensions", "lessons.ts"), "utf8"), /extensions[\\/]+mellum-lesson-tutor\.ts/);
+	assert.match(readFileSync(join(dir, ".pi", "extensions", "worker.ts"), "utf8"), /extensions[\\/]+mellum-worker\.ts/);
 	assert.equal(existsSync(join(dir, ".pi", "extensions", "think-tags.ts")), false, "the repair is a unit there: /remedy on context/repair-think-tags");
 	assert.match(readFileSync(join(ROOT, ".pi", "extensions", "think-tags.ts"), "utf8"), /extensions\/mellum-think-tags\.ts/);
 	writeFileSync(join(dir, "stray.py"), "x = 1\n");
@@ -108,8 +111,8 @@ test("TASK.md points at the specs folder and AGENTS.md when the base ships them"
 
 test("a lesson's suites folder comes from --suites-dir when the page gives one", async () => {
 	const { lessonSuite } = await tutor();
-	assert.deepEqual(lessonSuite("/r", "harness.py run --suites-dir learn/challenges --suite e6 --repeat 3"), "/r/learn/challenges/e6");
-	assert.deepEqual(lessonSuite("/r", "harness.py run --suite easy --repeat 3"), "/r/learn/code/suites/easy");
+	assert.deepEqual(lessonSuite("/r", "harness.py run --suites-dir learn/challenges --suite e6 --repeat 3"), join("/r", "learn", "challenges", "e6"));
+	assert.deepEqual(lessonSuite("/r", "harness.py run --suite easy --repeat 3"), join("/r", "learn", "code", "suites", "easy"));
 	assert.equal(lessonSuite("/r", "pi -p hello"), undefined);
 });
 
@@ -218,4 +221,33 @@ test("remedyCode reads the remedy unit's source for the Solution step, and refus
 	assert.match(got.text, /export const meta/, "returns the unit's actual source");
 	assert.equal(remedyCode(ROOT, "../etc/passwd"), undefined, "a non-unit slug is refused");
 	assert.equal(remedyCode(ROOT, "prompt/does-not-exist"), undefined, "a missing unit is undefined");
+});
+
+// A Windows checkout (git core.autocrlf=true) gives the lessons CRLF line endings.
+test("lessonIndex reads lessons checked out with Windows line endings", async () => {
+	const { lessonIndex } = await tutor();
+	const root = mkdtempSync(join(tmpdir(), "crlf-"));
+	mkdirSync(join(root, "learn", "lessons", "easy"), { recursive: true });
+	writeFileSync(join(root, "learn", "lessons", "easy", "a.md"),
+		"---\r\ntitle: A Lesson\r\nnumber: E1\r\n---\r\n\r\n# E1 · A Lesson\r\n");
+	const [entry] = lessonIndex(root);
+	assert.equal(entry.number, "E1");
+	assert.equal(entry.title, "A Lesson");
+});
+
+test("parseLesson reads a CRLF lesson exactly as its LF original", async () => {
+	const { parseLesson } = await tutor();
+	const lf = readFileSync(new URL("../learn/lessons/easy/developer-frame.md", import.meta.url), "utf8")
+		.replace(/\r\n/g, "\n");
+	assert.deepEqual(parseLesson(lf.replace(/\n/g, "\r\n")), parseLesson(lf));
+});
+
+test("projectNumber finds the lesson from a project folder path, with either separator", async () => {
+	const { projectNumber } = await tutor();
+	const root = mkdtempSync(join(tmpdir(), "repo-"));
+	assert.equal(projectNumber(root, join(root, "project", "E1")), "E1");
+	assert.equal(projectNumber(root, join(root, "project", "E1", "templates")), "E1");
+	assert.equal(projectNumber(root, join(root, "project")), undefined);
+	assert.equal(projectNumber(root, join(root, "projects", "E1")), undefined);
+	assert.equal(projectNumber(root, root), undefined);
 });

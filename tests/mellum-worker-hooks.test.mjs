@@ -748,7 +748,7 @@ async function withLearn(pattern, body, { workerPattern } = {}) {
 	const { realpathSync } = await import("node:fs");
 	const cwd = realpathSync(mkdtempSync(`${tmpdir()}/mellum-learn-cwd-`));
 	const runs = `${mkdtempSync(`${tmpdir()}/mellum-learn-runs-`)}/runs.jsonl`;
-	const moved = (name) => readFileSync(new URL(`${name}.jsonl`, LEARN_FIX), "utf8").replaceAll("/home/user/proj", cwd);
+	const moved = (name) => readFileSync(new URL(`${name}.jsonl`, LEARN_FIX), "utf8").replaceAll("/home/user/proj", JSON.stringify(cwd).slice(1, -1)); // escaped: a Windows path has backslashes
 	writeFileSync(runs, pattern ? moved(pattern) : "");
 	const saved = { HOME: process.env.HOME, RUNS: process.env.MELLUM_MODE_RUNS };
 	process.env.HOME = mkdtempSync(`${tmpdir()}/mellum-home-`);
@@ -879,7 +879,8 @@ test("/mellum learn 0 warns and reads nothing; a failed write warns and does not
 	await withLearn("servers", async (cwd) => {
 		const records = readFileSync(process.env.MELLUM_MODE_RUNS, "utf8");
 		const gone = `${cwd}/missing-dir`;
-		writeFileSync(process.env.MELLUM_MODE_RUNS, records.replaceAll(cwd, gone));
+		const inJson = (p) => JSON.stringify(p).slice(1, -1);
+		writeFileSync(process.env.MELLUM_MODE_RUNS, records.replaceAll(inJson(cwd), inJson(gone)));
 		const { calls, mellum } = learnPi(gone, { answer: true });
 		await mellum("learn");
 		assert.equal(calls.confirm.length, 1);
@@ -1023,4 +1024,41 @@ test("/mellum last with recording off says recording is off", async () => {
 		await mellum("last");
 		assert.ok(calls.notify.some(([m]) => m.includes("run records are off (MELLUM_MODE_RUNS=0)")), JSON.stringify(calls.notify));
 	});
+});
+
+// PowerShell sets no HOME; os.homedir() is USERPROFILE there. The record must not land in the cwd.
+test("with no HOME (Windows PowerShell), the run record goes under the user's home, not the cwd", { skip: process.platform !== "win32" }, async () => {
+	const { mkdtempSync, existsSync } = await import("node:fs");
+	const { tmpdir } = await import("node:os");
+	const { join } = await import("node:path");
+	const profile = mkdtempSync(join(tmpdir(), "mellum-profile-"));
+	const cwd = mkdtempSync(join(tmpdir(), "mellum-cwd-"));
+	const saved = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE, dir: process.cwd() };
+	const handlers = {};
+	const commands = {};
+	const pi = {
+		on: (name, fn) => { handlers[name] = fn; },
+		registerCommand: (name, def) => { commands[name] = def; },
+		getActiveTools: () => ["read"], setActiveTools: () => {}, setModel: async () => true, sendMessage: () => {}, sendUserMessage: () => {},
+	};
+	const ctx = { model: { provider: "anthropic", id: "parent" }, modelRegistry: { find: () => MODEL }, ui: { notify: () => {} } };
+	install(pi, { fetch: noServer });
+	try {
+		delete process.env.HOME;
+		process.env.USERPROFILE = profile;
+		process.chdir(cwd);
+		await commands.mellum.handler("on", ctx);
+		handlers.context({ messages: [
+			{ role: "user", content: [{ type: "text", text: "fix the cart" }] },
+			{ role: "user", content: [{ type: "text", text: "[mellum-worker on]" }] },
+			{ role: "assistant", timestamp: Date.now(), usage: { output: 5 }, content: [{ type: "text", text: "ok" }] },
+		] });
+		await commands.mellum.handler("off", ctx);
+		assert.equal(existsSync(join(profile, ".pi", "agent", "mellum-mode-runs.jsonl")), true, "record under the home folder");
+		assert.equal(existsSync(join(cwd, ".pi")), false, "nothing written into the cwd");
+	} finally {
+		process.chdir(saved.dir);
+		process.env.HOME = saved.HOME;
+		process.env.USERPROFILE = saved.USERPROFILE;
+	}
 });

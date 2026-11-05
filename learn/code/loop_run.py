@@ -189,11 +189,11 @@ def run_pi(workflow: str, task: str, *, workspace: Path, profile: Path, recorder
     stop = threading.Event()
     feed = threading.Thread(target=stream_trace, args=(trace, f"[{workflow}]", stop), daemon=True)
     feed.start()
-    child = subprocess.Popen(argv, cwd=workspace, env=env, start_new_session=True)
+    child = harness.start_child(argv, cwd=workspace, env=env)
     try:
         child.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
-        os.killpg(child.pid, signal.SIGKILL)
+        harness.kill_tree(child.pid)
         child.wait()
     finally:
         stop.set()
@@ -201,7 +201,7 @@ def run_pi(workflow: str, task: str, *, workspace: Path, profile: Path, recorder
         # Reap any backgrounded children (e.g. a server mellum-nonblock threaded)
         # so nothing leaks past this stage. child is the process-group leader.
         try:
-            os.killpg(child.pid, signal.SIGKILL)
+            harness.kill_tree(child.pid)
         except ProcessLookupError:
             pass
 

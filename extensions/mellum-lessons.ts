@@ -8,7 +8,7 @@
  */
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
+import { isAbsolute, join, relative, sep } from "node:path";
 
 export const STEPS = ["Problem", "Eval case", "Evidence of the problem", "Solution", "Validation", "Interpretation"] as const;
 const TIERS = ["easy", "medium", "hard"];
@@ -37,7 +37,11 @@ export interface Lesson {
 	keyPoints: string[];
 }
 
-const frontMatter = (text: string): Record<string, string> => {
+// A Windows checkout (git core.autocrlf) gives the lessons CRLF line endings; every parser reads LF.
+const lf = (text: string): string => text.replace(/\r\n/g, "\n");
+
+const frontMatter = (raw: string): Record<string, string> => {
+	const text = lf(raw);
 	const block = text.match(/^---\n([\s\S]*?)\n---/);
 	return Object.fromEntries((block?.[1] ?? "").split("\n").map((l) => l.match(/^(\w+): (.*)$/)).filter(Boolean).map((m) => [m![1], m![2].replace(/^(["'])(.*)\1$/, "$2")]));
 };
@@ -87,7 +91,8 @@ function commandsIn(section: string): string[] {
 	return out;
 }
 
-export function parseLesson(text: string): Lesson {
+export function parseLesson(raw: string): Lesson {
+	const text = lf(raw);
 	const fm = frontMatter(text);
 	const body = text.replace(/^---\n[\s\S]*?\n---\n/, "");
 	const h1 = body.match(/^# (\S+) · (.+)$/m);
@@ -338,8 +343,10 @@ export function prepareProject(root: string, lesson: Pick<Lesson, "number" | "be
 
 /** The lesson number of the project folder `cwd` is in, or undefined outside project/<number>. */
 export function projectNumber(root: string, cwd: string): string | undefined {
-	const base = join(root, "project") + "/";
-	return cwd.startsWith(base) ? cwd.slice(base.length).split("/")[0] || undefined : undefined;
+	// relative() handles either separator, so this also works on Windows.
+	const rel = relative(join(root, "project"), cwd);
+	if (!rel || rel.startsWith("..") || isAbsolute(rel)) return undefined;
+	return rel.split(sep)[0] || undefined;
 }
 
 /** What to do in project/<number>, for the widget the tutor shows above Pi's editor (seen by you,
