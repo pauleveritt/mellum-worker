@@ -10,6 +10,16 @@ never by line number.
 
 Reopen conditions, not promises.
 
+**Metal perplexity is NaN for Mellum at b11669.** LC.39's conformance check found
+`llama-perplexity` on the M5 Max returns a finite first chunk and NaN after it, at every
+batch size, with `--swa-full` and with flash attention off; CPU-only on the same build and
+weights is finite (PPL 27.63). The model uses sliding-window attention and 64 experts. The
+server's generation path is not measured for the same defect; LC.34–LC.38 ran on it
+([record](evals/2026-11-05-portable-floor/qualification/README.md)). Host M fails
+conformance and is excluded from the floor meanwhile. *Reopens when* a newer llama.cpp
+build is considered for the pin card, or a Metal-served result needs to be trusted against
+a CUDA one.
+
 **Whole-session compaction accounting.** The local layout-only screen's first
 session recorded 36 agent requests/23,923 output tokens, while the independent
 server/relay observed 40/34,749 during three compaction attempts. Capture all

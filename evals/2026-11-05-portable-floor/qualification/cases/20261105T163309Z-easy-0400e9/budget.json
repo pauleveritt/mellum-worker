@@ -1,0 +1,30 @@
+{
+  "requests": 2,
+  "agent_requests": 2,
+  "outside_agent_requests": 0,
+  "agent_output_tokens": null,
+  "output_tokens": 20,
+  "reconciled": true,
+  "issues": [],
+  "generations": [
+    {
+      "task": 1,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 10,
+      "relay_id": "b683edf3-2d3c-4707-bd58-af81e65b382f",
+      "repair_index": 0
+    },
+    {
+      "task": 2,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 10,
+      "relay_id": "69e2a1d3-23cc-469b-ae51-c39ef990ee01",
+      "repair_index": 0
+    }
+  ],
+  "compaction_attempts": 0,
+  "compaction_completed": 0,
+  "compaction_usage": []
+}

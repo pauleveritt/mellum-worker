@@ -1,0 +1,97 @@
+{
+  "isolation": {
+    "backend": "unconfined"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": null,
+  "stall": 180,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 4,
+  "checks_ran": false,
+  "checks_passed": 0,
+  "checks_total": 4,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 2,
+  "turns": 2,
+  "tool_calls": 0,
+  "tool_errors": 0,
+  "context": null,
+  "context_uncached": 100,
+  "output_tokens": null,
+  "wall": 2.561,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": [],
+  "completion": "settled",
+  "elapsed_seconds": 2.561,
+  "provider_error": {
+    "classification": "review",
+    "evidence": [
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Done."
+          }
+        ],
+        "api": "openai-completions",
+        "provider": "llamacpp",
+        "model": "Mellum2.1-12B-A2.5B-Thinking",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "error",
+        "timestamp": 1793896389606,
+        "responseId": "q",
+        "errorMessage": "Stream ended without finish_reason",
+        "durationMs": 222,
+        "thinkingLevel": "medium"
+      }
+    ]
+  },
+  "cleanup_ok": true,
+  "exit_code": 0
+}

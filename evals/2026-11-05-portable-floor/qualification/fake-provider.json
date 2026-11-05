@@ -1,0 +1,53 @@
+{
+  "qualified": true,
+  "cases": [
+    {
+      "case": "budget",
+      "qualified": true,
+      "detail": "completion budget, state counted",
+      "seconds": 9.5,
+      "fake_requests": 3,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-lc39-qual/fake/M/sessions/20261105T163259Z-easy-8e1dc1",
+      "state": "counted",
+      "reason": ""
+    },
+    {
+      "case": "reset",
+      "qualified": true,
+      "detail": "unknown-usage rows 1, charged [16384]",
+      "seconds": 12.2,
+      "fake_requests": 2,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-lc39-qual/fake/M/sessions/20261105T163309Z-easy-0400e9",
+      "state": "counted",
+      "reason": ""
+    },
+    {
+      "case": "bypass",
+      "qualified": true,
+      "detail": "state invalid: server generations do not reconcile with proxy requests: server generations do not reconcile with relay-created inference requests; agent successful output differs from backend timing output",
+      "seconds": 9.4,
+      "fake_requests": 3,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-lc39-qual/fake/M/sessions/20261105T163321Z-easy-29dd35",
+      "state": "invalid",
+      "reason": "server generations do not reconcile with proxy requests: server generations do not reconcile with relay-created inference requests; agent successful output differs from backend timing output"
+    },
+    {
+      "case": "listener",
+      "qualified": true,
+      "detail": "listener port 61175, swept 1, still listening False",
+      "seconds": 11.0,
+      "fake_requests": 2,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-lc39-qual/fake/M/sessions/20261105T163331Z-easy-94f5f0",
+      "state": "counted",
+      "reason": ""
+    }
+  ],
+  "pins_digest": "ff2cbd8fdc717d9c44d3960e84db7be56bbc23712fbbc3fd31382a33c4167311",
+  "tools": {
+    "node": "24.22.1",
+    "pi": "1.4.0",
+    "uv": "0.11.6",
+    "python": "3.14.2"
+  },
+  "commit": "0c21791c581913eaff22d609102f6ed1ea3baa04"
+}

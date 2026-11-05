@@ -1,0 +1,93 @@
+{
+  "status": "control",
+  "result": {
+    "status": "fail",
+    "checks": {
+      "fastapi_app": {
+        "passed": false,
+        "observation": "app.py must export a FastAPI application as app"
+      },
+      "home_response": {
+        "passed": false,
+        "observation": "GET / status=None; must return 200 and required tagline"
+      },
+      "shared_layout": {
+        "passed": false,
+        "observation": "Home must render through templates/base.html"
+      },
+      "html5": {
+        "passed": false,
+        "observation": "Rendered page requires HTML5 doctype"
+      },
+      "english": {
+        "passed": false,
+        "observation": "html requires lang=en"
+      },
+      "viewport": {
+        "passed": false,
+        "observation": "head requires responsive width=device-width viewport"
+      },
+      "bootstrap_css": {
+        "passed": false,
+        "observation": "Bootstrap 5 CDN CSS must be in head"
+      },
+      "bootstrap_bundle": {
+        "passed": false,
+        "observation": "Bootstrap 5 CDN JS bundle must end body"
+      },
+      "favicon": {
+        "passed": false,
+        "observation": "head requires specified Python favicon"
+      },
+      "default_title": {
+        "passed": false,
+        "observation": "Base title must default to AgentClinic"
+      },
+      "title_override": {
+        "passed": false,
+        "observation": "A child template must be able to override page title"
+      },
+      "navbar_brand": {
+        "passed": false,
+        "observation": "Navbar requires AgentClinic brand"
+      },
+      "nav_home": {
+        "passed": false,
+        "observation": "Navbar requires home link to /; target need not exist in Phase 1"
+      },
+      "nav_complaints": {
+        "passed": false,
+        "observation": "Navbar requires complaints link to /complaints; target need not exist in Phase 1"
+      },
+      "hero_tagline": {
+        "passed": false,
+        "observation": "Structural hero proxy: content container with heading and tagline; CSS names are unrestricted"
+      },
+      "welcome_paragraph": {
+        "passed": false,
+        "observation": "Structural welcome proxy: nonempty paragraph separate from tagline; tone needs manual review"
+      },
+      "guarded_reload": {
+        "passed": false,
+        "observation": "uvicorn.run(reload=True) must be guarded by __name__ == __main__"
+      },
+      "startup": {
+        "passed": false,
+        "observation": "Observed startup failure: ready=false; process exited before readiness; launch exit=2. Required: documented uv run --frozen python app.py must serve GET / with reload; untrusted candidate log tail: \"on 3.14.2 Creating virtual environment at: .venv Installed 47 packages in 41ms /private/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-native-probe-sqggqy1c/workspace/.venv/bin/python: can't open file '/private/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-native-probe-sqggqy1c/workspace/app.py': [Errno 2] No such file or directory\""
+      },
+      "project_tests": {
+        "passed": false,
+        "observation": "Full project tests must run nonempty and pass: {'completed': True, 'exit_code': 4, 'tests': 0, 'passed': 0, 'failures': 0, 'errors': 0, 'skipped': 0}"
+      },
+      "base_integrity": {
+        "passed": true,
+        "observation": "Frozen project inputs changed/missing: []"
+      },
+      "phase_layout": {
+        "passed": true,
+        "observation": "Files outside Phase 1 layout: []"
+      }
+    },
+    "uncontained": true
+  }
+}

@@ -1,0 +1,7 @@
+[
+  {
+    "pid": 42524,
+    "pgid": null,
+    "command": "python3 -c import os,socket,time; os.setsid(); s=socket.socket(); s.bind(('127.0.0.1',0)); s.listen(); open('listener.port','w').write(str(s.getsockname()[1])); time.sleep(300)"
+  }
+]

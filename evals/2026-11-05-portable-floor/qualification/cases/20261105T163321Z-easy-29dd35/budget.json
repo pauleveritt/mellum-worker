@@ -1,0 +1,33 @@
+{
+  "requests": 2,
+  "agent_requests": 2,
+  "outside_agent_requests": 0,
+  "agent_output_tokens": 20,
+  "output_tokens": null,
+  "reconciled": false,
+  "issues": [
+    "server generations do not reconcile with relay-created inference requests",
+    "agent successful output differs from backend timing output"
+  ],
+  "generations": [
+    {
+      "task": 1,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 10,
+      "relay_id": "2c4d3a6b-fc6c-406a-b4bd-e0bbf02256fa",
+      "repair_index": 0
+    },
+    {
+      "task": 2,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 1,
+      "relay_id": "29b8f73b-a583-4c36-98b5-24064a6f4327",
+      "repair_index": 0
+    }
+  ],
+  "compaction_attempts": 0,
+  "compaction_completed": 0,
+  "compaction_usage": []
+}

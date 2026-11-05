@@ -1,0 +1,159 @@
+{
+  "schema": "mellum-host-card/1",
+  "passed": false,
+  "pins_digest": "ff2cbd8fdc717d9c44d3960e84db7be56bbc23712fbbc3fd31382a33c4167311",
+  "items": {
+    "allowlist": {
+      "passed": true,
+      "detail": {
+        "gpu": {
+          "name": "metal"
+        },
+        "problems": []
+      }
+    },
+    "identity": {
+      "passed": true,
+      "detail": {
+        "problems": [],
+        "build_info": "b11669-620d2225c",
+        "chat_template_sha256": "4593a34d52f3364ac13ce57f4bea5688924e8942da6df8201e411db17e729f48",
+        "slots": 2,
+        "server_command": [
+          "/opt/homebrew/bin/llama-server",
+          "-m",
+          "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-layout3/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+          "-a",
+          "Mellum2.1-12B-A2.5B-Thinking",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          "18001",
+          "-c",
+          "100000",
+          "-np",
+          "2",
+          "--no-kv-unified",
+          "--jinja",
+          "-fa",
+          "on",
+          "--cont-batching",
+          "-t",
+          "16",
+          "-tb",
+          "16",
+          "-b",
+          "512",
+          "-ub",
+          "512",
+          "-ctk",
+          "q8_0",
+          "-ctv",
+          "q8_0",
+          "-ngl",
+          "999",
+          "-lv",
+          "4",
+          "--log-file",
+          "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-lc39-qual/server.log"
+        ]
+      }
+    },
+    "capacity": {
+      "passed": true,
+      "detail": [
+        {
+          "slot": 0,
+          "status": 200,
+          "prompt_tokens": 42658
+        },
+        {
+          "slot": 1,
+          "status": 200,
+          "prompt_tokens": 42658
+        }
+      ]
+    },
+    "protocol": {
+      "passed": true,
+      "detail": {
+        "tool_call": true,
+        "reasoning_split": true,
+        "max_tokens_honoured": true
+      }
+    },
+    "throughput": {
+      "passed": true,
+      "detail": {
+        "prompt_per_second": 273.20911425605163,
+        "predicted_per_second": 175.40577201927124
+      }
+    },
+    "stability": {
+      "passed": true,
+      "detail": {
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    "numerics": {
+      "passed": false,
+      "detail": {
+        "error": "llama-perplexity printed no final estimate",
+        "chunks": [
+          14.4634,
+          null,
+          null,
+          null
+        ],
+        "nan_chunks": 3,
+        "exit_code": 0
+      }
+    },
+    "tooling": {
+      "passed": true,
+      "detail": {
+        "expected": {
+          "node": "24.22.1",
+          "pi": "1.4.0",
+          "uv": "0.11.6",
+          "python": "3.14.2"
+        },
+        "found": {
+          "node": "24.22.1",
+          "pi": "1.4.0",
+          "uv": "0.11.6",
+          "python": "3.14.2"
+        }
+      }
+    },
+    "isolation": {
+      "passed": true,
+      "detail": {
+        "uncontained": true
+      }
+    }
+  },
+  "provider": "local",
+  "region": "home",
+  "rental_id": "mac-m5max",
+  "price_per_hour": 0.0,
+  "threads": 16,
+  "gpu": {
+    "name": "metal"
+  },
+  "checked_at": "2026-11-05T16:43:38.740560+00:00",
+  "check_seconds": 21.099,
+  "post_check": null,
+  "stopped": null
+}

@@ -1,0 +1,38 @@
+{
+  "requests": 3,
+  "agent_requests": 4,
+  "outside_agent_requests": -1,
+  "agent_output_tokens": null,
+  "output_tokens": 90000,
+  "reconciled": true,
+  "issues": [],
+  "generations": [
+    {
+      "task": 1,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 30000,
+      "relay_id": "d7510167-b1b9-42b2-be12-052c8e38239a",
+      "repair_index": 0
+    },
+    {
+      "task": 2,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 30000,
+      "relay_id": "32cdf9a1-952f-4915-8e06-4df60b0733ad",
+      "repair_index": 0
+    },
+    {
+      "task": 3,
+      "full_prompt_tokens": 100,
+      "evaluated_prompt_tokens": 100,
+      "output_tokens": 30000,
+      "relay_id": "19e4949e-e16c-4fda-a4f1-daa9aedd2475",
+      "repair_index": 0
+    }
+  ],
+  "compaction_attempts": 0,
+  "compaction_completed": 0,
+  "compaction_usage": []
+}
