@@ -299,7 +299,9 @@ These are defaults I chose, not the user's decisions:
 - `-fa on` in place of `auto`.
 - Perplexity as the numerics check, not greedy token agreement, which cascades
   after the first difference.
-- The Mac as the perplexity reference, as the one host that never goes away.
+- The Mac as the perplexity reference, as the one host that never goes away. *Dated
+  2026-11-05: superseded. Metal perplexity is NaN at b11669, so host M is excluded and
+  rental A is the reference, at a fixed 1% tolerance (preregistration amendment).*
 - Bypass of the proxy detected by reconciliation rather than prevented.
 - A host is a GPU model under one pin card, not a single rental; the
   preregistration has the rules for a lost rental.

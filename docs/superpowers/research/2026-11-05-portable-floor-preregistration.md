@@ -53,6 +53,20 @@ invalid. The host continues on a fresh rental of the same GPU model after
 that rental passes its own pre-check. A lost rental does not count against
 the replacement cap. Only the invalid session in flight does.
 
+### Amendment 2026-11-05, before any counted session
+
+The Mac qualification ([record](../../../evals/2026-11-05-portable-floor/qualification/README.md))
+found that host M fails conformance on numerics. On Metal at b11669, `llama-perplexity`
+returns NaN after the first chunk; CPU on the same build and weights is finite. By the user's
+decision on 2026-11-05, **host M is excluded** and the floor is hosts A and B only, n = 6
+each. Two consequences are fixed here, before collection:
+
+- **The perplexity reference is rental A**, not the Mac. Host A's numerics item records the
+  reference value; host B is compared with it at a relative tolerance of **1%**, fixed now
+  rather than calibrated later.
+- **The pooled table is A+B.** The A+B+M table and the Mac's descriptive reading are
+  dropped. Everything else in this preregistration stands as written above.
+
 ## What each session records
 
 - **Completion class:** `settled`, `stalled` at the open-tool cutoff,
