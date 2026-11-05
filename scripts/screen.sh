@@ -8,8 +8,8 @@
 #
 # Fixed:  --mode direct --profile tuned --repeat 3 --redispatch 5 --effort-ramp
 #         --thinking off --guards, plus the default prompt (prompts/mellum-worker.md)
-#         and tools, served by oMLX (the model goes out as omlx/<model-id>).
-# Server: MELLUM_PROVIDER (default omlx) and MELLUM_BASE_URL (default
+#         and tools, served by llama.cpp (the model goes out as llamacpp/<model-id>).
+# Server: MELLUM_PROVIDER (default llamacpp) and MELLUM_BASE_URL (default
 #         http://127.0.0.1:8001/v1) point the same standard at another
 #         OpenAI-compatible server, e.g. the pinned vLLM baseline
 #         (scripts/baseline/README.md); the model goes out as <provider>/<model-id>.
@@ -28,7 +28,7 @@ cd "$(dirname "$0")/.."                       # repo root
 RUNG="${1:?usage: scripts/screen.sh <rung 6-9> <model-id> [acceptance-test] [out-dir]}"
 MODEL="${2:?usage: scripts/screen.sh <rung 6-9> <model-id> [acceptance-test] [out-dir]}"
 ACC="${3:-}"
-PROVIDER="${MELLUM_PROVIDER:-omlx}"
+PROVIDER="${MELLUM_PROVIDER:-llamacpp}"
 BASE_URL="${MELLUM_BASE_URL:-http://127.0.0.1:8001/v1}"
 OUT="${4:-}"
 

@@ -28,10 +28,10 @@ function flag(argv, name) {
 	return i < 0 ? undefined : argv[i + 1];
 }
 
-test("screen.sh: oMLX stays the default provider", () => {
+test("screen.sh: llama.cpp is the default provider", () => {
 	const argv = screen();
-	assert.equal(flag(argv, "--model"), "omlx/Mellum2.1-12B-A2.5B-Thinking");
-	assert.equal(flag(argv, "--provider"), "omlx");
+	assert.equal(flag(argv, "--model"), "llamacpp/Mellum2.1-12B-A2.5B-Thinking");
+	assert.equal(flag(argv, "--provider"), "llamacpp");
 	assert.equal(flag(argv, "--base-url"), "http://127.0.0.1:8001/v1");
 });
 

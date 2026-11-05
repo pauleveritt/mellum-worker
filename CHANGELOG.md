@@ -130,6 +130,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The ladder measures against the local llama.cpp backend on `:8001` by
+  default.** `run_ladder`'s `--provider`/`--model`/`--context-window` now default
+  to `llamacpp` / `Mellum2.1-12B-A2.5B-Thinking` / `50000` (were the retired
+  oMLX 6-bit server on the same port with a 56000 window), matching the backend
+  the shipped worker already uses. The old server-settings admin path and its
+  `--omlx <url>` flag are gone — a llama.cpp server takes its settings at launch,
+  so the ladder only shapes the request now; point it at any other
+  OpenAI-completions server with `--provider`/`--base-url`/`--model` as before.
+  `scripts/screen.sh`'s default provider follows.
+
 - **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
   name "next-concept modelling" from an unrelated text-generation paper
   (HazyResearch/ncm) but only re-runs an acceptance test until it passes, so it

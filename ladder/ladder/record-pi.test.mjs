@@ -19,7 +19,7 @@ test('metadata and request association preserve original payload and chunk', () 
   const {handlers:h, rows} = capture();
   const payload = structuredClone(request), before = structuredClone(payload);
   assert.equal(h.before_provider_request(payload), undefined);
-  const chunk = {provider:'omlx', api:'openai-completions', model:'mellum', data:{choices:[{delta:{content:'yes'}}]}};
+  const chunk = {provider:'llamacpp', api:'openai-completions', model:'mellum', data:{choices:[{delta:{content:'yes'}}]}};
   assert.equal(h.provider_stream_event(chunk), undefined);
   h.message_end(assistant);
   h.tool_call({toolCallId:'call', toolName:'bash', input:{command:'pytest'}});

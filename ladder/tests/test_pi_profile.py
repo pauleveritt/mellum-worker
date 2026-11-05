@@ -35,8 +35,8 @@ def test_direct_agent_dir_carries_the_profiles_request_params(tmp_path):
 
     agent = direct_agent_dir(tmp_path / "agent", "tuned")
     models = json.loads((agent / "models.json").read_text())
-    entry = models["providers"]["omlx"]["models"][0]
-    assert entry["id"] == "Mellum2.1-12B-A2.5B-Thinking-6bit"
+    entry = models["providers"]["llamacpp"]["models"][0]
+    assert entry["id"] == "Mellum2.1-12B-A2.5B-Thinking"
     assert entry["maxTokens"] == 16384
     assert (
         entry["samplingParams"]["presence_penalty"] == 0.5
@@ -45,7 +45,7 @@ def test_direct_agent_dir_carries_the_profiles_request_params(tmp_path):
     assert "max_tokens" not in entry["samplingParams"]
     settings = json.loads((agent / "settings.json").read_text())
     assert (
-        settings["defaultProvider"] == "omlx"
+        settings["defaultProvider"] == "llamacpp"
         and settings["compaction"]["enabled"] is False
     )
 
@@ -57,7 +57,7 @@ def test_direct_agent_dir_applies_sampling_overrides(tmp_path):
     agent = direct_agent_dir(
         tmp_path / "agent", "tuned", request_overrides={"temperature": 0.7, "top_p": 0.9}
     )
-    sampling = json.loads((agent / "models.json").read_text())["providers"]["omlx"][
+    sampling = json.loads((agent / "models.json").read_text())["providers"]["llamacpp"][
         "models"
     ][0]["samplingParams"]
     assert sampling["temperature"] == 0.7 and sampling["top_p"] == 0.9
@@ -85,28 +85,28 @@ def test_direct_agent_dir_takes_a_provider_and_model(tmp_path):
     from ladder.pi_profile import direct_agent_dir
 
     agent = direct_agent_dir(
-        tmp_path / "agent", "baseline", "http://127.0.0.1:8002/v1",
-        provider="llamacpp", model_id="Mellum2.1-12B-A2.5B-Thinking",
-        context_window=50000,
+        tmp_path / "agent", "baseline", "http://127.0.0.1:8080/v1",
+        provider="mlx-lm", model_id="Mellum2.1-12B-A2.5B-Thinking-6bit",
+        context_window=56000,
     )
     models = json.loads((agent / "models.json").read_text())
-    assert list(models["providers"]) == ["llamacpp"]
-    provider = models["providers"]["llamacpp"]
-    assert provider["baseUrl"] == "http://127.0.0.1:8002/v1"
+    assert list(models["providers"]) == ["mlx-lm"]
+    provider = models["providers"]["mlx-lm"]
+    assert provider["baseUrl"] == "http://127.0.0.1:8080/v1"
     entry = provider["models"][0]
-    assert entry["id"] == "Mellum2.1-12B-A2.5B-Thinking"
-    assert entry["contextWindow"] == 50000
+    assert entry["id"] == "Mellum2.1-12B-A2.5B-Thinking-6bit"
+    assert entry["contextWindow"] == 56000
     settings = json.loads((agent / "settings.json").read_text())
-    assert settings["defaultProvider"] == "llamacpp"
-    assert settings["defaultModel"] == "Mellum2.1-12B-A2.5B-Thinking"
+    assert settings["defaultProvider"] == "mlx-lm"
+    assert settings["defaultModel"] == "Mellum2.1-12B-A2.5B-Thinking-6bit"
 
 
-def test_direct_agent_dir_defaults_to_omlx(tmp_path):
+def test_direct_agent_dir_defaults_to_llamacpp(tmp_path):
     from ladder.pi_profile import direct_agent_dir
 
     agent = direct_agent_dir(tmp_path / "agent", "baseline")
-    provider = json.loads((agent / "models.json").read_text())["providers"]["omlx"]
+    provider = json.loads((agent / "models.json").read_text())["providers"]["llamacpp"]
     assert provider["baseUrl"] == "http://127.0.0.1:8001/v1"
-    assert provider["models"][0]["contextWindow"] == 56000
+    assert provider["models"][0]["contextWindow"] == 50000
     settings = json.loads((agent / "settings.json").read_text())
-    assert settings["defaultModel"] == "Mellum2.1-12B-A2.5B-Thinking-6bit"
+    assert settings["defaultModel"] == "Mellum2.1-12B-A2.5B-Thinking"
