@@ -650,3 +650,41 @@ test("doTaskPlan refuses only after the retries are exhausted", async () => {
 		assert.match(r, /no step(NN)?\.?md|no step docs/i);
 	});
 });
+
+test("planMinSteps scales a step floor with the spec's requirement bullets, and is 0 for prose", async () => {
+	const { planMinSteps } = await load();
+	assert.equal(planMinSteps("just build the thing, no bullets here"), 0, "a prose spec imposes no floor");
+	const spec = Array.from({ length: 10 }, (_, i) => `- requirement number ${i + 1} that must hold`).join("\n");
+	assert.ok(planMinSteps(spec) >= 2, "ten requirement bullets floor the plan above one step");
+	assert.ok(planMinSteps(spec) <= 10, "the floor never exceeds the requirement count");
+});
+
+test("doTaskPlan re-dispatches for a finer split when the plan is too coarse for the spec", async () => {
+	const { doTaskPlan } = await load();
+	await inTempCwd(async () => {
+		const spec = Array.from({ length: 10 }, (_, i) => `- requirement ${i + 1}`).join("\n"); // floor >= 2
+		const tasks = [];
+		const authorPlan = async (t) => {
+			tasks.push(t);
+			if (tasks.length >= 2) { writeFileSync("step01.md", "a\n"); writeFileSync("step02.md", "b\n"); writeFileSync("step03.md", "c\n"); return "3"; }
+			writeFileSync("step01.md", "everything in one coarse step\n"); return "1"; // too coarse
+		};
+		const r = await doTaskPlan(spec, { authorPlan, worker: async () => "built", shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(tasks.length, 2, "a coarse plan is re-dispatched");
+		assert.match(tasks[1], /split|finer|smaller|at most|requirement/i, "the retry asks for a finer split");
+		assert.match(r, /steps built: 3\/3/, "the finer plan runs");
+	});
+});
+
+test("doTaskPlan runs a coarse plan as best effort once the split retries are spent, and says so", async () => {
+	const { doTaskPlan, MAX_AUTHOR_RETRIES } = await load();
+	await inTempCwd(async () => {
+		const spec = Array.from({ length: 10 }, (_, i) => `- requirement ${i + 1}`).join("\n"); // floor >= 2
+		let calls = 0;
+		const authorPlan = async () => { calls++; writeFileSync("step01.md", "one coarse step\n"); return "1"; };
+		const r = await doTaskPlan(spec, { authorPlan, worker: async () => "built", shell: async () => ({ passed: false, output: "" }) });
+		assert.equal(calls, MAX_AUTHOR_RETRIES + 1, "it retried for a finer split before giving up");
+		assert.match(r, /steps built: 1\/1/, "the coarse plan still runs rather than being thrown away");
+		assert.match(r, /coarse|below .*floor|fewer steps/i, "the report flags that the plan stayed coarse");
+	});
+});

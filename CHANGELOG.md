@@ -20,6 +20,14 @@ Versions match git tags; pin one in both install lines.
   which left the run with no plan to build; it is now re-dispatched with feedback
   (write the files first, keep reasoning short) up to twice before the run gives
   up, and the author prompt itself nudges writing the step files as it goes.
+  A second guard catches the opposite miss: an architect that writes docs but
+  **under-splits** a many-requirement spec into a handful of coarse steps (each
+  too big for the fixed worker, so a contract gets dropped and the build breaks).
+  The plan now carries a step floor derived from the spec's own requirement
+  bullets (one step per ~5 bullets; a prose spec imposes no floor); a plan below
+  it is re-dispatched to split finer, and if the architect stays coarse after the
+  retries the plan is built anyway with a note. Both guards are agnostic — they
+  read the task, never the suite.
 
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole

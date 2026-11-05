@@ -41,7 +41,7 @@
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
  */
 import { spawn } from "node:child_process";
-import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -923,6 +923,36 @@ export function authorRetryTask(task: string): string {
 	);
 }
 
+/** At most this many requirement bullets belong in one step; the plan's step floor scales by it. */
+export const MAX_REQS_PER_STEP = 5;
+
+/**
+ * The minimum number of steps a plan for this spec should have, derived from the spec itself:
+ * one step per MAX_REQS_PER_STEP requirement bullets (lines that start with -, * or a number).
+ * A prose spec with no bullets imposes no floor (0). Agnostic — it reads the task, nothing else.
+ * This is the guard against an architect that under-splits a many-requirement spec into a handful
+ * of coarse steps (each too big for the fixed worker, so a contract gets dropped and the build
+ * breaks). A heuristic floor, to be screened, not a suite-tuned number.
+ */
+export function planMinSteps(task: string): number {
+	let bullets = 0;
+	for (const line of task.split("\n")) {
+		if (/^\s*([-*]|\d+[.)])\s+\S/.test(line)) bullets++;
+	}
+	return bullets === 0 ? 0 : Math.ceil(bullets / MAX_REQS_PER_STEP);
+}
+
+/** Feedback for a re-dispatched architect whose plan was too coarse for the spec. Agnostic. */
+export function authorSplitTask(task: string, got: number, want: number): string {
+	return (
+		`RETRY — your plan had only ${got} step${got === 1 ? "" : "s"}, too coarse for this spec. Each ` +
+		"step must add ONE small slice, not a whole phase — a single step that bundles many " +
+		`requirements is too big to build correctly. Split finer: aim for at least ${want} steps, at ` +
+		`most ${MAX_REQS_PER_STEP} requirements per step. Rewrite the stepNN.md files from step01.md.\n\n` +
+		task
+	);
+}
+
 /** The architect prompt for plan mode: split the spec into step docs only — no tests. */
 export function authorPlanPrompt(task: string): string {
 	return (
@@ -952,6 +982,11 @@ export function authorPlanPrompt(task: string): string {
 /** The plan architect pass as a spawned run. */
 export function spawnAuthorPlan(task: string): Promise<string> {
 	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPlanPrompt(task)}`], "architect: splitting the spec into step docs (no tests)");
+}
+
+/** Remove any stepNN.md in the cwd, so a re-dispatched architect's plan is counted clean. */
+export function clearStepDocs(cwd: string): void {
+	for (const s of listStepDocs(cwd)) { try { rmSync(resolve(cwd, s.doc)); } catch {} }
 }
 
 /** The step docs (stepNN.md) in the cwd, ordered by step number. No paired test is required. */
@@ -1008,19 +1043,26 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
 
 	const t0 = Date.now();
-	// Guard: the architect sometimes truncates (output-token limit) before writing any stepNN.md.
-	// Re-dispatch it with feedback rather than abort — a harness guarantee, not a prose rule.
+	// Two harness guards on the architect pass — guarantees, not prose rules, for the fixed model:
+	//   (1) truncation: it spends its output budget reasoning and writes NO stepNN.md;
+	//   (2) coarseness: it writes docs but under-splits a many-requirement spec into a handful of
+	//       steps, each too big for the worker to build correctly (a dropped contract → broken build).
+	// Either way re-dispatch with the fitting feedback, within one shared retry budget.
+	const minSteps = planMinSteps(task);
 	let authorReport = await authorPlan(task);
 	let steps = listStepDocs(cwd);
 	let authorAttempts = 1;
-	while (!steps.length && authorAttempts <= MAX_AUTHOR_RETRIES) {
+	while (authorAttempts <= MAX_AUTHOR_RETRIES && (!steps.length || steps.length < minSteps)) {
 		authorAttempts++;
-		authorReport = await authorPlan(authorRetryTask(task));
+		const hint = steps.length ? authorSplitTask(task, steps.length, minSteps) : authorRetryTask(task);
+		clearStepDocs(cwd); // a coarse plan is rewritten from step01.md — don't leave stale docs behind
+		authorReport = await authorPlan(hint);
 		steps = listStepDocs(cwd);
 	}
 	if (!steps.length) {
 		return `delegate(plan): the architect wrote no stepNN.md step docs after ${authorAttempts} attempts, so there is no plan to run.\n\n--- architect output (tail) ---\n${authorReport.slice(-1500)}`;
 	}
+	const coarse = steps.length < minSteps; // retries spent but still under the floor — run it anyway
 	const authorWall = secs(t0);
 	const authorStats = latestRunStats(cwd);
 
@@ -1063,6 +1105,7 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 	return [
 		`handover (plan): ${steps.length} step doc${steps.length === 1 ? "" : "s"} + ${TODO_FILE} + BRIEF.md (no tests).`,
 		`steps built: ${done.size}/${steps.length} — grade with the suite's hidden oracle (there is no per-step gate).`,
+		...(coarse ? [`note: the plan stayed coarse (${steps.length} steps, below the ${minSteps}-step floor for this spec) after the split retries — built as best effort.`] : []),
 		...lines,
 		`turns/wall: ${stage("architect", authorStats, authorWall)} · total ${totalWall}s`,
 	].join("\n");
