@@ -1,0 +1,48 @@
+{
+  "selective": {
+    "n": 0
+  },
+  "gated": {
+    "initial_external_pass": 0,
+    "initial_failures": {
+      "title_override": 6,
+      "phase_layout": 2,
+      "startup": 4,
+      "project_tests": 2
+    },
+    "layout_pass": 6,
+    "failed_task_requests": 59,
+    "fully_measured_tasks": 6,
+    "fully_measured_tasks_output": 120786,
+    "unknown_output_tasks": [],
+    "known_failed_task_count": 1,
+    "known_failed_task_output": 20074,
+    "repair_requests": 116,
+    "repair_complete_generations": 116,
+    "repair_output_tokens": 52854,
+    "repair_complete_generation_output_only": 52854,
+    "health_components": {
+      "ruff:pass": 6,
+      "pyrefly:pass": 6,
+      "complexipy:pass": 6
+    },
+    "output_known_scope_distribution": [
+      18269,
+      19909,
+      20074,
+      20218,
+      20916,
+      21400
+    ],
+    "median_elapsed": 197.582,
+    "total_elapsed": 1342.766,
+    "requests_range": [
+      33,
+      59
+    ],
+    "repair_distribution": {
+      "1": 5,
+      "2": 1
+    }
+  }
+}

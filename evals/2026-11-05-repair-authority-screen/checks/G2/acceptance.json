@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "task_id": "094c614551fa4a20ab2166a4905c2986",
+  "sequence": 3,
+  "timestamp": "2026-11-05T09:46:32.298994+00:00",
+  "package_sha256": "af4122164322e6446b5cb12728693ca32749fdaec2606aa35e1bcaf9e41e3dd9",
+  "snapshot_sha256": "d1434af5d3d1755483cbd118f1f398d254b893d810d8ddda7a369ba90c155476",
+  "status": "accepted",
+  "continue": false,
+  "repairs": 1,
+  "final": true,
+  "feedback": "",
+  "remaining_seconds": 421.36147650005296,
+  "result": {
+    "status": "pass",
+    "checks": {
+      "fastapi_app": {
+        "passed": true,
+        "observation": "app.py must export a FastAPI application as app"
+      },
+      "home_response": {
+        "passed": true,
+        "observation": "GET / status=200; must return 200 and required tagline"
+      },
+      "shared_layout": {
+        "passed": true,
+        "observation": "Home must render through templates/base.html"
+      },
+      "html5": {
+        "passed": true,
+        "observation": "Rendered page requires HTML5 doctype"
+      },
+      "english": {
+        "passed": true,
+        "observation": "html requires lang=en"
+      },
+      "viewport": {
+        "passed": true,
+        "observation": "head requires responsive width=device-width viewport"
+      },
+      "bootstrap_css": {
+        "passed": true,
+        "observation": "Bootstrap 5 CDN CSS must be in head"
+      },
+      "bootstrap_bundle": {
+        "passed": true,
+        "observation": "Bootstrap 5 CDN JS bundle must end body"
+      },
+      "favicon": {
+        "passed": true,
+        "observation": "head requires specified Python favicon"
+      },
+      "default_title": {
+        "passed": true,
+        "observation": "Base title must default to AgentClinic"
+      },
+      "title_override": {
+        "passed": true,
+        "observation": "A child template must be able to override page title"
+      },
+      "navbar_brand": {
+        "passed": true,
+        "observation": "Navbar requires AgentClinic brand"
+      },
+      "nav_home": {
+        "passed": true,
+        "observation": "Navbar requires home link to /; target need not exist in Phase 1"
+      },
+      "nav_complaints": {
+        "passed": true,
+        "observation": "Navbar requires complaints link to /complaints; target need not exist in Phase 1"
+      },
+      "hero_tagline": {
+        "passed": true,
+        "observation": "Structural hero proxy: content container with heading and tagline; CSS names are unrestricted"
+      },
+      "welcome_paragraph": {
+        "passed": true,
+        "observation": "Structural welcome proxy: nonempty paragraph separate from tagline; tone needs manual review"
+      },
+      "guarded_reload": {
+        "passed": true,
+        "observation": "uvicorn.run(reload=True) must be guarded by __name__ == __main__"
+      },
+      "startup": {
+        "passed": true,
+        "observation": "Observed startup ready=true; launch exit=unknown or still running. Required: documented uv run --frozen python app.py must serve GET / with reload; untrusted candidate log tail: \"ss [58] using WatchFiles INFO: Started server process [60] INFO: Waiting for application startup. INFO: Application startup complete. INFO: 127.0.0.1:48472 - \\\"GET / HTTP/1.1\\\" 200 OK INFO: Shutting down INFO: Waiting for application shutdown. INFO: Application shutdown complete. INFO: Finished server process [60] INFO: Stopping reloader process [58]\""
+      },
+      "project_tests": {
+        "passed": true,
+        "observation": "Full project tests must run nonempty and pass: {'completed': True, 'exit_code': 0, 'tests': 1, 'passed': 1, 'failures': 0, 'errors': 0, 'skipped': 0}"
+      },
+      "base_integrity": {
+        "passed": true,
+        "observation": "Frozen project inputs changed/missing: []"
+      },
+      "phase_layout": {
+        "passed": true,
+        "observation": "Files outside Phase 1 layout: []"
+      }
+    }
+  }
+}

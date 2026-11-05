@@ -1,0 +1,66 @@
+{
+  "qualified": true,
+  "image": "sha256:c27c74328d5825106578b22e8392d9280464a3776f72625503326406cd7cf38a",
+  "normal_requests": 3,
+  "relay_requests": 4,
+  "compaction": {
+    "type": "response",
+    "command": "compact",
+    "success": true,
+    "data": {
+      "summary": "Qualification complete.",
+      "firstKeptEntryId": "75181ac4",
+      "tokensBefore": 43,
+      "estimatedTokensAfter": 23934,
+      "usage": {
+        "input": 42,
+        "output": 1,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 43,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "details": {
+        "readFiles": [],
+        "modifiedFiles": []
+      }
+    }
+  },
+  "compaction_events": [
+    {
+      "traceSchema": 1,
+      "runId": "8c47978a-0a12-483c-9109-eee323967f37",
+      "instanceId": "e1a16864-6983-4fc3-8ee8-0b318875c5cf",
+      "seq": 36,
+      "timestamp": "2026-11-05T09:40:14.357Z",
+      "elapsedMs": 61.52374999999998,
+      "pid": 53,
+      "requestId": null,
+      "type": "compact_complete",
+      "reason": "manual",
+      "usage": {
+        "input": 42,
+        "output": 1,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 43,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "tokensBefore": 43
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "scope": "Counts complete dedicated user injection messages by marker prefix; markers quoted in assistant reasoning are retained separately, not counted as duplicate injected messages. Every recorded ordinary provider payload audited; native compaction requests separately counted by relay.",
+  "ordinary_payloads": 300,
+  "all_once": true,
+  "tasks": [
+    {
+      "run": "task-ec79fd0f5b5b42dd88e5ee794d461f8b",
+      "requests": 33,
+      "trace_sha256": "3a4c6e4269a6f6f048bda8bcf20ea298c9018c1613ff8c89eaed8a5600be5e14",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-094c614551fa4a20ab2166a4905c2986",
+      "requests": 51,
+      "trace_sha256": "50846285fb82e668ebd0101d999700585a2363047bb10bb70897bb3c6172a65e",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-e3e167108f4c4d5f860d2e0bfdb4b21e",
+      "requests": 47,
+      "trace_sha256": "b02138a5faf5544e4095b88a717fea9243097e2f68ff2943ac5e8db9519c3d01",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-239cddfccf8446f2a83c0e521d6c8376",
+      "requests": 59,
+      "trace_sha256": "916b1bcea8b69188688fb0ef959224ddfe0b8c9e1960024a9c7350dc274ddace",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-d36d30311e45400cb9289300f7b2c9aa",
+      "requests": 57,
+      "trace_sha256": "623281b7709224aa6c3ea9c88a16f65cbc0fdfbb767a1bbadd2c43f6a06a823f",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 0,
+        "verify-the-spec": 0
+      }
+    },
+    {
+      "run": "task-080c2f2e795d48c794f0ba0d35e8fb56",
+      "requests": 53,
+      "trace_sha256": "5c479a0b8c4e4a27729261ceef3d776036d66f530a595e010bd9f62729d51091",
+      "delivered_injection_counts": {
+        "name-the-layout": [
+          1
+        ],
+        "verify-the-spec": [
+          1
+        ]
+      },
+      "assistant_quotation_payloads": {
+        "name-the-layout": 52,
+        "verify-the-spec": 52
+      }
+    }
+  ]
+}

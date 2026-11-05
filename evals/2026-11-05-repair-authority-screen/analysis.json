@@ -1,0 +1,148 @@
+{
+  "selective": {
+    "n": 0,
+    "usable": 0,
+    "wilson_95": [
+      0.0,
+      1.0
+    ],
+    "requests": 0,
+    "output_tokens": 0,
+    "requests_per_usable": null,
+    "output_per_usable": null,
+    "requests_median": null,
+    "output_median": null,
+    "reconciled": true,
+    "hidden_pass_tasks": 0,
+    "hidden_pass_checks": 0,
+    "hidden_total_checks": 0,
+    "health_pass": 0,
+    "completion": {},
+    "external_pass": 0,
+    "gate_status": {},
+    "repair_tasks": 0,
+    "repair_continuations": 0,
+    "rescued_usable": 0,
+    "accepted_not_usable": 0,
+    "repair_requests": 0,
+    "repair_output_tokens": 0,
+    "elapsed_total": 0,
+    "elapsed_median": null,
+    "model_turns": 0,
+    "compactions": 0,
+    "guard_refusals": 0,
+    "hidden_health_settled_but_external_fail": 0,
+    "outside_agent_requests": 0,
+    "final_failed_requirements": {},
+    "requests_distribution": [],
+    "output_distribution": [],
+    "elapsed_distribution": []
+  },
+  "gated": {
+    "n": 6,
+    "usable": 5,
+    "wilson_95": [
+      0.43649717781352987,
+      0.9699466302516935
+    ],
+    "requests": 300,
+    "output_tokens": 120786,
+    "requests_per_usable": 60.0,
+    "output_per_usable": 24157.2,
+    "requests_median": 52.0,
+    "output_median": 20146.0,
+    "reconciled": true,
+    "hidden_pass_tasks": 6,
+    "hidden_pass_checks": 24,
+    "hidden_total_checks": 24,
+    "health_pass": 6,
+    "completion": {
+      "settled": 5,
+      "stalled": 1
+    },
+    "external_pass": 5,
+    "gate_status": {
+      "accepted": 5,
+      "stalled": 1
+    },
+    "repair_tasks": 6,
+    "repair_continuations": 7,
+    "rescued_usable": 5,
+    "accepted_not_usable": 0,
+    "repair_requests": 116,
+    "repair_output_tokens": 52854,
+    "elapsed_total": 1342.766,
+    "elapsed_median": 197.582,
+    "model_turns": 300,
+    "compactions": 0,
+    "guard_refusals": 0,
+    "hidden_health_settled_but_external_fail": 0,
+    "outside_agent_requests": 0,
+    "final_failed_requirements": {
+      "startup": 1
+    },
+    "requests_distribution": [
+      33,
+      47,
+      51,
+      53,
+      57,
+      59
+    ],
+    "output_distribution": [
+      19909,
+      18269,
+      20218,
+      20074,
+      20916,
+      21400
+    ],
+    "elapsed_distribution": [
+      164.231,
+      178.639,
+      208.429,
+      384.92,
+      186.735,
+      219.812
+    ],
+    "initial_external_pass": 0,
+    "initial_failures": {
+      "title_override": 6,
+      "phase_layout": 2,
+      "startup": 4,
+      "project_tests": 2
+    },
+    "layout_pass": 6,
+    "failed_task_requests": 59,
+    "fully_measured_tasks": 6,
+    "fully_measured_tasks_output": 120786,
+    "unknown_output_tasks": [],
+    "known_failed_task_count": 1,
+    "known_failed_task_output": 20074,
+    "repair_complete_generations": 116,
+    "repair_complete_generation_output_only": 52854,
+    "health_components": {
+      "ruff:pass": 6,
+      "pyrefly:pass": 6,
+      "complexipy:pass": 6
+    },
+    "output_known_scope_distribution": [
+      18269,
+      19909,
+      20074,
+      20218,
+      20916,
+      21400
+    ],
+    "median_elapsed": 197.582,
+    "total_elapsed": 1342.766,
+    "requests_range": [
+      33,
+      59
+    ],
+    "repair_distribution": {
+      "1": 5,
+      "2": 1
+    }
+  }
+}

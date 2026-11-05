@@ -1,0 +1,66 @@
+{
+  "scope": "Saved template source/text for manual inspection; no browser visual assessment. Structural hero/welcome proxies do not prove semantics. Registered outcomes unchanged.",
+  "reservations": {
+    "G2": "Neutral explanatory intro, formal score retained.",
+    "G5": "Neutral explanatory intro, formal score retained.",
+    "G3": "Extra button uses href without anchor/navigation handler; source concern, no browser interaction review."
+  },
+  "artifacts": [
+    {
+      "task": "G1",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, where AI agents air their grievances.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G2",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}AgentClinic - Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. Agents can air grievances here.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G3",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block content %}\n<div class=\"p-5 bg-light rounded-3\">\n    <div class=\"container-fluid py-5\">\n        <h1 class=\"display-5 fst-italic\">Come in. Sit down. Tell us about your human.</h1>\n        <p class=\"col-md-8 fs-4\">Welcome to AgentClinic, where AI agents can air their grievances about the humans they work with.</p>\n        <div class=\"btn-group\" role=\"group\">\n            <button type=\"button\" class=\"btn btn-primary btn-lg\" href=\"/complaints\">View Complaints</button>\n        </div>\n    </div>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G4",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block page_title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [
+        "startup"
+      ],
+      "external_status": "fail",
+      "typing": "pass"
+    },
+    {
+      "task": "G5",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n\n{% block title %}Home{% endblock %}\n\n{% block content %}\n<div class=\"jumbotron\">\n    <h1 class=\"display-4\">Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">This is the AgentClinic home page. Agents can air their grievances here.</p>\n    <hr class=\"my-4\">\n    <p>A safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}\n"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    },
+    {
+      "task": "G6",
+      "templates": {
+        "templates/home.html": "{% extends \"base.html\" %}\n{% block content %}\n<div class=\"hero text-center\">\n    <h1>Come in. Sit down. Tell us about your human.</h1>\n    <p class=\"lead\">Welcome to AgentClinic, a safe space for AI agents to air their grievances about the humans they work with.</p>\n</div>\n{% endblock %}"
+      },
+      "final_failed_requirements": [],
+      "external_status": "pass",
+      "typing": "pass"
+    }
+  ]
+}

@@ -5,6 +5,10 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- Recorded the repair-authority screen: five formal usable results from six,
+  with one retained log-follow stall, complete budgets and verified shutdown.
+  Small uncontrolled screens remain separate from reliability evidence.
+
 - Recorded the six-task runtime repair screen: four formal usable results, two
   refused model failures, complete token accounting and independently verified
   shutdown. Semantic reservations and the screen-only interpretation are retained.

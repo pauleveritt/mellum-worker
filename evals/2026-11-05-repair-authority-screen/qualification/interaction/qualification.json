@@ -1,0 +1,38 @@
+{
+  "qualified": true,
+  "image": "sha256:c27c74328d5825106578b22e8392d9280464a3776f72625503326406cd7cf38a",
+  "cases": {
+    "pass": {
+      "qualified": true,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-repair-authority-screen/batch-v1/interaction/pass/runs/task-8c46b5eed2ed4cccb93f81c95eb16599",
+      "status": "accepted",
+      "repairs": 0,
+      "injections_once": true,
+      "requests": 1
+    },
+    "repair": {
+      "qualified": true,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-repair-authority-screen/batch-v1/interaction/repair/runs/task-a0f4c84648dc42988cb9dad34615bfbc",
+      "status": "accepted",
+      "repairs": 1,
+      "injections_once": true,
+      "requests": 3
+    },
+    "exhaust": {
+      "qualified": true,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-repair-authority-screen/batch-v1/interaction/exhaust/runs/task-98ef4f8cc180492584649b766c5485ea",
+      "status": "repair_exhausted",
+      "repairs": 2,
+      "injections_once": true,
+      "requests": 3
+    },
+    "tamper": {
+      "qualified": true,
+      "run": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-repair-authority-screen/batch-v1/interaction/tamper/runs/task-4a1ace5f57ad4da58c89ec0428d7ba97",
+      "status": "integrity_error",
+      "repairs": 0,
+      "injections_once": true,
+      "requests": 2
+    }
+  }
+}

@@ -1,0 +1,2 @@
+Fresh reviewer /root/repair_authority_final_review, gpt-6-astra high,5e33b5d..fa636a9.
+With fixes: one Important feedback cap regression, no Critical/Minor. Reproduced valid result7400-char first failure hiding later short failure after longer guidance. Fixed fair per-failure evidence reservation with explicit truncation; failed evidence before passing names. Receipt RED→GREEN,56 focused, npm667/667, caps4/4, Zensical clean. Declined efficacy/browser acceptance/inherited accounting-shutdown cases/pending execution checks all ruled in ledger. No re-review.
