@@ -53,3 +53,65 @@ test('late frames after upstream refusal do not break a subsequent valid request
     assert.ok(created.length === 2 && created.every(r=>r.method==='GET' && r.path==='/health'));
   } finally { input.destroy(); output.destroy(); server.closeAllConnections(); server.close(); }
 });
+
+// --- Proxy mode (LC.39): a loopback proxy in front of llama-server, no containers. ---
+import {rewriteRequest, proxyRelay} from '../scripts/containment/relay.mjs';
+
+async function upstream(handler) {
+  const server = createServer(handler);
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  return {server, url: `http://127.0.0.1:${server.address().port}/`};
+}
+
+async function post(port, path, body) {
+  const response = await fetch(`http://127.0.0.1:${port}${path}`, {method: 'POST',
+    headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});
+  return {status: response.status, bytes: Buffer.from(await response.arrayBuffer())};
+}
+
+test('rewriteRequest adds only include_usage to a streamed request', () => {
+  const body = {messages: [{role: 'user', content: 'hi'}], max_tokens: 16384, stream: true, temperature: 1};
+  const out = JSON.parse(rewriteRequest(Buffer.from(JSON.stringify(body))).toString());
+  assert.deepEqual(out, {...body, stream_options: {include_usage: true}});
+  const plain = {messages: [], stream: false};
+  assert.deepEqual(JSON.parse(rewriteRequest(Buffer.from(JSON.stringify(plain))).toString()), plain);
+});
+
+test('rewriteRequest refuses JSON that is not an object', () => {
+  assert.throws(() => rewriteRequest(Buffer.from('[]')), /object/);
+  assert.throws(() => rewriteRequest(Buffer.from('not json')));
+});
+
+test('proxy forwards the rewritten body and response bytes unchanged', async () => {
+  let received;
+  const reply = Buffer.from('data: {"choices":[]}\n\ndata: [DONE]\n\n');
+  const {server, url} = await upstream(async (q, s) => {
+    let raw = ''; for await (const c of q) raw += c; received = JSON.parse(raw);
+    s.writeHead(200, {'content-type': 'text/event-stream'}); s.end(reply);
+  });
+  const rows = [];
+  const proxy = await proxyRelay({listen: 0, target: url, log: row => rows.push(row)});
+  try {
+    const {status, bytes} = await post(proxy.port, '/v1/chat/completions', {messages: [], stream: true});
+    assert.equal(status, 200);
+    assert.ok(bytes.equals(reply));
+    assert.deepEqual(received.stream_options, {include_usage: true});
+    assert.deepEqual(rows.map(r => r.boundary), ['ready', 'created', 'rewritten', 'headers', 'complete']);
+    assert.equal(rows[1].method, 'POST'); assert.equal(rows[1].path, '/v1/chat/completions');
+    assert.ok(rows[1].timestamp);
+  } finally { await proxy.close(); server.close(); }
+});
+
+test('proxy refuses non-inference routes without contacting the server', async () => {
+  let hits = 0;
+  const {server, url} = await upstream((q, s) => { hits++; s.end('x'); });
+  const proxy = await proxyRelay({listen: 0, target: url, log: () => {}});
+  try {
+    assert.equal((await post(proxy.port, '/slots/0?action=save', {})).status, 403);
+    assert.equal(hits, 0);
+  } finally { await proxy.close(); server.close(); }
+});
+
+test('proxy refuses a non-loopback target', async () => {
+  await assert.rejects(proxyRelay({listen: 0, target: 'http://example.com/', log: () => {}}), /loopback/);
+});

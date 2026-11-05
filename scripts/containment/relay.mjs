@@ -117,6 +117,81 @@ export async function hostRelay(input, output, target, log = () => {}) {
   }
 }
 
+function loopbackTarget(target) {
+  const url = new URL(target);
+  if (url.protocol !== 'http:' || url.hostname !== '127.0.0.1' || url.username || url.password || url.search || url.pathname !== '/')
+    throw new Error('relay target must be an explicit loopback HTTP endpoint');
+  return url;
+}
+
+/** Add the one routing field the proxy needs; everything the model reads is unchanged. */
+export function rewriteRequest(body) {
+  const value = JSON.parse(body.toString('utf8'));
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('request body must be a JSON object');
+  if (value.stream === true) value.stream_options = {...(value.stream_options ?? {}), include_usage: true};
+  return Buffer.from(JSON.stringify(value));
+}
+
+/** Native sessions (LC.39): a loopback HTTP proxy in front of llama-server, one per session. */
+export async function proxyRelay({listen, target, log = () => {}}) {
+  const url = loopbackTarget(target);
+  const record = (boundary, id, fields = {}) => log({boundary, id, timestamp:new Date().toISOString(), ...fields});
+  const server = http.createServer(async (req, res) => {
+    if (!allowedRoute(req.method, req.url)) { res.writeHead(403).end(); return; }
+    const id = randomUUID(), started = performance.now();
+    record('created', id, {method:req.method, path:req.url});
+    let body = Buffer.alloc(0);
+    try {
+      const chunks = []; let size = 0;
+      for await (const chunk of req) {
+        size += chunk.length;
+        if (size > MAX_BODY) throw new Error('relay request body limit exceeded');
+        chunks.push(chunk);
+      }
+      body = Buffer.concat(chunks);
+      if (req.method === 'POST') { body = rewriteRequest(body); record('rewritten', id, {added:['stream_options.include_usage']}); }
+    } catch (error) {
+      record('request_error', id, {code:safeCode(error), elapsedMs:performance.now()-started});
+      res.writeHead(400).end(); return;
+    }
+    const upstream = http.request(new URL(req.url, url), {method:req.method,
+      headers:{'content-type':'application/json', accept:'text/event-stream, application/json',
+               ...(req.method === 'POST' ? {'content-length':body.length} : {})}}, async up => {
+      record('headers', id, {status:up.statusCode, elapsedMs:performance.now()-started});
+      const headers = {'x-mellum-transport-id':id};
+      for (const key of ['content-type', 'content-encoding', 'content-length'])
+        if (up.headers[key] !== undefined) headers[key] = up.headers[key];
+      res.writeHead(up.statusCode, headers);
+      let bytes = 0;
+      try {
+        for await (const chunk of up) { bytes += chunk.length; if (!res.write(chunk)) await once(res, 'drain'); }
+        record('complete', id, {bytes, elapsedMs:performance.now()-started});
+        res.end();
+      } catch (error) {
+        record('stream_error', id, {code:safeCode(error), elapsedMs:performance.now()-started});
+        res.destroy();
+      }
+    });
+    upstream.setTimeout(600000, () => upstream.destroy(Object.assign(new Error(), {code:'ETIMEDOUT'})));
+    upstream.on('error', error => {
+      record('request_error', id, {code:safeCode(error), elapsedMs:performance.now()-started});
+      if (res.headersSent) res.destroy(); else res.writeHead(502, {'x-mellum-transport-id':id}).end();
+    });
+    res.on('close', () => { if (!res.writableFinished) upstream.destroy(); });
+    upstream.end(req.method === 'POST' ? body : undefined);
+  });
+  server.listen(listen, '127.0.0.1');
+  await once(server, 'listening');
+  record('ready', null, {port:server.address().port});
+  return {port:server.address().port, server,
+          close:() => new Promise(resolve => { server.closeAllConnections?.(); server.close(() => resolve()); })};
+}
+
+function flag(argv, name, fallback) {
+  const at = argv.indexOf(name);
+  return at >= 0 ? argv[at + 1] : fallback;
+}
+
 async function containerRelay() {
   const send = writer(process.stdout), active = new Map();
   const server = http.createServer(async (req,res) => {
@@ -157,7 +232,12 @@ async function containerRelay() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv[2] === 'container') await containerRelay();
-  else {
+  else if (process.argv[2] === 'proxy') {
+    const argv = process.argv.slice(3), file = flag(argv, '--log');
+    const log = row => appendFileSync(file, JSON.stringify(row)+'\n');
+    const proxy = await proxyRelay({listen:Number(flag(argv, '--listen', '0')), target:flag(argv, '--target'), log});
+    for (const signal of ['SIGTERM','SIGINT']) process.on(signal, () => proxy.close().then(() => process.exit(0)));
+  } else {
     const [cid,target,file] = process.argv.slice(3);
     const child = spawn('docker',['exec','-i','--user','1000:1000',cid,'node','/opt/relay.mjs','container'],
       {stdio:['pipe','pipe','inherit']});
