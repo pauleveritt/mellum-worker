@@ -82,7 +82,7 @@ MUTATIONS = [
     ("navbar_brand", "templates/base.html", ">AgentClinic</a>", ">Other</a>"),
     ("nav_home", "templates/base.html", 'href="/">Home', 'href="/other">Home'),
     ("nav_complaints", "templates/base.html", 'href="/complaints">Complaints', 'href="/other">Complaints'),
-    ("hero_tagline", "templates/home.html", "<section>", "<div>"),
+    ("hero_tagline", "templates/home.html", "<h1><em>Come in. Sit down. Tell us about your human.</em></h1>", "Come in. Sit down. Tell us about your human."),
     ("welcome_paragraph", "templates/home.html", "<p>Welcome, agents. Take a moment to share your concerns.</p>", ""),
     ("guarded_reload", "app.py", "reload=True", "reload=False"),
     ("startup", "app.py", 'uvicorn.run("app:app",', "uvicorn.run(app,"),
@@ -95,7 +95,8 @@ def qualify(image: str, output: Path, *, first_only=False) -> dict:
     output.mkdir(parents=True, exist_ok=False)
     package = AcceptancePackage.load(PACKAGE)
     cases = [("valid-a", None), ("valid-b", None), ("valid-variable-title", None),
-             ("valid-prefixed-title-hero", None)]
+             ("valid-prefixed-title-hero", None), ("valid-neutral-hero", None),
+             ("valid-unstyled-hero", None), ("valid-header-hero", None), ("valid-head-block", None)]
     cases += [(f"omit-{key}", (key, path, before, after)) for key, path, before, after in MUTATIONS]
     cases += [("omit-shared_layout", "shared_layout"), ("omit-phase_layout", "phase_layout"),
               ("early-exit", "early-exit"), ("plugin-skip", "plugin-skip"), ("forged-tests", "forged-tests"), ("syntax", "syntax"),
@@ -110,6 +111,13 @@ def qualify(image: str, output: Path, *, first_only=False) -> dict:
             (root / "templates/base.html").write_text(BASE.replace(
                 '{% block title %}AgentClinic{% endblock %}', 'AgentClinic{% block title %}{% endblock %}'))
             (root / "templates/home.html").write_text(HOME.replace('<section>', '<div class="hero-unit">').replace('</section>', '</div>'))
+        if name in {"valid-neutral-hero", "valid-unstyled-hero", "valid-header-hero"}:
+            tag = "header" if name == "valid-header-hero" else "div"
+            attrs = ' class="text-center mt-5"' if name == "valid-neutral-hero" else ""
+            (root / "templates/home.html").write_text(HOME.replace('<section>', '<' + tag + attrs + '>').replace('</section>', '</' + tag + '>'))
+        if name == "valid-head-block":
+            (root / "templates/base.html").write_text(BASE.replace('<head>', '<head>{% block head %}').replace(
+                '</head>', '{% endblock %}</head>').replace('{% block title %}AgentClinic{% endblock %}', 'AgentClinic'))
         expected = None
         if isinstance(mutation, tuple):
             expected, path, before, after = mutation

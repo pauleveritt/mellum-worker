@@ -45,7 +45,7 @@ does not manufacture forty outcomes after broken measurement.
 ## Qualification and freeze
 
 Before launch: immutable image build, containment/hidden-grader qualification,
-four correct acceptance variants and individual seeded omissions, hostile
+eight correct acceptance variants and individual seeded omissions, hostile
 candidate observations, actual-Pi pass/repair/exhaust/tamper exchanges and
 forced compaction accounting. Setup uses a fake provider and is not evidence
 of Mellum quality. Record all qualifications, package/source hashes and image.
@@ -93,3 +93,17 @@ starts twenty fresh tasks per arm under the unchanged arms, usability rule,
 candidate threshold and fixed order. Preserve the aborted batch rather than
 rewriting or rescoring it as counted evidence. This is an instrument correction
 before a new freeze, not a favorable-outcome stopping rule.
+
+2026-11-05 UTC second correction: `qualified-batch-v2` was stopped after
+thirteen complete tasks and during task fourteen. A centered headline/intro
+container with ordinary CSS names was falsely rejected. Requiring particular
+CSS names was an invented constraint. Replace it with the declared structural
+proxy over content containers, and qualify neutral, unstyled and header
+variants. Also qualify whole-head title overrides while ensuring a title
+inserted into body content cannot count. Preserve all v2 attempts and costs as
+qualification evidence, with no efficacy decision or reused outcomes.
+
+`qualified-batch-v3` repeats preparation and collects twenty fresh tasks per
+arm with the original fixed order, deadline, repair allowance and candidate
+rule. Audit the earlier artifacts during qualification to find other oracle
+limitations before this freeze; do not overwrite or rescore their originals.

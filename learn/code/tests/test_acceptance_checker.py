@@ -67,8 +67,10 @@ def test_valid_variants_accept_optional_attributes_and_markup_order(tmp_path):
         assert result["status"] == "pass", result
 
 
-def test_hero_class_variants_are_not_false_failures(tmp_path):
-    html = HTML.replace("<section>", '<div class="hero-unit">').replace("</section>", "</div>")
+@pytest.mark.parametrize("tag,attrs", [("div", 'class="hero-unit"'), ("div", 'class="text-center mt-5"'),
+                                      ("div", ""), ("header", 'class="page-intro"')])
+def test_hero_class_variants_are_not_false_failures(tmp_path, tag, attrs):
+    html = HTML.replace("<section>", f'<{tag} {attrs}>').replace("</section>", f"</{tag}>")
     assert load_checker()(workspace(tmp_path), Probe(html), lambda: 30)["status"] == "pass"
 
 

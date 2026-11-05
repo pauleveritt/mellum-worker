@@ -19,11 +19,14 @@ from pathlib import Path
 
 class Titles(HTMLParser):
     def __init__(self, html):
-        super().__init__(); self.active = False; self.title = ""; self.feed(html)
+        super().__init__(); self.active = False; self.in_head = False; self.count = 0; self.title = ""; self.feed(html)
     def handle_starttag(self, tag, attrs):
-        if tag == "title": self.active = True
+        if tag == "head": self.in_head = True
+        if tag == "title" and self.in_head:
+            self.active = True; self.count += 1
     def handle_endtag(self, tag):
         if tag == "title": self.active = False
+        if tag == "head": self.in_head = False
     def handle_data(self, text):
         if self.active: self.title += text
 
@@ -55,13 +58,15 @@ def titles():
     marker = "probe-" + uuid.uuid4().hex
     overridden = False
     for node in tree.find_all(nodes.Block):
-        child = '{% extends "base.html" %}{% block ' + node.name + ' %}' + marker + '{% endblock %}'
-        rendered = environment.from_string(child).render(**context)
-        overridden |= marker in Titles(rendered).title and Titles(rendered).title.strip() != default
+        for content in (marker, '<title>' + marker + '</title>'):
+            child = '{% extends "base.html" %}{% block ' + node.name + ' %}' + content + '{% endblock %}'
+            title = Titles(environment.from_string(child).render(**context))
+            overridden |= title.count == 1 and marker in title.title and title.title.strip() != default
     for variable in meta.find_undeclared_variables(tree) - {"request"}:
         child = '{% extends "base.html" %}{% set ' + variable + ' = "' + marker + '" %}'
         rendered = environment.from_string(child).render(**context)
-        overridden |= marker in Titles(rendered).title and Titles(rendered).title.strip() != default
+        title = Titles(rendered)
+        overridden |= title.count == 1 and marker in title.title and title.title.strip() != default
     return {"default": default, "overridden": overridden}
 
 

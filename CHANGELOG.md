@@ -6,6 +6,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- Acceptance qualification now covers ordinary, unstyled and header hero
+  containers without requiring CSS names, and supports whole-head title
+  overrides without counting titles inserted into body content.
+
 - Corrected acceptance false failures for hero class variants and page titles
   retaining a site-name prefix. Interrupted contained tasks now receive a host
   layout report so their evidence and budgets remain reportable.
