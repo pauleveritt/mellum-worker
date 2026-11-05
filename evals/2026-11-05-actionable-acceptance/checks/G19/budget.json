@@ -1,0 +1,150 @@
+{
+  "requests": 17,
+  "agent_requests": 17,
+  "outside_agent_requests": 0,
+  "agent_output_tokens": 9841,
+  "output_tokens": 9841,
+  "reconciled": true,
+  "issues": [],
+  "generations": [
+    {
+      "task": 679869,
+      "full_prompt_tokens": 1682,
+      "evaluated_prompt_tokens": 1682,
+      "output_tokens": 291,
+      "relay_id": "37876f4b-293d-4256-ab54-755516eb688c",
+      "repair_index": 0
+    },
+    {
+      "task": 680167,
+      "full_prompt_tokens": 2187,
+      "evaluated_prompt_tokens": 215,
+      "output_tokens": 75,
+      "relay_id": "fbfa2017-bb78-47a6-b84d-0231a34db2b1",
+      "repair_index": 0
+    },
+    {
+      "task": 680245,
+      "full_prompt_tokens": 2417,
+      "evaluated_prompt_tokens": 156,
+      "output_tokens": 105,
+      "relay_id": "81243154-58f9-46bd-8c32-e5170b0b396f",
+      "repair_index": 0
+    },
+    {
+      "task": 680353,
+      "full_prompt_tokens": 2641,
+      "evaluated_prompt_tokens": 120,
+      "output_tokens": 99,
+      "relay_id": "167cdb1d-4133-4ebb-ad34-137248c53f78",
+      "repair_index": 0
+    },
+    {
+      "task": 680455,
+      "full_prompt_tokens": 2798,
+      "evaluated_prompt_tokens": 59,
+      "output_tokens": 76,
+      "relay_id": "8567603b-9799-4c97-a7ba-0a15a975f1c7",
+      "repair_index": 0
+    },
+    {
+      "task": 680534,
+      "full_prompt_tokens": 3036,
+      "evaluated_prompt_tokens": 163,
+      "output_tokens": 39,
+      "relay_id": "3db78d99-35b4-4367-b6c0-9761fb199125",
+      "repair_index": 0
+    },
+    {
+      "task": 680576,
+      "full_prompt_tokens": 3931,
+      "evaluated_prompt_tokens": 857,
+      "output_tokens": 1418,
+      "relay_id": "4c0ec34a-1e78-428e-861d-541e21a90995",
+      "repair_index": 0
+    },
+    {
+      "task": 681998,
+      "full_prompt_tokens": 5473,
+      "evaluated_prompt_tokens": 125,
+      "output_tokens": 2065,
+      "relay_id": "fe34ecc7-bea2-4250-bda1-c98d441cf13a",
+      "repair_index": 0
+    },
+    {
+      "task": 684066,
+      "full_prompt_tokens": 7557,
+      "evaluated_prompt_tokens": 20,
+      "output_tokens": 416,
+      "relay_id": "580a5a0d-871d-4510-8f79-a2f86bd107fb",
+      "repair_index": 0
+    },
+    {
+      "task": 684485,
+      "full_prompt_tokens": 7994,
+      "evaluated_prompt_tokens": 22,
+      "output_tokens": 135,
+      "relay_id": "c8e687f2-e0a6-4a11-9427-cd0bf4a12bb9",
+      "repair_index": 0
+    },
+    {
+      "task": 684623,
+      "full_prompt_tokens": 8150,
+      "evaluated_prompt_tokens": 26,
+      "output_tokens": 642,
+      "relay_id": "f837d70d-0c89-444c-a711-1a24e2692608",
+      "repair_index": 0
+    },
+    {
+      "task": 685268,
+      "full_prompt_tokens": 8814,
+      "evaluated_prompt_tokens": 108,
+      "output_tokens": 100,
+      "relay_id": "6cc128ae-62d9-414c-b471-6aeb932ac9f3",
+      "repair_index": 0
+    },
+    {
+      "task": 685371,
+      "full_prompt_tokens": 9660,
+      "evaluated_prompt_tokens": 747,
+      "output_tokens": 1109,
+      "relay_id": "6cfe5744-0968-431e-987f-bf4a4607701c",
+      "repair_index": 0
+    },
+    {
+      "task": 686484,
+      "full_prompt_tokens": 5507,
+      "evaluated_prompt_tokens": 4338,
+      "output_tokens": 2045,
+      "relay_id": "57c34adc-3778-461c-8886-a0e368fccdcb",
+      "repair_index": 1
+    },
+    {
+      "task": 688540,
+      "full_prompt_tokens": 7932,
+      "evaluated_prompt_tokens": 381,
+      "output_tokens": 330,
+      "relay_id": "9789cdaf-6c19-4bf2-9a58-ca0a17d1c9d8",
+      "repair_index": 1
+    },
+    {
+      "task": 688873,
+      "full_prompt_tokens": 8290,
+      "evaluated_prompt_tokens": 29,
+      "output_tokens": 174,
+      "relay_id": "099fbd94-3df0-41f2-8aef-e7c6567273fa",
+      "repair_index": 1
+    },
+    {
+      "task": 689050,
+      "full_prompt_tokens": 9100,
+      "evaluated_prompt_tokens": 637,
+      "output_tokens": 722,
+      "relay_id": "3d0b94da-44f3-4c7e-979d-554e9f5a2ca7",
+      "repair_index": 1
+    }
+  ],
+  "compaction_attempts": 0,
+  "compaction_completed": 0,
+  "compaction_usage": []
+}

@@ -1,0 +1,114 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:caefef6da36f64f1e5f79adfc38f7d2d9413e241a1521c1ad92540a25288a552"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output",
+    "check/external-acceptance"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+      "sha256": "d68a6b3655663d661dabfd8b975310e8acfda34ce157101b8af67a3d7263151b"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/python-developer.ts",
+      "sha256": "b3aeb9d88d994b8b29dc8c9aa7c0d16907eac6ec8a8aa810ddb2e37949572726"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/verify-the-spec.ts",
+      "sha256": "49bb4b595786349edc673e650a45ff4a7023ab00038c0967e5afa6d852644298"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/context/trim-tool-output.ts",
+      "sha256": "02d7802411740a55b7e6ac05d06eb59921a8c8e72c7ab27aa1d96e0db7534199"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/check/external-acceptance.ts",
+      "sha256": "3d221040e21a94b20ed08583d8360ba2549b19814139dbc8504b62846d1d1c50"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": {
+    "seconds": 180.2,
+    "limit": 180,
+    "command": "timeout 5 uv run --frozen python app.py"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 43,
+  "turns": 43,
+  "tool_calls": 40,
+  "tool_errors": 8,
+  "context": 22393,
+  "context_uncached": 12521,
+  "output_tokens": 16279,
+  "wall": 358.893,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 1,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 9250,
+      "pgid": null,
+      "command": "timeout 5 uv run --frozen python app.py"
+    },
+    {
+      "pid": 9251,
+      "pgid": null,
+      "command": "uv run --frozen python app.py"
+    },
+    {
+      "pid": 9254,
+      "pgid": null,
+      "command": "/attempt/runs/task-7cb7cd5782b146199355898f70845770/workspace/.venv/bin/python3 app.py"
+    },
+    {
+      "pid": 9268,
+      "pgid": null,
+      "command": "/attempt/runs/task-7cb7cd5782b146199355898f70845770/workspace/.venv/bin/python3 -c from multiprocessing.resource_tracker import main;main(4)"
+    }
+  ],
+  "out_of_layout": [],
+  "completion": "stalled",
+  "elapsed_seconds": 358.893,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": -9
+}

@@ -1,0 +1,334 @@
+{
+  "requests": 40,
+  "agent_requests": 40,
+  "outside_agent_requests": 0,
+  "agent_output_tokens": 15371,
+  "output_tokens": 15371,
+  "reconciled": true,
+  "issues": [],
+  "generations": [
+    {
+      "task": 136499,
+      "full_prompt_tokens": 1680,
+      "evaluated_prompt_tokens": 1680,
+      "output_tokens": 200,
+      "relay_id": "3490a772-b223-442b-9c95-d836e65d8477",
+      "repair_index": 0
+    },
+    {
+      "task": 136706,
+      "full_prompt_tokens": 2094,
+      "evaluated_prompt_tokens": 215,
+      "output_tokens": 76,
+      "relay_id": "64a7dfc7-a298-429f-a88b-168a0f23876b",
+      "repair_index": 0
+    },
+    {
+      "task": 136785,
+      "full_prompt_tokens": 2325,
+      "evaluated_prompt_tokens": 156,
+      "output_tokens": 136,
+      "relay_id": "6176b288-0b5a-46d3-b1fc-29562d4885e7",
+      "repair_index": 0
+    },
+    {
+      "task": 136924,
+      "full_prompt_tokens": 2623,
+      "evaluated_prompt_tokens": 163,
+      "output_tokens": 36,
+      "relay_id": "6be4c131-ebb7-4b38-84d9-196627b1a73b",
+      "repair_index": 0
+    },
+    {
+      "task": 136963,
+      "full_prompt_tokens": 3515,
+      "evaluated_prompt_tokens": 857,
+      "output_tokens": 1199,
+      "relay_id": "215bdf74-831d-422e-b67d-972ea0c68e54",
+      "repair_index": 0
+    },
+    {
+      "task": 138166,
+      "full_prompt_tokens": 4838,
+      "evaluated_prompt_tokens": 125,
+      "output_tokens": 2899,
+      "relay_id": "b369b2f3-b7e2-41df-9928-ca436b6c9beb",
+      "repair_index": 0
+    },
+    {
+      "task": 141068,
+      "full_prompt_tokens": 7756,
+      "evaluated_prompt_tokens": 2923,
+      "output_tokens": 129,
+      "relay_id": "41744052-96e8-4c3b-9a54-fef09c460de8",
+      "repair_index": 0
+    },
+    {
+      "task": 141205,
+      "full_prompt_tokens": 8001,
+      "evaluated_prompt_tokens": 117,
+      "output_tokens": 430,
+      "relay_id": "bea650c0-f1e7-4ddd-b526-e3301402fb61",
+      "repair_index": 0
+    },
+    {
+      "task": 141638,
+      "full_prompt_tokens": 8467,
+      "evaluated_prompt_tokens": 43,
+      "output_tokens": 141,
+      "relay_id": "d1de89c7-1ff6-4dbd-917d-b1f6cc633ba8",
+      "repair_index": 0
+    },
+    {
+      "task": 141782,
+      "full_prompt_tokens": 8724,
+      "evaluated_prompt_tokens": 117,
+      "output_tokens": 321,
+      "relay_id": "0a1a6355-19e1-4fab-9f6e-fe1e90405d50",
+      "repair_index": 0
+    },
+    {
+      "task": 142106,
+      "full_prompt_tokens": 9080,
+      "evaluated_prompt_tokens": 179,
+      "output_tokens": 135,
+      "relay_id": "a8c2d31d-2ee1-4b96-a2a6-f91d7edf0fa3",
+      "repair_index": 0
+    },
+    {
+      "task": 142244,
+      "full_prompt_tokens": 9331,
+      "evaluated_prompt_tokens": 117,
+      "output_tokens": 152,
+      "relay_id": "7f7b0288-73c9-4868-ab78-556b4baa5d53",
+      "repair_index": 0
+    },
+    {
+      "task": 142399,
+      "full_prompt_tokens": 9519,
+      "evaluated_prompt_tokens": 43,
+      "output_tokens": 287,
+      "relay_id": "cb282ce6-9225-4d3e-b14b-41946bb7e804",
+      "repair_index": 0
+    },
+    {
+      "task": 142689,
+      "full_prompt_tokens": 9842,
+      "evaluated_prompt_tokens": 37,
+      "output_tokens": 104,
+      "relay_id": "079fea74-c022-4962-9ee8-a99c2b4127cb",
+      "repair_index": 0
+    },
+    {
+      "task": 142796,
+      "full_prompt_tokens": 10062,
+      "evaluated_prompt_tokens": 117,
+      "output_tokens": 213,
+      "relay_id": "9f009c65-a739-4e99-9167-738ea824227c",
+      "repair_index": 0
+    },
+    {
+      "task": 143012,
+      "full_prompt_tokens": 10311,
+      "evaluated_prompt_tokens": 37,
+      "output_tokens": 212,
+      "relay_id": "6c394b89-eb66-4d26-8388-2404497f2fa4",
+      "repair_index": 0
+    },
+    {
+      "task": 143227,
+      "full_prompt_tokens": 10559,
+      "evaluated_prompt_tokens": 37,
+      "output_tokens": 70,
+      "relay_id": "c9358de3-4c0e-492a-802a-0d5a2170d8eb",
+      "repair_index": 0
+    },
+    {
+      "task": 143300,
+      "full_prompt_tokens": 10731,
+      "evaluated_prompt_tokens": 103,
+      "output_tokens": 72,
+      "relay_id": "028e58c9-08ac-4129-9598-dd364d0eef5d",
+      "repair_index": 0
+    },
+    {
+      "task": 143375,
+      "full_prompt_tokens": 10847,
+      "evaluated_prompt_tokens": 45,
+      "output_tokens": 408,
+      "relay_id": "75d1c1fe-934c-4399-bdff-23fe26a38a7e",
+      "repair_index": 0
+    },
+    {
+      "task": 143786,
+      "full_prompt_tokens": 11291,
+      "evaluated_prompt_tokens": 43,
+      "output_tokens": 571,
+      "relay_id": "4d59bd76-4a2e-46d5-a46d-3fa489040888",
+      "repair_index": 0
+    },
+    {
+      "task": 144360,
+      "full_prompt_tokens": 11898,
+      "evaluated_prompt_tokens": 37,
+      "output_tokens": 65,
+      "relay_id": "5d2f8046-db6f-44ca-81d2-413009fc528f",
+      "repair_index": 0
+    },
+    {
+      "task": 144428,
+      "full_prompt_tokens": 11988,
+      "evaluated_prompt_tokens": 26,
+      "output_tokens": 155,
+      "relay_id": "e77c31cb-8c5f-485e-820a-30f36374062b",
+      "repair_index": 0
+    },
+    {
+      "task": 144586,
+      "full_prompt_tokens": 12179,
+      "evaluated_prompt_tokens": 37,
+      "output_tokens": 122,
+      "relay_id": "d6c08fd5-fb17-4c8d-aa83-da214eef5946",
+      "repair_index": 0
+    },
+    {
+      "task": 144711,
+      "full_prompt_tokens": 12458,
+      "evaluated_prompt_tokens": 158,
+      "output_tokens": 751,
+      "relay_id": "7873dbe4-bf68-4a6d-b42a-5d38cf0981d6",
+      "repair_index": 0
+    },
+    {
+      "task": 145465,
+      "full_prompt_tokens": 13245,
+      "evaluated_prompt_tokens": 37,
+      "output_tokens": 208,
+      "relay_id": "eeb21324-bf12-4f45-9c42-1530aeb175d6",
+      "repair_index": 0
+    },
+    {
+      "task": 145676,
+      "full_prompt_tokens": 13479,
+      "evaluated_prompt_tokens": 33,
+      "output_tokens": 46,
+      "relay_id": "1ba3645d-33fd-4acf-a71e-4e64726bcb1b",
+      "repair_index": 0
+    },
+    {
+      "task": 145725,
+      "full_prompt_tokens": 13641,
+      "evaluated_prompt_tokens": 117,
+      "output_tokens": 144,
+      "relay_id": "4be6013d-60f0-4327-884c-02a31f7eda84",
+      "repair_index": 0
+    },
+    {
+      "task": 145872,
+      "full_prompt_tokens": 13804,
+      "evaluated_prompt_tokens": 20,
+      "output_tokens": 524,
+      "relay_id": "b26f7202-4801-48b2-8ee1-369075120661",
+      "repair_index": 0
+    },
+    {
+      "task": 146399,
+      "full_prompt_tokens": 14349,
+      "evaluated_prompt_tokens": 26,
+      "output_tokens": 216,
+      "relay_id": "b2ad9dcd-1014-4e68-9efd-0ce1831306a7",
+      "repair_index": 0
+    },
+    {
+      "task": 146618,
+      "full_prompt_tokens": 14586,
+      "evaluated_prompt_tokens": 22,
+      "output_tokens": 159,
+      "relay_id": "b9672eca-64b7-443b-a604-a735d2be7e3c",
+      "repair_index": 0
+    },
+    {
+      "task": 146780,
+      "full_prompt_tokens": 14868,
+      "evaluated_prompt_tokens": 124,
+      "output_tokens": 317,
+      "relay_id": "85847011-604b-44a5-bde5-3c5bc5026e78",
+      "repair_index": 0
+    },
+    {
+      "task": 147100,
+      "full_prompt_tokens": 15219,
+      "evaluated_prompt_tokens": 35,
+      "output_tokens": 221,
+      "relay_id": "23fedc33-10ce-4b2d-8782-f05f16441557",
+      "repair_index": 0
+    },
+    {
+      "task": 147324,
+      "full_prompt_tokens": 15457,
+      "evaluated_prompt_tokens": 18,
+      "output_tokens": 753,
+      "relay_id": "1a3dba0f-a4bb-4dc6-b620-44fff51f9f21",
+      "repair_index": 0
+    },
+    {
+      "task": 148080,
+      "full_prompt_tokens": 16234,
+      "evaluated_prompt_tokens": 25,
+      "output_tokens": 93,
+      "relay_id": "41b2e4cd-844a-4eb8-b30c-a326f4082dce",
+      "repair_index": 0
+    },
+    {
+      "task": 148176,
+      "full_prompt_tokens": 17066,
+      "evaluated_prompt_tokens": 740,
+      "output_tokens": 810,
+      "relay_id": "2aa3bf06-7c5f-42e4-aff7-70791b6103f1",
+      "repair_index": 0
+    },
+    {
+      "task": 148990,
+      "full_prompt_tokens": 7691,
+      "evaluated_prompt_tokens": 6524,
+      "output_tokens": 1670,
+      "relay_id": "efe694f7-ad14-477b-9284-00d650e6b589",
+      "repair_index": 1
+    },
+    {
+      "task": 150675,
+      "full_prompt_tokens": 9389,
+      "evaluated_prompt_tokens": 29,
+      "output_tokens": 70,
+      "relay_id": "05a72e84-781a-4bcd-b985-4cce739698e0",
+      "repair_index": 1
+    },
+    {
+      "task": 150748,
+      "full_prompt_tokens": 10088,
+      "evaluated_prompt_tokens": 630,
+      "output_tokens": 714,
+      "relay_id": "30e85c38-293f-429c-a354-21b706913e58",
+      "repair_index": 1
+    },
+    {
+      "task": 151466,
+      "full_prompt_tokens": 10819,
+      "evaluated_prompt_tokens": 18,
+      "output_tokens": 75,
+      "relay_id": "af0ea418-063d-402e-a8bf-106bcb3e1e31",
+      "repair_index": 1
+    },
+    {
+      "task": 151544,
+      "full_prompt_tokens": 11523,
+      "evaluated_prompt_tokens": 630,
+      "output_tokens": 467,
+      "relay_id": "54d5c99f-95fd-4352-b7c3-6a800195686f",
+      "repair_index": 1
+    }
+  ],
+  "compaction_attempts": 0,
+  "compaction_completed": 0,
+  "compaction_usage": []
+}

@@ -1,0 +1,7 @@
+{
+  "path": "runs/2026-11-05-actionable-acceptance-raw.tar.gz",
+  "bytes": 60441331,
+  "sha256": "da858db806c701c6171d84190b36ec44f29e11b37f37dbb2013a26dbc671a136",
+  "upload": "held locally; not uploaded",
+  "contents": "Preflight batch-v1, qualified batch-v2, all40 counted attempts, fake-provider qualification, native live probe, final verification logs and credential scan. No prior cohort reused."
+}

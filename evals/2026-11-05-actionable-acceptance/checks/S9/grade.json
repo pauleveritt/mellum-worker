@@ -1,0 +1,61 @@
+{
+  "ruff": {
+    "status": "fail",
+    "version": "0.16.3",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "ruff==0.16.3",
+      "ruff",
+      "check",
+      "--select",
+      "F,E9",
+      "--extend-exclude",
+      "tests",
+      "--extend-exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 1,
+    "stdout": "F811 Redefinition of unused `home` from line 6\n  --> app.py:42:11\n   |\n41 | @app.get(\"/\")\n42 | async def home(request: Request):\n   |           ^^^^ `home` redefined here\n43 |     return templates.TemplateResponse(\"home.html\", {\"request\": request})\n   |\n  ::: app.py:6:11\n   |\n 5 | @app.get(\"/\")\n 6 | async def home():\n   |           ---- previous definition of `home` here\n 7 |     from turbohtml import render\n 8 |     return render(\"home.html\")\n   |\nhelp: Remove definition: `home`\n\nFound 1 error.\n",
+    "stderr": "Using CPython 3.14.2\nCreating virtual environment at: .venv\nwarning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.\n         If the cache and target directories are on different filesystems, hardlinking may not be supported.\n         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.\nInstalled 47 packages in 14ms\nInstalled 1 package in 0.16ms\n"
+  },
+  "pyrefly": {
+    "status": "fail",
+    "version": "1.2.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "pyrefly==1.2.0",
+      "pyrefly",
+      "check",
+      "."
+    ],
+    "exit_code": 1,
+    "stdout": "ERROR Could not import `render` from `turbohtml` [missing-module-attribute]\n --> app.py:7:27\n  |\n7 |     from turbohtml import render\n  |                           ^^^^^^\n  |\n",
+    "stderr": "Installed 1 package in 0.44ms\n WARN PYTHONPATH environment variable is set to `/attempt/grading/workspace`. Checks in other environments may not include these paths.\n INFO 1 error\n"
+  },
+  "complexipy": {
+    "status": "pass",
+    "version": "8.3.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "complexipy==8.3.0",
+      "complexipy",
+      "--max-complexity-allowed",
+      "10",
+      "--exclude",
+      "tests",
+      "--exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83d\udc19 complexipy \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\napp.py\n    home 0  \u2705  PASSED  \n    home 0  \u2705  PASSED  \n\ntests/test_home.py\n    test_home_status_and_content 0  \u2705  PASSED  \n\nAll functions are within the allowed complexity.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83c\udf89 Analysis completed! \ud83c\udf89 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n",
+    "stderr": "Installed 1 package in 0.90ms\n"
+  }
+}

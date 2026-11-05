@@ -1,0 +1,36 @@
+{
+  "source_commit": "6283298",
+  "checks": [
+    {
+      "command": "npm test",
+      "result": "665/665 passed",
+      "log_sha256": "6ca37b55ef78f1cc47bddb0dc50f232bb9de60a15aff3480b422d3b6d2cf8794"
+    },
+    {
+      "command": "focused acceptance/containment pytest",
+      "result": "131/131 passed",
+      "log_sha256": "96da5bb795c4e2509e46748657b594bd2eafcde654863aaf22f5b90a28598e9b"
+    },
+    {
+      "command": "node --test tests/docs-caps.test.mjs",
+      "result": "4/4 passed",
+      "log_sha256": "9baa35e2d70c869dcf2c392c1fde54f3c0c220ed3f087f8429db5d36c7d28d1a"
+    },
+    {
+      "command": "uv run zensical build",
+      "result": "clean build",
+      "log_sha256": "113cd0823d385bd29c0e6a7b9a628bd86d36261972aaf7da3105466cb7ba79bd"
+    }
+  ],
+  "independent_usability_recomputed": 40,
+  "ordinary_payloads_once": 1553,
+  "credential_scan": {
+    "files_scanned": 6165,
+    "pattern_hits": [],
+    "nonempty_auth_files": [],
+    "limits": "Pattern scan for known credential formats and private-key headers, plus auth.json inventory; not proof against arbitrary secret formats. No matched values are printed."
+  },
+  "shutdown": "post-identity-verification.json",
+  "public_push": "held; prior automatic review rejected public publication without explicit authorization",
+  "raw_upload": "held"
+}

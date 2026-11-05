@@ -6,6 +6,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- The [actionable-feedback follow-up](evals/2026-11-05-actionable-acceptance/README.md)
+  records twenty fresh tasks per arm: selective0/20 usable, gated10/20. Clearer
+  feedback did not demonstrate improved reliability; three interrupted output
+  totals remain unknown. Shutdown and once-per-task delivery are verified, and
+  no default is promoted.
+
 - The [protected acceptance comparison](evals/2026-11-05-protected-acceptance/README.md)
   records twenty tasks per arm: selective remedies produced 1/20 usable results,
   adding the gate produced 11/20. The reliability threshold was missed; one

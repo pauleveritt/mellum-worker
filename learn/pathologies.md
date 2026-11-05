@@ -304,6 +304,16 @@ the tool return; containment and the external cutoff remained necessary
     and cleanup; qualify the external acceptance checks against the whole spec
     rather than treating an in-process test pass as completion.
 
+    **Follow-up, 2026-11-05:** delivering the actual launch warning and explicit
+    repair scope still yielded only10/20 usable gated tasks. G2 dismissed the
+    runtime warning because its own tests passed; G3 inspected correct template
+    source while its route serialized it as JSON. G12 fixed the artifact, then
+    stalled on a timeout-wrapped server command. The guard also told the model
+    it did not need a running server, conflicting with required launch checks
+    ([follow-up](https://github.com/pauleveritt/mellum-worker/blob/paul/initial-fixes/evals/2026-11-05-actionable-acceptance/README.md)).
+    Diagnose executed behavior, distinguish blocked calls from application
+    output, and qualify lifecycle cleanup rather than trusting a timeout prefix.
+
 ## The checker rejects a lawful build
 
 23. **An acceptance checker invents a requirement.** A checker can turn a legal

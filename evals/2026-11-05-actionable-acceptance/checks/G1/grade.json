@@ -1,0 +1,61 @@
+{
+  "ruff": {
+    "status": "fail",
+    "version": "0.16.3",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "ruff==0.16.3",
+      "ruff",
+      "check",
+      "--select",
+      "F,E9",
+      "--extend-exclude",
+      "tests",
+      "--extend-exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 1,
+    "stdout": "F811 [*] Redefinition of unused `complaints` from line 3\n --> app.py:4:20\n  |\n1 | from fastapi import FastAPI, Request\n2 | from fastapi.templating import Jinja2Templates\n3 | from models import complaints\n  |                    ---------- previous definition of `complaints` here\n4 | from models import complaints\n  |                    ^^^^^^^^^^ `complaints` redefined here\n5 |\n6 | app = FastAPI()\n  |\nhelp: Remove definition: `complaints`\n  |\n3 | from models import complaints\n  - from models import complaints\n4 |\n  |\n\nF811 Redefinition of unused `complaints_board` from line 14\n  --> app.py:18:5\n   |\n17 | @app.get(\"/complaints\")\n18 | def complaints_board(request: Request):\n   |     ^^^^^^^^^^^^^^^^ `complaints_board` redefined here\n19 |     return templates.TemplateResponse(\"complaints.html\", {\"request\": request, \"complaints\": complaints})\n   |\n  ::: app.py:14:5\n   |\n13 | @app.get(\"/complaints\")\n14 | def complaints_board(request: Request):\n   |     ---------------- previous definition of `complaints_board` here\n15 |     return templates.TemplateResponse(\"complaints.html\", {\"request\": request, \"complaints\": complaints})\n   |\nhelp: Remove definition: `complaints_board`\n\nFound 2 errors.\n[*] 1 fixable with the `--fix` option.\n",
+    "stderr": "Using CPython 3.14.2\nCreating virtual environment at: .venv\nwarning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.\n         If the cache and target directories are on different filesystems, hardlinking may not be supported.\n         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.\nInstalled 47 packages in 16ms\nInstalled 1 package in 0.16ms\n"
+  },
+  "pyrefly": {
+    "status": "pass",
+    "version": "1.2.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "pyrefly==1.2.0",
+      "pyrefly",
+      "check",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "Installed 1 package in 0.46ms\n WARN PYTHONPATH environment variable is set to `/attempt/grading/workspace`. Checks in other environments may not include these paths.\n INFO 0 errors\n"
+  },
+  "complexipy": {
+    "status": "pass",
+    "version": "8.3.0",
+    "command": [
+      "uv",
+      "run",
+      "--with",
+      "complexipy==8.3.0",
+      "complexipy",
+      "--max-complexity-allowed",
+      "10",
+      "--exclude",
+      "tests",
+      "--exclude",
+      "grader_tests",
+      "."
+    ],
+    "exit_code": 0,
+    "stdout": "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83d\udc19 complexipy \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\napp.py\n    complaints_board 0  \u2705  PASSED  \n    complaints_board 0  \u2705  PASSED  \n    home 0  \u2705  PASSED  \n\ntests/test_app_main.py\n    test_app_main_configuration 9  \u2705  PASSED  \n\ntests/test_complaints.py\n    test_complaints_board_status_and_content 0  \u2705  PASSED  \n\ntests/test_home.py\n    test_home_status_and_content 0  \u2705  PASSED  \n\nAll functions are within the allowed complexity.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \ud83c\udf89 Analysis completed! \ud83c\udf89 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n",
+    "stderr": "Installed 1 package in 0.91ms\n"
+  }
+}

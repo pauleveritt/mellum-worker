@@ -1,0 +1,104 @@
+{
+  "isolation": {
+    "backend": "temporary-docker",
+    "image": "sha256:caefef6da36f64f1e5f79adfc38f7d2d9413e241a1521c1ad92540a25288a552"
+  },
+  "instrumentation_error": false,
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec",
+    "guard/foreground-server",
+    "context/trim-tool-output"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/name-the-layout.ts",
+      "sha256": "d68a6b3655663d661dabfd8b975310e8acfda34ce157101b8af67a3d7263151b"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/python-developer.ts",
+      "sha256": "b3aeb9d88d994b8b29dc8c9aa7c0d16907eac6ec8a8aa810ddb2e37949572726"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/prompt/verify-the-spec.ts",
+      "sha256": "49bb4b595786349edc673e650a45ff4a7023ab00038c0967e5afa6d852644298"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/remedies/context/trim-tool-output.ts",
+      "sha256": "02d7802411740a55b7e6ac05d06eb59921a8c8e72c7ab27aa1d96e0db7534199"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "deadline": 600,
+  "stall": 180,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "code_health": "pass",
+  "grading_infrastructure_error": false,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "checks_passed": 4,
+  "checks_total": 4,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 100,
+  "turns": 100,
+  "tool_calls": 95,
+  "tool_errors": 19,
+  "context": 33621,
+  "context_uncached": 18366,
+  "output_tokens": 26967,
+  "wall": 296.229,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 4,
+  "reasoning_as_text": 0,
+  "compactions": 1,
+  "leaked": [
+    {
+      "pid": 288,
+      "pgid": null,
+      "command": "uv run uvicorn app:app --host 0.0.0.0 --port 8765"
+    },
+    {
+      "pid": 291,
+      "pgid": null,
+      "command": "/attempt/runs/20261105T075553Z-easy-1eb7fb/workspace/.venv/bin/python /attempt/runs/20261105T075553Z-easy-1eb7fb/workspace/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8765"
+    }
+  ],
+  "out_of_layout": [
+    "debug_app_inspect.py",
+    "debug_home.py",
+    "debug_home_func.py",
+    "debug_render.py",
+    "debug_starlette_test.py",
+    "debug_test.py",
+    "test_app.py",
+    "test_simple.py"
+  ],
+  "completion": "settled",
+  "elapsed_seconds": 296.229,
+  "provider_error": null,
+  "cleanup_ok": true,
+  "exit_code": 0
+}

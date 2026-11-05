@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "task_id": "78b6bcd356c4436daad1c29521645405",
+  "sequence": 4,
+  "timestamp": "2026-11-05T06:59:55.327807+00:00",
+  "package_sha256": "dd8835daef6af24c151ecbae82b81375bd8a6ba69abbc5c7fc9d3a5252095021",
+  "snapshot_sha256": "4eace9edf9766aac1be598d0db6e56ccfdfe456e50cf0374ecd38bc48d6a794f",
+  "status": "repair_exhausted",
+  "continue": false,
+  "repairs": 2,
+  "final": true,
+  "feedback": "",
+  "remaining_seconds": 444.5434425830608,
+  "result": {
+    "status": "fail",
+    "checks": {
+      "fastapi_app": {
+        "passed": true,
+        "observation": "app.py must export a FastAPI application as app"
+      },
+      "home_response": {
+        "passed": true,
+        "observation": "GET / status=200; must return 200 and required tagline"
+      },
+      "shared_layout": {
+        "passed": true,
+        "observation": "Home must render through templates/base.html"
+      },
+      "html5": {
+        "passed": true,
+        "observation": "Rendered page requires HTML5 doctype"
+      },
+      "english": {
+        "passed": false,
+        "observation": "html requires lang=en"
+      },
+      "viewport": {
+        "passed": false,
+        "observation": "head requires responsive width=device-width viewport"
+      },
+      "bootstrap_css": {
+        "passed": false,
+        "observation": "Bootstrap 5 CDN CSS must be in head"
+      },
+      "bootstrap_bundle": {
+        "passed": false,
+        "observation": "Bootstrap 5 CDN JS bundle must end body"
+      },
+      "favicon": {
+        "passed": false,
+        "observation": "head requires specified Python favicon"
+      },
+      "default_title": {
+        "passed": true,
+        "observation": "Base title must default to AgentClinic"
+      },
+      "title_override": {
+        "passed": true,
+        "observation": "A child template must be able to override page title"
+      },
+      "navbar_brand": {
+        "passed": true,
+        "observation": "Navbar requires AgentClinic brand"
+      },
+      "nav_home": {
+        "passed": false,
+        "observation": "Navbar requires home link to /; target need not exist in Phase 1"
+      },
+      "nav_complaints": {
+        "passed": false,
+        "observation": "Navbar requires complaints link to /complaints; target need not exist in Phase 1"
+      },
+      "hero_tagline": {
+        "passed": true,
+        "observation": "Structural hero proxy: content container with heading and tagline; CSS names are unrestricted"
+      },
+      "welcome_paragraph": {
+        "passed": true,
+        "observation": "Structural welcome proxy: nonempty paragraph separate from tagline; tone needs manual review"
+      },
+      "guarded_reload": {
+        "passed": true,
+        "observation": "uvicorn.run(reload=True) must be guarded by __name__ == __main__"
+      },
+      "startup": {
+        "passed": false,
+        "observation": "Documented uv run --frozen python app.py must serve GET / with reload; launch exit=3; untrusted candidate log tail: \"degraded performance. If the cache and target directories are on different filesystems, hardlinking may not be supported. If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning. Installed 47 packages in 15ms WARNING: You must pass the application as an import string to enable 'reload' or 'workers'.\""
+      },
+      "project_tests": {
+        "passed": true,
+        "observation": "Full project tests must run nonempty and pass: {'completed': True, 'exit_code': 0, 'tests': 1, 'passed': 1, 'failures': 0, 'errors': 0, 'skipped': 0}"
+      },
+      "base_integrity": {
+        "passed": true,
+        "observation": "Frozen project inputs changed/missing: []"
+      },
+      "phase_layout": {
+        "passed": true,
+        "observation": "Files outside Phase 1 layout: []"
+      }
+    }
+  }
+}

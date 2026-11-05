@@ -1,0 +1,19 @@
+[
+  {
+    "schema": 1,
+    "task_id": "827ad9a04ee34479b63fa49b77396375",
+    "sequence": 1,
+    "timestamp": "2026-11-05T06:50:37.781992+00:00",
+    "package_sha256": "dd8835daef6af24c151ecbae82b81375bd8a6ba69abbc5c7fc9d3a5252095021",
+    "snapshot_sha256": "25c226f24ef6543bdd1e0025b92f6c9bba82327d3df0e0be71d213ba03c34d7f",
+    "status": "deadline",
+    "continue": false,
+    "repairs": 0,
+    "final": true,
+    "feedback": "",
+    "remaining_seconds": 0.0,
+    "result": {
+      "status": "timeout"
+    }
+  }
+]

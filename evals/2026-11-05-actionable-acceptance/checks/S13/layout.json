@@ -1,0 +1,27 @@
+{
+  "created": [
+    "app.py",
+    "debug_app_inspect.py",
+    "debug_home.py",
+    "debug_home_func.py",
+    "debug_render.py",
+    "debug_starlette_test.py",
+    "debug_test.py",
+    "templates/base.html",
+    "templates/home.html",
+    "test_app.py",
+    "test_simple.py",
+    "tests/test_home.py"
+  ],
+  "modified": [],
+  "out_of_layout": [
+    "debug_app_inspect.py",
+    "debug_home.py",
+    "debug_home_func.py",
+    "debug_render.py",
+    "debug_starlette_test.py",
+    "debug_test.py",
+    "test_app.py",
+    "test_simple.py"
+  ]
+}
