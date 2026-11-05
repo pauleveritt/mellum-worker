@@ -38,7 +38,7 @@ FROZEN = ["scripts/rig/pins.json", "scripts/rig/ppl.txt", "scripts/containment/r
           "scripts/containment/probe.py", "scripts/containment/pytest_probe.py", "scripts/floor_cohort.py",
           "learn/code/harness.py", "learn/code/floor.py", "learn/code/isolation.py", "learn/code/conformance.py",
           "learn/code/acceptance_native.py", "learn/code/acceptance_budget.py", "learn/code/rig.py",
-          "learn/code/record-pi.mjs", "learn/code/profile/models.json", "learn/code/profile/settings.json"]
+          "learn/code/profile/models.json", "learn/code/profile/settings.json"]
 STARTUP_PORTS = [8000]       # the suite app's documented port; the Mac preflight refuses to start while it is taken
 
 
@@ -56,7 +56,7 @@ def sha256(path: Path) -> str:
 
 
 def freeze() -> dict:
-    files = [REPO / p for p in FROZEN]
+    files = [REPO / p for p in FROZEN] + [harness.RECORDER]
     package = REPO / "learn/code/acceptance/easy-phase1"
     files += sorted(p for p in package.rglob("*") if p.is_file() and "__pycache__" not in p.parts)
     files += sorted(p for p in (harness.SUITES / "easy").rglob("*") if p.is_file() and "__pycache__" not in p.parts)

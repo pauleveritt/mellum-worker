@@ -205,3 +205,9 @@ def test_collect_grades_refuses_symlinks_and_keeps_root_completion(tmp_path):
     assert not (run / "grade.json").exists()
     assert json.loads((run / "run.json").read_text())["completion"] == "budget"   # root's execution, not the copy's
     assert json.loads((run / "acceptance.json").read_text())["result"]["status"] == "pass"
+
+
+def test_freeze_names_only_files_that_exist():
+    frozen = driver.freeze()
+    assert frozen and all((ROOT / path).is_file() for path in frozen)
+    assert str(driver.harness.RECORDER.relative_to(ROOT)) in frozen   # the recorder every session loads
