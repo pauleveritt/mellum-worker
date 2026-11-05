@@ -29,6 +29,21 @@ Versions match git tags; pin one in both install lines.
   retries the plan is built anyway with a note. Both guards are agnostic — they
   read the task, never the suite.
 
+- **Plan-delegation worker controls — all off by default.** Four opt-in knobs for
+  the plan loop, measured as a lead (see
+  `docs/superpowers/research/2026-11-05-plan-worker-direct-and-rethink.md`), with
+  shipped behaviour unchanged when unset: `MELLUM_DELEGATE_WORKER_DIRECT=1` adds
+  one line to each worker's brief — implement the step doc directly, do not
+  re-derive the earlier steps' decisions; `MELLUM_TURN_CAP=<n>` sets a per-worker
+  turn budget (unset keeps the frozen 200), and a worker that hits it is stopped
+  and **re-dispatched once** with the stall handed over, instead of thrashing to
+  the deadline; the architect's spawned sub-agents now carry the run's guards
+  (the `turn-cap` excepted, since a many-step plan needs more of the architect's
+  own turns); and a new `guard/exists` unit blocks reading or editing a path, or
+  running a read command against a path, that does not exist, so the model stops
+  retrying a missing test dir or file. All agnostic — they read the task, never
+  the suite.
+
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole
   spec into the smallest ordered chunks, each written as its own `stepNN.md`

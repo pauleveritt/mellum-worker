@@ -568,6 +568,24 @@ test("remedyArgs renders the resolved units as -e file arguments for the spawned
 	assert.deepEqual(remedyArgs(""), [], "no remedies when the spec is empty (bare worker, the measured default)");
 });
 
+test("guardArgs renders ONLY the guard units — the safety bounds an architect sub-agent also needs", async () => {
+	const { guardArgs } = await load();
+	const args = guardArgs("preset:easy,guard/repeat-loops,guard/turn-cap");
+	// every pair is `-e <a guard unit file>`; no other kind of unit rides along
+	assert.ok(args.length >= 4, args.join(" "));
+	for (let i = 0; i < args.length; i += 2) {
+		assert.equal(args[i], "-e");
+		assert.match(args[i + 1], /\/remedies\/guard\/[^/]+\.ts$/);
+	}
+	assert.ok(args.some((a) => /repeat-loops\.ts$/.test(a)), "loop breaker is a safety guard the architect wants");
+	assert.ok(args.some((a) => /foreground-server\.ts$/.test(a)), "from preset:easy");
+	assert.ok(!args.some((a) => /turn-cap\.ts$/.test(a)),
+		"turn-cap is worker-tuned (a low budget) — it must NOT cap the architect, which needs many turns to write the plan");
+	assert.ok(!args.some((a) => /\/prompt\//.test(a)),
+		"the implementer prompt fragments must NOT load on the architect — they fight its plan-never-code role");
+	assert.deepEqual(guardArgs(""), [], "no spec, no guards");
+});
+
 // ── Plan delegation, no per-step tests (MELLUM_DELEGATE_PLAN=1) ──────────────────
 
 test("authorPlanPrompt splits the spec into step docs with the verbatim spec and writes NO tests", async () => {
@@ -605,6 +623,82 @@ test("planWorkerBrief tells the worker to build its step from the doc and consul
 	assert.doesNotMatch(b0, /pytest|test passes/i, "there is no per-step test to run");
 	assert.doesNotMatch(planWorkerBrief(steps, 0), /do NOT break/i);
 	assert.match(planWorkerBrief(steps, 1), /do NOT break/i, "a later step must not break earlier ones");
+});
+
+test("planWorkerBrief adds a direct-implementation nudge only when MELLUM_DELEGATE_WORKER_DIRECT=1", async () => {
+	const { planWorkerBrief } = await load();
+	const steps = [{ n: 1, doc: "step01.md" }, { n: 2, doc: "step02.md" }];
+	const prev = process.env.MELLUM_DELEGATE_WORKER_DIRECT;
+	try {
+		delete process.env.MELLUM_DELEGATE_WORKER_DIRECT;
+		assert.doesNotMatch(planWorkerBrief(steps, 0), /implement it directly/i,
+			"off by default — the shipped step brief is unchanged (frozen until measured)");
+		process.env.MELLUM_DELEGATE_WORKER_DIRECT = "1";
+		const b = planWorkerBrief(steps, 0);
+		assert.match(b, /implement it directly/i);
+		assert.match(b, /do not reason at length|re-derive/i, "the nudge curbs re-deriving the earlier steps");
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_WORKER_DIRECT;
+		else process.env.MELLUM_DELEGATE_WORKER_DIRECT = prev;
+	}
+});
+
+test("planRethinkBrief hands over the stall and asks for the simplest correct retry", async () => {
+	const { planRethinkBrief } = await load();
+	const steps = [{ n: 1, doc: "step01.md" }, { n: 2, doc: "step02.md" }];
+	const b = planRethinkBrief(steps, 1, 26, 25);
+	assert.match(b, /step 2/);
+	assert.match(b, /stalled|previous attempt/i);
+	assert.match(b, /26/); assert.match(b, /25/);
+	assert.match(b, /simplest/i);
+	assert.match(b, /do not re-run|fix (the )?(cause|code) once|without re-running/i, "curb the thrash");
+	// agnostic: never names a suite path, route, or the specific framework idiom
+	assert.doesNotMatch(b, /jinja|fastapi|TemplateResponse|app\.py|pytest/i);
+});
+
+test("doTaskPlan re-dispatches a step ONCE when the worker stalls at the turn cap", async () => {
+	const { doTaskPlan } = await load();
+	const prev = process.env.MELLUM_TURN_CAP;
+	process.env.MELLUM_TURN_CAP = "25";
+	try {
+		await inTempCwd(async () => {
+			const briefs = [];
+			const authorPlan = async () => { writeFileSync("step01.md", "home\n"); return "wrote 1 step doc"; };
+			const worker = async (b) => { briefs.push(b); return "built"; };
+			const shell = async () => ({ passed: false, output: "" }); // git off
+			// author (undefined), then the step worker stalls at 30 >= 25, then the rethink finishes at 12
+			const seq = [undefined, { turns: 30, id: "w1" }, { turns: 12, id: "w1r" }];
+			let n = 0;
+			const runStats = () => seq[Math.min(n++, seq.length - 1)];
+			await doTaskPlan("build it", { authorPlan, worker, shell, runStats });
+			assert.equal(briefs.length, 2, "one build attempt plus one rethink");
+			assert.match(briefs[0], /Read step01\.md/, "first is the normal step brief");
+			assert.match(briefs[1], /stalled|previous attempt/i, "second is the rethink");
+		});
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_TURN_CAP; else process.env.MELLUM_TURN_CAP = prev;
+	}
+});
+
+test("doTaskPlan does NOT rethink when the worker finishes under the cap", async () => {
+	const { doTaskPlan } = await load();
+	const prev = process.env.MELLUM_TURN_CAP;
+	process.env.MELLUM_TURN_CAP = "25";
+	try {
+		await inTempCwd(async () => {
+			const briefs = [];
+			const authorPlan = async () => { writeFileSync("step01.md", "home\n"); return "ok"; };
+			const worker = async (b) => { briefs.push(b); return "built"; };
+			const shell = async () => ({ passed: false, output: "" });
+			const seq = [undefined, { turns: 14, id: "w1" }];
+			let n = 0;
+			const runStats = () => seq[Math.min(n++, seq.length - 1)];
+			await doTaskPlan("build it", { authorPlan, worker, shell, runStats });
+			assert.equal(briefs.length, 1, "a healthy step runs once, no rethink");
+		});
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_TURN_CAP; else process.env.MELLUM_TURN_CAP = prev;
+	}
 });
 
 test("doTaskPlan runs one worker per step doc, ticks todo and checkpoints, with no acceptance gate", async () => {

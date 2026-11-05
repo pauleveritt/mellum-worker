@@ -96,6 +96,21 @@ export function remedyArgs(spec = process.env.MELLUM_DELEGATE_REMEDY): string[] 
 	return resolveRemedyFiles(spec).flatMap((p) => ["-e", p]);
 }
 
+// Just the guard units from a remedy spec. Guards are role-agnostic safety bounds — a turn
+// cap, a loop breaker, no foreground servers, no writing outside the workspace — so EVERY
+// spawned sub-agent loads them, the architect passes included (without them an architect or
+// worker can thrash a debug loop for a hundred-plus turns). The implementer PROMPT fragments
+// are deliberately NOT given to the architect: they frame the model as a developer who writes
+// and runs code, which fights the architect's one rule — plan, never code.
+export function guardArgs(spec = process.env.MELLUM_DELEGATE_REMEDY): string[] {
+	// turn-cap is worker-tuned — a low per-step budget (MELLUM_TURN_CAP) that would cut the
+	// architect off before it finishes writing a many-step plan — so the architect gets every
+	// other guard but not that one.
+	return resolveRemedyFiles(spec)
+		.filter((p) => /\/guard\//.test(p) && !/\/guard\/turn-cap\.ts$/.test(p))
+		.flatMap((p) => ["-e", p]);
+}
+
 // The primary nudge, appended to each user message so the model delegates the implementation
 // instead of writing it. Agnostic: it names no suite, file or command — the brief is the primary's.
 const DELEGATE_NUDGE =
@@ -330,7 +345,7 @@ function runPi(argv: string[], label = ""): Promise<string> {
 /** The architect pass: this extension headless running `/mellum <architect prompt>`, so its span is
  * recorded (turns, wall) like the worker's. It still only writes the handover, never the code. */
 export function spawnAuthor(task: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPrompt(task)}`], "architect: writing the handover (failing test + brief)");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...guardArgs(), "-e", SELF, `/mellum ${authorPrompt(task)}`], "architect: writing the handover (failing test + brief)");
 }
 
 /** The worker pass: this extension headless, running `/mellum <brief>` to implement to green.
@@ -342,12 +357,12 @@ export function spawnWorker(brief: string): Promise<string> {
 
 /** The repair pass: the architect fixes the syntax of the oracle it just wrote. */
 export function spawnRepair(error: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${repairPrompt(error)}`], "architect: repairing the oracle's syntax");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...guardArgs(), "-e", SELF, `/mellum ${repairPrompt(error)}`], "architect: repairing the oracle's syntax");
 }
 
 /** The phased architect pass: decompose the spec and write one cumulative test per phase. */
 export function spawnAuthorPhases(task: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPhasesPrompt(task)}`], "architect: decomposing the spec into phases");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...guardArgs(), "-e", SELF, `/mellum ${authorPhasesPrompt(task)}`], "architect: decomposing the spec into phases");
 }
 
 /** Check that a Python file parses. Resolves undefined when it compiles, else the syntax error.
@@ -683,7 +698,7 @@ export function authorStepsPrompt(task: string): string {
 
 /** The step architect pass: split the spec into step docs + self-contained tests + a todo.md. */
 export function spawnAuthorSteps(task: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorStepsPrompt(task)}`], "architect: splitting the spec into steps");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...guardArgs(), "-e", SELF, `/mellum ${authorStepsPrompt(task)}`], "architect: splitting the spec into steps");
 }
 
 /** The final spec-coverage pass: the architect re-reads the spec against the tests it wrote and ADDS
@@ -711,7 +726,7 @@ export function authorVerifyPrompt(task: string): string {
 
 /** The final spec-coverage pass as a spawned architect run. */
 export function spawnAuthorVerify(task: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorVerifyPrompt(task)}`], "architect: final spec-coverage pass");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...guardArgs(), "-e", SELF, `/mellum ${authorVerifyPrompt(task)}`], "architect: final spec-coverage pass");
 }
 
 /** The step docs paired with their numbered tests, ordered by step number. A doc with no matching
@@ -981,7 +996,7 @@ export function authorPlanPrompt(task: string): string {
 
 /** The plan architect pass as a spawned run. */
 export function spawnAuthorPlan(task: string): Promise<string> {
-	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", "-e", SELF, `/mellum ${authorPlanPrompt(task)}`], "architect: splitting the spec into step docs (no tests)");
+	return runPi(["-p", "--no-approve", "--no-skills", "--no-prompt-templates", "--no-themes", ...guardArgs(), "-e", SELF, `/mellum ${authorPlanPrompt(task)}`], "architect: splitting the spec into step docs (no tests)");
 }
 
 /** Remove any stepNN.md in the cwd, so a re-dispatched architect's plan is counted clean. */
@@ -1004,6 +1019,12 @@ export function listStepDocs(cwd: string): PlanStep[] {
 /** What the plan-mode worker is told: build THIS step from its doc; no test to run. */
 export function planWorkerBrief(steps: PlanStep[], i: number): string {
 	const s = steps[i];
+	// MELLUM_DELEGATE_WORKER_DIRECT=1 adds a terse nudge: the step is already fully
+	// specified by the architect, so the worker should implement it rather than
+	// re-derive the whole plan. A probe showed this cuts a step's thinking ~half and
+	// keeps the clean think/answer split (unlike enable_thinking=false). Default off,
+	// so the shipped brief is frozen until a ladder screen measures it.
+	const direct = process.env.MELLUM_DELEGATE_WORKER_DIRECT === "1";
 	return (
 		`This is step ${s.n} of ${steps.length}. Read ${s.doc} — it is YOUR instructions for this step, ` +
 		"including the exact spec it must satisfy (its \"## Spec (verbatim)\" block) — and BRIEF.md for the " +
@@ -1011,7 +1032,25 @@ export function planWorkerBrief(steps: PlanStep[], i: number): string {
 		(i > 0 ? "Earlier steps are already built — do NOT break them. " : "") +
 		"You may also consult the original spec plan in this directory (the specs/ folder, a roadmap, " +
 		"AGENTS.md) for context. Work only inside this directory — do NOT read, search for, or copy files " +
-		"outside it. Implement the step completely, then stop."
+		"outside it. " +
+		(direct
+			? "This step is fully specified: implement it directly from the doc — do not reason at length " +
+			  "or re-derive the earlier steps' decisions; make exactly the change the doc asks for. "
+			: "") +
+		"Implement the step completely, then stop."
+	);
+}
+
+/** The brief for one fresh attempt after a step worker stalled at the turn budget: hand over the
+ * stall and ask for the simplest correct build, so it stops thrashing on a failing command. */
+export function planRethinkBrief(steps: PlanStep[], i: number, turns: number, cap: number): string {
+	const s = steps[i];
+	return (
+		`Your previous attempt at step ${s.n} stalled: it ran ${turns} tool calls (budget ${cap}) without ` +
+		`finishing — usually from re-running a failing command instead of fixing its cause. Start over on ` +
+		`this step from ${s.doc} and BRIEF.md. Make the SIMPLEST change that satisfies its spec, using the ` +
+		`project's ordinary conventions. If a command fails, read the error and fix the cause once; do not ` +
+		`re-run it repeatedly, add dependencies, or build scaffolding. Implement it and stop.`
 	);
 }
 
@@ -1026,7 +1065,15 @@ export interface DoTaskPlanDeps {
 	authorPlan?: (task: string) => Promise<string>;
 	worker?: (brief: string) => Promise<string>;
 	shell?: (cmd: string) => Promise<{ passed: boolean; output: string }>;
+	runStats?: (cwd: string) => { turns: number; wall?: number; id: string } | undefined;
 }
+
+// The per-step worker budget from MELLUM_TURN_CAP, or 0 when unset. When set (e.g. 25), a worker
+// that stalls at the budget gets one rethink re-dispatch; unset keeps the old single-attempt loop.
+const workerTurnCap = (): number => {
+	const n = Number(process.env.MELLUM_TURN_CAP);
+	return Number.isFinite(n) && n > 0 ? n : 0;
+};
 
 /**
  * Plan delegation (MELLUM_DELEGATE_PLAN=1): the architect splits the spec into step docs (no tests),
@@ -1039,6 +1086,7 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 	const authorPlan = deps.authorPlan ?? spawnAuthorPlan;
 	const worker = deps.worker ?? spawnWorker;
 	const shell = deps.shell ?? runAcceptance;
+	const runStats = deps.runStats ?? latestRunStats;
 	const cwd = process.cwd();
 	const secs = (from: number) => Math.round((Date.now() - from) / 1000);
 
@@ -1064,7 +1112,7 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 	}
 	const coarse = steps.length < minSteps; // retries spent but still under the floor — run it anyway
 	const authorWall = secs(t0);
-	const authorStats = latestRunStats(cwd);
+	const authorStats = runStats(cwd);
 
 	const done = new Set<number>();
 	const writeTodo = () => { try { writeFileSync(resolve(cwd, TODO_FILE), renderPlanTodo(steps, done)); } catch {} };
@@ -1089,17 +1137,28 @@ export async function doTaskPlan(task: string, deps: DoTaskPlanDeps = {}): Promi
 		`${name} ${stats?.turns != null ? `${stats.turns} turns` : "turns n/a"}/${wall}s`;
 	const lines: string[] = [];
 	let prevId = authorStats?.id;
+	const cap = workerTurnCap();
 	for (let i = 0; i < steps.length; i++) {
 		const tStep = Date.now();
 		await worker(planWorkerBrief(steps, i)); // a fresh worker (fresh turn budget) builds this step
-		const stepWall = secs(tStep);
-		const ws = latestRunStats(cwd);
-		const wStats = ws && ws.id !== prevId ? ws : undefined;
+		let ws = runStats(cwd);
+		let wStats = ws && ws.id !== prevId ? ws : undefined;
 		prevId = ws?.id ?? prevId;
+		// Rethink: a worker that stalled at the turn budget left the step half-built. Give it ONE
+		// fresh attempt with the stall handed over, so it takes the simplest path instead of thrashing.
+		let rethought = false;
+		if (cap && wStats && wStats.turns >= cap) {
+			rethought = true;
+			await worker(planRethinkBrief(steps, i, wStats.turns, cap));
+			ws = runStats(cwd);
+			if (ws && ws.id !== prevId) wStats = ws;
+			prevId = ws?.id ?? prevId;
+		}
+		const stepWall = secs(tStep);
 		done.add(steps[i].n);
 		writeTodo();
 		if (haveGit) await shell(`git add -A && git -c user.email=w@w -c user.name=w commit -q -m "step ${steps[i].n}" --no-verify || true`);
-		lines.push(`step ${steps[i].n}/${steps.length} (${steps[i].doc}): built · ${stage("worker", wStats, stepWall)}`);
+		lines.push(`step ${steps[i].n}/${steps.length} (${steps[i].doc}): built${rethought ? " · rethought after stall" : ""} · ${stage("worker", wStats, stepWall)}`);
 	}
 	const totalWall = secs(t0);
 	return [

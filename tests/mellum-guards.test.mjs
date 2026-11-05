@@ -8,7 +8,48 @@ import test from "node:test";
 process.env.MELLUM_WORKER_RUNS = "0";
 const noServer = () => Promise.reject(new Error("no server in tests"));
 
-import { createLoopBreaker, createStepBudget, newFileOnlyWrite, confineSearch, isTreeWalk, absolutePathArgs } from "../extensions/mellum-guards.ts";
+import { createLoopBreaker, createStepBudget, newFileOnlyWrite, confineSearch, isTreeWalk, absolutePathArgs, createExistsGuard, missingReadPath } from "../extensions/mellum-guards.ts";
+
+test("createExistsGuard blocks read/edit of a missing file but allows an existing one", () => {
+	const has = new Set(["app.py", "specs/roadmap.md"].map((p) => join(process.cwd(), p)));
+	const guard = createExistsGuard((p) => has.has(p));
+	assert.ok(guard({ toolName: "read", input: { path: "models.py" } })?.block, "missing read is blocked");
+	assert.match(guard({ toolName: "edit", input: { path: "models.py" } }).reason, /No file at models\.py/);
+	assert.equal(guard({ toolName: "read", input: { path: "app.py" } }), undefined, "existing read is allowed");
+	assert.equal(guard({ toolName: "write", input: { path: "models.py" } }), undefined, "write creates files — never blocked here");
+});
+
+test("createExistsGuard blocks a bash command that targets a missing path, not one that creates it", () => {
+	const guard = createExistsGuard((p) => p === join(process.cwd(), "app.py"));
+	assert.ok(guard({ toolName: "bash", input: { command: "uv run --frozen python -m pytest tests" } })?.block, "pytest against a missing dir is blocked");
+	assert.match(guard({ toolName: "bash", input: { command: "pytest tests" } }).reason, /`tests` does not exist/);
+	assert.ok(guard({ toolName: "bash", input: { command: "cat missing.py" } })?.block, "cat of a missing file is blocked");
+	assert.equal(guard({ toolName: "bash", input: { command: "cat app.py" } }), undefined, "existing path is fine");
+	// never block a command that CREATES the path, runs inline code, redirects, or is not a reader
+	assert.equal(guard({ toolName: "bash", input: { command: "mkdir tests" } }), undefined, "mkdir creates it");
+	assert.equal(guard({ toolName: "bash", input: { command: "touch models.py" } }), undefined, "touch creates it");
+	assert.equal(guard({ toolName: "bash", input: { command: 'python -c "import app"' } }), undefined, "inline code is not parsed as paths");
+	assert.equal(guard({ toolName: "bash", input: { command: 'echo "x" > out.py' } }), undefined, "redirection writes a new file");
+	assert.equal(guard({ toolName: "bash", input: { command: "uvicorn app:app --port 8000" } }), undefined, "app:app is not a path, and uvicorn is not a reader");
+	assert.equal(guard({ toolName: "bash", input: { command: "ls -l templates" } }), undefined, "ls is a discovery tool — never blocked");
+	assert.equal(guard({ toolName: "bash", input: { command: "uv run --frozen python -m pytest" } }), undefined, "no path arg runs the whole suite");
+});
+
+test("missingReadPath returns the first missing read target, or undefined", () => {
+	const exists = (p) => p === join(process.cwd(), "there.py");
+	assert.equal(missingReadPath("pytest tests", exists), "tests");
+	assert.equal(missingReadPath("cat there.py", exists), undefined);
+	assert.equal(missingReadPath("python nope.py", exists), "nope.py");
+	assert.equal(missingReadPath(undefined, exists), undefined);
+});
+
+test("turn-cap budgetFromEnv reads MELLUM_TURN_CAP, defaulting to 200", async () => {
+	const { budgetFromEnv } = await import("../remedies/guard/turn-cap.ts");
+	assert.equal(budgetFromEnv("25"), 25);
+	assert.equal(budgetFromEnv(undefined), 200, "frozen default when unset");
+	assert.equal(budgetFromEnv("0"), 200, "a non-positive value falls back to the default");
+	assert.equal(budgetFromEnv("nonsense"), 200);
+});
 
 test("confineSearch blocks a recursive search that reaches outside the workspace", () => {
 	const guard = confineSearch("/work/ws");

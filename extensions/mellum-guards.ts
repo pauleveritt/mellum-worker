@@ -132,6 +132,59 @@ export const newFileOnlyWrite =
 		};
 	};
 
+// Commands that CREATE a path (so a missing target is the whole point) or carry inline
+// code we must not misread as filenames. Either disqualifies a command from the check.
+const CREATES_PATH = /\b(mkdir|touch|cp|mv|ln|install|tee|mktemp|dd|rsync)\b/;
+// Read/run commands whose positional arg is a path they will open.
+const READ_RUNNER = /\bpython3?\s+-m\s+pytest|\bpytest|\bruff(?:\s+check)?|\bpyrefly(?:\s+check)?|\bcomplexipy|\bcat|\bhead|\btail|\bless|\bwc|\bsource|\bpython3?|\bbash|\bsh\b/;
+
+/** The first path a read/run command will open that does not exist, else undefined.
+ * Deliberately conservative — it skips any command that creates a path, redirects, or
+ * carries a quoted / `-c` code string — so it never blocks legitimate or creating work. */
+export function missingReadPath(command: string | undefined, exists: (p: string) => boolean): string | undefined {
+	if (!command) return undefined;
+	if (CREATES_PATH.test(command)) return undefined; // a missing target is intended
+	if (/>/.test(command)) return undefined; // redirection writes a (possibly new) file
+	if (/["']/.test(command) || /\s-[ce]\b/.test(command)) return undefined; // inline code — don't parse it as paths
+	const m = READ_RUNNER.exec(command);
+	if (!m) return undefined;
+	const after = command.slice(m.index + m[0].length).split(/[|&;]/)[0]; // args up to the next shell operator
+	for (const tok of after.split(/\s+/).filter(Boolean)) {
+		if (tok.startsWith("-")) continue; // a flag, not a path
+		if (/[:=*?{}()$~@]/.test(tok)) continue; // app:app, globs, expansions — not a plain path
+		if (!/^[\w./-]+$/.test(tok)) continue; // only plain path-ish tokens
+		if (!exists(isAbsolute(tok) ? tok : resolve(tok))) return tok;
+	}
+	return undefined;
+}
+
+/** Block a tool call that targets a path the filesystem does not have — a read or edit of
+ * a missing file, or a command that will only open a missing path. It stops the thrash where
+ * a worker reruns tests against a directory that is not there or re-reads a file it never wrote. */
+export const createExistsGuard =
+	(exists: (path: string) => boolean = existsSync): Guard =>
+	(call) => {
+		if (call.toolName === "read" || call.toolName === "edit") {
+			const path = pathOf(call.input);
+			if (path && !exists(isAbsolute(path) ? path : resolve(path))) {
+				return {
+					block: true,
+					reason: `No file at ${path}. Create it with write first, or ${call.toolName} a file that exists — do not retry the missing path.`,
+				};
+			}
+		}
+		if (call.toolName === "bash") {
+			const missing = missingReadPath(commandOf(call.input), exists);
+			if (missing) {
+				return {
+					block: true,
+					reason: `\`${missing}\` does not exist, so this command can only fail. Create it or target a path that exists — do not retry the missing path.`,
+				};
+			}
+		}
+		return undefined;
+	};
+
 function commandOf(input: unknown): string | undefined {
 	if (!input || typeof input !== "object") return undefined;
 	const record = input as Record<string, unknown>;
