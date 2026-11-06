@@ -326,7 +326,7 @@ function runPi(argv: string[], label = ""): Promise<string> {
 		try {
 			child = spawn("pi", argv, {
 				cwd: process.cwd(),
-				env: { ...process.env, [CHILD_ENV]: "1" },
+				env: { ...process.env, [CHILD_ENV]: "1", MELLUM_ROLE: label || "child" },
 				stdio: v ? ["ignore", "inherit", "inherit"] : ["ignore", "pipe", "pipe"],
 			});
 		} catch (e) {
@@ -411,6 +411,17 @@ export interface DoTaskDeps {
 
 /** How many times the architect is asked to repair an oracle that does not parse before giving up. */
 export const MAX_ORACLE_REPAIRS = 2;
+
+/** A one-line summary of a request's prompt size, tagged with the agent's role — the unit the
+ * context-growth profiler logs. `context should not grow`: this is how we see which agent's context
+ * balloons (and causes the rare full re-prefills). Pure; `chars` counts string and structured
+ * content, `estTokens` ≈ chars/4. */
+export function requestProfile(messages: any, role: string, seq: number, cwd: string, now = Date.now()): { ts: number; role: string; seq: number; msgs: number; chars: number; estTokens: number; cwd: string } {
+	let chars = 0;
+	const arr = Array.isArray(messages) ? messages : [];
+	for (const m of arr) chars += typeof m?.content === "string" ? m.content.length : JSON.stringify(m?.content ?? "").length;
+	return { ts: now, role, seq, msgs: arr.length, chars, estTokens: Math.round(chars / 4), cwd };
+}
 
 /** The newest worker/architect run record for `cwd` (turns = requests, wall seconds, and an id to
  * tell two spans apart), read from the mode-runs file. Best-effort: undefined if none was written. */
@@ -1845,6 +1856,20 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	if (process.env[CHILD_ENV] !== "1" && typeof pi.registerTool === "function") {
 		registerDelegate(pi, runWorker);
 		pi.on("before_provider_request", (event: any) => (active ? undefined : withDelegateNudge(event.payload)));
+	}
+
+	// Context-growth profiler (MELLUM_DELEGATE_PROFILE=<jsonl path>): one line per request with its
+	// prompt size, tagged by the agent role (runPi sets MELLUM_ROLE on each child). Read-only — never
+	// touches the payload. Off unless the env var names a file. It is how we check `context should not
+	// grow`: which agent's context balloons into the rare full re-prefills.
+	const profilePath = process.env.MELLUM_DELEGATE_PROFILE;
+	if (profilePath) {
+		let profSeq = 0;
+		const profRole = process.env.MELLUM_ROLE || (process.env[CHILD_ENV] === "1" ? "child" : "primary");
+		pi.on("before_provider_request", (event: any) => {
+			try { appendFileSync(profilePath, JSON.stringify(requestProfile(event?.payload?.messages, profRole, ++profSeq, process.cwd())) + "\n"); } catch {}
+			return undefined;
+		});
 	}
 
 	pi.on("agent_start", () => {

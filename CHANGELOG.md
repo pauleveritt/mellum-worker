@@ -65,6 +65,14 @@ Versions match git tags; pin one in both install lines.
   contents **regressed** it (prefill bloat) and are kept only for a manifest-only
   follow-up. All agnostic — they read the task and the tree, never the suite.
 
+- **Context-growth profiler — `MELLUM_DELEGATE_PROFILE=<jsonl path>`, off by
+  default.** A read-only hook logs one line per model request (`role`, `seq`,
+  `estTokens`, …) so a run's context growth can be read per agent role. It never
+  touches the payload. A profiled medium rep showed the architect stays flat
+  (~5K) while workers grow with turn count (to ~16K), so the rare full
+  re-prefills trace to long/uncapped workers, not the architect — recorded in
+  `docs/superpowers/research/2026-11-06-medium-cap-thinking-digest.md`.
+
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole
   spec into the smallest ordered chunks, each written as its own `stepNN.md`

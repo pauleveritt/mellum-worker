@@ -689,6 +689,23 @@ test("planWorkerBrief adds a direct-implementation nudge only when MELLUM_DELEGA
 	}
 });
 
+test("requestProfile summarises a request's prompt size, tagged with the agent role", async () => {
+	const { requestProfile } = await load();
+	const r = requestProfile(
+		[{ role: "system", content: "abcd" }, { role: "user", content: [{ type: "text", text: "ef" }] }],
+		"worker: implementing to pass", 3, "/ws", 1000,
+	);
+	assert.equal(r.role, "worker: implementing to pass");
+	assert.equal(r.seq, 3);
+	assert.equal(r.msgs, 2);
+	assert.equal(r.ts, 1000);
+	assert.equal(r.cwd, "/ws");
+	assert.ok(r.chars >= 6, "counts string and structured content");
+	assert.equal(r.estTokens, Math.round(r.chars / 4));
+	// robust to junk
+	assert.equal(requestProfile(undefined, "x", 1, "/").msgs, 0);
+});
+
 test("hasTests reads the real tree, not the docs' claims", async () => {
 	const { hasTests } = await load();
 	await inTempCwd(async (dir) => {

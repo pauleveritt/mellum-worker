@@ -81,6 +81,31 @@ off — correctly, there are tests.
 - Smoke, architect-direct, hasTests remain off-by-default research levers; none
   is a standalone win on this evidence.
 
+## Addendum — where the context actually grows (profiler)
+
+A read-only profiler (`MELLUM_DELEGATE_PROFILE=<jsonl>`, off by default) logs each
+request's prompt size tagged with the agent role. One profiled medium rep (win
+config, 278 requests) settled who causes the rare full re-prefills:
+
+| role | reqs | median | p90 | max (est tokens) |
+|------|------|--------|-----|------------------|
+| worker | 251 | 2,674 | 6,677 | **16,382** |
+| architect | 27 | 5,084 | 5,175 | 5,192 (flat) |
+
+- **The architect is lean and flat (~5K).** It writes the step docs to disk and
+  does not carry them back in-context — it is *not* the culprit (an earlier
+  hypothesis, now falsified).
+- **Workers grow context linearly with turn count.** Every ≥10K request was one
+  worker's turns climbing seq 12→21 (15.1K→16.4K): each turn appends its tool
+  results. "Context grows" = "the worker took many turns."
+- **The turn cap bounds it.** Capped at 25, workers top out ~16K. The 45K full
+  re-prefills in the raw server log belong to the **uncapped / digest** regime —
+  the configs already rejected. In the win config context stays bounded, so
+  `context should be specific to the task` is already largely enforced by the cap
+  + reduced thinking (a short worker has a small context). The residual lever is
+  finer steps / better step docs so a worker needs fewer turns — not a new
+  context mechanism.
+
 ## What would falsify this / Risks
 
 - A preregistered ladder run where `cap25 + reduced thinking` ≤ baseline across
