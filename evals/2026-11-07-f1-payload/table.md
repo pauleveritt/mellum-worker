@@ -6,7 +6,7 @@ n = 1 per arm, with the worker that loads no delegate tool. Read from every reco
 
 | Arm | Requests | Tools sent | `delegate` tool | Nudged requests | Passed | Note |
 | --- | --- | --- | --- | --- | --- | --- |
-| `worker` | 36 | bash, edit, read, write | absent | 0 | no | hung on a foreground `uvicorn --reload` until the deadline |
+| `worker` | 36 | bash, edit, read, write | absent | 0 | no | hung on a foreground `uvicorn --reload` until the 900 s deadline; `run.json` records `wall` 59.8 s |
 | `bare` | 18 | bash, edit, read, write | absent | 0 | yes | left `python app.py` running (swept, `leaked`) |
 
 Rule (preregistered in the [spec](../../docs/superpowers/specs/2026-11-07-worker-without-delegate-design.md)):

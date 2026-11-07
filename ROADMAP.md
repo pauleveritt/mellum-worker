@@ -7,10 +7,10 @@ tangents go to the backlog, never into the current cycle.
 
 ## Now
 
-**Active:** none; F.1 closed 2026-11-07 (a floor with nothing hidden).
-**Next:** R.1, Easy remedies on that floor — brainstorm first.
+**Active:** none; F.2 closed 2026-11-07 (survey, backlog, questions for Andre).
+**Next:** R.1, Easy remedies on the floor — brainstorm first.
 **After:** A.1, Andre's architect as an opt-in unit.
-**Parked:** everything in [`BACKLOG.md`](BACKLOG.md), each with a reopen condition; the backlog itself owes a pruning cycle.
+**Parked:** everything in [`BACKLOG.md`](BACKLOG.md), each with a reopen condition.
 
 ## Direction
 
@@ -31,6 +31,7 @@ by default, so every later unit's effect can be credited to it.
 | Cycle | Ships | Excludes | Status |
 | --- | --- | --- | --- |
 | **F.1** | Loading the worker registers no `delegate` tool and no nudge, proven by a payload check on Easy; dead wood outside Vanilla's closure removed after review. Housekeeping. | Delegation as an opt-in unit (A.1); any remedy; changing Vanilla. | closed 2026-11-07 — [spec](docs/superpowers/specs/2026-11-07-worker-without-delegate-design.md), [plan](docs/superpowers/plans/archive/2026-11-07-f1-floor.md), [record](evals/2026-11-07-f1-payload/table.md). Payload check met: `worker` and `bare` on Easy sent Pi's four tools, no `delegate`, no nudge (n = 1 each). Orphan extensions, `dashboard/` and `HANDOVER.md` removed, each restorable from 63b6563. |
+| **F.2** | Housekeeping: the Pi extension-surface survey brought over from the old branch and corrected (the harness runs thinking on), cut to the floor's units; the backlog pruned to entries the re-boot still wants; the questions for Andre about the live tools F.1 kept. | Building any unit the survey ranks (R.1); deciding how `integration` reaches Andre; removing anything Andre has not answered on. | closed 2026-11-07 — [plan](docs/superpowers/plans/archive/2026-11-07-f2-housekeeping.md), [survey](docs/superpowers/research/2026-11-07-pi-extension-surface-survey.md). Survey re-checked on 21 units, thinking-on corrected; backlog 45 → 22 entries; four questions for Andre open in the plan. |
 
 ### Remedies (R)
 

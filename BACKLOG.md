@@ -51,42 +51,6 @@ context — plus its own slice, not the whole wall. *Reopens when* a
 non-phase-structured task is measured on `flow_run`, or the harness is pointed
 at real-world, non-suite commands.
 
-**Lesson 10's layout question needs a sample it does not have.** The
-preregistered `joined`-against-`split` arm came back null at n = 3: phase-4
-missing {5, 0} against {0, 3}, two usable sessions per arm, and medium 0/3 on
-passes for both arms
-([record](docs/superpowers/research/2026-10-25-lesson10-run.md#attempt-4-2026-10-2527-the-arm-ran-and-the-layout-did-not-separate-it)).
-The reading had to be the per-module one because medium floors on passes, so a
-claim about spec layout needs a task above that floor **and** n above 3.
-*Reopens when* a suite with pass headroom exists, or a lesson or default needs
-the layout claim.
-
-**Checks that never ran read as every check missing.** `score_workspace_details`
-counts as many missing checks as `expected.json` lists whenever pytest aborts
-before running them: LC.19's attempt 3 scored 18/18 with `passed: false` because
-two grader modules hit `ModuleNotFoundError: No module named 'models'` and pytest
-stopped with `Interrupted: 2 errors during collection`
-([record](docs/superpowers/research/2026-10-25-lesson10-run.md#attempt-3-2026-10-26-the-hang-is-fixed-the-scoring-is-not-yet-measuring)).
-Phase 1 alone passed 3 of 4. A record could not tell "the worker failed everything"
-from "the checks never ran" without the tail. LC.19A-adjacent work added
-`checks_ran: false` for that case; what is still owed is a lesson table column
-that shows it wherever a record reports missing checks.
-*Reopens when* a lesson table quotes a full set of missing checks without
-saying whether they ran.
-
-**The leak sweep misses a foreground server that made its own process group.**
-`pi`'s bash tool runs each command in a new session, so a model-started server
-lands in its own group; `run_suite` kills and sweeps `child.pid`'s group, which
-is `pi`'s, so `leaked.json` reports nothing. LC.19's attempt 2 hung on
-`uv run python -m uvicorn app:app --reload` in its own group, and a
-`uv run uvicorn app:app --port 9000` from run `20261025T112212Z-medium-31816b`
-was still alive 1 day 7 h later, holding its port
-([preregistration](docs/superpowers/research/2026-10-25-lesson10-preregistration.md#amendment-2026-10-26-attempt-1-aborted-before-any-session-completed)).
-A censored session therefore leaves a server behind and the next session
-inherits the port. The fix is to sweep children by ppid as well as by group.
-*Reopens when* a censored session's `leaked.json` is empty while a server
-survived, or the sweep is next changed.
-
 **The deadline is counted on a clock that stops when the Mac sleeps.**
 `run_suite` bounds each child with `child.wait(timeout=remaining)` from
 `time.monotonic()`, and on Darwin that clock does not advance while the system
@@ -114,72 +78,8 @@ or a `deadline` row in the trace; it changes a column the Getting Started
 suite lesson teaches, so it needs its own test and a re-read of the records
 that quote a wall, not a mid-arm patch.
 *Reopens when* a page or an arm quotes a wall for a session that hit its
-deadline, or when the harness report is next changed.
-
-**The foreground-server pathology is measured but not placed.** Three
-`no-facts` sessions hung on `uvicorn app:app --reload` / `python app.py` after
-143–460 s of silence and died at the 600 s deadline
-([record](docs/superpowers/research/2026-10-24-project-facts-screen.md)); LC.24's
-`bare` easy arm and LC.19's first two attempts hung the same way. It is Andre's
-(index P2) and belongs to **LC.7A**. 2026-10-27: the guard fired **0** times on
-medium — neither arm issued a foreground command, because the briefs now name the
-verification loop
-([run](docs/superpowers/research/2026-10-26-server-guard-run.md)) — so it stays
-dormant and the pathology is instructional, not unfixed.
-*Reopens when* LC.5 closes and LC.7A starts, or the arm's three-way question
-(facts bullet, dormant guard, both) can land on a page.
-
-**The recorder cannot have the payload and the refusal at once.** Pi runs
-`before_provider_request` handlers in extension load order and each may
-replace the payload, so a recorder loaded first sees messages before the
-worker appends its facts block (79 requests counted zero injected blocks,
-[record](docs/superpowers/research/2026-10-24-context-budget-screen.md)), and
-a recorder loaded last never sees a compaction the worker cancels. The split
-is a second, tiny watcher extension for `session_before_compact` alone, with
-its own trace file so the two writers do not share a `seq` counter.
-*Reopens when* an arm needs both a payload reading and a refused-compaction
-count in one session, or when the recorder is next changed.
-
-**Discovery/output policy beyond M.7E.** Seven tools do not prevent shell
-dependency scans. Throwaway discovery interception blocked scans, but its
-compact-output branch had no model-run evidence and its heuristics can block
-legitimate recursion. M.7C/M.7D own telemetry and regression cases; M.7E owns
-any narrowly justified Pi trial. Broader output preservation/compaction is
-still deferred ([synthesis](docs/superpowers/research/2026-10-11-session-to-roadmap.md)).
-*Reopens when* corrected host records show retrieval remains material after
-M.7E, with scoped legitimate recursion and recoverable full-output checks.
-
-**Natural project instructions and a short test-first policy.** Pi 1.0.2
-transfer spike: measured phase facts complete/correct 2/2; general replacement
-0/2 (one template leak missed by hidden tests, one blocking-server timeout).
-Mode parser general 1/2, TDD 0/2; the bullet reached Mellum but execution failed.
-Worker general and TDD both 2/2; TDD achieved behavioral red/green twice, once
-with parent resume/repair. Parents supplied enriched briefs, so this is not an
-isolated bullet effect. Keep ordinary command/environment and bounded facts;
-no video-continuity constraint, no further hello-world tuning, no universal
-TDD rule from n=2
-([results](docs/superpowers/research/2026-10-11-pi102-mode-worker-experiments.md)).
-*Reopens when* broader transfer/TDD ladder trials are scheduled; shared prompt
-or setup/learn promotion needs applicable ladder and host checks.
-
-**Prompt default `python -m pytest` (Worker).** Prompt v5 guesses `uv run
---offline pytest -q`, which runs the `pytest` entry point without the
-project root on `sys.path`. Since M.7, Mellum Mode forwards the `## Mellum`
-test command, or `uv run --offline python -m pytest -q` for a pytest
-pyproject (AgentClinic rungs 6–9: section 9/12,
-fallback only 7/12, facts off 1/12 rescored;
-[research note](docs/superpowers/research/2026-10-09-m7-project-facts.md)).
-The Worker's child still sees only the brief and the prompt, so a parent
-that omits the test command gets the guess. A `v6` default is a prompt
-change for both paths, sized in the
-[steering note](docs/superpowers/research/2026-10-09-steering-and-next-phase.md)
-§2; rungs 6–9 are the ac-demo-shaped fixture it asked for. *Reopens when* a Mode run record shows the prompt's default run and fail in a project without a `## Mellum` section; the Worker path goes with M.12.
-
-**Ladder drives the one-shot command.** After M.5, `pi -p "/mellum
-<sentence>"` works, so the ladder could launch the shipped command (and get
-run records per run) instead of `MELLUM_MODE=1`. That changes the measured
-launch (an on-marker in the messages), so it is a phase compared against
-A17, not a runner tweak. *Reopens when* M.11's screen is set up: its runner drives `/mellum` with a test file, and launching the shipped command is the same change.
+deadline, or when the harness report is next changed. 2026-11-07: F.1 hit it ([record](evals/2026-11-07-f1-payload/table.md));
+fix before R.1 reports budget.
 
 **Final reply omits moves and pre-existing work.** Recorded forms: a reply
 silent about `rm tests/test_hello.py`; a reply claiming to have created files
@@ -190,10 +90,6 @@ the measured answers; schema-2 records (M.5) make the gap countable.
 *Reopens when* records show two or more runs whose final reply claims success
 with `filesMissingAtEnd` non-empty or `lastCommand` not `ok`.
 
-**OpenCode 2.x plugin shape.** The V2 host reads `default.setup`, not
-`server`, and uses a flat `skills` array. *Reopens when* a 2.x host is
-available to test against.
-
 **Empty-final nudge misses announce-and-stop turns.** The guard nudges only
 when a turn ends with no text. The A17 rung 5 miss ended with "Now let's run
 the tests again." and no tool call: the turn had text, so no nudge fired and
@@ -201,19 +97,6 @@ the run stopped unfinished. A check for a final turn that announces an action
 without making a tool call would catch it, but it is a guard change on a
 single observed miss in 30 Mode runs (A14, A17). *Reopens when* a second
 announce-and-stop miss is recorded in a ladder phase or a run record.
-
-**The worker refuses compaction, so a long suite run overflows.** While the
-worker is on, `session_before_compact` refuses Pi's auto-compaction, so a run
-whose history outgrows the window has no way down. On the easy suite against
-llama.cpp at `n_ctx` 50,176, three of ten sessions in the LC.13A guard arm
-ended with an `error` final: `request (51697 tokens) exceeds the available
-context size (50176 tokens), try increasing it`. The empty-final nudge cannot
-answer these — it continues only a `stop` turn — and the same refusal will
-truncate every later arm. *Reopens when* an easy-suite run is expected to
-finish on the taught backend: choose a window the task fits inside, or a
-compaction policy that does not refuse while the mode is on, then re-baseline
-the suite, because the change moves a setting the baseline was measured with.
-[arm record](docs/superpowers/research/2026-10-24-nudge-llamacpp-screen.md).
 
 **Write-only guard: refuse writes outside the facts block's list.** Mode
 forwards the `## Mellum` section's `Write only:` line as text; nothing
@@ -253,30 +136,12 @@ not arise there. The fix is a new baseline at each new user prompt, with
 the dedupe key per prompt. *Reopens when* a host re-uses a Worker child
 across prompts, or `learn` reports from `-e` sessions start to matter.
 
-** The OpenCode
-port ships a step-capped Worker subagent, installed through the plugin array,
-with no Mode, guards or run records; the README says it is unmeasured.
-Measuring it needs a `--harness opencode` runner in `ladder/` and a record
-writer built against observed runs. The Pi Worker's retirement in M.12 does
-not touch it. *Reopens when* an OpenCode user reports a run worth measuring,
-or someone offers the runner.
-
 **Ollama backend (was M.4).** GGUF weights, a Modelfile, a tool-call check,
 provider templates for both hosts and a ladder rerun;
 [`docs/backends/ollama.md`](docs/backends/ollama.md) lists what a port needs.
 Only oMLX has been run. *Reopens when* a machine without Apple Silicon is on
 hand to run the ladder against it. Restored 2026-10-20: LC.2 chose llama.cpp,
 so this entry is not taken and its condition still stands.
-
-**Execution bounds (was M.7E).** A measured opt-in policy for bash commands
-with no timeout under the shipped guards, preserving explicit overrides and
-verifying process cleanup, with completion scored separately. The
-[phase](docs/superpowers/research/2026-10-11-pi110-opt-in-guards.md) and
-[hello](docs/superpowers/research/2026-10-11-pi110-hello-guards.md) probes show
-the mechanism in bare Pi, not a benefit; `Do not: start servers` and the
-ladder's leftover-process cleanup (0.1.8) cover the cases seen in Mode.
-*Reopens when* a ladder record or run record shows a Mode run cut by a
-blocking command that those two did not handle.
 
 **Versioned assessments (was M.7D).** Four independent dimensions (behavior,
 verification, completion, report support) as a sidecar beside each run's
@@ -325,24 +190,6 @@ impact on eval results". *Reopens when* someone runs a screen (a few rungs, a
 research note naming the server's launch flags and n); a measured claim needs a
 preregistered run with the server differences pinned.
 
-**One worker.** Retire the pi-subagents Worker (agent template, child-only
-guard loading, Worker run records, the setup skill's agent-file and intercom
-phases, the ladder's `delegated` mode) and rename: `extensions/mellum-mode.ts`
-becomes `mellum-worker.ts` and "Mellum Mode" becomes mellum-worker in the
-docs, skill and templates. `/mellum` and the run-record path stay; `learn`
-and `last` keep reading old `kind: "worker"` records; a rung 1 and a rung 6
-smoke show the rename launches the same requests. *Reopens when* the mediated
-test lands, or the rename is worth doing on its own; the closed cycle and its
-exclusions are in [`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20). 2026-10-20: taken as LC.8
-because the Learning Center needs one worker; the entry stays until it lands.
-
-**pi-subagents Worker: one-liners and an in-process child (were M.8, M.9).**
-`async: false`, a re-dispatch line in the description and the intercom
-opt-out ([A11](evals/2026-10-09-ablation-a11-delegated-nointercom/README.md)); a
-`mellum_worker(task)` tool through Pi's SDK
-([cost note](docs/superpowers/research/2026-10-09-worker-cost-options.md) §2,
-§3b). *Reopens when* M.12 does not retire the Pi Worker.
-
 **PyCharm learning content.** Learning Center material made for PyCharm
 users, building on the Getting started track. Paul's pitch to Andre
 (2026-10-20) names it as a later step that needs JetBrains approval; the
@@ -354,47 +201,19 @@ closed, so both Getting started lessons exist to build on.
 this repo to Satyrn Education, keeping lessons as plain Markdown with front
 matter so the move is a copy
 ([spec](docs/superpowers/specs/2026-10-20-learning-center-design.md) §11).
-From Paul's pitch to Andre (2026-10-20). *Reopens when* LC.5 has closed and
-Satyrn Education is ready to host the lessons.
+From Paul's pitch to Andre (2026-10-20). *Reopens when* Satyrn Education is ready to host the
+lessons (the Learning Center phase is archived).
 
 **Model-parameter impact on eval results.** What temperature, `top_p`, `top_k`
 and context do to rung scores is unmeasured; the lesson that teaches a setting
 needs that evidence, and the settings come from a checked-in project file so an
 arm can differ by one value ([spec](docs/superpowers/specs/2026-10-20-learning-center-design.md)
-§12). *Reopens when* LC.3's harness can run a rung fixture twice with one
-parameter changed.
+§12). *Reopens when* an R cycle needs a sampling setting
+and the harness runs the suite twice with one parameter changed.
 
-**PR #1 prompt and guard extraction.** The prompt v6–v11 triage is recorded: v6 is a null arm, v7–v9/v11 are ladder evidence, and v10’s foreground-server guard is dormant on branch `lc11b-server-guard` at `420ba1d`; workspace confinement is on branch `lc11b-confinement` at `176922f`. No guard is enabled and Baseline Worker is unchanged. Prospective Lessons #20–#22 are index entries only, not feature cycles. The source map is the decision ledger. PR #1 stays open; the digest ends with a comment, not a close. *Reopens when* Getting Started is closed and a screen repeats a foreground-server or outside-workspace hang, or a prompt version has a suite-shaped arm worth measuring; enabling a guard needs a baseline v2 and re-baseline. [prompt triage](docs/superpowers/research/2026-10-24-prompt-v8-v11-triage.md), [PR #1 digest](docs/superpowers/research/2026-10-24-pr1-digest.md), [source map](docs/superpowers/research/2026-10-24-andre-lessons-map.md).
+**Dashboard and replay.** PR #1/#4's dependency-free server, feed and replay page watch, launch and steer runs. Removed in F.1 (nothing loaded it); restore with `git checkout 63b6563 -- dashboard extensions/mellum-feed.ts extensions/mellum-replay.ts extensions/mellum-control.ts`. *Reopens when* a live run needs operator control that the trace and `/mellum last` cannot show, or a lesson asks the learner to replay a turn. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md), [Flow triage](docs/superpowers/research/2026-10-24-flow-triage.md).
 
-**PR measurement support.** The PRs carry measurement machinery that is not a lesson: the mlx-lm backend, the effort-ramp flags, the mediation scripts, rungs 10–12, `scripts/screen.sh` and `product.sh`, `halve-model.sh`, and the workflow/tests. None is in the installed package or the Lessons track. *Reopens when* a preregistered ladder run or a Flow phase needs one of them; port only the part that run uses and keep the record with the run. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md), [PR #1 source map](docs/superpowers/research/2026-10-24-pr1-digest.md).
-
-**Dashboard and replay.** PR #1/#4's dependency-free server, feed and replay page watch, launch and steer runs. It is not a lesson and is not installed. *Reopens when* a live run needs operator control that the trace and `/mellum last` cannot show, or a lesson asks the learner to replay a turn. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md), [Flow triage](docs/superpowers/research/2026-10-24-flow-triage.md).
-
-**Content-tool-call assist.** PR #2's extension promotes a tool call the model emitted inside text content to a real call, gated on known tool names. It is unit-tested but not ladder-measured, and PR #1 carries the same extension. *Reopens when* a suite or ladder run records a stall where the model emits a valid call in text and never reaches the tool field. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md), [PR digest](docs/superpowers/research/2026-10-20-pr-digest.md).
-
-**Experimental agent extensions.** Plan, surgical, quality, NCM, loop and knowledge are PR #4 extensions with unit tests, not ladder results. Context, rethink, files and vision already route to INT.3 candidates; this entry is the remainder. *Reopens when* a screen or a Flow phase needs one extension and has a record that distinguishes it from the Baseline Worker; do not install the group speculatively. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md), [follow-up digest](docs/superpowers/research/2026-10-21-andre-follow-up-digest.md).
-
-**Tier-1 contract test.** The PR #1 structural gate checks that routes exist; it is not the behavioral examiner Flow needs. *Reopens when* the INT.2 spec needs a cheap structural pre-check before the frozen behavioral gate, and a Flow run shows the examiner alone is too slow or too broad. [source map](docs/superpowers/research/2026-10-24-pr1-digest.md), [Flow triage](docs/superpowers/research/2026-10-24-flow-triage.md).
-
-**Andre's context and input lessons.** Lessons #15–#20 in the track index — rungs 10–12, context search, skeptical rethink, documents/images, live control and next-concept verify — are candidates, not feature cycles. #16–#20 are INT.3 workflow candidates; #15 remains a lesson candidate. They need LC.5's written consent and a recorded screen for the extension each describes; several may be dropped. *Reopens when* LC.5 closes and one candidate has a record that supports a six-step page. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md#lesson-map), [re-plan](docs/superpowers/research/2026-10-24-curriculum-replan.md).
-
-**Pathologies page.** A reference in `learn/` of the ways small models fail:
-announce-and-stop, false success, test-command thrash, a bent project, long
-runs, servers, settings drift, empty finals, loops, writing outside the
-layout, a test edited to pass, a lost phase id. Each gets the record that
-shows it and the guard, fact or spec shape that answers it. `learn` already
-counts seven of these from run records; the page adds the ladder's and links
-`evals/`, so a lesson links one pathology instead of restating it.
-*Reopens when* the ditch lesson names more than the page covers, or a second
-lesson needs the same explanation. Taken as LC.7A on 2026-10-21; the entry stays until it lands.
-
-**Glossary of the eval terms.** One page that fixes the measurement vocabulary —
-session, prompt, turn, suite, rung, arm, screen, reference run — so lessons,
-records and the harness use the same words. `learn/glossary.md` already defines
-the Learning Center's terms; this one covers the eval terms and links back.
-Session is the unit: one isolated Pi context and workspace, fed one or more
-prompts, with one trace. *Reopens when* a record or lesson uses an eval term the
-glossary lacks, or two documents use one word for different things.
+**Content-tool-call assist.** PR #2's extension promotes a tool call the model emitted inside text content to a real call, gated on known tool names. Removed in F.1 (nothing loaded it); restore with `git checkout 63b6563 -- extensions/content-tool-call-assist scripts/patch-pi.sh`. A `message_end` handler could do the same in-process. *Reopens when* a suite or ladder run records a stall where the model emits a valid call in text and never reaches the tool field. [harvest](docs/superpowers/research/2026-10-24-pr-harvest-index.md), [PR digest](docs/superpowers/research/2026-10-20-pr-digest.md).
 
 **Reject a gate test that cannot pass.** A frozen gate test can fail every
 correct app because the test itself is broken: Bronze's gate called
@@ -418,14 +237,5 @@ brief (leaving out `--single-prompt`). Their evidence is in
 stepped sessions produced projects the checks could open where one-brief
 sessions did not, and per-phase Acceptance lists mattered more than the file
 layout. *Reopens when* a remedy unit can shape the task inside a Pi session
-(feeding phases one at a time, or pointing each at its own spec), so a lesson
-could show the FAIL turning into a PASS.
-
-**The handoff block as a unit.** `collapseHandoffs` in
-`extensions/mellum-worker.ts` replaces a closed span's messages with one
-handoff block, so a parent does not re-pay a child's transcript on every
-request. The lesson that taught it left the track on 2026-10-29: it is not a
-unit and has no arm, since the delegated child was retired
-([note](docs/superpowers/research/2026-10-29-lessons-left-the-track.md)).
-*Reopens when* the handoff block is a remedy unit and a challenge shows a
-session that fails on context without it and passes with it.
+(feeding phases one at a time, or pointing each at its own spec), so an R cycle
+can measure it.
