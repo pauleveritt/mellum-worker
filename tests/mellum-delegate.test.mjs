@@ -969,6 +969,81 @@ test("planMinSteps scales a step floor with the spec's requirement bullets, and 
 	assert.ok(planMinSteps(spec) <= 10, "the floor never exceeds the requirement count");
 });
 
+test("maxReqsPerStep defaults to 5 and honors a positive-integer MELLUM_DELEGATE_MAX_REQS_PER_STEP override", async () => {
+	const { maxReqsPerStep, MAX_REQS_PER_STEP } = await load();
+	const prev = process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+	try {
+		assert.equal(MAX_REQS_PER_STEP, 5, "the shipped default budget is 5");
+		delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		assert.equal(maxReqsPerStep(), 5, "unset → the shipped default");
+		process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = "3";
+		assert.equal(maxReqsPerStep(), 3, "a positive integer overrides the default");
+		for (const bad of ["0", "-2", "abc", "2.5", ""]) {
+			process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = bad;
+			assert.equal(maxReqsPerStep(), 5, `invalid (${JSON.stringify(bad)}) falls back to the default`);
+		}
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		else process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = prev;
+	}
+});
+
+test("planMinSteps splits finer when MELLUM_DELEGATE_MAX_REQS_PER_STEP lowers the per-step budget", async () => {
+	const { planMinSteps } = await load();
+	const prev = process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+	const spec = Array.from({ length: 12 }, (_, i) => `- requirement ${i + 1}`).join("\n");
+	try {
+		delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		assert.equal(planMinSteps(spec), 3, "12 bullets / 5 → 3 steps at the default budget");
+		process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = "3";
+		assert.equal(planMinSteps(spec), 4, "12 bullets / 3 → 4 steps at the finer budget");
+		process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = "2";
+		assert.equal(planMinSteps(spec), 6, "12 bullets / 2 → 6 steps");
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		else process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = prev;
+	}
+});
+
+test("authorSplitTask names the active per-step requirement budget", async () => {
+	const { authorSplitTask } = await load();
+	const prev = process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+	try {
+		delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		assert.match(authorSplitTask("task", 1, 3), /at most 5 requirements per step/, "default budget in the retry feedback");
+		process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = "3";
+		assert.match(authorSplitTask("task", 1, 4), /at most 3 requirements per step/, "finer budget in the retry feedback");
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		else process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = prev;
+	}
+});
+
+test("authorPlanPrompt adds a keep-steps-small block only when the budget is finer than default", async () => {
+	const { authorPlanPrompt } = await load();
+	const prev = process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+	try {
+		delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		const off = authorPlanPrompt("build a board");
+		assert.doesNotMatch(off, /Keep each step SMALL/, "off by default — the shipped architect prompt is unchanged");
+
+		process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = "5"; // equal to the default budget is not "finer"
+		assert.equal(authorPlanPrompt("build a board"), off, "a budget equal to the default is byte-identical");
+
+		process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = "3";
+		const on = authorPlanPrompt("build a board");
+		assert.match(on, /Keep each step SMALL/, "a finer budget adds the keep-steps-small block");
+		assert.match(on, /at most 3 requirements? per step/, "it names the active budget");
+		assert.match(on, /more,? smaller steps/i, "prefer more, smaller steps over fewer large ones");
+		const block = on.match(/Keep each step SMALL[^]*?split it\./)[0];
+		assert.doesNotMatch(block, /app\.py|fastapi|jinja|turbohtml|roadmap\.md/i,
+			"the added block is agnostic — it names no suite file, framework or value");
+	} finally {
+		if (prev === undefined) delete process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP;
+		else process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP = prev;
+	}
+});
+
 test("doTaskPlan re-dispatches for a finer split when the plan is too coarse for the spec", async () => {
 	const { doTaskPlan } = await load();
 	await inTempCwd(async () => {

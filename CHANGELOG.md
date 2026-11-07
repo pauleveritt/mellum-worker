@@ -73,6 +73,15 @@ Versions match git tags; pin one in both install lines.
   re-prefills trace to long/uncapped workers, not the architect — recorded in
   `docs/superpowers/research/2026-11-06-medium-cap-thinking-digest.md`.
 
+- **Finer plan steps — `MELLUM_DELEGATE_MAX_REQS_PER_STEP=<n>`, off by default.**
+  Lowers the per-step requirement budget (default 5) so the architect splits the
+  spec into smaller steps: it raises the step floor, names the tighter budget in
+  the coarse-plan retry, and adds a keep-steps-small line to the architect prompt.
+  A smaller step stays further below the worker turn cap, the lever against the
+  one capped, re-dispatched step a medium rep otherwise spends roughly a fifth of
+  its wall on. Unset (or `≥ 5`) leaves the shipped loop byte-identical and frozen
+  until a screen measures it.
+
 - **Step-file delegation (`MELLUM_DELEGATE_STEPS=1`).** A finer-grained handover
   than per-phase. With this on, `/mellum <task>` has the architect split the whole
   spec into the smallest ordered chunks, each written as its own `stepNN.md`

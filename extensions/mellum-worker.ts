@@ -953,6 +953,20 @@ export function authorRetryTask(task: string): string {
 export const MAX_REQS_PER_STEP = 5;
 
 /**
+ * The active per-step requirement budget. MELLUM_DELEGATE_MAX_REQS_PER_STEP overrides MAX_REQS_PER_STEP
+ * when it is a positive integer, else the default holds. A smaller budget makes FINER steps — it raises
+ * the step floor (planMinSteps), names the tighter budget in the coarse-plan retry, and adds a
+ * keep-steps-small line to the architect prompt — aimed at keeping each step well under the worker turn
+ * cap so fewer steps stall and need a rethink. A harness guarantee (the floor) plus a prompt nudge;
+ * default (unset, or ≥ the default) is the shipped loop, byte-identical and frozen until a screen
+ * measures the knob. Read live, so a run or a test can set it per call.
+ */
+export function maxReqsPerStep(): number {
+	const n = Number(process.env.MELLUM_DELEGATE_MAX_REQS_PER_STEP);
+	return Number.isInteger(n) && n > 0 ? n : MAX_REQS_PER_STEP;
+}
+
+/**
  * The minimum number of steps a plan for this spec should have, derived from the spec itself:
  * one step per MAX_REQS_PER_STEP requirement bullets (lines that start with -, * or a number).
  * A prose spec with no bullets imposes no floor (0). Agnostic — it reads the task, nothing else.
@@ -965,7 +979,7 @@ export function planMinSteps(task: string): number {
 	for (const line of task.split("\n")) {
 		if (/^\s*([-*]|\d+[.)])\s+\S/.test(line)) bullets++;
 	}
-	return bullets === 0 ? 0 : Math.ceil(bullets / MAX_REQS_PER_STEP);
+	return bullets === 0 ? 0 : Math.ceil(bullets / maxReqsPerStep());
 }
 
 /** Feedback for a re-dispatched architect whose plan was too coarse for the spec. Agnostic. */
@@ -974,7 +988,7 @@ export function authorSplitTask(task: string, got: number, want: number): string
 		`RETRY — your plan had only ${got} step${got === 1 ? "" : "s"}, too coarse for this spec. Each ` +
 		"step must add ONE small slice, not a whole phase — a single step that bundles many " +
 		`requirements is too big to build correctly. Split finer: aim for at least ${want} steps, at ` +
-		`most ${MAX_REQS_PER_STEP} requirements per step. Rewrite the stepNN.md files from step01.md.\n\n` +
+		`most ${maxReqsPerStep()} requirements per step. Rewrite the stepNN.md files from step01.md.\n\n` +
 		task
 	);
 }
@@ -994,6 +1008,17 @@ export function authorPlanPrompt(task: string): string {
 		  "file an earlier step writes. When a step edits a file an earlier step created, quote the " +
 		  "EXACT text that earlier step was told to write as the anchor, and never prescribe an edit " +
 		  "to a file no step creates.\n"
+		: "";
+	// MELLUM_DELEGATE_MAX_REQS_PER_STEP below the default asks for FINER steps up front (not only on a
+	// coarse-plan retry), so each step stays small enough for a fresh worker to finish in a few turns —
+	// the lever against the one capped, re-dispatched step a rep otherwise spends ~a fifth of its wall on.
+	// A budget ≥ the default adds nothing, so the shipped prompt stays byte-identical. Agnostic — the
+	// block names only the budget number, no suite file, framework or value.
+	const budget = maxReqsPerStep();
+	const fineBlock = budget < MAX_REQS_PER_STEP
+		? `Keep each step SMALL: at most ${budget} requirement${budget === 1 ? "" : "s"} per step. Prefer ` +
+		  "MORE, smaller steps over fewer large ones — a step a fresh worker can finish quickly in a few " +
+		  "turns, not one it has to grind through. When a step would carry more than that, split it.\n"
 		: "";
 	return (
 		"You are the ARCHITECT, not the implementer. Do NOT write any implementation code and do NOT " +
@@ -1016,6 +1041,7 @@ export function authorPlanPrompt(task: string): string {
 		"Write the step files AS YOU GO — emit step01.md first, then the next, and keep your reasoning " +
 		"between files to a sentence, so you do NOT run out of output before the files are written.\n" +
 		groundedBlock +
+		fineBlock +
 		`\nTask: ${task}`
 	);
 }
