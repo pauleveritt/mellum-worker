@@ -85,16 +85,16 @@ and evidence with dated corrections; never edit archived plans.
   `uv run python -m ladder.run_ladder --help` for runs. Never commit
   `trace.jsonl`, `stdout.txt` or `diff.patch`; raw evidence goes in a
   `research-YYYY-MM-DD` release.
-- **Run standard — use the two scripts, don't hand-assemble flags.**
-  `scripts/screen.sh <rung> <model-id>` is the measurement rig (direct, mediated:
-  `tuned`, repeat 3, redispatch 5, effort-ramp, thinking off, **guards on**, the
-  default prompt, the mediated tool set, `--model omlx/<model-id>`).
-  `scripts/product.sh <rung>` is the shipped worker (`--mode mode`, guards and
-  facts on). Both write to `runs/` (git-ignored) and want
-  `ladder/scripts/watch_ladder.py` alongside; promote a kept run to
-  `evals/<date-topic>/` with the raw stripped. Per-run
-  `--prompt`/`--tools`/`--thinking` tweaks or source edits are ablations,
-  recorded as such — not how a standard run is made.
+- **Run standard — the floor is measured on the harness, thinking on.**
+  The floor and every R cycle run through `learn/code/harness.py run --suite <s>
+  --arm vanilla` (remedies with `--remedy`), on the pinned llama.cpp profile with
+  Pi's default thinking, which is **on**. Pass the pinned Pi 1.4.0 with
+  `--pi-binary`, because a bare `pi` on `PATH` may be an older one. Report budget
+  (`wall`, `turns`, `requests`, `completion`) beside quality. `scripts/screen.sh`
+  and `scripts/product.sh` are the ladder's rungs. `screen.sh` runs with thinking
+  off, so its numbers never mix with the harness's. Write runs to `runs/`
+  (git-ignored), and promote a kept one to `evals/<date-topic>/` with the raw
+  stripped. A per-run flag or source tweak is an ablation, recorded as such.
 - `prompts/mellum-worker.md` is the only prompt source.
 - **Run Python through `uv run`, never a bare `python`/`python3`** — the pinned
   env and lockfile are what make a run reproducible. (`npm test` is the one

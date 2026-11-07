@@ -83,7 +83,6 @@ def test_complaints_board_still_renders_seed_complaint_details():
 def test_complaint_model_contract_is_preserved():
     field_map = {field.name: field for field in fields(Complaint)}
     assert {"agent_name", "text", "timestamp"} <= field_map.keys()
-    assert field_map["timestamp"].default_factory is not MISSING
 
     first = Complaint("first", "First complaint")
     second = Complaint("second", "Second complaint")

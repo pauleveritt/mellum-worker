@@ -676,6 +676,11 @@ def run_suite(
     started = time.monotonic()
     groups: list[int] = []
     leaked: list[dict] = []
+    # The budget is the time the Pi processes ran, measured here, never the span of
+    # trace rows: a hang writes no rows, so the trace undercounts it.
+    child = None
+    elapsed = 0.0
+    termination_reason = "error"
     # The sweep runs however the loop ends, including a SIGTERM (main turns it
     # into SystemExit): a stopped run must still end the servers it started.
     try:
@@ -683,6 +688,7 @@ def run_suite(
             remaining = None if deadline is None else deadline - (time.monotonic() - started)
             if remaining is not None and remaining <= 0:
                 (run / "deadline").write_text("hit\n")
+                termination_reason = "deadline"
                 break
             # The spec-derived contract scopes itself to the phase this prompt names.
             env["ACCEPTANCE_PROMPT"] = prompt
@@ -694,11 +700,16 @@ def run_suite(
             )
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
+                child_started = time.monotonic()
                 child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
                 groups.append(child.pid)
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
-            ended = wait_or_stall(child, run, trace, remaining, stall)
+            try:
+                ended = wait_or_stall(child, run, trace, remaining, stall)
+            finally:
+                elapsed += time.monotonic() - child_started
+            termination_reason = ended or "exited"
             if ended:
                 break
     finally:
@@ -708,6 +719,13 @@ def run_suite(
         swept = {entry["pid"] for entry in leaked}
         leaked.extend({"pid": pid, "pgid": None, "command": command}
                       for pid, command in sweep_workspace(workspace) if pid not in swept)
+        (run / "execution.json").write_text(json.dumps({
+            "elapsed_seconds": round(elapsed, 3),
+            "exit_code": child.poll() if child is not None else None,
+            "termination_reason": termination_reason,
+            "cleanup_ok": not any(group_members(pgid) for pgid in groups)
+                          and not workspace_members(workspace),
+        }, indent=2) + "\n")
     (run / "leaked.json").write_text(json.dumps(leaked, indent=2) + "\n")
     if pristine is not None and suite.layout is not None:
         (run / "layout.json").write_text(
@@ -814,13 +832,34 @@ def qualify(suite: Suite) -> tuple[bool, dict[str, bool]]:
     return results["known-good"] and not results["known-broken"], results
 
 
-def _trace_time(value):
-    if not isinstance(value, str):
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
+def _execution(run: Path) -> dict:
+    """The run's execution.json (written by run_suite), or {} for a run without one."""
+    path = Path(run) / "execution.json"
+    return json.loads(path.read_text()) if path.is_file() else {}
+
+
+def execution_outcome(run: Path) -> dict:
+    """How the session ended, apart from how good its artifact is.
+
+    A deadline or a stall is what ended it; otherwise a non-zero exit or a last reply
+    that errored is an error, and anything else settled. A leaked server is a separate
+    fact (cleanup_ok, leaked): it does not turn a settled session into an error.
+    """
+    execution = _execution(run)
+    rows = [json.loads(line) for line in (Path(run) / "trace.jsonl").read_text().splitlines()
+            if line.strip()]
+    replies = [row["message"] for row in rows if row.get("type") == "message_end"
+               and (row.get("message") or {}).get("role") == "assistant"]
+    reason = execution.get("termination_reason")
+    if reason in ("deadline", "stalled"):
+        completion = reason
+    elif (reason != "exited" or execution.get("exit_code") != 0
+          or (replies and replies[-1].get("stopReason") in ("error", "aborted"))):
+        completion = "error"
+    else:
+        completion = "settled"
+    return {"completion": completion, "exit_code": execution.get("exit_code"),
+            "cleanup_ok": execution.get("cleanup_ok")}
 
 
 # A blocked tool call never reaches the recorder: the worker's guard stops the
@@ -839,19 +878,18 @@ def report(run: Path) -> dict:
     final = ""
     inputs = []
     outputs = []
-    times = []
     empties: list[int] = []
     guard_blocks = 0
+    turns = 0
     for index, row in enumerate(rows):
-        if (when := _trace_time(row.get("timestamp"))) is not None:
-            times.append(when)
         if row.get("type") != "message_end":
             continue
         message = row.get("message") or {}
         usage = message.get("usage") or {}
         value = usage.get("input", usage.get("prompt_tokens"))
         if isinstance(value, (int, float)):
-            inputs.append(value)
+            # The context sent is the whole prompt: Pi's input leaves out the cached prefix.
+            inputs.append(value + sum(usage.get(key) or 0 for key in ("cacheRead", "cacheWrite")))
         value = usage.get("output", usage.get("completion_tokens"))
         if isinstance(value, (int, float)):
             outputs.append(value)
@@ -860,6 +898,9 @@ def report(run: Path) -> dict:
             guard_blocks += 1
         if message.get("role") != "assistant":
             continue
+        # A turn is a reply that came back; an errored or aborted one was only a request.
+        if message.get("stopReason") not in ("error", "aborted"):
+            turns += 1
         blocks = message.get("content") or []
         said = any(b.get("type") == "text" and (b.get("text") or "").strip()
                    for b in blocks)
@@ -888,14 +929,15 @@ def report(run: Path) -> dict:
         for at in empties)
     return {
         "requests": sum(row.get("type") == "provider_request" for row in rows),
-        "turns": sum(row.get("type") == "provider_request" for row in rows),
+        "turns": turns,
         "tool_calls": sum(row.get("type") == "tool_call" for row in rows),
         "tool_errors": sum(
             row.get("type") == "tool_result" and row.get("isError") for row in rows),
         "final_reply": final,
         "context": max(inputs) if inputs else None,
         "output_tokens": sum(outputs) if outputs else None,
-        "wall": round((times[-1] - times[0]).total_seconds(), 3) if len(times) > 1 else None,
+        # The Pi processes' own run time (execution.json); unknown without it.
+        "wall": _execution(run).get("elapsed_seconds"),
         "nudges": continued,
         "empty_finals": len(empties) - continued,
         "guard_blocks": guard_blocks,
@@ -1033,6 +1075,7 @@ def _run_sessions(
             "record_failures": over,
             **{key: value for key, value in metrics.items()
                if key != "final_reply"},
+            **execution_outcome(run_dir),
         }
         (run_dir / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         results.append((run_dir, passed, tail, grades, metrics,
@@ -1177,8 +1220,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--context-files", action="store_true",
                      help="keep the workspace's own AGENTS.md (warm); off by default the run is "
                           "cold (--no-context-files strips it)")
-    run.add_argument("--specs", metavar="VARIANT", default=None, choices=["joined", "split"],
-                     help="use the suite's spec variant: one joined roadmap, or one file per phase")
+    run.add_argument("--specs", metavar="VARIANT", default=None,
+                     help="use one of the suite's spec variants (spec-variants/<name>): original, joined or split")
     return parser
 
 

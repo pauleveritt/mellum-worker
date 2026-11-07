@@ -280,8 +280,14 @@ the first must pass and the second must fail.
 
 ### Turns
 
-Model requests in a session, counted from the trace’s `provider_request`
-rows. The table’s `Turns` is their mean over n.
+Model replies that came back in a session: the assistant messages in the trace
+that did not end in an error or abort. The table’s `Turns` is their mean over n.
+
+### Requests
+
+Every request the harness’s Pi sent the model, counted from the trace’s
+`provider_request` rows. A retried, errored or deadline-killed request is a
+request but not a turn, so requests can exceed turns.
 
 ### Failed checks
 
@@ -300,8 +306,16 @@ still fails; it just says why.
 
 ### Wall
 
-Seconds from the run start to the last settled child. It is a suite total;
-divide by the number of prompts before comparing suites of different length.
+Seconds the session’s Pi processes ran, measured by the harness around each
+process (`execution.json`), not read from trace timestamps, which stop at a
+hang. It is a suite total; divide by the number of prompts before comparing
+suites of different length.
+
+### Session completion
+
+How a session ended, apart from how good its work is: `settled` (Pi exited
+cleanly), `stalled`, `deadline` (the harness killed it) or `error` (a non-zero
+exit or a last reply that errored). A run record’s `completion` field.
 
 ### Output tokens
 

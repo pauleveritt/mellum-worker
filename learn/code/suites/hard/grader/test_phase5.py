@@ -1,6 +1,7 @@
-"""Mediated acceptance test for Phase 5 (Archive & Audit), written from the full
-spec. A superset of the hidden oracle: it also pins the exact audit action
-order and that archiving does not delete. Placed by `run_ladder --acceptance-test`."""
+"""Hidden grader for Phase 5 (Archive and Audit). First written as the ladder's mediated
+acceptance test from the full spec; it pins the audit action order and that archiving does
+not delete. A no-op assertion was removed on 2026-11-06 (suite-spec audit); since then
+the checks that change a complaint's state post their own, so no seed is mutated."""
 from starlette.testclient import TestClient
 
 import models
@@ -15,8 +16,14 @@ def test_archive_only_when_resolved():
     assert r.status_code == 400 and openc.status == "open"
 
 
+def _post_new_complaint(agent_name, text):
+    """Add a complaint through the real route and return it, so no check mutates a seed."""
+    client.post("/complaints", data={"agent_name": agent_name, "text": text}, follow_redirects=False)
+    return models.complaints[-1]
+
+
 def test_archive_hides_from_board_but_keeps_the_record():
-    target = next(c for c in models.complaints if c.status == "open")
+    target = _post_new_complaint("Archivist", "Archive me after I am resolved.")
     client.post(f"/complaints/{target.id}/resolve", follow_redirects=False)
     r = client.post(f"/complaints/{target.id}/archive", follow_redirects=False)
     assert r.status_code == 303 and target.status == "archived"
@@ -33,12 +40,11 @@ def test_ids_are_never_reused_after_archive():
 def test_stats_open_excludes_resolved_and_archived():
     data = client.get("/stats").json()
     assert data["open"] == sum(1 for c in models.complaints if c.status == "open")
-    assert all(c.status != "resolved" and c.status != "archived" for c in models.complaints if False) or True
 
 
 def test_audit_records_each_transition_in_order_with_monotonic_seq():
     before = len(models.audit)
-    c = next(x for x in models.complaints if x.status == "open")
+    c = _post_new_complaint("Auditor", "Resolve and reopen me.")
     client.post(f"/complaints/{c.id}/resolve", follow_redirects=False)
     client.post(f"/complaints/{c.id}/reopen", follow_redirects=False)
     new = models.audit[before:]

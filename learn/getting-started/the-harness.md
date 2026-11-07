@@ -187,7 +187,11 @@ that variant's prompts and workspace, and the run record carries `specs`, so
 two arms are told apart by the record rather than by memory. Only a suite with
 `spec-variants/` has them; `medium` ships `joined`, whose briefs
 point at one `specs/roadmap.md`, and `split`, whose briefs each point at their
-own `specs/phase-4.md`. Without the flag the suite runs exactly as shipped.
+own `specs/phase-4.md`. Every suite also ships `original` (`--specs original`):
+the prompts and specs as first shipped, before each suite made its roadmap the
+single source on 2026-11-06, so a record from before then can be rerun. It
+restores the task, not the grader: a few grader fixes made with that change
+still apply. Without the flag the suite runs exactly as shipped.
 
 ## Interpretation
 

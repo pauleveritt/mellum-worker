@@ -4,7 +4,7 @@
   Tell us about your human." and a short welcome, so I know where I am.
 - As a visitor, I want a shared layout with a navbar to Home and Complaints,
   so I can move around.
-- As the operator, I want `uv run python app.py` to start the app with reload.
+- As the operator, I want `uv run --frozen python app.py` to start the app with reload.
 - As the operator, I want the home page exercised in process with `TestClient`,
   so a change can be checked without a running server.
 

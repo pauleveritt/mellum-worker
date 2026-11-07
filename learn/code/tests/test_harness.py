@@ -242,7 +242,7 @@ def test_report_counts_the_trace(tmp_path):
     assert harness.report(run_dir) == {
         "requests": 2, "turns": 2, "tool_calls": 1, "tool_errors": 1,
         "final_reply": "done", "context": 1500, "output_tokens": 30,
-        "wall": 2.0, "nudges": 0, "empty_finals": 0, "guard_blocks": 0,
+        "wall": None, "nudges": 0, "empty_finals": 0, "guard_blocks": 0,
         "reasoning_as_text": 0, "compactions": 0,
     }
 
@@ -582,7 +582,8 @@ def test_run_sessions_writes_metrics(tmp_path):
     assert record["check_groups"] == {}
     assert record["turns"] == 0
     assert record["context"] is None
-    assert record["wall"] is None
+    # No trace rows, but the process still ran: wall is its time, not the trace's span.
+    assert record["wall"] > 0
 
 
 def test_grade_ignores_the_workspace_venv(tmp_path):
@@ -744,6 +745,86 @@ def test_a_session_can_be_bounded(tmp_path):
     )
     assert clock.monotonic() - started < 5
     assert (run_dir / "deadline").exists()
+
+
+def _one_record(tmp_path, binary, deadline=600):
+    harness._run_sessions(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+                          pi_binary=str(FIX / binary), repeat=1, grade_run=False,
+                          deadline=deadline)
+    run_dir = next((tmp_path / "runs").iterdir())
+    return run_dir, json.loads((run_dir / "run.json").read_text())
+
+
+def test_a_run_records_process_elapsed_time(tmp_path):
+    # The budget is the time the Pi processes ran, not the span of trace rows:
+    # F.1's 900 s hang read 59.8 s from the trace.
+    run_dir = run(tmp_path)
+    execution = json.loads((run_dir / "execution.json").read_text())
+    assert execution["termination_reason"] == "exited"
+    assert execution["exit_code"] == 0
+    assert execution["elapsed_seconds"] > 0
+    assert execution["cleanup_ok"] is True
+
+
+def test_a_deadline_is_recorded_as_the_completion(tmp_path):
+    _, record = _one_record(tmp_path, "fake-pi-slow.sh", deadline=1)
+    assert record["completion"] == "deadline"
+    assert record["wall"] >= 1
+
+
+def test_a_settled_run_says_so(tmp_path):
+    _, record = _one_record(tmp_path, "fake-pi.sh")
+    assert record["completion"] == "settled"
+
+
+def test_wall_is_the_process_time_not_the_trace_span(tmp_path):
+    run_dir = tmp_path / "r"
+    run_dir.mkdir()
+    _write_trace(run_dir, [
+        {"type": "instance_start", "timestamp": "2026-10-21T00:00:00+00:00"},
+        {"type": "agent_settled", "timestamp": "2026-10-21T00:00:01+00:00"},
+    ])
+    assert harness.report(run_dir)["wall"] is None
+    (run_dir / "execution.json").write_text(json.dumps({"elapsed_seconds": 900.0}))
+    assert harness.report(run_dir)["wall"] == 900.0
+
+
+def test_turns_count_completed_replies_not_requests(tmp_path):
+    # A request whose reply errored (a retry, a dead backend) is a request, not a turn.
+    run_dir = tmp_path / "r"
+    run_dir.mkdir()
+    reply = lambda stop: {"type": "message_end", "message": {
+        "role": "assistant", "stopReason": stop, "content": [{"type": "text", "text": "x"}]}}
+    _write_trace(run_dir, [
+        {"type": "provider_request"}, reply("error"),
+        {"type": "provider_request"}, reply("toolUse"),
+        {"type": "provider_request"}, reply("stop"),
+    ])
+    counts = harness.report(run_dir)
+    assert counts["requests"] == 3
+    assert counts["turns"] == 2
+
+
+def test_context_counts_the_cached_prompt_too(tmp_path):
+    # Pi's usage.input excludes the cached prefix; the F.3 smoke read 1,703 for an
+    # 11,438-token prompt (870 uncached + 10,568 cache reads).
+    run_dir = tmp_path / "r"
+    run_dir.mkdir()
+    _write_trace(run_dir, [{"type": "message_end", "message": {
+        "role": "assistant", "stopReason": "stop", "content": [{"type": "text", "text": "x"}],
+        "usage": {"input": 870, "output": 5, "cacheRead": 10568, "cacheWrite": 0}}}])
+    assert harness.report(run_dir)["context"] == 11438
+
+
+def test_an_errored_last_reply_is_an_error_not_settled(tmp_path):
+    run_dir = tmp_path / "r"
+    run_dir.mkdir()
+    _write_trace(run_dir, [{"type": "message_end", "message": {
+        "role": "assistant", "stopReason": "error", "content": []}}])
+    (run_dir / "execution.json").write_text(json.dumps({
+        "elapsed_seconds": 3.0, "exit_code": 0, "termination_reason": "exited",
+        "cleanup_ok": True}))
+    assert harness.execution_outcome(run_dir)["completion"] == "error"
 
 
 def test_runs_default_outside_the_repo():

@@ -14,9 +14,26 @@ Versions match git tags; pin one in both install lines.
   worker`) now sends exactly what Pi sends. Earlier bare/worker numbers carried the tool (bare also
   the nudge). `/mellum <task>` and all delegate code are unchanged; wiring the tool back as an
   opt-in unit comes later.
+- **The Easy, Medium and Hard suites describe each phase once.** `specs/roadmap.md` is the
+  authority, with an Acceptance list per phase (Easy's states every Phase 1 requirement) and a
+  rule to check with pytest, never a server; each prompt names the phase and points at the spec.
+  Medium and Hard lose the checklist prompts that disagreed with their roadmaps and cued a wrong
+  import. Hard gains a starter test, a layout table and `migrations.py` in its layout; its dead
+  grader assertion is gone and its Phase 5 grade no longer depends on module order. Easy ships
+  the starter test its roadmap names. `--specs original` reruns the old prompts and specs byte
+  for byte, so every number before this change is a number on `original`.
+- **The harness measures a session's budget from the process, and says how it ended.** `wall`
+  is now how long the Pi processes ran (`execution.json`), not the span of trace rows, which hid
+  a hang: F.1 read 59.8 s for a 900 s session. `run.json` gains `completion` (settled, stalled,
+  deadline or error), `exit_code` and `cleanup_ok`; `turns` counts replies that came back, so a
+  retried or errored request no longer counts as one. A record without `execution.json` reports
+  `wall` as unknown rather than a trace estimate. `context` now counts the whole prompt, cached
+  prefix included: it had read 1,703 for an 11,438-token prompt.
 
 ### Added
 
+- **`evals/2026-11-07-f3-smoke/`:** three Vanilla Easy sessions showing the new budget
+  fields — two settled, one ended by its deadline (`completion: deadline`, 7 turns of 8 requests).
 - **`evals/2026-11-07-f1-payload/`:** the payload check behind the no-delegate change —
   `worker` and `bare` on Easy sent Pi's own four tools and no delegate nudge.
 - **Plan delegation (`MELLUM_DELEGATE_PLAN=1`) — the simplest shape, no per-step

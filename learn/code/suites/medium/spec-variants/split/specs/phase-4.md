@@ -9,10 +9,10 @@
 
 **Acceptance.**
 
-- `Complaint` also has `id: int` and `status: str`, and
-  `Complaint("first", "First complaint")` still constructs: `id` is unique and
-  increasing, `status` starts as `open`, and how that is achieved is the
-  implementer's choice.
+- `Complaint` also has `id: int` and `status: str`, and `Complaint(agent_name,
+  text)` still constructs positionally: each new complaint's `id` is unique and
+  greater than every earlier one, `status` starts as `open`, and how that is
+  achieved is the implementer's choice.
 - The seeded complaints have distinct ids.
 - Each card shows `Open` or `Resolved` and a button that posts to its route.
 - `POST /complaints/{id}/resolve` marks that complaint resolved and answers 303

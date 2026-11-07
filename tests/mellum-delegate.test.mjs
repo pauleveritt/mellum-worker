@@ -843,7 +843,9 @@ test("smokeCommand is agnostic — parses sources and templates, names no suite 
 	const c = smokeCommand();
 	assert.match(c, /mellum-smoke\.py/, "runs the shipped smoke script");
 	assert.match(c, /\bpython\b/, "via python");
-	assert.doesNotMatch(c, /app\.py|home\.html|complaints|roadmap|tagline|fastapi/i,
+	// Check the command, not where the repo is checked out: a checkout path can contain "roadmap".
+	const args = c.replace(/"[^"]*mellum-smoke\.py"/, "<script>");
+	assert.doesNotMatch(args, /app\.py|home\.html|complaints|roadmap|tagline|fastapi/i,
 		"agnostic — no suite file, route or value");
 });
 

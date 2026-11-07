@@ -1,8 +1,17 @@
 # AgentClinic roadmap
 
-Four phases, one request each. Every phase is written as user stories and
-the acceptance criteria its checks read; the mission, tech stack and
-project layout are in this folder.
+Four phases, one request each. This file is the authority for every phase:
+each is written as user stories and ends with the **Acceptance** list its
+checks read. The mission, the tech stack and the project layout are in this
+folder; the project's notes are in `AGENTS.md`.
+
+## Checking your work
+
+- Check each phase in process with `uv run --frozen python -m pytest tests`,
+  using `TestClient` (from `starlette.testclient`) to call the routes.
+- Check the work that way, never by starting a server: `uv run --frozen python
+  app.py` is how a person runs the app, and it does not return.
+- Run Python commands with `uv run --frozen`; use the existing dependencies.
 
 ## Phase 1 — Home Page
 
@@ -10,7 +19,7 @@ project layout are in this folder.
   Tell us about your human." and a short welcome, so I know where I am.
 - As a visitor, I want a shared layout with a navbar to Home and Complaints,
   so I can move around.
-- As the operator, I want `uv run python app.py` to start the app with reload.
+- As the operator, I want `uv run --frozen python app.py` to start the app with reload.
 - As the operator, I want the home page exercised in process with `TestClient`,
   so a change can be checked without a running server.
 
@@ -71,10 +80,10 @@ project layout are in this folder.
 
 **Acceptance.**
 
-- `Complaint` also has `id: int` and `status: str`, and
-  `Complaint("first", "First complaint")` still constructs: `id` is unique and
-  increasing, `status` starts as `open`, and how that is achieved is the
-  implementer's choice.
+- `Complaint` also has `id: int` and `status: str`, and `Complaint(agent_name,
+  text)` still constructs positionally: each new complaint's `id` is unique and
+  greater than every earlier one, `status` starts as `open`, and how that is
+  achieved is the implementer's choice.
 - The seeded complaints have distinct ids.
 - Each card shows `Open` or `Resolved` and a button that posts to its route.
 - `POST /complaints/{id}/resolve` marks that complaint resolved and answers 303
