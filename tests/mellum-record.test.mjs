@@ -6,7 +6,7 @@ const span = [
 	{ role: "user", content: [{ type: "text", text: "fix the cart" }] },
 	{ role: "assistant", content: [{ type: "text", text: "done" }], stopReason: "stop", timestamp: 1000 },
 ];
-const meta = { endedAt: Date.parse("2026-10-11T10:00:00Z"), cwd: "/p", model: "omlx/Mellum" };
+const meta = { endedAt: Date.parse("2026-10-11T10:00:00Z"), cwd: "/p", model: "llamacpp/Mellum" };
 
 test("runRecord with no kind writes kind mode and leaves facts out", () => {
 	const rec = runRecord("fix the cart", span, meta);

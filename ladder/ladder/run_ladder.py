@@ -24,7 +24,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 from uuid import uuid4
 
-from .omlx_profiles import PROFILES, AdminClient, check_effective_params, profile
+from .request_profiles import REQUEST_PARAMS, check_effective_params
 from .pi_launch import resolve_pi, workspace_preflight
 from .pi_profile import (
     LADDER_ROOT,
@@ -44,8 +44,7 @@ RECORD_EXT = REPO_ROOT / "extensions" / "mellum-recorder.ts"
 MODE_EXT = REPO_ROOT / "extensions" / "mellum-worker.ts"
 GUARDS_EXT = REPO_ROOT / "extensions" / "mellum-guards.ts"
 FLOW_EXT = REPO_ROOT / "extensions" / "mellum-flow.ts"
-MODEL = "omlx/Mellum2.1-12B-A2.5B-Thinking-6bit"
-MODEL_ID = MODEL.split("/", 1)[1]
+MODEL = "llamacpp/Mellum2.1-12B-A2.5B-Thinking"
 TOOLS = "read,grep,find,ls,bash,edit,write"
 # A mediated run (--acceptance-test) drops grep and find: offline they shell out to
 # fd/rg, which are missing, and under v6 the worker spent turns on them chasing
@@ -557,7 +556,7 @@ def run_once(
     pi_executable: str = "pi",
     facts_section: str = "fixture",
     roadmap: str = "phase-files",
-    provider: str = "omlx",
+    provider: str = "llamacpp",
     base_url: str = "http://127.0.0.1:8001/v1",
     model: str = MODEL,
     context_window: int = 56000,
@@ -898,7 +897,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["direct", "primary", "mode", "flow"],
         default="direct",
     )
-    parser.add_argument("--profile", choices=sorted(PROFILES), required=True)
+    parser.add_argument("--profile", choices=sorted(REQUEST_PARAMS), required=True)
     parser.add_argument("--rung", type=int, action="append", required=True)
     parser.add_argument("--repeat", type=int, default=1)
     parser.add_argument("--deadline", type=int, default=600)
@@ -954,14 +953,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="AgentClinic rungs: one-file joins the phase specs into specs/roadmap.md and asks for Phase N of it",
     )
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--omlx", default="http://127.0.0.1:8001")
-    parser.add_argument("--provider", default="omlx",
-                        help="model provider the direct profile writes (default omlx)")
+    parser.add_argument("--provider", default="llamacpp",
+                        help="model provider the direct profile writes (default llamacpp)")
     parser.add_argument("--base-url", default="http://127.0.0.1:8001/v1",
                         help="the provider's OpenAI-compatible base URL")
     parser.add_argument("--model", default=MODEL,
                         help="provider/model, e.g. llamacpp/Mellum2.1-12B-A2.5B-Thinking")
-    parser.add_argument("--context-window", type=int, default=56000,
+    parser.add_argument("--context-window", type=int, default=50000,
                         help="the model's context window in the direct profile")
     parser.add_argument(
         "--temperature",
@@ -1063,16 +1061,10 @@ def main(argv: list[str] | None = None) -> None:
     table = args.out / "table.md"
     if not table.exists():
         table.write_text(HEADER)
-    if args.provider == "omlx":
-        client = AdminClient(args.omlx)
-        versions["omlx"] = tool_version(["omlx", "--version"])
-        settings_path = Path.home() / ".omlx" / "model_settings.json"
-        context = profile(client, MODEL_ID, args.profile, settings_path)
-    else:
-        versions["backend"] = tool_version(["llama-server", "--version"])
-        versions["server"] = server_identity(args.base_url)
-        versions["gpu"] = gpu_identity()
-        context = nullcontext({})
+    versions["backend"] = tool_version(["llama-server", "--version"])
+    versions["server"] = server_identity(args.base_url)
+    versions["gpu"] = gpu_identity()
+    context = nullcontext({})
     with context as live:
         versions["model_settings"] = {
             k: live.get(k)
@@ -1119,7 +1111,7 @@ def main(argv: list[str] | None = None) -> None:
                 row = table_row(record)
                 with table.open("a") as stream:
                     stream.write(row)
-                if (args.mode == "direct" and args.provider == "omlx"
+                if (args.mode == "direct"
                         and not args.effort_ramp
                         and record["score"]["effective_params"]):
                     check_effective_params(

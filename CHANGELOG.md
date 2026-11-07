@@ -50,6 +50,15 @@ Versions match git tags; pin one in both install lines.
   fields — two settled, one ended by its deadline (`completion: deadline`, 7 turns of 8 requests).
 - **`evals/2026-11-07-f1-payload/`:** the payload check behind the no-delegate change —
   `worker` and `bare` on Easy sent Pi's own four tools and no delegate nudge.
+
+- **A shipped Pi provider profile for the local llama.cpp backend**
+  (`templates/pi/models.llamacpp.json`). It is exactly what
+  `scripts/backend.py profile` generates from `[tool.mellum]` — the llama.cpp
+  provider on `127.0.0.1:8001`, model `Mellum2.1-12B-A2.5B-Thinking`, context
+  50000, `maxTokens` 16384 — so you can drop it into `~/.pi/agent/models.json`
+  (or merge it with `scripts/merge-json.mjs`) to point Pi at the backend the
+  worker now uses. A test keeps the template identical to the generator's output.
+
 - **Plan delegation (`MELLUM_DELEGATE_PLAN=1`) — the simplest shape, no per-step
   tests.** The architect splits the spec into small ordered step docs
   (`stepNN.md`, each carrying the verbatim spec it covers and a link back to the
@@ -219,6 +228,27 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The ladder measures against the local llama.cpp backend on `:8001` by
+  default.** `run_ladder`'s `--provider`/`--model`/`--context-window` now default
+  to `llamacpp` / `Mellum2.1-12B-A2.5B-Thinking` / `50000` (were the retired
+  oMLX 6-bit server on the same port with a 56000 window), matching the backend
+  the shipped worker already uses. The old server-settings admin path and its
+  `--omlx <url>` flag are gone — a llama.cpp server takes its settings at launch,
+  so the ladder only shapes the request now; point it at any other
+  OpenAI-completions server with `--provider`/`--base-url`/`--model` as before.
+  `scripts/screen.sh`'s default provider follows.
+
+- **The install docs and setup skill target the local llama.cpp backend.** The
+  README "Model settings" and "Check your setup" sections, `docs/recipe.md`, the
+  `mellum-setup` skill (preflight, weights, server, provider, smoke), and
+  `scripts/product.sh` / `scripts/mellum.mjs` / `scripts/halve-model.md` /
+  `dashboard/serve.py` now describe serving Mellum with
+  `uv run scripts/backend.py start` on `127.0.0.1:8001` and registering the
+  `llamacpp` provider. `/mellum check` confirms the server is up, the model is
+  served, and the launched context window is at least 50,000 — llama-server has
+  no admin API, so there are no mutable server settings to set or drift. Measured
+  pass-rates and research notes keep their oMLX provenance as history.
+
 - **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
   name "next-concept modelling" from an unrelated text-generation paper
   (HazyResearch/ncm) but only re-runs an acceptance test until it passes, so it
@@ -234,6 +264,16 @@ Versions match git tags; pin one in both install lines.
   the score with per-rep lines when it finishes — and the lesson panel steps
   aside while it runs so the feed has the space. It also streams the model's
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
+
+### Removed
+
+- **The oMLX templates.** `templates/pi/models.omlx.json`,
+  `templates/pi/models.omlx.models-only.json` and
+  `templates/omlx-model-settings.json` are gone; `templates/pi/models.llamacpp.json`
+  replaces the provider profile, and the local server has no per-model settings
+  file to ship. The oMLX backend guide (`docs/backends/omlx.md`) is marked
+  superseded and kept for historical reference and the MLX weights the
+  Apple-Silicon path still uses.
 
 ### Fixed
 

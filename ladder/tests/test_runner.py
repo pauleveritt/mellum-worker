@@ -988,12 +988,12 @@ def test_run_once_wires_sampling_overrides_into_direct(monkeypatch, tmp_path):
     )
     run_ladder.run_once(
         rung, "direct", "tuned", 1, tmp_path / "out", 5, {}, False,
-        provider="llamacpp", base_url="http://127.0.0.1:8002/v1",
-        model="llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+        provider="mlx-lm", base_url="http://127.0.0.1:8080/v1",
+        model="mlx-lm/Mellum2.1-12B-A2.5B-Thinking-6bit",
         request_overrides={"temperature": 0.7, "top_p": 0.9},
     )
-    assert seen["base_url"] == "http://127.0.0.1:8002/v1"
-    assert seen["provider"] == "llamacpp"
+    assert seen["base_url"] == "http://127.0.0.1:8080/v1"
+    assert seen["provider"] == "mlx-lm"
     assert seen["request_overrides"] == {"temperature": 0.7, "top_p": 0.9}
 
 
@@ -1041,52 +1041,8 @@ def test_run_record_leaves_direct_fields_empty_in_mode(monkeypatch, tmp_path):
     assert record["redispatch_attempts"] is None
 
 
-def test_main_runs_the_admin_profile_only_for_the_omlx_provider(monkeypatch, tmp_path):
-    """omlx applies/restores the server profile; another provider has no admin API, so it must not."""
-    import contextlib
-
-    from ladder import run_ladder
-
-    calls = []
-
-    class FakeClient:
-        def __init__(self, base):
-            calls.append(("client", base))
-
-    @contextlib.contextmanager
-    def fake_profile(client, model_id, name, path):
-        calls.append(("profile", name))
-        yield {"max_tokens": 1}
-
-    monkeypatch.setattr(run_ladder, "AdminClient", FakeClient)
-    monkeypatch.setattr(run_ladder, "profile", fake_profile)
-    monkeypatch.setattr(run_ladder, "resolve_pi", lambda e: {"executable": e, "version": "t"})
-    monkeypatch.setattr(run_ladder, "tool_version", lambda cmd: "t")
-    monkeypatch.setattr(
-        run_ladder, "run_once", lambda *a, **k: {"score": {"effective_params": None}}
-    )
-    monkeypatch.setattr(run_ladder, "table_row", lambda record: "")
-
-    run_ladder.main(
-        ["--profile", "baseline", "--rung", "1", "--out", str(tmp_path / "o"), "--mode", "direct"]
-    )
-    assert ("client", "http://127.0.0.1:8001") in calls
-    assert any(c[0] == "profile" for c in calls)
-
-    calls.clear()
-    run_ladder.main(
-        [
-            "--profile", "baseline", "--rung", "1", "--out", str(tmp_path / "o2"),
-            "--mode", "direct", "--provider", "mlx-lm",
-            "--base-url", "http://127.0.0.1:8080/v1",
-            "--model", "mlx-lm/Mellum2.1-12B-A2.5B-Thinking-6bit",
-        ]
-    )
-    assert calls == []
-
-
-def test_main_records_the_server_and_gpu_for_a_non_omlx_provider(monkeypatch, tmp_path):
-    """A run on a server the ladder does not administer still records what served it and on what GPU."""
+def test_main_records_the_server_and_gpu(monkeypatch, tmp_path):
+    """Every run records what served it and on what GPU, read from the live server."""
     from ladder import run_ladder
 
     seen = {}
@@ -1300,36 +1256,36 @@ def test_direct_args_take_the_model():
     assert args[args.index("--model") + 1] == "llamacpp/Mellum2.1-12B-A2.5B-Thinking"
 
 
-def test_direct_args_default_to_the_omlx_model():
+def test_direct_args_default_to_the_configured_model():
     from ladder.run_ladder import MODEL
 
     args = build_pi_direct_args("fix it")
     assert args[args.index("--model") + 1] == MODEL
 
 
-def test_parser_defaults_to_omlx(tmp_path):
+def test_parser_defaults_to_llamacpp(tmp_path):
     from ladder.run_ladder import MODEL, build_parser
 
     args = build_parser().parse_args(
         ["--profile", "baseline", "--rung", "1", "--out", str(tmp_path)])
-    assert args.provider == "omlx"
+    assert args.provider == "llamacpp"
     assert args.base_url == "http://127.0.0.1:8001/v1"
     assert args.model == MODEL
-    assert args.context_window == 56000
+    assert args.context_window == 50000
 
 
-def test_parser_takes_a_backend(tmp_path):
+def test_parser_takes_another_backend(tmp_path):
     from ladder.run_ladder import build_parser
 
     args = build_parser().parse_args([
         "--profile", "baseline", "--rung", "1", "--out", str(tmp_path),
-        "--provider", "llamacpp", "--base-url", "http://127.0.0.1:8002/v1",
-        "--model", "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
-        "--context-window", "50000",
+        "--provider", "mlx-lm", "--base-url", "http://127.0.0.1:8080/v1",
+        "--model", "mlx-lm/Mellum2.1-12B-A2.5B-Thinking-6bit",
+        "--context-window", "56000",
     ])
     assert (args.provider, args.base_url, args.model, args.context_window) == (
-        "llamacpp", "http://127.0.0.1:8002/v1",
-        "llamacpp/Mellum2.1-12B-A2.5B-Thinking", 50000)
+        "mlx-lm", "http://127.0.0.1:8080/v1",
+        "mlx-lm/Mellum2.1-12B-A2.5B-Thinking-6bit", 56000)
 
 
 def test_direct_run_passes_the_backend_to_the_profile(monkeypatch, tmp_path):
@@ -1357,12 +1313,12 @@ def test_direct_run_passes_the_backend_to_the_profile(monkeypatch, tmp_path):
                 lambda ws, base: CheckResult(False, True))
     run_ladder.run_once(
         rung, "direct", "baseline", 1, tmp_path / "out", 5, {}, False,
-        provider="llamacpp", base_url="http://127.0.0.1:8002/v1",
+        provider="llamacpp", base_url="http://127.0.0.1:8080/v1",
         model="llamacpp/Mellum2.1-12B-A2.5B-Thinking", context_window=50000,
     )
     assert seen["provider"] == "llamacpp"
     assert seen["model_id"] == "Mellum2.1-12B-A2.5B-Thinking"
-    assert seen["base_url"] == "http://127.0.0.1:8002/v1"
+    assert seen["base_url"] == "http://127.0.0.1:8080/v1"
     assert seen["context_window"] == 50000
 
 
@@ -1396,13 +1352,13 @@ def test_direct_record_names_the_backend(monkeypatch, tmp_path):
                 lambda ws, base: CheckResult(False, True))
     run_ladder.run_once(
         rung, "direct", "baseline", 1, tmp_path / "out", 5, {}, False,
-        provider="llamacpp", base_url="http://127.0.0.1:8002/v1",
+        provider="llamacpp", base_url="http://127.0.0.1:8080/v1",
         model="llamacpp/Mellum2.1-12B-A2.5B-Thinking", context_window=50000,
     )
     record = json.loads(
         (tmp_path / "out" / "rung1-baseline-direct-r1" / "run.json").read_text())
     assert record["backend"] == {
-        "provider": "llamacpp", "base_url": "http://127.0.0.1:8002/v1",
+        "provider": "llamacpp", "base_url": "http://127.0.0.1:8080/v1",
         "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
     }
 
@@ -1501,7 +1457,7 @@ def test_pi_agent_dir_flag_reaches_run_once(monkeypatch, tmp_path):
 
 
 def test_primary_args_send_the_model_the_run_names():
-    """A plain baseline on vLLM must ask Pi for that model, not the oMLX default."""
+    """A plain baseline on vLLM must ask Pi for that model, not the llamacpp default."""
     from ladder.run_ladder import build_pi_primary_args
 
     args = build_pi_primary_args("fix it", plain=True, model="vllm/Mellum2.1-12B-A2.5B-Thinking")

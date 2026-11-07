@@ -13,7 +13,7 @@ def _run_dir(tmp, name, **over):
     rec = {
         "suite": "easy",
         "arm": "bare",
-        "model": "omlx/mellum-q4",
+        "model": "llamacpp/mellum-q4",
         "remedies": ["tool/background-long-commands"],
         "extensions": [
             {"path": "/x/remedies/tool/background-long-commands.ts", "sha256": "a"},
@@ -36,7 +36,7 @@ def _run_dir(tmp, name, **over):
 def test_entry_from_run_pulls_the_fields_and_a_sorted_stack(tmp_path):
     e = scoreboard.entry_from_run(_run_dir(tmp_path, "20261031T080329Z-easy-74a7db"))
     assert e["suite"] == "easy"
-    assert e["model"] == "omlx/mellum-q4"
+    assert e["model"] == "llamacpp/mellum-q4"
     assert e["passed"] is True
     assert e["turns"] == 18 and round(e["wall"]) == 58
     assert e["id"] == "20261031T080329Z-easy-74a7db"
@@ -118,7 +118,7 @@ def test_consolidate_writes_a_page_showing_the_record_per_config(tmp_path):
     scoreboard.consolidate(board, page)
     text = page.read_text()
     assert "Scoreboard" in text
-    assert "easy" in text and "omlx/mellum-q4" in text
+    assert "easy" in text and "llamacpp/mellum-q4" in text
     # the record row shows the fastest pass (18 turns), not the 99-turn one
     assert "18" in text
     # turns and wall are both surfaced (the standing reporting rule)

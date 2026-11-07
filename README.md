@@ -84,7 +84,8 @@ change outside this folder:
 - `run.sh` stops any running `llama-server` and anything listening on port
   8001 before it starts the model.
 
-**oMLX: Apple Silicon only.** The measured setup:
+**Into an existing Pi.** If you already run Pi, install the package on its own
+and start the server with `uv run scripts/backend.py start`:
 
 ```bash
 pi install git:github.com/andrevanzuydam/mellum-worker@v0.1.8
@@ -109,7 +110,7 @@ Each span appends a JSON line to `~/.pi/agent/mellum-mode-runs.jsonl`
 (task, times, requests, tokens, files, commands with pass or fail, final
 reply; schema 2 adds missing files, file-changing commands, final-turn
 shape, guard counts, host and versions, tool calls and errors, time to
-first write; `server` records whether the oMLX settings matched).
+first write; `server` records whether the server's context window matched).
 `MELLUM_MODE_RUNS` sets the path; `0` turns it off.
 
 **Project facts (Mode).** Mode sends Mellum only the worker prompt and
@@ -162,23 +163,17 @@ leave context files on so it sees `AGENTS.md`.
 
 | setting | value | set by |
 | --- | --- | --- |
-| model id | Mellum2.1-12B-A2.5B-Thinking-6bit | server |
+| model id | Mellum2.1-12B-A2.5B-Thinking | server (`llama-server -a`) |
 | max_tokens | 16,384 | provider entry, per request |
 | thinking | on | provider entry, per request |
 | sampling | 1 / 0.95 / 20 | provider entry, per request |
-| context window | 56,000 | server only |
-| TurboQuant | off | server only |
-| thinking budget | off | server only |
-| tool-result cap | none | server only |
-| concurrent requests | 1 | server only |
-| hot cache | off | server only |
+| context window | 50,000 | server, at launch |
 
-Pi sends the first three from its provider entry per request, and oMLX
-honours them over the server's own values. With `force_sampling` on in
-oMLX, the server's sampling wins over any
-request, so `/mellum check` fails unless it is 1 / 0.95 / 20. The
-server-only values bind every client, and other clients of the same oMLX
-model can change them.
+Pi sends `maxTokens` and the sampling from its provider entry per request,
+and llama-server honours them. The context window is fixed when the server
+launches — `uv run scripts/backend.py start` reads it from `[tool.mellum]` in
+`pyproject.toml`. llama-server has no admin API and no mutable settings, so
+nothing server-side can drift except the launched context window.
 
 **Check your setup.** In Pi, `/mellum check`. From the terminal
 (`--json` for JSON):
@@ -188,17 +183,15 @@ node <package dir>/scripts/mellum.mjs check --host pi
 ```
 
 `<package dir>` is `~/.pi/agent/git/github.com/andrevanzuydam/mellum-worker`.
-It checks that the server answers and lists the model, that the
-settings no request can undo match (the server-only rows above, thinking
-not forced off, and forced sampling at 1 / 0.95 / 20), and that your
-provider entry matches the template, `maxTokens` and sampling included; a
-server value your requests override shows as info. Fails print first, and
-the CLI exits 1 on any fail. It only reads: a settings fix prints as the
-`PUT` to run yourself. Each `/mellum` activation also reads the settings no
-request can undo (one second at most) and warns in one line on drift:
+It checks that the server answers, that `Mellum2.1-12B-A2.5B-Thinking` is in
+`/v1/models`, and that the launched context window is at least 50,000. Fails
+print first, and the CLI exits 1 on any fail. It only reads: a fix prints as
+the command to run yourself. Each `/mellum` activation also re-reads the
+context window (one second at most) and warns in one line when it is below
+the measured value:
 
 ```
-Mellum server settings differ: max_context_window 32768 (expected 56000). Run /mellum check.
+the llama-server context window is 32768, below the measured 50000. Run /mellum check.
 ```
 
 **Learn from your runs.** In Pi Mode, `/mellum learn` (the last 10 runs)
@@ -365,17 +358,16 @@ still fails.
 
 ## Requirements
 
-- llama.cpp path: Linux, macOS or Windows; about 10 GB free for the Q4_K_M
-  weights; a GPU with 8 GB or more helps (it ran on an 8 GB RTX 5050), CPU works
-  but slowly. `install.sh` brings the rest.
-- oMLX path: Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or
-  newer, 9.9 GB for the weights
+- Linux, macOS or Windows; about 10 GB free for the Q4_K_M weights; a GPU with
+  8 GB or more helps (it ran on an 8 GB RTX 5050), CPU works but slowly.
+  `install.sh` brings `llama-server` and the rest.
 - Node 24 or newer (install.sh provides one); Pi 1.0 or newer
 
-Other backends: [docs/backends/llamacpp.md](docs/backends/llamacpp.md) is
-smoke-tested but not ladder-measured, and
-[docs/backends/ollama.md](docs/backends/ollama.md) lists what a port needs.
-Only oMLX has been measured.
+Other backends: an Apple-Silicon MLX path is in
+[docs/backends/mlx-lm.md](docs/backends/mlx-lm.md) and a port to
+[docs/backends/ollama.md](docs/backends/ollama.md) lists what it needs; both
+are smoke-tested, not ladder-measured. The shipped pass-rates were measured on
+the now-retired oMLX backend (see the records in `evals/`).
 
 ## How it works
 
@@ -401,16 +393,17 @@ evidence behind it. Then, to run the ladder yourself:
    pytest` runs its suite, and `uv run python -m ladder.run_ladder --help` lists
    every flag. The commands below run from `ladder/`.
 
-2. **Serve Mellum on oMLX first.** Follow
-   [`docs/backends/omlx.md`](docs/backends/omlx.md): the model answers at
-   `http://127.0.0.1:8001/v1`, and the server holds the tuned settings the
-   records were measured under. `/mellum check` tells you when it's drifted.
+2. **Serve Mellum on llama.cpp first.** `uv run scripts/backend.py start`
+   downloads the Q4_K_M weights on the first run and serves them at
+   `http://127.0.0.1:8001/v1` with the measured context window
+   ([`docs/backends/llamacpp.md`](docs/backends/llamacpp.md)). `/mellum check`
+   tells you when the server is down or the context window is too small.
 
 3. **Register the provider before you run the shipped worker.** `--mode mode`
    is Mellum Worker, and it reads `~/.pi/agent/models.json`; without it Pi
-   refuses with `Model "omlx/Mellum…" not found`. Copy it once:
+   refuses with `Model "llamacpp/Mellum…" not found`. Copy it once:
    ```bash
-   cp ../templates/pi/models.omlx.json ~/.pi/agent/models.json
+   cp ../templates/pi/models.llamacpp.json ~/.pi/agent/models.json
    ```
    `--mode direct` wires its own provider, so it runs without this step — which
    is exactly why a direct run can pass while Mode won't even start.

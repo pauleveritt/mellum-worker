@@ -9,7 +9,7 @@
  *                     switch to Mellum, run the task, switch back when settled.
  *   /mellum on      – stay on for several turns (switch model, tools, mark the start)
  *   /mellum off     – restore the previous model and tools
- *   /mellum check   – compare the oMLX server and the Pi provider entry with the measured
+ *   /mellum check   – compare the local llama-server and the Pi provider entry with the measured
  *                     settings and print the findings; never switches, never writes
  *   /mellum learn [n] – name what went wrong in the last n runs (default 10) in this directory
  *                     and suggest a ## Mellum section; AGENTS.md is written only on a yes

@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const PROFILE = resolve(ROOT, "learn/code/profile/models.json");
+const SHIPPED = resolve(ROOT, "templates/pi/models.llamacpp.json");
 
 const rendered = () => {
   const r = spawnSync("uv", ["run", "scripts/backend.py", "profile", "--dry-run"], {
@@ -17,6 +18,10 @@ const rendered = () => {
 
 test("the committed profile is exactly what the generator writes", () => {
   assert.equal(readFileSync(PROFILE, "utf8"), rendered());
+});
+
+test("the shipped Pi provider template is exactly what the generator writes", () => {
+  assert.equal(readFileSync(SHIPPED, "utf8"), rendered());
 });
 
 test("the profile carries the settings and the llama.cpp provider", () => {

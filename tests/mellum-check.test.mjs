@@ -121,7 +121,7 @@ test("readProvider pi: the llamacpp baseUrl comes from the file", () => {
 });
 
 test("readProvider pi: without a llamacpp provider, or unreadable or invalid files, falls back to the default", () => {
-	assert.equal(readProvider("pi", "/home/user", () => fixture("pi-models-no-omlx.json")).baseUrl, DEFAULT_BASE_URL);
+	assert.equal(readProvider("pi", "/home/user", () => fixture("pi-models-no-llamacpp.json")).baseUrl, DEFAULT_BASE_URL);
 	assert.equal(readProvider("pi", "/h", () => undefined).baseUrl, DEFAULT_BASE_URL);
 	assert.equal(
 		readProvider("pi", "/h", () => {

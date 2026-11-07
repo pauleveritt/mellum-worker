@@ -10,9 +10,9 @@
 # Knobs:  rung, optional acceptance-test (hand Mode a frozen test to pass),
 #         out (default: runs/<date>-product-rung<N>).
 #
-# NEEDS the omlx provider in ~/.pi/agent/models.json, or Pi fails with
+# NEEDS the llamacpp provider in ~/.pi/agent/models.json, or Pi fails with
 # "model not found" (direct mode wires its own; Mode reads the profile):
-#   cp templates/pi/models.omlx.json ~/.pi/agent/models.json
+#   cp templates/pi/models.llamacpp.json ~/.pi/agent/models.json
 #
 # Watch it live in another tab:  python ladder/scripts/watch_ladder.py
 set -euo pipefail
@@ -22,9 +22,9 @@ RUNG="${1:?usage: scripts/product.sh <rung> [acceptance-test] [out-dir]}"
 ACC="${2:-}"
 OUT="${3:-}"
 
-if ! grep -q '"omlx"' "${HOME}/.pi/agent/models.json" 2>/dev/null; then
-  echo "WARNING: no omlx provider in ~/.pi/agent/models.json — Mellum Mode will fail 'model not found'." >&2
-  echo "  fix:  cp templates/pi/models.omlx.json ~/.pi/agent/models.json" >&2
+if ! grep -q '"llamacpp"' "${HOME}/.pi/agent/models.json" 2>/dev/null; then
+  echo "WARNING: no llamacpp provider in ~/.pi/agent/models.json — Mellum Mode will fail 'model not found'." >&2
+  echo "  fix:  cp templates/pi/models.llamacpp.json ~/.pi/agent/models.json" >&2
 fi
 
 [ -z "$OUT" ] && OUT="runs/$(date +%F)-product-rung${RUNG}"

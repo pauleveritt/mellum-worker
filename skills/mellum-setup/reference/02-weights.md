@@ -1,22 +1,20 @@
 # Phase 2: Weights
 
-Target folder (the name oMLX shows as the model id):
+The weights are the Q4_K_M GGUF of
+`JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF` (about 7.7 GB). They are
+fetched automatically by `llama-server -hf` the first time the server starts
+(phase 3), into llama.cpp's own cache or the Hugging Face hub cache — there is
+no separate download step.
 
-```
-~/.cache/huggingface/hub/Mellum2.1-12B-A2.5B-Thinking-6bit
-```
-
-Check: that folder holds `config.json` and two `model-*.safetensors` shards.
-
-If missing, download the published MLX 6-bit conversion into that exact
-folder name:
+Check (optional, only if the user wants to confirm before serving):
 
 ```bash
-hf download pauleveritt/Mellum2.1-12B-A2.5B-Thinking-mlx-6bit \
-  --local-dir ~/.cache/huggingface/hub/Mellum2.1-12B-A2.5B-Thinking-6bit
+uv run scripts/backend.py verify
 ```
 
-About 9.9 GB. Re-run the check. If the user already has the folder under
-another name, do not rename it; instead tell them the model id in phases
-3 to 5 must match their folder name, and ask whether to proceed with
-theirs or download under the recipe's name.
+It compares the downloaded GGUF against Hugging Face's size and sha256 and
+prints where it is, or says none is downloaded yet (in which case phase 3's
+start will fetch it). Add `--delete` to remove a damaged copy so start
+re-downloads it. If nothing is downloaded and the user has limited disk or
+bandwidth, just let phase 3 do it — the first `start` reports download
+progress.

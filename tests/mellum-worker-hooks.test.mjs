@@ -45,7 +45,7 @@ function fakePi({ registryHasModel = true } = {}) {
 const read = { toolName: "read", input: { path: "x" } };
 const emptyTurn = { message: { role: "assistant", content: [{ type: "thinking", thinking: "." }] } };
 
-test("falls back to the session's model when the oMLX one is absent", async () => {
+test("falls back to the session's model when the registry one is absent", async () => {
 	const { ctx, mellum } = fakePi({ registryHasModel: false });
 	ctx.model = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
 	const notes = [];

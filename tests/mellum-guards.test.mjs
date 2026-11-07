@@ -201,7 +201,7 @@ test("createGuardSet bundles tool_call, turn_end and settle decisions with fresh
 
 const BRIEF = "Add a greeting to app.py. Test command: uv run pytest -q";
 const SYSTEM = "<!-- mellum-worker prompt v7 -->\nYou are a bounded coding worker.";
-const ctx = { mode: "json", model: { provider: "omlx", id: "mellum" } };
+const ctx = { mode: "json", model: { provider: "llamacpp", id: "mellum" } };
 const textBlock = (text) => ({ type: "text", text });
 const call = (id, name, args) => ({ type: "toolCall", id, name, arguments: args });
 const assistant = (content, extra = {}) => ({ role: "assistant", content, stopReason: "stop", timestamp: 1000, usage: { input: 10, cacheRead: 0, output: 5 }, ...extra });

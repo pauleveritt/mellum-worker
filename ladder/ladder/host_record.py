@@ -1,8 +1,8 @@
 """What a run measured on, read from the live host rather than typed in.
 
 A baseline anyone can replicate has to name its server build, the model it
-served and the GPU it ran on. oMLX runs record theirs through the admin API;
-these cover every other OpenAI-compatible server (vLLM, llama.cpp, mlx_lm).
+served and the GPU it ran on. These read it from any OpenAI-compatible server
+(llama.cpp, vLLM, mlx_lm) over its HTTP API.
 """
 
 from __future__ import annotations

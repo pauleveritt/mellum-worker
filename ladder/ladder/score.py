@@ -69,8 +69,8 @@ class Score:
     # of admitted calls, and a refused call does not enter the window.
     loop_breaker_would_block: int = 0
     # Sampling and cap values the client actually sent on the first request.
-    # oMLX gives these precedence over the model profile, so they, not the
-    # profile, are the effective settings.
+    # The server honours a request's values over any model-side default, so
+    # they, not the profile, are the effective settings.
     effective_params: dict = field(default_factory=dict)
 
     def as_row(self) -> dict:

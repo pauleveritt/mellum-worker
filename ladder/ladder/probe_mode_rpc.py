@@ -2,7 +2,7 @@
 
     uv run python -m ladder.probe_mode_rpc
 
-Needs the oMLX server and the operator's hosted parent model (the mirrored
+Needs the local llama.cpp server on :8001 and the operator's hosted parent model (the mirrored
 ~/.pi/agent profile). Exercises: /mellum on, a second on, a task under the
 mode, /mellum off, a parent turn, a second off, and the one-shot
 /mellum <task>. Record: evals/2026-10-09-ablation-a14-mellum-mode/README.md.

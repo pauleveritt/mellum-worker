@@ -1,15 +1,19 @@
 {
   "providers": {
-    "omlx": {
+    "llamacpp": {
+      "name": "llama.cpp",
+      "baseUrl": "http://127.0.0.1:8001/v1",
+      "api": "openai-completions",
+      "apiKey": "not-needed",
       "models": [
         {
-          "id": "Mellum2.1-12B-A2.5B-Thinking-6bit",
-          "name": "Mellum 2.1 12B-A2.5B Thinking (MLX 6-bit)",
+          "id": "Mellum2.1-12B-A2.5B-Thinking",
+          "name": "Mellum 2.1 12B-A2.5B Thinking (Q4_K_M, llama.cpp)",
           "reasoning": true,
           "input": [
             "text"
           ],
-          "contextWindow": 56000,
+          "contextWindow": 50000,
           "maxTokens": 16384,
           "cost": {
             "input": 0,
@@ -18,7 +22,7 @@
             "cacheWrite": 0
           },
           "samplingParams": {
-            "temperature": 1,
+            "temperature": 1.0,
             "top_p": 0.95,
             "top_k": 20,
             "min_p": 0,

@@ -1,6 +1,6 @@
 ---
 name: mellum-setup
-description: Set up Mellum 2.1 as a bounded coding worker in OpenCode or Pi. Use when the user asks to install, configure, or verify Mellum Worker or Mellum Worker, or to get the Mellum model running on oMLX. Walks through weights, server, provider, agent, rules, a smoke test, and optional project facts for Mellum Worker, one checked phase at a time.
+description: Set up Mellum 2.1 as a bounded coding worker in Pi. Use when the user asks to install, configure, or verify Mellum Worker, or to get the Mellum model running locally on llama.cpp. Walks through weights, server, provider, agent, rules, a smoke test, and optional project facts for Mellum Worker, one checked phase at a time.
 ---
 
 # Mellum setup
@@ -31,10 +31,10 @@ OpenCode is no longer supported.
 
 | # | Phase | Check that means "already done" | Reference |
 | --- | --- | --- | --- |
-| 1 | Preflight | Apple Silicon, oMLX installed | [reference/01-preflight.md](reference/01-preflight.md) |
-| 2 | Weights | model folder with two `.safetensors` shards exists | [reference/02-weights.md](reference/02-weights.md) |
+| 1 | Preflight | `llama-server` on PATH (new enough), Node 24+ | [reference/01-preflight.md](reference/01-preflight.md) |
+| 2 | Weights | the Q4_K_M GGUF is in the llama.cpp / Hugging Face cache | [reference/02-weights.md](reference/02-weights.md) |
 | 3 | Server | `GET http://127.0.0.1:8001/v1/models` lists the model | [reference/03-server.md](reference/03-server.md) |
-| 4 | Provider | Pi's model list shows `omlx/Mellum2.1-12B-A2.5B-Thinking-6bit` | [reference/04-provider-pi.md](reference/04-provider-pi.md) |
+| 4 | Provider | Pi's model list shows `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | [reference/04-provider-pi.md](reference/04-provider-pi.md) |
 | 5 | Rules | user accepted or declined the AGENTS.md fragment | [reference/05-rules.md](reference/05-rules.md) |
 | 6 | Smoke test | the calculator fixture's tests exit 0 after `/mellum` ran | [reference/06-smoke.md](reference/06-smoke.md) |
 | 7 | Project facts (optional) | the project's `AGENTS.md` has a heading that is exactly `## Mellum` (not `## Mellum Worker`), or the user declined | [reference/07-project-facts.md](reference/07-project-facts.md) |

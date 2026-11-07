@@ -14,7 +14,7 @@ const NEW = {
 	endedAt: "2026-10-12T15:21:02.000Z",
 	wallSeconds: 62,
 	cwd: "/Users/p/ac-demo",
-	model: "omlx/Mellum2.1-12B-A2.5B-Thinking-6bit",
+	model: "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
 	task: "Implement Phase 1 of specs/roadmap.md",
 	requests: 14,
 	usage: { input: 41200, cacheRead: 120300, output: 6100 },
@@ -51,7 +51,7 @@ test("formatLast renders the header, the metric table, the command table and the
 	assert.equal(row(md, "Facts"), "| Facts | agents-md, 276 chars |");
 	assert.equal(row(md, "Server"), "| Server | settings match |");
 	assert.equal(row(md, "Guards"), "| Guards | 0 nudges, 0 blocks |");
-	assert.equal(row(md, "Versions"), "| Versions | mellum-worker 0.1.7 · prompt v5 · omlx/Mellum2.1-12B-A2.5B-Thinking-6bit |");
+	assert.equal(row(md, "Versions"), "| Versions | mellum-worker 0.1.7 · prompt v5 · llamacpp/Mellum2.1-12B-A2.5B-Thinking |");
 	assert.equal(row(md, "Missing"), undefined);
 	assert.equal(row(md, "Changed files via bash"), undefined);
 	assert.ok(md.includes("| Command | Result |\n|---|---|\n| `uv run --frozen python -m pytest tests` | ok |"));
