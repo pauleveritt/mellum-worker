@@ -28,26 +28,32 @@ function fakePi() {
 	};
 }
 
-test("loading the worker gives the primary one delegate tool", async () => {
-	delete process.env.MELLUM_WORKER_CHILD;
-	const pi = fakePi();
-	(await load()).default(pi);
-	const delegate = pi.tools.filter((t) => t.name === "delegate");
-	assert.equal(delegate.length, 1);
-	const t = delegate[0];
-	assert.match(t.description, /worker/i);
-	assert.match(t.description, /do not use it for exploration/i);
-	assert.deepEqual(t.parameters.required, ["brief"]);
-	assert.equal(t.parameters.properties.brief.type, "string");
-});
+// Spec 2026-11-07-worker-without-delegate: loading the worker bundles nothing. The delegate tool
+// and its nudge are code that stays (registerDelegate, withDelegateNudge) but is not wired by default.
+for (const child of [undefined, "1"]) {
+	test(`loading the worker registers no delegate tool (MELLUM_WORKER_CHILD=${child ?? "unset"})`, async () => {
+		if (child) process.env.MELLUM_WORKER_CHILD = child; else delete process.env.MELLUM_WORKER_CHILD;
+		try {
+			const pi = fakePi();
+			(await load()).default(pi);
+			assert.equal(pi.tools.filter((t) => t.name === "delegate").length, 0);
+		} finally { delete process.env.MELLUM_WORKER_CHILD; }
+	});
 
-test("a spawned worker child gets no delegate tool (no recursion)", async () => {
-	process.env.MELLUM_WORKER_CHILD = "1";
-	const pi = fakePi();
-	(await load()).default(pi);
-	assert.equal(pi.tools.filter((t) => t.name === "delegate").length, 0);
-	delete process.env.MELLUM_WORKER_CHILD;
-});
+	test(`no request is given the delegate nudge with mode off (MELLUM_WORKER_CHILD=${child ?? "unset"})`, async () => {
+		if (child) process.env.MELLUM_WORKER_CHILD = child; else delete process.env.MELLUM_WORKER_CHILD;
+		try {
+			const pi = fakePi();
+			(await load()).default(pi);
+			const payload = { messages: [{ role: "system", content: "sys" }, { role: "user", content: "add a /health route" }] };
+			const before = JSON.stringify(payload);
+			let seen = payload;
+			for (const h of pi.handlers.before_provider_request ?? []) seen = (await h({ payload: seen }, {})) ?? seen;
+			assert.equal(JSON.stringify(seen), before, "mode off: every request handler leaves the payload as Pi built it");
+			assert.doesNotMatch(JSON.stringify(seen), /delegate/i);
+		} finally { delete process.env.MELLUM_WORKER_CHILD; }
+	});
+}
 
 test("delegate with an empty brief refuses without spawning the worker", async () => {
 	const { registerDelegate } = await load();

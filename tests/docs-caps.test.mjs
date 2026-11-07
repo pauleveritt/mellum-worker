@@ -52,3 +52,27 @@ test("plans are at most 400 lines and at most 25% fenced; specs at most 400 line
 		assert.ok(n <= 400, `spec ${f} is ${n} lines`);
 	}
 });
+
+test("the roadmap trifecta: ROADMAP.md, BACKLOG.md and ARCHIVE.md, and no per-phase roadmap file", () => {
+	for (const f of ["ROADMAP.md", "BACKLOG.md", "ARCHIVE.md"]) assert.ok(existsSync(resolve(ROOT, f)), `${f} is missing`);
+	const extra = readdirSync(ROOT).filter((f) => /^ROADMAP-.+\.md$/.test(f));
+	assert.deepEqual(extra, [], "closed phases go in ARCHIVE.md, not a ROADMAP-<phase>.md");
+});
+
+// From 2026-11-07 (the re-boot) every spec, plan and research note is short and carries the
+// three sections a reader (Andre) looks for first. Earlier documents keep the 400-line caps above.
+const SHAPE_FROM = "2026-11-07";
+const SHAPE = { specs: 100, plans: 150, research: 150 };
+const SECTIONS = [/^## For Andre\b/m, /^## Ladder run\b/m, /^## Persuasion (→|->) enforcement\b/m];
+
+test("documents from the re-boot on are short and carry For Andre, Ladder run and Persuasion → enforcement", () => {
+	for (const [kind, cap] of Object.entries(SHAPE)) {
+		const dir = `docs/superpowers/${kind}`;
+		if (!existsSync(resolve(ROOT, dir))) continue;
+		for (const f of readdirSync(resolve(ROOT, dir)).filter((f) => f.endsWith(".md") && f.slice(0, 10) >= SHAPE_FROM)) {
+			const text = read(`${dir}/${f}`);
+			assert.ok(lines(text) <= cap, `${kind} ${f} is ${lines(text)} lines (cap ${cap})`);
+			for (const s of SECTIONS) assert.match(text, s, `${kind} ${f} has no section matching ${s}`);
+		}
+	}
+});

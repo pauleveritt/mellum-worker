@@ -37,8 +37,8 @@ start at [Getting started](../getting-started/index.md).
   and links; raw traces, stdout and patches stay out of Git and ship as
   `research-*` release assets.
 - `docs/superpowers/specs/`, `plans/` and `research/` hold the SDD cycle. The
-  roadmap and backlog sit at the repository root; the closed M series is
-  archived in `ROADMAP-M.md`.
+  roadmap, backlog and archive sit at the repository root; closed phases (M,
+  LC) are in `ARCHIVE.md`.
 - The Learning Center's lessons cite those records through GitHub URLs, so
   the SDD documents stay unpublished while the site still links them.
 

@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.28
 cycle: 1
-lifecycle: active
+lifecycle: superseded
 ---
 
 # LC.28: uniform lessons, one concept from FAIL to PASS
@@ -207,3 +207,11 @@ tier's end.
 The E4 deciding run on the LAN 6-bit misses the rule (before not 0 of 3).
 Then the reference model question reopens before any other challenge is
 built, recorded as a dated correction to the spec.
+
+## Result
+
+Superseded 2026-11-07 by the re-boot, which replaced the Learning Center phase with F (Floor),
+R (Remedies) and A (Architect); see `ROADMAP.md` and `ARCHIVE.md`. LC.28 stands as it is on
+`main` at 63b6563; its further work continued on the unmerged `lc40-thin-worker` branch, which
+is a reference only. Nothing here was measured at close. Anything still wanted returns as an F, R
+or A row through its own small cycle.

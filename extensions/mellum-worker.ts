@@ -31,11 +31,9 @@
  * now, combined through a preset; the worker adds none of them itself. It keeps only the
  * pre-marker history drop, which protects the mode's own on-marker (mode-integrity, not remediation).
  *
- * It also registers one PRIMARY-side tool, `delegate`: load this extension and the primary model
- * can hand a bounded, generic implementation brief to a fresh local worker (this same file,
- * spawned headless with `/mellum <brief>`) without the human typing /mellum. The primary explores
- * and decides; the worker implements. The tool and its nudge are present only in the primary — a
- * spawned child sets MELLUM_WORKER_CHILD=1 and gets neither, so the worker cannot delegate again.
+ * It registers no tool and appends no prompt text. The `delegate` tool (registerDelegate) and its
+ * nudge (withDelegateNudge) are kept here as code but are not wired by default; a spawned child
+ * sets MELLUM_WORKER_CHILD=1, which still selects the in-session one-shot for `/mellum <task>`.
  *
  * Headless: MELLUM_MODE=1 activates at session start (the ladder's "mode" runner).
  * Installed as a Pi package extension it loads in every parent session and stays dormant until /mellum.
@@ -57,8 +55,8 @@ export const BOOTSTRAP_MARKER = "superpowers:using-superpowers bootstrap for pi"
 export const WORKER_TOOLS = ["read", "grep", "find", "ls", "bash", "edit", "write"];
 const DEFAULT_MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
 
-// Set in the environment of a worker this extension spawns for `delegate`, so the spawned
-// child does not offer `delegate` itself (no recursion) and does not append the primary nudge.
+// Set in the environment of a worker this extension spawns (`delegate`, `/mellum <task>`): the
+// spawned child takes the in-session one-shot for `/mellum <task>` instead of authoring a handover.
 const CHILD_ENV = "MELLUM_WORKER_CHILD";
 // This file, re-loaded by the spawned worker with `-e <self> /mellum <brief>`.
 const SELF = fileURLToPath(import.meta.url);
@@ -1876,13 +1874,9 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 		},
 	});
 
-	// The delegate tool makes this extension the thing the primary loads: load it, and the
-	// primary can hand generic implementation briefs to a local worker by itself. A spawned
-	// worker child (CHILD_ENV) gets neither the tool nor the nudge, so it cannot delegate again.
-	if (process.env[CHILD_ENV] !== "1" && typeof pi.registerTool === "function") {
-		registerDelegate(pi, runWorker);
-		pi.on("before_provider_request", (event: any) => (active ? undefined : withDelegateNudge(event.payload)));
-	}
+	// No delegate tool and no delegate nudge are wired here: the worker bundles nothing
+	// (spec 2026-11-07-worker-without-delegate). registerDelegate and withDelegateNudge stay
+	// exported for an opt-in unit; /mellum <task> still runs the architect path.
 
 	// Context-growth profiler (MELLUM_DELEGATE_PROFILE=<jsonl path>): one line per request with its
 	// prompt size, tagged by the agent role (runPi sets MELLUM_ROLE on each child). Read-only — never

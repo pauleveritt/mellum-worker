@@ -1,5 +1,11 @@
 # Run a task in Pi where the primary delegates to a local worker
 
+> **2026-11-07: the `delegate` tool and its nudge are no longer registered by default.**
+> Loading `mellum-worker.ts` adds neither (spec
+> [worker-without-delegate](superpowers/specs/2026-11-07-worker-without-delegate-design.md)).
+> The code is kept and `/mellum <task>` still runs the architect path, but the "type the task and
+> the primary delegates" flow below needs an opt-in unit that is not built yet.
+
 The primary explores and decides; the worker implements. Load one extension and
 the primary can hand bounded, test-driven briefs to a fresh local worker by
 itself — you type the task, it delegates, it verifies, it reports.

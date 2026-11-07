@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.29
 cycle: 1
-lifecycle: active
+lifecycle: superseded
 ---
 
 # Thin worker — plan
@@ -89,4 +89,8 @@ worker never used). A parity run (Step-2/4 gate) proves equivalence; the
 
 ## Result
 
-(written at close)
+Superseded 2026-11-07 by the re-boot, which replaced the Learning Center phase with F (Floor),
+R (Remedies) and A (Architect); see `ROADMAP.md` and `ARCHIVE.md`. LC.29 stands as it is on
+`main` at 63b6563; its further work continued on the unmerged `lc40-thin-worker` branch, which
+is a reference only. Nothing here was measured at close. Anything still wanted returns as an F, R
+or A row through its own small cycle.

@@ -47,7 +47,9 @@ plan, or roadmap edit**; it carries the document caps and why each exists.
 - Research: `docs/superpowers/research/YYYY-MM-DD-<topic>.md`
 
 [`ROADMAP.md`](ROADMAP.md) is the feature-cycle list and current pointer;
-[`BACKLOG.md`](BACKLOG.md) is deferred work with reopen conditions. Brainstorm
+[`BACKLOG.md`](BACKLOG.md) is deferred work with reopen conditions;
+[`ARCHIVE.md`](ARCHIVE.md) holds closed phases. Only these three — no per-phase
+roadmap files. Brainstorm
 within a cycle; do not re-open settled, measured decisions without a ladder
 run in `ladder/`.
 
@@ -61,7 +63,9 @@ to need one.
 
 `ROADMAP.md` caps at 400 lines; a Ships or Excludes cell at 900 characters, a
 Status cell at 1,000, a backlog entry at 1,200, a plan at 400 lines and 25%
-fenced, a spec at 400 lines. `tests/docs-caps.test.mjs` enforces them. Over
+fenced, a spec at 400 lines. From 2026-11-07 a spec caps at 100 lines and a plan
+or research note at 150, and each opens with `## For Andre` and carries
+`## Ladder run` and `## Persuasion → enforcement` sections. `tests/docs-caps.test.mjs` enforces them. Over
 cap means a research doc is owed, not that the wording gets trimmed.
 
 Caps apply at every update. `## Now` is a pointer, never a narrative;
@@ -94,8 +98,11 @@ and evidence with dated corrections; never edit archived plans.
   installs from Git through pacote and that breaks the install.
 - A release is a tag that matches `package.json` and both README install
   lines, with a `CHANGELOG.md` section.
-- **Git discipline.** Atomic, pushed commits (one change, one reason, test shown
-  to fail first), so any change is individually revertible; tag known-good
+- **Git discipline.** Each feature cycle is its own branch and worktree, cut from
+  `integration`; inside it, atomic commits (one change, one reason, test shown
+  to fail first). At close the cycle is squash-merged into `integration` and its
+  worktree and branch are removed ([`docs/sdd.md`](docs/sdd.md#branches-and-worktrees)).
+  Push only when asked. Tag known-good
   milestones `checkpoint-YYYY-MM-DD-<what>` (never a release tag). The flow
   harness also checkpoints the workspace per passing phase and reverts a
   breaking change rather than carrying it forward.
@@ -146,7 +153,7 @@ by the worker's final message. This is the mediated test plus the
 freeze-the-oracle guard; the rung 9 results behind it are screens, so treat it
 as the lead it is, not a settled rule. See the
 [exit-gate note](docs/superpowers/research/2026-10-18-harness-exit-gate.md), the
-M.11 row in [`ROADMAP-M.md`](ROADMAP-M.md) and the BACKLOG entries "The mediated
+M.11 row in [`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20) and the BACKLOG entries "The mediated
 test" and "Freeze-the-oracle exit gate".
 
 ## Keep the changelog current

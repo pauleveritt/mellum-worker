@@ -298,7 +298,7 @@ Andre's [PR #1](https://github.com/pauleveritt/mellum-worker/pull/1) is a
 candidate implementation (`--acceptance-test`; an n = 1 rung 9 screen on
 mlx-lm, [digest](docs/superpowers/research/2026-10-20-pr-digest.md)).
 *Reopens when* someone can run the rung 9 screen and wants the result; the
-closed cycle and its design inputs are in [`ROADMAP-M.md`](ROADMAP-M.md).
+closed cycle and its design inputs are in [`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20).
 2026-10-24, on Andre's fork: `--acceptance-test` and `--redispatch` are on
 `main` again after a merge dropped them ([LEARNING](LEARNING.md) §VII.1).
 
@@ -333,7 +333,7 @@ docs, skill and templates. `/mellum` and the run-record path stay; `learn`
 and `last` keep reading old `kind: "worker"` records; a rung 1 and a rung 6
 smoke show the rename launches the same requests. *Reopens when* the mediated
 test lands, or the rename is worth doing on its own; the closed cycle and its
-exclusions are in [`ROADMAP-M.md`](ROADMAP-M.md). 2026-10-20: taken as LC.8
+exclusions are in [`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20). 2026-10-20: taken as LC.8
 because the Learning Center needs one worker; the entry stays until it lands.
 
 **pi-subagents Worker: one-liners and an in-process child (were M.8, M.9).**

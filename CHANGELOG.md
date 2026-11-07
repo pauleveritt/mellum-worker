@@ -4,8 +4,21 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Changed
+
+- **The roadmap is three files: `ROADMAP.md`, `BACKLOG.md` and `ARCHIVE.md`.** The
+  Learning Center and the M series are closed and archived; the active phases are
+  Floor, Remedies and Architect, and the README's Future work section says so.
+- **Loading the worker no longer registers the `delegate` tool or appends the delegate nudge.**
+  The worker bundles nothing, so a plain Pi session with it loaded (`--arm bare`, `--arm
+  worker`) now sends exactly what Pi sends. Earlier bare/worker numbers carried the tool (bare also
+  the nudge). `/mellum <task>` and all delegate code are unchanged; wiring the tool back as an
+  opt-in unit comes later.
+
 ### Added
 
+- **`evals/2026-11-07-f1-payload/`:** the payload check behind the no-delegate change —
+  `worker` and `bare` on Easy sent Pi's own four tools and no delegate nudge.
 - **Plan delegation (`MELLUM_DELEGATE_PLAN=1`) — the simplest shape, no per-step
   tests.** The architect splits the spec into small ordered step docs
   (`stepNN.md`, each carrying the verbatim spec it covers and a link back to the
@@ -379,6 +392,10 @@ Versions match git tags; pin one in both install lines.
 
 ### Removed
 
+- **Removed the extensions nothing loads:** `mellum-context`, `-files`, `-vision`, `-control`,
+  `-override`, `-feed`, `-replay`, `-rethink`, `content-tool-call-assist` (with `scripts/patch-pi.sh`),
+  the `dashboard/` and `HANDOVER.md`. None was loaded by the worker, a remedy, the harness or the
+  ladder; the F.1 plan lists them and how to restore any of them from `origin/main` 63b6563.
 - **The findings lessons (Start / Easy / Medium / Hard — 27 pages) are removed,
   to be rebuilt.** They explained the harness more than they taught a skill. The
   lesson tutor, the hands-on panel and the Getting Started track stay; `/lesson`

@@ -1,13 +1,19 @@
 # Spec-driven development in this repository
 
-A **phase** is the container: the Learning Center, and historically the M
-series. A **feature cycle** is one row inside a phase, named `LC.13A` or
-`M.7C`.
+A **phase** is the container: F (Floor), R (Remedies) and A (Architect) since
+the 2026-11-07 re-boot; M and the Learning Center (LC) before it. A **feature
+cycle** is one row inside a phase, named `F.1` or `R.2`.
 
-A feature cycle delivers **one lesson**. A cycle may instead be housekeeping
-or infrastructure — the harness, a baseline, a re-base, a consent record — and
-says so in its Ships cell. A cycle with no named deliverable of either kind is
-not a cycle.
+A feature cycle delivers **one result**: a product change, or a remedy unit
+measured on quality *and* budget (wall time, turns, context size). A cycle may
+instead be housekeeping or infrastructure — the harness, a baseline, a clean-up
+— and says so in its Ships cell. A cycle with no named deliverable of either
+kind is not a cycle.
+
+Three files hold the state, and only three: [`ROADMAP.md`](../ROADMAP.md) (the
+active phases and `## Now`), [`BACKLOG.md`](../BACKLOG.md) (deferred work with
+reopen conditions) and [`ARCHIVE.md`](../ARCHIVE.md) (closed phases, verbatim).
+There is no per-phase roadmap file.
 
 Every feature cycle runs the Superpowers cycle:
 **brainstorm → spec → plan → execute → review/close.** A cycle that reaches a
@@ -44,6 +50,8 @@ prose rules and an executable gate are both needed.
 | **Backlog entry** | 1,200 chars | A research doc is owed; the entry keeps a link and a reopen condition |
 | **Plan** | 400 lines, 25% fenced | Split the feature cycle |
 | **Spec** | 400 lines | Split the design |
+| Spec, dated 2026-11-07 or later | 100 lines | Split the design |
+| Plan or research note, dated 2026-11-07 or later | 150 lines | Split the cycle, or move evidence to a sibling directory |
 
 Over cap does not mean "trim the wording". It means a verdict or research doc
 is owed: move the narrative to `docs/superpowers/research/`, link it, and let
@@ -53,6 +61,32 @@ the entry shrink to a summary plus a reopen condition.
 that a verdict doc is owed now. The current limits are calibrated against
 this repository's content; any recalibration must be justified by actual
 documents and recorded here, not used to bypass a failing check.
+
+## Branches and worktrees
+
+- Each feature cycle runs on its own branch, in its own worktree, cut from
+  `integration`. Inside it, commits stay small and atomic (test shown failing
+  first).
+- At close, the cycle is **squash-merged into `integration`** as one commit whose
+  message names the row, what shipped and what was measured. Then its worktree is
+  removed and its branch deleted, so a cycle is reverted as a unit.
+- `integration` collects closed cycles and reaches `main` by pull request. Nothing
+  is pushed without asking.
+
+## Short documents, three fixed sections
+
+From 2026-11-07, every spec, plan and research note is short enough for a
+co-maintainer to read in one sitting, and carries three sections the checker
+looks for:
+
+- **`## For Andre`**, at the top: what changed, why, the result, what to look at.
+- **`## Ladder run`**: rung first, then arms, n and the decision rule — or why
+  no run is needed and what proves the change instead.
+- **`## Persuasion → enforcement`**: which Pi extension hook the cycle uses and
+  what it guarantees, as opposed to what prompt text merely asks for.
+
+Say it once. Detail that a reader does not need to act goes to a linked
+research note or a sibling evidence directory, not into the spec or plan.
 
 ## `## Now` is a pointer, not a narrative
 
@@ -74,8 +108,8 @@ Cite entries by heading anchor, never by line number.
 
 ```
 ---
-phase: LC
-feature_cycle: LC.13A
+phase: F
+feature_cycle: F.1
 cycle: 1
 lifecycle: active
 ---
@@ -102,17 +136,21 @@ current regression, and repeatedly flagging it trains people to ignore the
 gate. Specs and research are not archived: decisions and evidence stay at
 their original paths, with dated corrections beside the original reasoning.
 
-Closed feature cycles keep their roadmap rows: state, date and links. There is
-no row archive. An over-cap closed row owes a research doc.
+Closed feature cycles keep their roadmap rows (state, date and links) while
+their phase is active. An over-cap closed row owes a research doc.
 
-2026-10-20: a whole closed series may move to its own file once it has a
-close and a verdict. The M series is in `ROADMAP-M.md`, linked from
-`ROADMAP.md`, and is not edited afterwards. Individual closed rows still stay.
+When a whole phase closes, with every row closed or superseded and a short
+verdict at its head, its section moves verbatim to `ARCHIVE.md` and is not
+edited afterwards. `ROADMAP.md` keeps only active phases.
+
+2026-11-07: this replaces the 2026-10-20 rule that a closed series moves to its
+own file (`ROADMAP-M.md`). Per-phase roadmap files are retired; M, LC and INT
+are in `ARCHIVE.md`.
 
 ## Docs are a presentation layer
 
 Every primary document must render as plain Markdown on GitHub without a
-generator. The roadmap and backlog live at the repository root; specs,
+generator. The roadmap, backlog and archive live at the repository root; specs,
 plans and research live under `docs/superpowers/`. A future documentation
 site presents these sources rather than making its syntax a dependency.
 

@@ -4,7 +4,7 @@
 revision 3, at the commit that adds this note. It is the first deciding run
 under the uniform-lessons contract
 ([spec](../specs/2026-10-29-uniform-lessons-design.md),
-[plan](../plans/2026-10-29-uniform-lessons.md) task 7).
+[plan](../plans/archive/2026-10-29-uniform-lessons.md) task 7).
 
 **What is conjecture.** That a task which names its own run command,
 `python app.py`, leads the 6-bit model to run it as written, in the

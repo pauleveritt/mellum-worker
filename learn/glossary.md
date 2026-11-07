@@ -124,6 +124,18 @@ extension, the floor), `bare` (the worker loaded but mode off), `worker`
 The simplest arm: Vanilla Pi with no worker extension and no remedies — the
 baseline every remedy is measured against. The `vanilla` arm.
 
+Also the roadmap's first phase (F): the floor plus the worker as a command tool that
+adds nothing by default, so `bare` and `worker` send Pi's own tools and no hidden prompt
+text. Every later unit's effect can then be credited to that unit.
+
+### Enforcement
+
+<!-- zensical-glossary-aliases: persuasion -->
+A guarantee made through a Pi extension hook — a gate that refuses, a check that runs, a
+payload that is exactly what the command line names — as opposed to persuasion, prompt
+text that asks the model to behave. Persuasion has a role on top of a bounded worker;
+enforcement is what bounds it. Budget guardrails (turns, context size, time) are enforced too.
+
 ### Ablation
 
 A comparison that drops one unit from a `--remedy` stack to measure that unit.

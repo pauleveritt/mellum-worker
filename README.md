@@ -475,8 +475,9 @@ ROADMAP.md, BACKLOG.md        phases and deferred work
 
 ## Future work
 
-The M series closed on 2026-10-20 and is [archived](ROADMAP-M.md); the
-Learning Center is the active roadmap ([ROADMAP.md](ROADMAP.md)). Everything
+The M series (2026-10-20) and the Learning Center (2026-11-07) are closed and
+[archived](ARCHIVE.md); the active phases are Floor, Remedies and Architect
+([ROADMAP.md](ROADMAP.md)). Everything
 deferred is a [backlog entry](BACKLOG.md) with a reopen condition.
 
 - **The mediated test:** a rung 9 screen first, then a preregistered run on

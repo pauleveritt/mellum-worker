@@ -2,7 +2,7 @@
 phase: LC
 feature_cycle: LC.27
 cycle: 1
-lifecycle: active
+lifecycle: superseded
 ---
 
 # LC.27 — remedy units, one role each
@@ -109,3 +109,11 @@ user-facing surface changes.
   both pages; glossary entries for **remedy unit** and **preset**.
 - The lesson check's record and verdicts are in `evals/` and linked
   from the research note; LC.26 holds the per-lesson challenge tasks.
+
+## Result
+
+Superseded 2026-11-07 by the re-boot, which replaced the Learning Center phase with F (Floor),
+R (Remedies) and A (Architect); see `ROADMAP.md` and `ARCHIVE.md`. LC.27 stands as it is on
+`main` at 63b6563; its further work continued on the unmerged `lc40-thin-worker` branch, which
+is a reference only. Nothing here was measured at close. Anything still wanted returns as an F, R
+or A row through its own small cycle.
