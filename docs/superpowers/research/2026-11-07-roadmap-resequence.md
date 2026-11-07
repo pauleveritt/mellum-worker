@@ -13,9 +13,9 @@
   Your `33e0b92` reached a similar position from the delegate screens. It informs this choice,
   and where our measurement differs (output tokens beside requests, budgets enforced per
   session), we'll say why.
-- **The new order:** sync `integration` to `origin/main` (your three commits), then F.5 (runs we
+- **The new order:** sync `integration` to `origin/main` (your three commits) and `remove-omlx`, then F.5 (runs we
   can trust on the M5 Max), R.1 (Easy remedies), F.6 (parallel pods), R.2 Medium, R.3 Hard, A.1.
-- **What to look at:** the question about `origin/remove-omlx` below, and whether F.6 belongs
+- **What to look at:** `origin/remove-omlx` lands with the sync (below); whether F.6 belongs
   before R.2.
 
 **What is measured.** Nothing new. Every figure below cites a record that already exists:
@@ -65,11 +65,14 @@ is new.
   cohort), and they pay off only in parallel, which matters for Medium and Hard.
 - **F.6 rather than a new phase** for the pods: it is floor infrastructure.
 
-## Open, for Andre
+## `origin/remove-omlx`, scheduled with the sync
 
-- **`origin/remove-omlx`** (2026-11-05, not merged) makes llama.cpp on :8001 the default.
-  `integration` still names oMLX in the README, `run_ladder.py` and `scripts/screen.sh`. Should
-  it land before F.5 names the floor's backend?
+Andre's branch (2026-11-05, not merged) removes the oMLX path and makes llama.cpp on :8001 the
+default. `integration` still names oMLX in the README, `run_ladder.py` and `scripts/screen.sh`.
+Paul cleared it on 2026-11-07, so it lands in the sync step, after `origin/main`, and F.5 names
+llama.cpp as the floor's backend. A test merge shows conflicts in `AGENTS.md` and `CHANGELOG.md`.
+It also edits four files that F.1 removed (the dashboard and `content-tool-call-assist`), and
+those deletions stand.
 
 ## What would falsify this
 
