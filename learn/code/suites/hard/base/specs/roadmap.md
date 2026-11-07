@@ -19,6 +19,8 @@ Order of the requests: Phases 1 to 5; the migration
   app.py` is how a person runs the app, and it does not return.
 - Run Python commands with `uv run --frozen`; use the existing dependencies.
 
+The project layout also allows optional Python helper modules and packages.
+
 ## Phase 1 — Home Page
 
 - As an agent arriving at the clinic, I want the tagline "Come in. Sit down.
@@ -138,6 +140,8 @@ Order of the requests: Phases 1 to 5; the migration
 - A row whose status is `open` but whose `archived_at` is set counts as
   archived, never as open.
 - The sums are computed in the database and returned as integers, never floats.
+  Request-derived SQL filter values are bound as parameters, never concatenated;
+  fixed SQL predicates may use literals.
 - Earlier phases still pass.
 
 ## Phase 7 — Visits report
@@ -156,6 +160,7 @@ Order of the requests: Phases 1 to 5; the migration
   are integers and averages are floats.
 - The list is sorted by `total_minutes` descending, then `agent` ascending, and
   holds at most `limit` entries.
+- Request-derived SQL filter values are bound as parameters, never concatenated.
 - Earlier phases still pass.
 
 ## Migrations

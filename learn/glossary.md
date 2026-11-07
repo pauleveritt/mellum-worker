@@ -261,12 +261,19 @@ means three sessions, and every score line states its n.
 
 ### Grader
 
-The hidden tests copied into the workspace only after the model has exited.
+The hidden tests run externally against disposable application copies after the
+model exits, under trusted dependencies and pytest configuration.
+
+### Grader identity
+
+The selected assertion revision, digest of its trusted inputs, and execution
+policy recorded with a new score. Historical briefs and grader revisions are
+separate inputs; a record without this identity has unknown grader provenance.
 
 ### Expected IDs
 
-The test IDs that must appear as `PASSED` for a suite to pass. A missing test
-is a failed check, not a silent pass.
+The test IDs that must have successful structured pytest outcomes for a suite to
+pass. Missing, skipped and uncollected tests cannot silently pass.
 
 ### Canary
 

@@ -1,0 +1,1145 @@
+{
+  "date": "2026-11-07",
+  "input_revision": "bc5db208211c97a6956fa93225b40929804c0c9c",
+  "historical_brief_revision": "2892fe4ebaafcb168f230b166e8156418bb599a7",
+  "method": "Independent scratch copies of suite base plus fixture; Python via uv run; no live model run.",
+  "baseline_passed": {
+    "easy": 4,
+    "medium": 18,
+    "hard": 34
+  },
+  "historical_prompt_spec_files_byte_identical": 25,
+  "source_target_files_unchanged": 146,
+  "audit_artifacts": {
+    "audit-easy/results.json": {
+      "sha256": "c9eb70511769b30f10842f090432cdf8d4234b21dbf3d757cbda123fa931d0dc",
+      "results": [
+        {
+          "name": "baseline",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "broken",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "status",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "tagline",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "doctype",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_has_html5_doctype"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "language",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "brand",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "home_href",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "home_label",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "complaints_href",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "complaints_label",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "no_navbar",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "nonfirst_doctype",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_has_html5_doctype"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "no_head_assets",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "title_fixed",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "title_wrong",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "no_hero_or_welcome",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "no_launcher",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "reload_false",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "own_tests_fail",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "fixed_inline_html",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "brand_in_comment",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        }
+      ]
+    },
+    "audit-easy/extras.json": {
+      "sha256": "faa5c7ba8443254242b1d528f3c2630b338a4a074cbc1549ff5457196dd1bf92",
+      "results": [
+        {
+          "name": "no_brand_anywhere",
+          "passed": false,
+          "missing": [
+            "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+          ],
+          "checks_ran": true
+        },
+        {
+          "name": "legacy_doctype",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "no_launch_exit",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "comment_before_doctype",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        },
+        {
+          "name": "original",
+          "passed": true,
+          "missing": [],
+          "checks_ran": true
+        }
+      ]
+    },
+    "audit-medium/results.json": {
+      "sha256": "1d61ce7bcb14fbfe7bcb76b5f0f6f446c6fcc672b0bc031cae36e0602e777d41",
+      "results": [
+        {
+          "name": "baseline",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.81s"
+          ]
+        },
+        {
+          "name": "known_broken",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+          ],
+          "summary": [
+            "3 failed, 15 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_home_doctype",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase1_home.py::test_home_has_html5_doctype - assert...",
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": [
+            "2 failed, 16 passed, 6 warnings in 0.20s"
+          ]
+        },
+        {
+          "name": "kill_home_lang",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": [
+            "2 failed, 16 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_home_tagline",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.20s"
+          ]
+        },
+        {
+          "name": "kill_home_nav",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": [
+            "2 failed, 16 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_board_heading",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.19s"
+          ]
+        },
+        {
+          "name": "kill_seed_exact",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.19s"
+          ]
+        },
+        {
+          "name": "kill_board_details",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+            "FAILED grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": [
+            "5 failed, 13 passed, 6 warnings in 0.22s"
+          ]
+        },
+        {
+          "name": "kill_board_layout",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_model_timestamp",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_seed_count",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_add_form",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.19s"
+          ]
+        },
+        {
+          "name": "kill_add_redirect",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.19s"
+          ]
+        },
+        {
+          "name": "kill_add_visible",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": [
+            "4 failed, 14 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_identity",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects"
+          ],
+          "summary": [
+            "3 failed, 15 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_seed_ids",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.19s"
+          ]
+        },
+        {
+          "name": "kill_resolve",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_reopen",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "kill_order",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": [
+            "1 failed, 17 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "survive_roundtrip_order",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.16s"
+          ]
+        },
+        {
+          "name": "survive_no_state_controls",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.17s"
+          ]
+        },
+        {
+          "name": "survive_disconnected_form",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.17s"
+          ]
+        },
+        {
+          "name": "survive_string_ids",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+          ],
+          "summary": [
+            "2 failed, 16 passed, 6 warnings in 0.19s"
+          ]
+        },
+        {
+          "name": "survive_id_reuse",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.16s"
+          ]
+        },
+        {
+          "name": "survive_no_model_state",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.16s"
+          ]
+        },
+        {
+          "name": "survive_global_state",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.17s"
+          ]
+        },
+        {
+          "name": "survive_no_append",
+          "exit": 1,
+          "failed": [
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "FAILED grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": [
+            "2 failed, 16 passed, 6 warnings in 0.18s"
+          ]
+        },
+        {
+          "name": "survive_bad_seed_exact",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.16s"
+          ]
+        },
+        {
+          "name": "survive_not_list",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.16s"
+          ]
+        },
+        {
+          "name": "survive_no_entrypoint",
+          "exit": 0,
+          "failed": [],
+          "summary": [
+            "18 passed, 6 warnings in 0.16s"
+          ]
+        }
+      ]
+    },
+    "audit-hard/manifest.json": {
+      "sha256": "a2b242062644f38621162053bc5a09df7b168a5c91ef8fcf2e655d4e1758222e",
+      "results": [
+        {
+          "name": "archive-400-has-side-effect",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.14s",
+          "state": "survived"
+        },
+        {
+          "name": "archive-allows-archived",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.11s",
+          "state": "survived"
+        },
+        {
+          "name": "archive-wrong-location",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.19s",
+          "state": "survived"
+        },
+        {
+          "name": "broken-own-tests",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.20s",
+          "state": "survived"
+        },
+        {
+          "name": "control-known-broken-open-filter",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_phase6.py::test_report_exact_sums",
+            "grader_tests/test_phase6.py::test_archived_defined_by_archived_at"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.12s",
+          "state": "killed"
+        },
+        {
+          "name": "controls-outside-add-form",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.14s",
+          "state": "survived"
+        },
+        {
+          "name": "empty-view",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.11s",
+          "state": "survived"
+        },
+        {
+          "name": "extra-audit-record",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.17s",
+          "state": "survived"
+        },
+        {
+          "name": "float-ids",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.21s",
+          "state": "survived"
+        },
+        {
+          "name": "hardcoded-report",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.14s",
+          "state": "survived"
+        },
+        {
+          "name": "integer-visit-averages",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.16s",
+          "state": "survived"
+        },
+        {
+          "name": "kill-add-form",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.22s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-archive-accepts-open",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase5.py::test_archive_only_when_resolved"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.21s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-archive-deletes-record",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.19s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-backfill-null",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_migrations.py::test_resolved_at_is_backfilled"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.17s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-board-heading",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.16s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-card-details",
+          "failure_count": 5,
+          "failed_checks": [
+            "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+            "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": "5 failed, 29 passed, 10 warnings in 1.18s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-change-board-order",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.19s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-doctype",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+            "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.12s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-index-absent",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_migrations.py::test_index_exists"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.20s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-language",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+            "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.21s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-migration-ledger",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_migrations.py::test_all_migrations_are_recorded",
+            "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.23s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-navigation",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+            "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.18s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-no-audit",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase5.py::test_audit_records_each_transition_in_order_with_monotonic_seq"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.15s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-note-absent",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_migrations.py::test_note_column"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.19s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-post-fixed-id",
+          "failure_count": 3,
+          "failed_checks": [
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record",
+            "grader_tests/test_phase5.py::test_ids_are_never_reused_after_archive"
+          ],
+          "summary": "3 failed, 31 passed, 10 warnings in 1.13s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-post-no-append",
+          "failure_count": 5,
+          "failed_checks": [
+            "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+            "grader_tests/test_phase5.py::test_ids_are_never_reused_after_archive"
+          ],
+          "summary": "5 failed, 29 passed, 10 warnings in 1.19s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-post-redirect",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.18s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-reopen-noop",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.16s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-repeated-id",
+          "failure_count": 5,
+          "failed_checks": [
+            "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+            "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids",
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record",
+            "grader_tests/test_phase5.py::test_ids_are_never_reused_after_archive"
+          ],
+          "summary": "5 failed, 29 passed, 10 warnings in 1.15s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-report-floats",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase6.py::test_totals_are_integers"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.17s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-rerun-ledger-mutates",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.16s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-resolve-noop",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+            "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.31s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-seed-count",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.18s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-seed-literal",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.14s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-shared-timestamp",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.16s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-stats-includes-resolved",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase5.py::test_stats_open_excludes_resolved_and_archived"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.23s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-tagline",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.22s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-view-unfiltered",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_migrations.py::test_open_tickets_view"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.19s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-visits-exclusive-range",
+          "failure_count": 2,
+          "failed_checks": [
+            "grader_tests/test_visits.py::test_visits_filter_sort_and_limit",
+            "grader_tests/test_visits.py::test_visits_range_is_inclusive_and_minutes_bound"
+          ],
+          "summary": "2 failed, 32 passed, 10 warnings in 1.17s",
+          "state": "killed"
+        },
+        {
+          "name": "kill-visits-no-limit",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_visits.py::test_visits_filter_sort_and_limit"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.22s",
+          "state": "killed"
+        },
+        {
+          "name": "missing-archive-audit",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.16s",
+          "state": "survived"
+        },
+        {
+          "name": "missing-home-startup",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.17s",
+          "state": "survived"
+        },
+        {
+          "name": "missing-state-buttons",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.14s",
+          "state": "survived"
+        },
+        {
+          "name": "nonexact-seed-text",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.16s",
+          "state": "survived"
+        },
+        {
+          "name": "not-a-view",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.20s",
+          "state": "survived"
+        },
+        {
+          "name": "not-null-note",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.10s",
+          "state": "survived"
+        },
+        {
+          "name": "rerun-changes-rows",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.16s",
+          "state": "survived"
+        },
+        {
+          "name": "transient-board-reordering",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.19s",
+          "state": "survived"
+        },
+        {
+          "name": "unbound-visits-filters",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.16s",
+          "state": "survived"
+        },
+        {
+          "name": "valid-newest-first-board",
+          "failure_count": 1,
+          "failed_checks": [
+            "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+          ],
+          "summary": "1 failed, 33 passed, 10 warnings in 1.20s",
+          "state": "valid-build-rejected"
+        },
+        {
+          "name": "wrong-audit-ids-float-seq",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.16s",
+          "state": "survived"
+        },
+        {
+          "name": "wrong-index",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.13s",
+          "state": "survived"
+        },
+        {
+          "name": "wrong-visits-defaults",
+          "failure_count": 0,
+          "failed_checks": [],
+          "summary": "34 passed, 10 warnings in 1.15s",
+          "state": "survived"
+        }
+      ]
+    },
+    "audit-hard/kill-coverage.json": {
+      "sha256": "a87c685fe5d601e7e7bea9e004ec7c918114c2f7675a8a6408e174e74c259383",
+      "results": {
+        "grader_tests/test_phase6.py::test_report_exact_sums": [
+          "control-known-broken-open-filter"
+        ],
+        "grader_tests/test_phase6.py::test_archived_defined_by_archived_at": [
+          "control-known-broken-open-filter"
+        ],
+        "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form": [
+          "kill-add-form"
+        ],
+        "grader_tests/test_phase5.py::test_archive_only_when_resolved": [
+          "kill-archive-accepts-open"
+        ],
+        "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record": [
+          "kill-archive-deletes-record",
+          "kill-post-fixed-id",
+          "kill-repeated-id",
+          "kill-resolve-noop"
+        ],
+        "grader_tests/test_migrations.py::test_resolved_at_is_backfilled": [
+          "kill-backfill-null"
+        ],
+        "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading": [
+          "kill-board-heading"
+        ],
+        "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details": [
+          "kill-card-details"
+        ],
+        "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board": [
+          "kill-card-details",
+          "kill-post-no-append"
+        ],
+        "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects": [
+          "kill-card-details",
+          "kill-post-fixed-id",
+          "kill-post-no-append",
+          "kill-repeated-id",
+          "kill-resolve-noop"
+        ],
+        "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects": [
+          "kill-card-details",
+          "kill-post-no-append",
+          "kill-reopen-noop"
+        ],
+        "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board": [
+          "kill-card-details",
+          "kill-change-board-order",
+          "kill-post-no-append"
+        ],
+        "grader_tests/test_phase1_home.py::test_home_has_html5_doctype": [
+          "kill-doctype"
+        ],
+        "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout": [
+          "kill-doctype",
+          "kill-language",
+          "kill-navigation"
+        ],
+        "grader_tests/test_migrations.py::test_index_exists": [
+          "kill-index-absent"
+        ],
+        "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language": [
+          "kill-language"
+        ],
+        "grader_tests/test_migrations.py::test_all_migrations_are_recorded": [
+          "kill-migration-ledger"
+        ],
+        "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop": [
+          "kill-migration-ledger",
+          "kill-rerun-ledger-mutates"
+        ],
+        "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links": [
+          "kill-navigation"
+        ],
+        "grader_tests/test_phase5.py::test_audit_records_each_transition_in_order_with_monotonic_seq": [
+          "kill-no-audit"
+        ],
+        "grader_tests/test_migrations.py::test_note_column": [
+          "kill-note-absent"
+        ],
+        "grader_tests/test_phase5.py::test_ids_are_never_reused_after_archive": [
+          "kill-post-fixed-id",
+          "kill-post-no-append",
+          "kill-repeated-id"
+        ],
+        "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board": [
+          "kill-post-redirect"
+        ],
+        "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only": [
+          "kill-repeated-id"
+        ],
+        "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids": [
+          "kill-repeated-id"
+        ],
+        "grader_tests/test_phase6.py::test_totals_are_integers": [
+          "kill-report-floats"
+        ],
+        "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved": [
+          "kill-seed-count"
+        ],
+        "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint": [
+          "kill-seed-literal"
+        ],
+        "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved": [
+          "kill-shared-timestamp"
+        ],
+        "grader_tests/test_phase5.py::test_stats_open_excludes_resolved_and_archived": [
+          "kill-stats-includes-resolved"
+        ],
+        "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline": [
+          "kill-tagline"
+        ],
+        "grader_tests/test_migrations.py::test_open_tickets_view": [
+          "kill-view-unfiltered"
+        ],
+        "grader_tests/test_visits.py::test_visits_filter_sort_and_limit": [
+          "kill-visits-exclusive-range",
+          "kill-visits-no-limit"
+        ],
+        "grader_tests/test_visits.py::test_visits_range_is_inclusive_and_minutes_bound": [
+          "kill-visits-exclusive-range"
+        ]
+      }
+    }
+  },
+  "additional_parent_probes": {
+    "easy_known_broken": {
+      "passed": false,
+      "checks_passed": 3,
+      "checks_total": 4
+    },
+    "easy_conftest_replaces_runtest": {
+      "passed": true,
+      "checks_passed": 4,
+      "checks_total": 4
+    },
+    "easy_pytest_config_deselects_checks": {
+      "passed": false,
+      "checks_ran": false,
+      "missing": 4
+    },
+    "layout_deleted_metadata_lock_test_roadmap": {
+      "created": [],
+      "modified": [],
+      "out_of_layout": []
+    },
+    "timestamp_post_init": {
+      "medium_current_passed": 18,
+      "medium_old_passed": 17,
+      "hard_current_passed": 34,
+      "hard_old_passed": 33
+    },
+    "regression_test_baseline": {
+      "single_source_passed": 37,
+      "targeted_harness_passed": 8
+    }
+  }
+}

@@ -13,6 +13,8 @@ folder; the project's notes are in `AGENTS.md`.
   app.py` is how a person runs the app, and it does not return.
 - Run Python commands with `uv run --frozen`; use the existing dependencies.
 
+The project layout also allows optional Python helper modules and packages.
+
 ## Phase 1 — Home Page
 
 - As an agent arriving at the clinic, I want the tagline "Come in. Sit down.

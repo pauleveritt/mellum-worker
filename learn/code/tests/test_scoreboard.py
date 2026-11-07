@@ -102,7 +102,7 @@ def test_leaderboard_ranks_passes_shorter_first(tmp_path):
         {"id": "faildrop", "suite": "easy", "model": "m", "stack": ["x"], "passed": False, "turns": 5, "wall": 10.0},
     ]
     board = scoreboard.leaderboard(entries)
-    row = board[("easy", "m", ("x",))]
+    row = board[("easy", "m", ("x",), ("unknown", "", ""))]
     assert row["best"]["id"] == "fast", "fewest-turn pass is the record holder"
     assert row["passed"] == 3 and row["total"] == 4
     # a failing run with few turns never wins the record

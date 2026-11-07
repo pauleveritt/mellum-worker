@@ -191,11 +191,11 @@ def test_score_passes_a_working_workspace(tmp_path):
     assert passed, tail
 
 
-def test_score_keeps_the_run_and_copies_the_tests(tmp_path):
+def test_score_keeps_the_run_without_copying_hidden_tests(tmp_path):
     run_dir = run(tmp_path, "fake-pi-empty.sh")
     passed, tail = harness.score(run_dir, harness.load_suite(SUITES, "add"))
     assert not passed
-    assert (run_dir / "workspace" / "grader_tests" / "test_add.py").exists()
+    assert not (run_dir / "workspace" / "grader_tests").exists()
     assert tail
 
 
@@ -526,16 +526,17 @@ def test_the_split_keeps_the_roadmaps_phases():
             assert line in text, f"{name} lost: {line}"
 
 
-def test_the_thin_briefs_name_the_verification_loop():
+def test_active_variant_notes_name_the_verification_loop():
     suite = harness.load_suite(harness.SUITES, "medium")
     for arm in ("joined", "split"):
-        prompts = sorted((harness.load_variant(suite, arm) / "prompts").glob("*.md"))
-        assert len(prompts) == 4
-        for prompt in prompts:
-            text = " ".join(prompt.read_text().split())
-            assert "python -m pytest tests" in text, f"{arm}/{prompt.name} names no test command"
-            assert "do not check it by starting a server" in text, (
-                f"{arm}/{prompt.name} does not rule out a server as the check")
+        variant = harness.load_variant(suite, arm)
+        assert len(list((variant / "prompts").glob("*.md"))) == 4
+        notes = variant / "AGENTS.md"
+        if not notes.is_file():
+            notes = suite.root / "base/AGENTS.md"
+        text = " ".join(notes.read_text().split())
+        assert "python -m pytest tests" in text
+        assert "Do not: start servers" in text
 
 
 def test_medium_base_ships_a_phase1_smoke_test():

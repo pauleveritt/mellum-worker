@@ -1,1 +1,21 @@
-{"allow": ["app.py", "models.py", "templates/**", "tests/**", "specs/**"], "ignore": [".venv/**", "__pycache__/**", "*.pyc", "*.log", "*.db", ".git/**", ".pytest_cache/**", "grader_tests/**"]}
+{
+  "allow": [
+    "app.py",
+    "models.py",
+    "templates/**",
+    "tests/**",
+    "specs/**",
+    "*.py",
+    "**/*.py"
+  ],
+  "ignore": [
+    ".venv/**",
+    "__pycache__/**",
+    "*.pyc",
+    "*.log",
+    "*.db",
+    ".git/**",
+    ".pytest_cache/**",
+    "grader_tests/**"
+  ]
+}

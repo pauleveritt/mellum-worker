@@ -34,7 +34,7 @@ entries below.
 | 1 | False success | none — the harness runs the command and scores it |
 | 2 | Fabricated evidence | none — the harness runs the command after the child exits |
 | 3 | A dropped requirement | none as a unit — cumulative grading is a harness guarantee; `workflow/spec-driven-flow`'s per-phase gates come closest |
-| 4 | A narrowed test | none — hidden graders are copied in after the run |
+| 4 | A narrowed test | none — hidden graders run externally after the run |
 | 5 | An empty final | `nudge/empty-turn` |
 | 6 | A loop | `guard/repeat-loops` (and `guard/turn-cap` for an unbounded budget) |
 | 7 | A runaway search | `guard/outside-workspace` |
@@ -48,6 +48,8 @@ entries below.
 | 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
 | 16 | A skipped rule | none — a fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
+| 18 | A defective oracle | none — repair assertions with wrong and valid alternative builds |
+| 19 | The workspace controls its examiner | none — trusted dependencies/configuration and structured results |
 
 ## It says it is done and it is not
 
@@ -75,8 +77,9 @@ entries below.
    passing tests including one `assert True`
    ([row](https://github.com/andrevanzuydam/mellum-worker/blob/main/ROADMAP.md)); Andre's digest records the narrow-to-one-function
    form ([harvest](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-pr-harvest-index.md)).
-   **Answer:** hidden graders are copied in after the run, so a weakened visible
-   test buys nothing; the mediated-test cycle (LC.21) is the fuller remedy.
+   **Answer:** hidden graders run externally after the run, and required starter
+   tests retain their trusted execution; the mediated-test cycle (LC.21) is the
+   fuller remedy.
 
 ## It stops before the work is done
 
@@ -216,6 +219,24 @@ entries below.
     **Answer:** verification — run the real route or test before finishing;
     `guard/foreground-server` removes the server-start that stands in for a check,
     forcing a different verification, and a verify lever is being measured.
+
+## The measuring instrument goes wrong
+
+18. **A defective oracle.** A wrong build passes a weak assertion, or a valid
+    alternative fails an unstated restriction. This is an instrument fault.
+    **Seen:** F.4's deterministic audit accepted an empty migration view and
+    fixture-only report totals, but rejected a valid newest-first board
+    ([audit](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-07-suite-oracle-audit.md)).
+    **Answer:** pair a failing wrong-build witness with valid alternative builds;
+    version the repaired assertions so old and current grades stay distinguishable.
+19. **The workspace controls its examiner.** Configuration changes replace or
+    deselect hidden tests, while score parsing trusts printed success strings.
+    **Seen:** F.4's known-broken Easy build scored 4/4 after a submitted conftest
+    replaced test execution with no-ops
+    ([audit](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-07-suite-oracle-audit.md)).
+    No model run is implied.
+    **Answer:** use trusted dependencies and configuration, external hidden tests,
+    disposable per-check copies, and structured per-test outcomes.
 
 ---
 

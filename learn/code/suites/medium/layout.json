@@ -1,4 +1,22 @@
 {
-  "allow": ["app.py", "templates/**", "tests/**", "specs/**", "migrations/**", "models.py", "db.py"],
-  "ignore": [".venv/**", "__pycache__/**", "*.pyc", "*.log", "*.db", "*.sqlite*", ".git/**", ".pytest_cache/**", "grader_tests/**"]
+  "allow": [
+    "app.py",
+    "templates/**",
+    "tests/**",
+    "specs/**",
+    "models.py",
+    "*.py",
+    "**/*.py"
+  ],
+  "ignore": [
+    ".venv/**",
+    "__pycache__/**",
+    "*.pyc",
+    "*.log",
+    "*.db",
+    "*.sqlite*",
+    ".git/**",
+    ".pytest_cache/**",
+    "grader_tests/**"
+  ]
 }

@@ -32,3 +32,5 @@
   button that changes it.
 
 Run `uv sync --frozen` before a phase. Use `uv run --frozen` for commands.
+
+Optional Python helper modules and packages may accompany this layout.

@@ -1,116 +1,141 @@
-"""Phase 4 -- resolve and reopen. Harness-owned.
-
-Cumulative scope: phases 1, 2, 3 AND 4. Imports the seed snapshot, so this
-module is collectable only once the workspace defines the data module --
-same ordering requirement as phase 2/3.
-
-Newly authored for TE4 (docs/current/te4-harder-roadmap-design.md), not
-quoted from swiftstar's roadmap.md like phases 1-3.
-
-Each check that posts a complaint creates its own, rather than mutating a
-seed complaint's status -- seed state stays untouched for whichever other
-phase's checks run in the same process.
-"""
+"""Phase 4: global integer identity and target-only, order-preserving transitions."""
 
 from dataclasses import fields
 
-from turbohtml import parse
+from turbohtml import Element, parse
 
-import models
-from grader_tests._contract import client
+from grader_tests._contract import _is_visible, _normalized_text, _post_forms, client
 from grader_tests._seed import SEED_COMPLAINTS, Complaint
+import models
 
 
-def test_complaint_identity_is_stable_and_keyword_only():
-    field_map = {f.name: f for f in fields(Complaint)}
-    assert {"id", "status"} <= field_map.keys()
-
-    # The existing positional contract (agent_name, text) must still
-    # construct -- this is the preservation proof the identity field must
-    # not break. This is a behavioral check, not a mechanism check: how
-    # id/status achieve that (kw_only, or plain fields with defaults
-    # placed after the required two) is the solver's choice, not the
-    # prompt's. A live Baseline transcript (2026-09-10) found a valid
-    # solution using the second mechanism that an earlier, stricter
-    # version of this test wrongly rejected by asserting `kw_only is
-    # True` directly -- see docs/current/te4-route-proof-result.md,
-    # Finding 1.
-    first = Complaint("first", "First complaint")
-    second = Complaint("second", "Second complaint")
-    assert first.agent_name == "first"
-    assert first.text == "First complaint"
-    assert first.id != second.id
-    assert second.id > first.id
-    assert first.status == "open"
-
-
-def test_seed_complaints_have_distinct_ids():
-    ids = {complaint.id for complaint in SEED_COMPLAINTS}
-    assert len(ids) == len(SEED_COMPLAINTS)
+def _snapshot():
+    records = {
+        complaint.id: (complaint.agent_name, complaint.text, complaint.timestamp, complaint.status)
+        for complaint in models.complaints
+    }
+    assert len(records) == len(models.complaints), "complaint ids must remain unique"
+    return records
 
 
 def _post_new_complaint(agent_name: str, text: str) -> int:
-    """Add a complaint through the real route and return its assigned id."""
-    client.post(
-        "/complaints",
-        data={"agent_name": agent_name, "text": text},
-        follow_redirects=False,
+    before = _snapshot()
+    response = client.post(
+        "/complaints", data={"agent_name": agent_name, "text": text}, follow_redirects=False,
     )
-    return models.complaints[-1].id
+    assert response.status_code == 303
+    assert response.headers["location"] == "/complaints"
+    after = _snapshot()
+    assert len(after) == len(before) + 1
+    assert all(after.get(key) == value for key, value in before.items())
+    new_ids = after.keys() - before.keys()
+    assert len(new_ids) == 1
+    complaint_id = new_ids.pop()
+    assert type(complaint_id) is int
+    assert complaint_id > max(before, default=-1)
+    assert after[complaint_id][:2] == (agent_name, text)
+    assert after[complaint_id][-1] == "open"
+    return complaint_id
+
+
+def test_complaint_identity_is_stable_and_keyword_only():
+    # Retain this historical check id; the contract does not mandate kw_only.
+    field_map = {field.name: field for field in fields(Complaint)}
+    assert {"id", "status"} <= field_map.keys()
+    earlier_ids = [complaint.id for complaint in models.complaints]
+    assert all(type(identity) is int for identity in earlier_ids)
+    first = Complaint("first", "First complaint")
+    second = Complaint("second", "Second complaint")
+    assert first.agent_name == "first" and first.text == "First complaint"
+    assert second.agent_name == "second" and second.text == "Second complaint"
+    assert type(first.id) is int and type(second.id) is int
+    assert first.id > max(earlier_ids, default=-1)
+    assert second.id > first.id
+    assert first.status == second.status == "open"
+    first_id, second_id = first.id, second.id
+    route_id = _post_new_complaint("Identity route check", "Identity spans every construction path.")
+    assert route_id > second_id
+    assert first.id == first_id and second.id == second_id
+
+
+def test_seed_complaints_have_distinct_ids():
+    ids = [complaint.id for complaint in SEED_COMPLAINTS]
+    assert all(type(identity) is int for identity in ids)
+    assert len(set(ids)) == len(ids)
+    created = [Complaint("Seed identity check", "The counter continues after seeding.") for _ in range(3)]
+    previous = max(ids, default=-1)
+    for complaint in created:
+        assert type(complaint.id) is int and complaint.id > previous
+        previous = complaint.id
+
+
+def _card_has_control(document, card, complaint_id: int, action: str) -> bool:
+    return any(
+        any(card in submit.ancestors
+            and (_normalized_text(submit).casefold() == action
+                 or (submit.attr("value") or "").casefold() == action)
+            for submit in submits)
+        for _, _, submits in _post_forms(document, f"/complaints/{complaint_id}/{action}")
+    )
+
+
+def _board_order() -> tuple[int, ...]:
+    response = client.get("/complaints", follow_redirects=False)
+    assert response.status_code == 200
+    document = parse(response.text)
+    cards = document.select(".card")
+    located = []
+    for complaint in models.complaints:
+        if complaint.status == "archived":
+            continue
+        assert complaint.status in {"open", "resolved"}
+        action = "resolve" if complaint.status == "open" else "reopen"
+        matching = [card for card in cards
+                    if complaint.agent_name in _normalized_text(card)
+                    and complaint.text in _normalized_text(card)
+                    and _card_has_control(document, card, complaint.id, action)]
+        assert len(matching) == 1, f"complaint {complaint.id} needs one card with its {action} control"
+        card = matching[0]
+        labels = set()
+        for node in card.select("*"):
+            # Read the complete outer label, including nested inline markup.
+            if any(isinstance(parent, Element) and parent != card and (parent.tag in {"span", "output"}
+                   or parent.attr("role") == "status" or "badge" in (parent.attr("class") or "").split())
+                   for parent in node.ancestors):
+                continue
+            if _is_visible(node) and _normalized_text(node) in {"Open", "Resolved"}:
+                labels.add(_normalized_text(node))
+        assert labels == {complaint.status.capitalize()}, f"card state disagrees with complaint {complaint.id}"
+        located.append((cards.index(card), complaint.id))
+    assert len({index for index, _ in located}) == len(located)
+    return tuple(identity for _, identity in sorted(located))
+
+
+def _transition(complaint_id: int, action: str) -> None:
+    before = _snapshot()
+    order = _board_order()
+    response = client.post(f"/complaints/{complaint_id}/{action}", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/complaints"
+    expected = dict(before)
+    expected[complaint_id] = (*before[complaint_id][:-1], "resolved" if action == "resolve" else "open")
+    assert _snapshot() == expected, "only the target complaint's status may change"
+    assert _board_order() == order, f"{action} changed the board order"
 
 
 def test_resolve_route_marks_complaint_resolved_and_redirects():
     complaint_id = _post_new_complaint("Resolve Check", "Needs resolving.")
-
-    response = client.post(
-        f"/complaints/{complaint_id}/resolve", follow_redirects=False
-    )
-    assert response.status_code == 303
-    assert response.headers["location"] == "/complaints"
-
-    document = parse(client.get("/complaints").text)
-    cards = [" ".join(card.text.split()) for card in document.select(".card")]
-    matching = [text for text in cards if "Resolve Check" in text]
-    assert matching, "posted complaint not found on the board"
-    assert any("Resolved" in text for text in matching)
+    _transition(complaint_id, "resolve")
 
 
 def test_reopen_route_marks_complaint_open_and_redirects():
     complaint_id = _post_new_complaint("Reopen Check", "Needs reopening.")
-    client.post(f"/complaints/{complaint_id}/resolve", follow_redirects=False)
-
-    response = client.post(
-        f"/complaints/{complaint_id}/reopen", follow_redirects=False
-    )
-    assert response.status_code == 303
-    assert response.headers["location"] == "/complaints"
-
-    document = parse(client.get("/complaints").text)
-    cards = [" ".join(card.text.split()) for card in document.select(".card")]
-    matching = [text for text in cards if "Reopen Check" in text]
-    assert matching, "posted complaint not found on the board"
-    assert any("Open" in text for text in matching)
-
-
-def _board_positions(names: tuple[str, str]) -> tuple[int, int]:
-    document = parse(client.get("/complaints").text)
-    cards = [" ".join(card.text.split()) for card in document.select(".card")]
-    return tuple(
-        next(i for i, text in enumerate(cards) if name in text) for name in names
-    )
+    _transition(complaint_id, "resolve")
+    _transition(complaint_id, "reopen")
 
 
 def test_resolve_reopen_does_not_reorder_the_board():
-    _post_new_complaint("Order Check One", "First of the pair.")
+    first_id = _post_new_complaint("Order Check One", "First of the pair.")
     _post_new_complaint("Order Check Two", "Second of the pair.")
-    names = ("Order Check One", "Order Check Two")
-
-    before = _board_positions(names)
-    assert before[0] < before[1]
-
-    first_id = models.complaints[-2].id
-    client.post(f"/complaints/{first_id}/resolve", follow_redirects=False)
-    client.post(f"/complaints/{first_id}/reopen", follow_redirects=False)
-
-    after = _board_positions(names)
-    assert after == before
+    _transition(first_id, "resolve")
+    _transition(first_id, "reopen")

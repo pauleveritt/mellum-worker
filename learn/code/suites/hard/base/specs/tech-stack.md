@@ -19,7 +19,8 @@
   `@migrations()` decorator, one function per migration, named as the roadmap
   names it, and applied with `uv run --frozen sqlite-utils migrate data.db`. sqlite-utils runs each in a transaction and records it in
   `_sqlite_migrations`; re-running is a no-op. Do not apply schema changes
-  with ad-hoc `sqlite3`, and never change or delete ticket rows.
+  with ad-hoc `sqlite3`. Do not change or delete ticket rows except for the
+  `resolved_at` backfill explicitly required by the roadmap.
 
 `visits(id INTEGER PRIMARY KEY, agent TEXT NOT NULL, date TEXT NOT NULL, minutes INTEGER NOT NULL, ticket_id INTEGER)`
 
@@ -35,3 +36,6 @@
 | `migrations.py` | The `agentclinic` migration set | Applied with `uv run --frozen sqlite-utils migrate data.db` |
 | `templates/` | `base.html` (the shared layout), `home.html`, `complaints.html` | Jinja2: extend the layout, fill a block |
 | `tests/` | The project's own tests, starting with `test_home.py` | Run with the test command; `TestClient` in process, never a server |
+
+Optional Python helper modules and packages may accompany this layout.
+The `migrations/` directory may hold migration helpers.

@@ -141,7 +141,8 @@ def test_hard_grader_passes_the_known_good_build_in_any_module_order(tmp_path):
     # Phase 5 used to archive a seeded complaint that Phase 2 expects on the board, so Hard's
     # grade held only because pytest runs the modules alphabetically (2026-11-06 review).
     suite = _suite("hard")
-    shutil.copytree(suite.root / "base", tmp_path, dirs_exist_ok=True)
+    shutil.copytree(suite.root / "base", tmp_path, dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns(".venv", "__pycache__"))
     shutil.copytree(suite.root / "fixtures" / "known-good", tmp_path, dirs_exist_ok=True)
     shutil.copytree(suite.tests, tmp_path / "grader_tests")
     order = ["test_phase5.py", "test_phase2_board.py", "test_phase4_resolve_reopen.py", "test_phase1_home.py"]
@@ -180,3 +181,37 @@ def test_easy_phase1_acceptance_states_every_phase1_requirement():
                  "own title", "hero", "welcom", "uv run --frozen python app.py", "reload",
                  'if __name__ == "__main__"'):
         assert item in acceptance, f"Easy Phase 1 Acceptance does not state {item!r}"
+
+
+@pytest.mark.parametrize('variant', ['joined', 'split'])
+def test_active_medium_variants_use_only_phase_and_spec_pointers(variant):
+    root = harness.load_variant(_suite('medium'), variant)
+    for number, path in enumerate(sorted((root / 'prompts').glob('*.md')), 1):
+        prompt = path.read_text()
+        lines = [line for line in prompt.splitlines() if line.strip()]
+        pointer = f'specs/phase-{number}.md' if variant == 'split' else 'specs/roadmap.md'
+        assert len(lines) <= 4, prompt
+        assert pointer in prompt
+        assert re.match(r'^Implement Phase \d+ — .+\.$', lines[0])
+        assert 'uv run' not in prompt
+
+
+@pytest.mark.parametrize('name', SUITES)
+def test_layout_explicitly_accepts_optional_python_helpers(name, tmp_path):
+    suite = _suite(name)
+    (tmp_path / 'helpers').mkdir()
+    (tmp_path / 'helpers/rendering.py').write_text('def render():\n    return \"ready\"\n')
+    report = harness.layout_report(tmp_path, {}, suite.layout)
+    assert report['created'] == ['helpers/rendering.py']
+    assert report['out_of_layout'] == []
+
+
+@pytest.mark.parametrize('name', SUITES)
+def test_expected_ids_describe_every_declared_hidden_check(name):
+    import ast
+    suite = _suite(name)
+    declared = {f'grader_tests/{path.name}::{node.name}'
+                for path in suite.tests.glob('test_*.py')
+                for node in ast.parse(path.read_text()).body
+                if isinstance(node, ast.FunctionDef) and node.name.startswith('test_')}
+    assert set(suite.expected) == declared

@@ -85,6 +85,19 @@ looks for:
 - **`## Persuasion → enforcement`**: which Pi extension hook the cycle uses and
   what it guarantees, as opposed to what prompt text merely asks for.
 
+`For Andre` is the first level-two section, outside fenced examples. All three
+sections contain an assessment, not an empty heading. Before proposing prompt
+text, assess the applicable Pi hooks from the extension-surface survey. Name
+the hook and its guarantee; when no Pi hook applies, explain why and identify
+the mechanism that enforces the behavior instead. Review verifies that choice;
+the document checker verifies structure and length.
+
+Each implementation plan also carries a non-empty `## Close` section. It links
+the [branch/worktree procedure](#branches-and-worktrees) and schedules the squash
+into `integration`, verifies the resulting tree, then removes the cycle worktree
+and branch. Use the owning tool to clean up a managed worktree, and run cleanup
+from a retained checkout. Keep the main checkout's reference branch untouched.
+
 Say it once. Detail that a reader does not need to act goes to a linked
 research note or a sibling evidence directory, not into the spec or plan.
 
@@ -214,6 +227,8 @@ Before closing a feature cycle or finishing its branch:
    `superseded`, and move it to `docs/superpowers/plans/archive/`.
 6. Run `node --test tests/docs-caps.test.mjs` and `npm test`, and reconcile
    `[Unreleased]` with commits since the latest release tag.
+7. Squash-merge the cycle into `integration` and verify tree equality before
+   removing its worktree and branch, following [Branches and worktrees](#branches-and-worktrees).
 
 A feature cycle does not require a release tag to close. When releasing, the
 tag, package version, README install lines and changelog must agree.

@@ -63,7 +63,27 @@ test("the roadmap trifecta: ROADMAP.md, BACKLOG.md and ARCHIVE.md, and no per-ph
 // three sections a reader (Andre) looks for first. Earlier documents keep the 400-line caps above.
 const SHAPE_FROM = "2026-11-07";
 const SHAPE = { specs: 100, plans: 150, research: 150 };
-const SECTIONS = [/^## For Andre\b/m, /^## Ladder run\b/m, /^## Persuasion (→|->) enforcement\b/m];
+const SECTIONS = [/^For Andre$/, /^Ladder run$/, /^Persuasion (→|->) enforcement$/];
+
+function documentSections(text) {
+	const sections = [];
+	let current = null, fence = null;
+	const content = text.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, "");
+	for (const line of content.split(/\r?\n/)) {
+		const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+		if (fence) {
+			if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2].trim()) fence = null;
+			continue;
+		}
+		if (marker) { fence = marker[1]; continue; }
+		const heading = line.match(/^## (.+?)(?: +#+)?\s*$/);
+		if (heading) {
+			current = { title: heading[1], body: [] };
+			sections.push(current);
+		} else if (current) current.body.push(line);
+	}
+	return sections;
+}
 
 test("documents from the re-boot on are short and carry For Andre, Ladder run and Persuasion → enforcement", () => {
 	for (const [kind, cap] of Object.entries(SHAPE)) {
@@ -72,7 +92,13 @@ test("documents from the re-boot on are short and carry For Andre, Ladder run an
 		for (const f of readdirSync(resolve(ROOT, dir)).filter((f) => f.endsWith(".md") && f.slice(0, 10) >= SHAPE_FROM)) {
 			const text = read(`${dir}/${f}`);
 			assert.ok(lines(text) <= cap, `${kind} ${f} is ${lines(text)} lines (cap ${cap})`);
-			for (const s of SECTIONS) assert.match(text, s, `${kind} ${f} has no section matching ${s}`);
+			const sections = documentSections(text);
+			assert.equal(sections[0]?.title, "For Andre", `${kind} ${f}: first section must be For Andre`);
+			for (const pattern of kind === "plans" ? [...SECTIONS, /^Close$/] : SECTIONS) {
+				const section = sections.find((s) => pattern.test(s.title));
+				assert.ok(section, `${kind} ${f} has no section matching ${pattern}`);
+				assert.ok(section.body.join("\n").trim(), `${kind} ${f}: ${section.title} section is empty`);
+			}
 		}
 	}
 });

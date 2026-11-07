@@ -76,9 +76,9 @@ Three things make a score mean something:
   copy of `learn/code/profile/`, plus `--no-extensions --no-skills
   --no-context-files --no-approve`, so your `~/.pi` and this repo's
   `AGENTS.md` stay out of it.
-- **Hidden tests.** A task's tests are copied into the workspace only after
-  the child has exited. Until then the model cannot read what it will be
-  graded on.
+- **Hidden tests.** After the child exits, trusted tests grade disposable
+  application copies from an external directory. Submitted pytest hooks,
+  dependency files and printed output cannot award hidden passes.
 
 Your mini harness is those three, in order. From the repo, with the server
 running (Linux / macOS):
@@ -93,10 +93,20 @@ cp -R "$repo/learn/code/profile" "$run/profile"
 (cd "$run/workspace" && PI_CODING_AGENT_DIR="$run/profile" pi -p --no-approve \
   --no-extensions --no-skills --no-prompt-templates --no-themes --no-context-files \
   --provider llamacpp --model Mellum2.1-12B-A2.5B-Thinking "$(cat "$suite/prompts/01.md")")
-# 3. Score it: the tests arrive only after Pi has exited.
-cp -R "$suite/grader" "$run/workspace/grader_tests"
-(cd "$run/workspace" && PYTHONPATH=. uv run --with pytest pytest -q grader_tests) \
-  && echo "easy: PASS ($run)" || echo "easy: FAIL ($run)"
+# 3. Score it after Pi exits, using the trusted runner from the repository.
+SUITE_WORKSPACE="$run/workspace" uv run --with pytest python - <<'PY'
+import os
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path("learn/code").resolve()))
+import harness
+suite = harness.load_suite(harness.SUITES, "easy")
+passed, tail = harness.score_workspace(Path(os.environ["SUITE_WORKSPACE"]), suite)
+print("easy:", "PASS" if passed else "FAIL")
+if not passed:
+    print(tail)
+raise SystemExit(0 if passed else 1)
+PY
 ```
 
 That is a harness. The provided one does the same three steps and then the
@@ -106,7 +116,8 @@ things a mini one leaves out:
   `trace.jsonl`: requests, tool calls, tool errors and the final message.
 - **A run record.** `run.json` keeps the result with what it rested on:
   `passed`, `checks_ran` (did the hidden checks even run, or did they fail to
-  import?), the failed checks, `stalled`, the arm and remedies.
+  import?), structured hidden outcomes, separate `project_tests`, the grader's
+  assertion digest and execution policy, `stalled`, the arm and remedies.
 - **Bounds.** A deadline (600 seconds by default) ends a session, and
   `--stall SECONDS` ends one whose single tool call has run that long with no
   result, a foreground server. Your mini harness waits forever. When this
@@ -120,6 +131,19 @@ things a mini one leaves out:
   several (`prompts/01-*.md`, sorted by name). Several prompts run in **one
   session**: one workspace, one trace and one Pi session id, with the prompts
   sent in order. Scoring happens once, at the finish, never between prompts.
+
+**Which grade a record means.** `--specs original` selects the historical brief.
+`--grader bc5db20` or `--grader '16cf9f9^'` separately selects retained historical
+assertions and dependency inputs; the default is `current`. All bundles use the
+trusted execution policy. Old records without grader identity remain unknown;
+this does not rescore them or make unlike revisions comparable. The boundary
+prevents configuration bypass; it is not an operating-system sandbox for hostile
+Python. Project conftests can supply fixtures and generated parameters for added
+tests; submitted execution/report hooks are disabled after collection, and a
+separate inventory detects hidden tests. Immutable starter tests use the trusted
+prepared brief, including its variant, and also run without submitted hooks.
+Scoreboards group records by grader identity. Layout reports include deletions
+and remain advisory.
 
 **What the runner sends.** The runner does not start llama.cpp.
 `scripts/backend.py` owns the server; the runner copies `learn/code/profile`

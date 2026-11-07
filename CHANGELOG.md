@@ -6,6 +6,15 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **Scoreboards keep grader identities separate.** Current, historical and unknown
+  assertion bundles are displayed and grouped independently, so a changed oracle
+  cannot silently merge its results with an older one.
+
+- **Active suite briefs and layout policy agree.** Medium joined/split prompts are
+  thin phase/spec pointers, optional Python helpers are allowed explicitly, and
+  the harness guide explains trusted grading and independent brief/grader selection.
+  The standard test driver runs Python through uv in `learn/code`.
+
 - **The roadmap is three files: `ROADMAP.md`, `BACKLOG.md` and `ARCHIVE.md`.** The
   Learning Center and the M series are closed and archived; the active phases are
   Floor, Remedies and Architect, and the README's Future work section says so.
@@ -31,6 +40,11 @@ Versions match git tags; pin one in both install lines.
   prefix included: it had read 1,703 for an 11,438-token prompt.
 
 ### Added
+
+- **Explicit suite grader history.** `--grader current|bc5db20|16cf9f9^` selects
+  assertion bundles independently of `--specs`; new records identify their assertion
+  digest and execution policy, including required starter-test inputs. Old prompt/spec
+  bytes are fully materialized.
 
 - **`evals/2026-11-07-f3-smoke/`:** three Vanilla Easy sessions showing the new budget
   fields — two settled, one ended by its deadline (`completion: deadline`, 7 turns of 8 requests).
@@ -222,6 +236,38 @@ Versions match git tags; pin one in both install lines.
   current thinking (its `reasoning_content`) as a `💭` line above the tool calls.
 
 ### Fixed
+
+- **Grading accepts equivalent valid builds and rejects misleading UI.** Title
+  blocks may wrap the title element, SQL dates may use date objects, and database
+  totals may use equivalent SQLite computation. Readonly required fields, negated
+  state badges and hidden welcome text fail their written contracts.
+
+- **Project-test outcomes cannot be replaced by submitted pytest hooks.** An
+  independent collection inventory detects omitted tests; fixture and parameter
+  hooks remain usable while execution hooks cannot suppress failures. Starter
+  integrity follows the actual trusted brief variant, avoiding false failures
+  when an original brief deliberately omits a current starter test.
+
+- **Easy checks its full existing Phase 1 Acceptance.** Thirteen hidden checks now
+  cover inheritance, shared assets and title overrides, hero/welcome content, and
+  the main-guard uvicorn launcher with actual reload and bounded cleanup. Alternative
+  title/template mechanisms remain valid; project tests are graded separately.
+
+- **Hard grades real archive, database and migration behavior.** Checks require
+  exact audit transitions and rejected-request invariance, vary database rows for
+  reports, and apply migrations to pristine data before verifying definitions,
+  backfill effects and unchanged reruns. SQL filter and backfill wording is clear.
+
+- **Shared suite contracts distinguish real UI and state behavior.** Root redirects,
+  comment-only branding, disconnected controls, dropped records and global/no-op
+  transitions fail. Checks preserve the original display order and accept valid
+  newest-first boards and per-instance timestamp initialization.
+
+- **Trusted, separate grading.** Hidden checks run outside submitted workspaces on
+  fresh copies, with suite dependency inputs and structured outcomes; submitted
+  pytest hooks/configuration and forged output cannot award hidden passes. Project
+  tests run separately, and required starter tests cannot vanish or be weakened.
+  Quality checks use disposable copies; layout reports also name deleted paths.
 
 - **The scoreboard shows one vocabulary for renamed units.** Guard units were
   renamed (e.g. `guard/break-repeat-loops` → `guard/repeat-loops`), but recorded

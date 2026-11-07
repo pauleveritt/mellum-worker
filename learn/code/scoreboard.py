@@ -108,6 +108,7 @@ def entry_from_run(run_dir, model: str | None = None) -> dict:
         "id": rid,
         "date": _date_from(run_dir, rid),
         "suite": rec.get("suite"),
+        "grader": rec.get("grader"),
         "model": mdl,
         "arm": rec.get("arm"),
         "stack": stack_label(rec),
@@ -154,11 +155,24 @@ def load_entries(board) -> list[dict]:
     return out
 
 
+def _grader_key(entry):
+    identity = entry.get("grader") or {}
+    fields = ("revision", "assertion_digest", "execution_policy")
+    if not all(isinstance(identity.get(field), str) and identity[field] for field in fields):
+        return ("unknown", "", "")
+    return tuple(identity[field] for field in fields)
+
+
+def _grader_label(key):
+    revision, digest, policy = key
+    return "unknown grader" if not digest else f"{revision} / {digest[:12]} / {policy}"
+
+
 def leaderboard(entries) -> dict:
-    """Group by (suite, model, stack-names); the record is the fewest-turn pass, then least wall."""
+    """Group by (suite, model, stack-names, grader); the record is the fewest-turn pass, then least wall."""
     groups: dict[tuple, list[dict]] = {}
     for e in entries:
-        key = (e.get("suite"), e.get("model"), tuple(e.get("stack") or ()))
+        key = (e.get("suite"), e.get("model"), tuple(e.get("stack") or ()), _grader_key(e))
         groups.setdefault(key, []).append(e)
     board = {}
     for key, runs in groups.items():
@@ -216,17 +230,17 @@ def _record_rows(entries) -> list[str]:
     with the old, ranked by pass rate, then fewest turns, then least wall."""
     vgroups: dict[tuple, list[dict]] = {}
     for e in entries:
-        key = (e.get("model"), tuple(e.get("stack") or ()), e.get("version") or "—")
+        key = (e.get("model"), tuple(e.get("stack") or ()), e.get("version") or "—", _grader_key(e))
         vgroups.setdefault(key, []).append(e)
     rows = []
-    for (model, stack, ver), runs in vgroups.items():
+    for (model, stack, ver, grader), runs in vgroups.items():
         passes = [r for r in runs if r.get("passed")]
         best = min(passes, key=lambda r: (r.get("turns") or 1 << 30, r.get("wall") or 1e18)) if passes else None
         bt = best["turns"] if best else "—"
         bw = _fmt_wall(best["wall"]) if best else "—"
         pass_rate = len(passes) / len(runs) if runs else 0.0
         rank = (-pass_rate, best["turns"], best["wall"]) if best else (-pass_rate, 1 << 30, 1e18)
-        rows.append((rank, f"| {_model_md(model)} | {_stack_md(stack)} | `{ver}` | {len(passes)}/{len(runs)} | {bt} | {bw} |"))
+        rows.append((rank, f"| {_model_md(model)} | {_stack_md(stack)} | `{ver}` | {_grader_label(grader)} | {len(passes)}/{len(runs)} | {bt} | {bw} |"))
     return [row for _, row in sorted(rows)]
 
 
@@ -237,7 +251,7 @@ def _run_rows(entries) -> list[str]:
         res = "pass" if e.get("passed") else "fail"
         out.append(
             f"| {e.get('date') or '—'} | {_model_md(e.get('model'))} | {_stack_md(e.get('stack'))} | "
-            f"{res} | {e.get('turns')} | {_fmt_wall(e.get('wall'))} | `{e.get('id')}` |"
+            f"{_grader_label(_grader_key(e))} | {res} | {e.get('turns')} | {_fmt_wall(e.get('wall'))} | `{e.get('id')}` |"
         )
     return out
 
@@ -271,20 +285,19 @@ def render_page(entries) -> str:
         if not sub:
             lines += ["No runs recorded yet.", ""]
             continue
-        passes = sum(1 for e in sub if e.get("passed"))
         lines += [
-            f"{len(sub)} runs, {passes} passed.",
+            f"{len(sub)} runs, separated by grader identity below.",
             "",
-            "**Records** — the fastest pass per stack and version.",
+            "**Records** — the fastest pass per stack, version and grader identity.",
             "",
-            "| model | stack | version | pass | best turns | best wall |",
-            "|---|---|---|---|---|---|",
+            "| model | stack | version | grader | pass | best turns | best wall |",
+            "|---|---|---|---|---|---|---|",
             *_record_rows(sub),
             "",
             "**All runs** — newest first.",
             "",
-            "| date | model | stack | result | turns | wall | run |",
-            "|---|---|---|---|---|---|---|",
+            "| date | model | stack | grader | result | turns | wall | run |",
+            "|---|---|---|---|---|---|---|---|",
             *_run_rows(sub),
         ]
     return "\n".join(lines) + "\n"
@@ -300,10 +313,10 @@ def consolidate(board, page) -> Path:
 def _show(entries, suite=None) -> str:
     board = leaderboard([e for e in entries if suite is None or e.get("suite") == suite])
     out = ["Records (fastest pass per config) — turns / wall:"]
-    for (s, model, stack), v in sorted(board.items()):
+    for (s, model, stack, grader), v in sorted(board.items()):
         best = v["best"]
         bt = f"{best['turns']}t {_fmt_wall(best['wall'])}" if best else "— (no pass)"
-        out.append(f"  {s:7} {_stack_text(stack)[:46]:46} {v['passed']}/{v['total']:<3} {bt}")
+        out.append(f"  {s:7} {_stack_text(stack)[:46]:46} {v['passed']}/{v['total']:<3} {bt} [{_grader_label(grader)}]")
     return "\n".join(out)
 
 

@@ -24,6 +24,8 @@ this folder; the project's notes are in `AGENTS.md`.
 - `templates/` — Jinja2 templates.
 - `tests/` — pytest tests.
 
+- Other Python modules or packages — optional local helpers.
+
 ## Phase 1 — Home Page
 
 - `app.py` holds the FastAPI application as `app`.

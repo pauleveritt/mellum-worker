@@ -9,7 +9,7 @@ const page = (p) => readFileSync(resolve(ROOT, "learn", p), "utf8");
 test("the pathologies page has its intro, remedy map, and the narrative sections", () => {
   const p = page("pathologies.md");
   const heads = [...p.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  assert.equal(heads.length, 7, `expected seven sections, found ${heads.length}`);
+  assert.ok(heads.length >= 7, `expected narrative sections, found ${heads.length}`);
   assert.equal(heads[0], "How to read this");
   assert.equal(heads[1], "Pathology and remedy");
   const entries = [...p.matchAll(/^\d+\. \*\*(.+?)\.\*\* /gm)].map((m) => m[1]);

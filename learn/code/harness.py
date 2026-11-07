@@ -61,6 +61,8 @@ class Suite:
     layout: dict | None = None
     # Caps on run.json fields (record.json): a failure that lives in the record.
     record: dict | None = None
+    grader_revision: str = "current"
+    grader_base: Path | None = None
 
     @property
     def prompt(self) -> str:
@@ -484,8 +486,9 @@ def layout_report(root: Path, pristine: dict[str, str],
     modified = sorted(p for p in now
                       if p in pristine and now[p] != pristine[p]
                       and not _matches(p, ignore))
-    outside = sorted(p for p in created + modified if not _matches(p, allow))
-    return {"created": created, "modified": modified, "out_of_layout": outside}
+    deleted = sorted(p for p in set(pristine) - set(now) if not _matches(p, ignore))
+    outside = sorted(p for p in created + modified + deleted if not _matches(p, allow))
+    return {"created": created, "modified": modified, "deleted": deleted, "out_of_layout": outside}
 
 
 def resolve_pi_binary(pi_binary: str) -> str:
@@ -652,6 +655,7 @@ def run_suite(
         prompts = [_read_prompt(path)
                    for path in sorted((variant / "prompts").glob("*.md"))]
     pristine = file_hashes(workspace) if suite.layout is not None else None
+    (run / 'brief.json').write_text(json.dumps({'variant': specs}) + '\n')
     prompts = (["\n\n".join(prompts)] if single_prompt else list(prompts))
     (run / "prompt.txt").write_text("\n\n".join(prompts) + "\n")
     trace = run / "trace.jsonl"
@@ -780,22 +784,34 @@ def grader_touched(run: Path, suite: Suite) -> bool:
 def grade_env(workspace: Path) -> dict[str, str]:
     """A grader subprocess's environment: the workspace on PYTHONPATH, and no
     VIRTUAL_ENV — uv warns when it points at a venv other than the run's."""
-    return {k: v for k, v in os.environ.items()
-            if k != "VIRTUAL_ENV"} | {"PYTHONPATH": str(workspace)}
+    from grading import grade_env as trusted_env
+    return trusted_env(workspace) | {"PYTHONPATH": str(workspace)}
 
 
-def grade(workspace: Path) -> list[tuple[str, bool, str]]:
+
+def grade(workspace: Path, suite: Suite | None = None) -> list[tuple[str, bool, str]]:
+    from grading import _application, _base
+    with tempfile.TemporaryDirectory(prefix="mellum-quality-") as scratch:
+        copy = Path(scratch) / "application"
+        _application(Path(workspace), copy, _base(suite) if suite else None)
+        return _grade_workspace(copy)
+
+
+def _grade_workspace(workspace: Path) -> list[tuple[str, bool, str]]:
     workspace = Path(workspace)
     (workspace / "pyrefly.toml").write_text(
         'project-includes = [\n    "**/*.py",\n]\n'
         'project-excludes = [\n    "tests/**",\n]\n')
     def tool(name: str, *args: str) -> list[str]:
         if (workspace / "pyproject.toml").is_file():
-            return ["uv", "run", "--with", name, name, *args]
-        return ["uvx", name, *args]
+            command = ["uv", "--no-config", "run", "--project", str(workspace)]
+            if (workspace / "uv.lock").is_file():
+                command.append("--frozen")
+            return [*command, "--with", name, name, *args]
+        return ["uv", "--no-config", "run", "--no-project", "--with", name, name, *args]
 
     commands = (
-        ("ruff", tool("ruff", "check", "--select", "F,E9", "--extend-exclude", "tests", "--extend-exclude", "grader_tests", ".")),
+        ("ruff", tool("ruff", "check", "--isolated", "--select", "F,E9", "--extend-exclude", "tests", "--extend-exclude", "grader_tests", ".")),
         ("pyrefly", tool("pyrefly", "check", ".")),
         ("complexipy", tool("complexipy", "--max-complexity-allowed", "10",
                             "--exclude", "tests", "--exclude", "grader_tests", ".")),
@@ -956,11 +972,16 @@ def report(run: Path) -> dict:
 
 
 def score(run: Path, suite: Suite) -> tuple[bool, str]:
-    return score_workspace(Path(run) / "workspace", suite)
+    passed, tail, _, _ = score_details(run, suite)
+    return passed, tail
 
 
 def score_details(run: Path, suite: Suite) -> tuple[bool, str, list[str], bool]:
-    return score_workspace_details(Path(run) / "workspace", suite)
+    from grading import evaluate
+    selector = Path(run) / 'brief.json'
+    variant = json.loads(selector.read_text()).get('variant') if selector.is_file() else None
+    result = evaluate(Path(run) / 'workspace', suite, variant=variant)
+    return result['passed'], result['tail'], result['missing'], result['checks_ran']
 
 
 def check_groups(expected, missing) -> dict[str, dict[str, int]]:
@@ -978,30 +999,10 @@ def check_groups(expected, missing) -> dict[str, dict[str, int]]:
 def score_workspace_details(
     workspace: Path, suite: Suite
 ) -> tuple[bool, str, list[str], bool]:
-    workspace = Path(workspace)
-    target = workspace / "grader_tests"
-    if target.exists():
-        shutil.rmtree(target)
-    shutil.copytree(suite.tests, target)
-    command = (
-        ["uv", "run", "--with", "pytest", "pytest", "-q", "-rA", "grader_tests"]
-        if (workspace / "pyproject.toml").is_file()
-        else ["uvx", "pytest", "-q", "-rA", "grader_tests"]
-    )
-    result = subprocess.run(
-        command, cwd=workspace, capture_output=True, text=True, check=False,
-        env={**os.environ, "PYTHONPATH": str(workspace)},
-    )
-    output = (result.stdout + result.stderr).strip()
-    # A collection error (or no tests collected) means the hidden checks never
-    # executed -- usually because the workspace lacks a module they import. That
-    # is still a failure, but it must not read as "every check failed".
-    checks_ran = result.returncode in (0, 1) and "errors during collection" not in output
-    missing = sorted(test for test in suite.expected if f"PASSED {test}" not in output)
-    lines = output.splitlines()[-20:]
-    if missing:
-        lines.append("missing expected tests: " + ", ".join(missing))
-    return result.returncode == 0 and not missing, "\n".join(lines), missing, checks_ran
+    from grading import evaluate
+    result = evaluate(workspace, suite)
+    return result['passed'], result['tail'], result['missing'], result['checks_ran']
+
 
 
 def score_workspace(workspace: Path, suite: Suite) -> tuple[bool, str]:
@@ -1033,8 +1034,12 @@ def _run_sessions(
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
                             context_files=context_files)
-        grades = grade(run_dir / "workspace") if grade_run else []
-        tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
+        grades = grade(run_dir / "workspace", suite=suite) if grade_run else []
+        from grading import evaluate
+        evaluation = evaluate(run_dir / 'workspace', suite, variant=specs)
+        tests_passed = evaluation['hidden_passed']
+        tail, missing, checks_ran = (evaluation['tail'], evaluation['missing'], evaluation['checks_ran'])
+        project_tests = evaluation['project_tests']
         failed_checks = len(missing)
         quality_ok = all(
             ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
@@ -1042,7 +1047,7 @@ def _run_sessions(
         contaminated = (run_dir / "contaminated").exists()
         metrics = report(run_dir)
         over = record_failures(metrics, suite.record)
-        passed = tests_passed and quality_ok and not contaminated and not over
+        passed = tests_passed and project_tests["passed"] and quality_ok and not contaminated and not over
         leaked_file = run_dir / "leaked.json"
         if leaked_file.is_file():
             metrics["leaked"] = json.loads(leaked_file.read_text())
@@ -1050,7 +1055,9 @@ def _run_sessions(
         if layout_file.is_file():
             metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
         model_file = run_dir / "model.txt"
+        from grader_history import grader_identity
         record = {
+            "grader": grader_identity(suite),
             "suite": suite.name,
             "arm": arm,
             "model": model_file.read_text().strip() if model_file.is_file() else None,
@@ -1067,6 +1074,8 @@ def _run_sessions(
             "passed": passed,
             "tests_passed": tests_passed,
             "quality_ok": quality_ok,
+            "project_tests": project_tests,
+            "hidden_reports": evaluation["hidden_reports"],
             "contaminated": contaminated,
             "failed_checks": failed_checks,
             "checks_ran": checks_ran,
@@ -1102,6 +1111,7 @@ def _print_task(
 def run_suites(
     names: list[str],
     *,
+    grader: str = "current",
     suites_dir: Path = SUITES,
     runs_dir: Path = RUNS,
     pi_binary: str = "pi",
@@ -1137,7 +1147,8 @@ def run_suites(
                          f"available: {', '.join(available)}")
     suites_passed = sessions_passed = sessions_total = 0
     for name in names:
-        suite = load_suite(suites_dir, name)
+        from grader_history import select_grader
+        suite = select_grader(load_suite(suites_dir, name), grader)
         results = _run_sessions(
             suite, runs_dir=runs_dir, pi_binary=pi_binary,
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
@@ -1194,6 +1205,8 @@ def build_parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="run one eval suite or all of them")
     qualify_p = sub.add_parser("qualify", help="prove a suite's grader both ways")
     qualify_p.add_argument("--suite", required=True)
+    qualify_p.add_argument("--grader", default="current")
+    run.add_argument("--grader", default="current", help="assertion bundle: current, bc5db20 or 16cf9f9^")
     qualify_p.add_argument("--suites-dir", type=Path, default=SUITES)
     run.add_argument("--suite", required=True, help="a suite name, or all")
     run.add_argument("--suites-dir", type=Path, default=SUITES)
@@ -1241,9 +1254,10 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     parser = build_parser()
     args = parser.parse_args(argv)
+    from grader_history import select_grader
 
     if args.command == "qualify":
-        suite = load_suite(args.suites_dir, args.suite)
+        suite = select_grader(load_suite(args.suites_dir, args.suite), args.grader)
         ok, results = qualify(suite)
         for name, passed in results.items():
             print(f"{name}: {'PASS' if passed else 'FAIL'}")
@@ -1259,7 +1273,7 @@ def main(argv: list[str] | None = None) -> int:
     args.profile = Path(args.profile).resolve()
     args.suites_dir = Path(args.suites_dir).resolve()
     if args.suite == "all":
-        run_suites(["all"], suites_dir=args.suites_dir, runs_dir=args.runs_dir,
+        run_suites(["all"], grader=args.grader, suites_dir=args.suites_dir, runs_dir=args.runs_dir,
                    pi_binary=args.pi_binary, grade_run=args.grade,
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
                    single_prompt=args.single_prompt, specs=args.specs,
@@ -1267,7 +1281,7 @@ def main(argv: list[str] | None = None) -> int:
                    remedies=remedies, extras=extras, context_files=args.context_files)
         return 0
 
-    suite = load_suite(args.suites_dir, args.suite)
+    suite = select_grader(load_suite(args.suites_dir, args.suite), args.grader)
     provider, model = profile_pin(args.profile)
     if args.dry_run:
         settings = arm_settings(args.arm)
