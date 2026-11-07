@@ -50,6 +50,7 @@ entries below.
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
 | 18 | A defective oracle | none — repair assertions with wrong and valid alternative builds |
 | 19 | The workspace controls its examiner | none — trusted dependencies/configuration and structured results |
+| 20 | The default, not the hook | none yet — a check that exercises the override is an R.1 candidate |
 
 ## It says it is done and it is not
 
@@ -202,6 +203,16 @@ entries below.
     ([run](lessons/index.md)). **Answer:** a fact is a reminder, not
     an enforcement; the guard is the enforcement, and it stays dormant until an
     arm needs it.
+
+20. **The default, not the hook.** The spec asks for a default that a later part
+    can override, and the run writes the default as a literal, so the default
+    passes and the override has nothing to override. **Seen:** all three counted
+    Vanilla Easy sessions of the F.5 smoke wrote `<title>AgentClinic</title>` into
+    `base.html` with no block, and all three miss
+    `test_extending_page_can_override_layout_title`
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-07-f5-smoke/table.md)). **Answer:** none yet as a
+    unit; a check that renders an extending page and reads its title is a
+    candidate for R.1.
 
 ## It ships a defect it never ran
 

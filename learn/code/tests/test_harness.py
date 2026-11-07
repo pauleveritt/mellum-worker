@@ -1375,3 +1375,424 @@ def test_a_killed_harness_takes_its_sessions_processes_with_it(tmp_path):
         holder.kill()
         if marker.exists():
             harness.kill_tree(int(marker.read_text()))
+
+
+def test_session_path_drops_the_harness_venv(tmp_path):
+    venv = tmp_path / "harness-venv"
+    path = os.pathsep.join([str(venv / "bin"), "/usr/local/bin", str(Path(sys.prefix) / "bin"), "/usr/bin"])
+    entries = harness.session_path(path, str(venv)).split(os.pathsep)
+    assert str(venv / "bin") not in entries
+    assert str(Path(sys.prefix) / "bin") not in entries or sys.prefix == sys.base_prefix
+    assert [e for e in entries if e in ("/usr/local/bin", "/usr/bin")] == ["/usr/local/bin", "/usr/bin"]
+
+
+def test_a_session_does_not_inherit_the_harness_venv_on_path(tmp_path, monkeypatch):
+    # `uv run` puts the harness venv first on PATH; a session that inherits it runs the
+    # repository's python and uvicorn instead of the workspace's (LC.41).
+    venv = tmp_path / "harness-venv"
+    monkeypatch.setenv("VIRTUAL_ENV", str(venv))
+    monkeypatch.setenv("PATH", os.pathsep.join([str(venv / "bin"), str(Path(sys.prefix) / "bin"),
+                                                "/usr/bin", "/bin", "/usr/sbin", "/sbin"]))
+    run_dir = run(tmp_path, binary="fake-pi-path.sh")
+    entries = (run_dir / "workspace" / "path.txt").read_text().strip().split(os.pathsep)
+    assert str(venv / "bin") not in entries
+    assert str(Path(sys.prefix) / "bin") not in entries or sys.prefix == sys.base_prefix
+    assert "/usr/bin" in entries and "/bin" in entries
+
+
+def test_a_listener_on_a_guarded_port_refuses_the_session(tmp_path, monkeypatch):
+    # A stray server on the suite app's port answered for the model for 13 hours (LC.41).
+    import socket
+    listener = socket.socket()
+    listener.bind(("127.0.0.1", 0))
+    listener.listen()
+    port = listener.getsockname()[1]
+    monkeypatch.setattr(harness, "GUARDED_PORTS", (port,))
+    try:
+        with pytest.raises(SystemExit, match=str(port)):
+            run(tmp_path)
+    finally:
+        listener.close()
+    assert not list((tmp_path / "runs").rglob("execution.json"))
+
+
+def test_a_free_guarded_port_lets_the_session_run(tmp_path, monkeypatch):
+    import socket
+    probe = socket.socket()
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+    monkeypatch.setattr(harness, "GUARDED_PORTS", (port,))
+    assert harness.guarded_listeners((port,)) == []
+    assert (run(tmp_path) / "execution.json").is_file()
+
+
+def _dry_run(runs_dir, *extra):
+    return harness.main(["run", "--suite", "add", "--suites-dir", str(SUITES), "--runs-dir", str(runs_dir),
+                         "--pi-binary", str(FIX / "fake-pi.sh"), "--dry-run", *extra])
+
+
+def test_a_runs_dir_inside_a_project_is_refused(tmp_path):
+    # uv discovers a parent pyproject.toml; LC.41's session installed into the repository's .venv.
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "pyproject.toml").write_text("[project]\nname = 'x'\n")
+    with pytest.raises(SystemExit, match="pyproject.toml"):
+        _dry_run(project / "runs" / "batch", "--host-card", str(tmp_path / "card.json"))
+
+
+def test_an_uncounted_run_inside_a_project_warns_and_runs(tmp_path, capsys):
+    # baseline.py, lesson-check.sh and improve.py write under the repository's runs/ (final review).
+    (tmp_path / "repo" / ".git").mkdir(parents=True)
+    assert _dry_run(tmp_path / "repo" / "runs") == 0
+    assert "inside a project" in capsys.readouterr().err
+
+
+def test_a_runs_dir_in_a_git_checkout_is_refused(tmp_path):
+    (tmp_path / "repo" / ".git").mkdir(parents=True)
+    with pytest.raises(SystemExit, match=r"\.git"):
+        _dry_run(tmp_path / "repo" / "runs", "--host-card", str(tmp_path / "card.json"))
+
+
+def test_the_default_runs_dir_is_outside_any_project(tmp_path):
+    assert harness.project_above(harness.RUNS) is None
+    assert _dry_run(tmp_path / "runs") == 0
+
+
+def test_run_json_names_the_pi_version_the_run_used(tmp_path):
+    results = harness._run_sessions(
+        harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+        pi_binary=str(FIX / "fake-pi-version.sh"), repeat=1, grade_run=False, deadline=None,
+    )
+    assert json.loads((results[0][0] / "run.json").read_text())["pi_version"] == "1.4.0"
+
+
+def test_pi_version_is_none_when_pi_cannot_say(tmp_path):
+    broken = tmp_path / "pi"
+    broken.write_text("#!/bin/sh\nexit 1\n")
+    broken.chmod(0o755)
+    assert harness.pi_version(str(broken)) is None
+    assert harness.pi_version(str(tmp_path / "missing")) is None
+
+
+# --- F.5: the session budget, enforced at a proxy -------------------------------------------
+
+def test_each_tier_carries_its_budget():
+    easy, medium, hard = (harness.load_suite(harness.SUITES, name).budget for name in ("easy", "medium", "hard"))
+    assert easy == {"max_requests": 64, "max_output_tokens": 32000, "unknown_usage_charge": 16384,
+                    "wall_safety_seconds": 1200}
+    assert medium == hard == {"max_requests": 120, "max_output_tokens": 64000, "unknown_usage_charge": 16384,
+                              "wall_safety_seconds": 1200}
+    assert harness.load_suite(SUITES, "add").budget is None
+
+
+def test_proxy_target_splits_the_profile_base_url():
+    assert harness.proxy_target("http://127.0.0.1:8001/v1") == ("http://127.0.0.1:8001/", "/v1")
+    assert harness.proxy_target("http://127.0.0.1:8001/v1/") == ("http://127.0.0.1:8001/", "/v1")
+    assert harness.proxy_target("http://127.0.0.1:8001") == ("http://127.0.0.1:8001/", "")
+
+
+def test_a_budget_spent_before_pi_exits_on_its_own_still_ends_as_budget(tmp_path):
+    # Pi can exit the moment it is refused, before a poll sees the log (review of the plan).
+    log = tmp_path / "proxy.jsonl"
+    log.write_text('{"boundary":"budget_exhausted","id":null}\n')
+    child = subprocess.Popen(["true"])
+    child.wait()
+    assert harness.wait_or_stall(child, tmp_path, tmp_path / "trace.jsonl", None, None, budget_log=log) == "budget"
+
+
+class _Upstream:
+    """A llama-server stand-in: every completion streams `tokens` output tokens with usage."""
+
+    def __init__(self, tokens=10):
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import threading
+        upstream = self
+        self.hits = 0
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers.get("content-length", 0)))
+                upstream.hits += 1
+                body = (f'data: {{"choices":[],"usage":{{"completion_tokens":{tokens}}}}}\n\n'
+                        "data: [DONE]\n\n").encode()
+                self.send_response(200)
+                self.send_header("content-type", "text/event-stream")
+                self.send_header("content-length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args):
+                pass
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.port = self.server.server_address[1]
+
+    def close(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+
+def _budgeted(tmp_path, binary, budget, tokens=10):
+    upstream = _Upstream(tokens)
+    profile = tmp_path / "profile"
+    shutil.copytree(PROFILE, profile)
+    models = json.loads((profile / "models.json").read_text())
+    for provider in models["providers"].values():
+        provider["baseUrl"] = f"http://127.0.0.1:{upstream.port}/v1"     # the real profile's shape
+    (profile / "models.json").write_text(json.dumps(models))
+    try:
+        run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+                                    profile=profile, pi_binary=str(FIX / binary), budget=budget)
+    finally:
+        upstream.close()
+    return run_dir, upstream
+
+
+def _limits(requests=50, output=100000, wall=30):
+    return {"max_requests": requests, "max_output_tokens": output, "unknown_usage_charge": 16384,
+            "wall_safety_seconds": wall}
+
+
+def _proxy_gone(run_dir):
+    # Not only the pid the harness started: `node` may be a shim (Volta) whose child is the proxy.
+    pid = json.loads((run_dir / "proxy.json").read_text())["pid"]
+    with pytest.raises(ProcessLookupError):
+        os.kill(pid, 0)
+    time.sleep(0.2)
+    ps = subprocess.run(["ps", "-axo", "command="], capture_output=True, text=True).stdout
+    assert str(run_dir / "proxy.jsonl") not in ps
+
+
+def test_a_session_past_its_request_budget_ends_as_budget_and_counts(tmp_path):
+    run_dir, upstream = _budgeted(tmp_path, "fake-pi-requests.mjs", _limits(requests=3))
+    outcome = harness.execution_outcome(run_dir)
+    assert outcome["completion"] == "budget" and outcome["censored"] is False
+    assert upstream.hits == 3
+    assert (run_dir / "workspace" / "requests.txt").read_text().split() == ["3", "429"]
+    assert harness.budget_record(run_dir) == {"limits": _limits(requests=3),
+                                              "spent": {"requests": 3, "output_tokens": 30}}
+    _proxy_gone(run_dir)
+
+
+def test_a_session_past_its_output_token_budget_ends_as_budget(tmp_path):
+    run_dir, upstream = _budgeted(tmp_path, "fake-pi-requests.mjs", _limits(output=25))
+    assert harness.execution_outcome(run_dir)["completion"] == "budget"
+    assert harness.budget_record(run_dir)["spent"] == {"requests": 3, "output_tokens": 30}
+    _proxy_gone(run_dir)
+
+
+def test_a_session_that_hits_wall_safety_is_censored(tmp_path):
+    run_dir, _ = _budgeted(tmp_path, "fake-pi-slow.sh", _limits(wall=1))
+    outcome = harness.execution_outcome(run_dir)
+    assert outcome["completion"] == "wall_safety" and outcome["censored"] is True
+    assert (run_dir / "wall_safety").is_file()
+    _proxy_gone(run_dir)
+
+
+def test_a_counted_run_takes_no_deadline_or_budget_override(tmp_path):
+    for flag in (["--deadline", "5"], ["--budget", str(tmp_path / "b.json")]):
+        with pytest.raises(SystemExit):
+            harness.main(["run", "--suite", "add", "--suites-dir", str(SUITES), "--runs-dir", str(tmp_path / "r"),
+                          "--pi-binary", str(FIX / "fake-pi.sh"), "--host-card", str(tmp_path / "c.json"),
+                          "--dry-run", *flag])
+
+
+def test_a_counted_run_needs_a_suite_with_a_budget(tmp_path):
+    with pytest.raises(SystemExit, match="budget"):
+        harness.main(["run", "--suite", "add", "--suites-dir", str(SUITES), "--runs-dir", str(tmp_path / "r"),
+                      "--pi-binary", str(FIX / "fake-pi.sh"), "--host-card", str(tmp_path / "c.json")])
+
+
+def test_every_run_on_a_tier_is_budgeted_counted_or_not():
+    easy = harness.load_suite(harness.SUITES, "easy")
+    assert harness.session_budget(easy, False, None) == easy.budget
+    assert harness.session_budget(easy, True, None) == easy.budget
+    override = {**easy.budget, "max_requests": 5}
+    assert harness.session_budget(easy, False, override) == override
+    assert harness.session_budget(harness.load_suite(SUITES, "add"), False, None) is None
+
+
+def test_an_explicit_deadline_on_a_budgeted_run_ends_as_deadline(tmp_path):
+    # baseline.py's --deadline keeps its meaning; only the suite's own hang-guard is censored.
+    upstream = _Upstream()
+    profile = tmp_path / "profile"
+    shutil.copytree(PROFILE, profile)
+    models = json.loads((profile / "models.json").read_text())
+    for provider in models["providers"].values():
+        provider["baseUrl"] = f"http://127.0.0.1:{upstream.port}/v1"
+    (profile / "models.json").write_text(json.dumps(models))
+    try:
+        run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=profile,
+                                    pi_binary=str(FIX / "fake-pi-slow.sh"), budget=_limits(wall=30), deadline=1)
+    finally:
+        upstream.close()
+    outcome = harness.execution_outcome(run_dir)
+    assert outcome["completion"] == "deadline" and outcome["censored"] is False
+
+
+# --- F.5: the host gate -------------------------------------------------------------------
+
+import conformance
+
+
+def _free_port():
+    import socket
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        return probe.getsockname()[1]
+
+
+class _FakeLlama:
+    """A real process on a port, with a llama-server command line, serving /props and /slots."""
+
+    def __init__(self, tmp_path, *changes, build="b12110-cd959bae9"):
+        self.port = _free_port()
+        pins = conformance.load_pins()
+        argv = conformance.server_argv(pins, binary="llama-server", model=str(tmp_path / pins["weights"]["file"]),
+                                       port=self.port, threads=16, log=str(tmp_path / "server.log"))[1:]
+        for flag, value in changes:
+            argv[argv.index(flag) + 1] = value
+        self.child = subprocess.Popen([sys.executable, str(FIX / "fake-llama-server.py"), *argv],
+                                      env={**os.environ, "FAKE_BUILD_INFO": build},
+                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.endpoint = f"http://127.0.0.1:{self.port}"
+        for _ in range(200):
+            if conformance.server_command(self.port):
+                break
+            time.sleep(0.05)
+
+    def close(self):
+        self.child.terminate()
+        self.child.wait()
+
+
+def _card(tmp_path, server, passed=True, pins=None):
+    """A card as conformance.check records it, for the server that is live now."""
+    pins = pins or conformance.load_pins()
+    props = json.loads(subprocess.run(["curl", "-s", server.endpoint + "/props"], capture_output=True, text=True).stdout)
+    slots = json.loads(subprocess.run(["curl", "-s", server.endpoint + "/slots"], capture_output=True, text=True).stdout)
+    card = {"schema": conformance.SCHEMA, "passed": passed, "pins_digest": conformance.pins_digest(pins),
+            "items": {}, "build_info": props["build_info"], "model_path": props["model_path"],
+            "slots": [s["n_ctx"] for s in slots], "server_command": conformance.server_command(server.port)}
+    path = tmp_path / "host-card.json"
+    path.write_text(json.dumps(card))
+    return path
+
+
+@pytest.fixture
+def live(tmp_path):
+    server = _FakeLlama(tmp_path)
+    yield server
+    server.close()
+
+
+def test_the_host_gate_accepts_a_passing_card_for_the_live_server(tmp_path, live):
+    card = _card(tmp_path, live)
+    record = harness.host_gate(card, live.endpoint, conformance.load_pins())
+    assert record == {"path": str(card), "sha256": conformance.sha256_file(card), "passed": True}
+
+
+def test_the_host_gate_refuses_a_failed_card(tmp_path, live):
+    with pytest.raises(SystemExit, match="did not pass"):
+        harness.host_gate(_card(tmp_path, live, passed=False), live.endpoint, conformance.load_pins())
+
+
+def test_the_host_gate_refuses_a_card_from_another_pin_card(tmp_path, live):
+    pins = conformance.load_pins()
+    pins["tooling"]["pi"] = "1.3.0"
+    with pytest.raises(SystemExit, match="pin card"):
+        harness.host_gate(_card(tmp_path, live, pins=pins), live.endpoint, conformance.load_pins())
+
+
+@pytest.mark.parametrize("change", [("-c", "50000"), ("-ngl", "0"), ("-ctk", "f16")])
+def test_the_host_gate_refuses_a_restart_with_changed_flags(tmp_path, live, change):
+    # Same build and weights, restarted differently: the old card does not cover it (review of the plan).
+    card = _card(tmp_path, live)
+    live.close()
+    restarted = _FakeLlama(tmp_path, change)
+    try:
+        with pytest.raises(SystemExit, match="since the card"):
+            harness.host_gate(card, restarted.endpoint, conformance.load_pins())
+    finally:
+        restarted.close()
+
+
+def test_the_host_gate_refuses_another_build(tmp_path, live):
+    card = _card(tmp_path, live)
+    live.close()
+    other = _FakeLlama(tmp_path, build="b11669-620d2225c")
+    try:
+        with pytest.raises(SystemExit, match="build_info"):
+            harness.host_gate(card, other.endpoint, conformance.load_pins())
+    finally:
+        other.close()
+
+
+def test_a_run_without_a_host_card_runs_and_is_uncounted(tmp_path):
+    runs = tmp_path / "runs"
+    assert harness.main(["run", "--suite", "add", "--suites-dir", str(SUITES), "--runs-dir", str(runs),
+                         "--pi-binary", str(FIX / "fake-pi.sh")]) == 0
+    record = json.loads(next(runs.glob("*/run.json")).read_text())
+    assert (record["counted"], record["host_card"]) == (False, None)
+
+
+def test_run_json_says_whether_a_run_counted(tmp_path):
+    suite = harness.load_suite(SUITES, "add")
+    gate = {"path": "/cards/host-card.json", "sha256": "ab" * 32, "passed": True}
+    counted = harness._run_sessions(suite, runs_dir=tmp_path / "a", pi_binary=str(FIX / "fake-pi.sh"), repeat=1,
+                                    grade_run=False, deadline=None, host_card=gate)
+    uncounted = harness._run_sessions(suite, runs_dir=tmp_path / "b", pi_binary=str(FIX / "fake-pi.sh"), repeat=1,
+                                      grade_run=False, deadline=None)
+    first = json.loads((counted[0][0] / "run.json").read_text())
+    second = json.loads((uncounted[0][0] / "run.json").read_text())
+    assert (first["counted"], first["host_card"]) == (True, gate)
+    assert (second["counted"], second["host_card"]) == (False, None)
+
+
+def test_a_harness_stopped_while_the_proxy_starts_leaves_no_proxy(tmp_path, monkeypatch):
+    # main turns SIGTERM into SystemExit; one that lands while waiting for `ready` must not orphan it.
+    real = harness._jsonl
+
+    def stopped(path):
+        if Path(path).name == "proxy.jsonl":
+            raise SystemExit(143)
+        return real(path)
+
+    monkeypatch.setattr(harness, "_jsonl", stopped)
+    log = tmp_path / "proxy.jsonl"
+    with pytest.raises(SystemExit):
+        harness.start_budget_proxy(_limits(), "http://127.0.0.1:9/", log)
+    time.sleep(0.2)
+    ps = subprocess.run(["ps", "-axo", "command="], capture_output=True, text=True).stdout
+    assert str(log) not in ps
+
+
+def test_a_lan_profile_runs_without_the_proxy_and_is_still_bounded(tmp_path, capsys):
+    # The proxy forwards to loopback only; lesson-check.sh's lan-profile is not (final review).
+    profile = tmp_path / "profile"
+    shutil.copytree(PROFILE, profile)
+    models = json.loads((profile / "models.json").read_text())
+    for provider in models["providers"].values():
+        provider["baseUrl"] = "http://192.0.2.1:11485/v1"
+    (profile / "models.json").write_text(json.dumps(models))
+    run_dir = harness.run_suite(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=profile,
+                                pi_binary=str(FIX / "fake-pi-slow.sh"), budget=_limits(wall=1))
+    assert harness.execution_outcome(run_dir)["completion"] == "wall_safety"
+    assert not (run_dir / "proxy.json").exists() and harness.budget_record(run_dir) is None
+    assert "loopback" in (run_dir / "budget-unenforced").read_text()
+    assert "not enforced" in capsys.readouterr().err
+
+
+def test_a_counted_run_needs_a_loopback_server(tmp_path):
+    profile = tmp_path / "profile"
+    shutil.copytree(PROFILE, profile)
+    models = json.loads((profile / "models.json").read_text())
+    for provider in models["providers"].values():
+        provider["baseUrl"] = "http://192.0.2.1:11485/v1"
+    (profile / "models.json").write_text(json.dumps(models))
+    (tmp_path / "card.json").write_text("{}")
+    with pytest.raises(SystemExit, match="loopback"):
+        harness.main(["run", "--suite", "easy", "--runs-dir", str(tmp_path / "r"), "--profile", str(profile),
+                      "--pi-binary", str(FIX / "fake-pi.sh"), "--host-card", str(tmp_path / "card.json")])

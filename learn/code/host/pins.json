@@ -1,0 +1,37 @@
+{
+  "build": {
+    "build_info": "b12110-cd959bae9"
+  },
+  "weights": {
+    "file": "Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+    "sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+    "alias": "Mellum2.1-12B-A2.5B-Thinking"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "context": 100000,
+    "parallel": 2,
+    "slot_context": 50176,
+    "kv_unified": false,
+    "jinja": true,
+    "flash_attention": "on",
+    "continuous_batching": true,
+    "batch": 512,
+    "microbatch": 512,
+    "cache_type_k": "q8_0",
+    "cache_type_v": "q8_0",
+    "gpu_layers": 999,
+    "log_verbosity": 4
+  },
+  "numerics": {
+    "text": "ppl.txt",
+    "text_sha256": "b6a8a4ccfc24018e08649d66cbe0eea7be758088f67b9d174e2fb5742c1e591b",
+    "context": 2048,
+    "tolerance": 0.01
+  },
+  "tooling": {
+    "pi": "1.4.0",
+    "node": "25.8.1",
+    "uv": "0.11.6"
+  }
+}

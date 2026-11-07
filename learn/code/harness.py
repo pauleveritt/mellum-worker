@@ -36,6 +36,7 @@ EXTENSION = CODE.parents[1] / "extensions" / "mellum-worker.ts"
 # The think-tag repair (a no-op on a correctly served reply). The flow loads it in every session; in
 # the harness it is the remedy unit context/repair-think-tags, listed by the lines that want it.
 THINK_TAGS = CODE.parents[1] / "extensions" / "mellum-think-tags.ts"
+BUDGET_PROXY = CODE / "budget-proxy.mjs"
 REMEDIES = CODE.parents[1] / "remedies"
 ARMS = ("vanilla", "bare", "worker", "strip-thinking")
 # Every knob an arm may set. A run clears them from the inherited environment
@@ -63,6 +64,8 @@ class Suite:
     record: dict | None = None
     grader_revision: str = "current"
     grader_base: Path | None = None
+    # The session budget (budget.json): requests and output tokens, enforced at a proxy (F.5).
+    budget: dict | None = None
 
     @property
     def prompt(self) -> str:
@@ -100,6 +103,7 @@ def load_suite(suites_dir: Path, name: str) -> Suite:
     record = None
     if (base / "record.json").is_file():
         record = json.loads((base / "record.json").read_text())
+    budget = json.loads((base / "budget.json").read_text()) if (base / "budget.json").is_file() else None
     return Suite(
         name=name,
         prompts=prompts,
@@ -110,6 +114,7 @@ def load_suite(suites_dir: Path, name: str) -> Suite:
         root=base,
         layout=layout,
         record=record,
+        budget=budget,
     )
 
 
@@ -196,6 +201,170 @@ if WINDOWS:
 
     _K32.SetInformationJobObject.argtypes = (
         wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD)
+
+
+# The suite app's documented port. A server left on it answers for the model's own app, so a
+# session does not start while anything listens there (LC.41: a stray one answered for 13 hours).
+GUARDED_PORTS = (8000,)
+
+
+def guarded_listeners(ports) -> list[dict]:
+    """Loopback listeners on ports, each named by pid and command where lsof can say."""
+    import socket
+    found = []
+    for port in ports:
+        with socket.socket() as probe:
+            probe.settimeout(1)
+            if probe.connect_ex(("127.0.0.1", port)) != 0:
+                continue
+        row = {"port": port, "pid": None, "command": None}
+        if shutil.which("lsof"):
+            out = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-F", "pc"],
+                                 capture_output=True, text=True, timeout=30).stdout
+            for line in out.splitlines():
+                if line[:1] == "p" and row["pid"] is None:
+                    row["pid"] = int(line[1:])
+                elif line[:1] == "c" and row["command"] is None:
+                    row["command"] = line[1:]
+        found.append(row)
+    return found
+
+
+PROJECT_MARKERS = ("pyproject.toml", ".git")
+
+
+def project_above(path: Path) -> Path | None:
+    """The marker of a project that holds path, if any: what uv and pip discover upward from a
+    workspace. Runs inside one let a session install into that project's venv (LC.41)."""
+    for folder in [Path(path).resolve(), *Path(path).resolve().parents]:
+        for marker in PROJECT_MARKERS:
+            if (folder / marker).exists():
+                return folder / marker
+    return None
+
+
+def pi_version(pi_binary: str) -> str | None:
+    """The version the Pi binary reports, or None when it cannot say. Run outside any workspace."""
+    try:
+        out = subprocess.run([pi_binary, "--version"], capture_output=True, text=True, timeout=10,
+                             cwd=tempfile.gettempdir(), stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    match = re.search(r"\d+\.\d+\.\d+", out.stdout + out.stderr) if out.returncode == 0 else None
+    return match.group() if match else None
+
+
+def proxy_target(base_url: str) -> tuple[str, str]:
+    """Split a provider baseUrl into the root the budget proxy forwards to and the path Pi keeps."""
+    from urllib.parse import urlsplit
+    parts = urlsplit(base_url)
+    return f"{parts.scheme}://{parts.netloc}/", parts.path.rstrip("/")
+
+
+def is_loopback(target: str) -> bool:
+    from urllib.parse import urlsplit
+    return urlsplit(target).hostname == "127.0.0.1"
+
+
+def start_budget_proxy(budget: dict, target: str, log: Path) -> tuple[subprocess.Popen, int]:
+    """Start the session's budget proxy and wait for its ready row; returns it and its port.
+
+    It runs in a group of its own (start_child), because `node` may be a shim (Volta) whose
+    child is the real proxy; stop_budget_proxy ends the whole group. Its stderr is kept beside
+    the log, and a proxy that does not start says why."""
+    stderr = Path(log).with_name("proxy-stderr.txt")
+    with stderr.open("w") as errors:
+        proxy = start_child(["node", str(BUDGET_PROXY), "--target", target, "--log", str(log),
+                             "--max-requests", str(budget["max_requests"]),
+                             "--max-output", str(budget["max_output_tokens"]),
+                             "--unknown-charge", str(budget["unknown_usage_charge"]), "--listen", "0"],
+                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=errors)
+    try:
+        until = time.monotonic() + 10
+        while time.monotonic() < until and proxy.poll() is None:
+            for row in _jsonl(log):
+                if row.get("boundary") == "ready":
+                    return proxy, row["port"]
+            time.sleep(0.05)
+    except BaseException:
+        stop_budget_proxy(proxy)
+        raise
+    stop_budget_proxy(proxy)
+    reason = stderr.read_text().strip().splitlines()[-1:] if stderr.is_file() else []
+    raise SystemExit(f"the budget proxy did not start ({reason[0] if reason else 'no error printed'}); "
+                     "no session was started")
+
+
+def stop_budget_proxy(proxy: subprocess.Popen) -> None:
+    kill_tree(proxy.pid)
+    try:
+        proxy.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proxy.kill()
+        proxy.wait()
+
+
+def _jsonl(path: Path) -> list[dict]:
+    rows = []
+    if Path(path).is_file():
+        for line in Path(path).read_text().splitlines():
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass      # a row still being written
+    return rows
+
+
+def budget_exhausted(budget_log: Path | None) -> bool:
+    return budget_log is not None and any(row.get("boundary") == "budget_exhausted" for row in _jsonl(budget_log))
+
+
+def budget_record(run: Path) -> dict | None:
+    """The limits a run was given and what it spent, from its proxy log; None for an unbudgeted run."""
+    limits = Path(run) / "budget-limits.json"
+    if not limits.is_file():
+        return None
+    rows = _jsonl(Path(run) / "proxy.jsonl")
+    return {"limits": json.loads(limits.read_text()),
+            "spent": {"requests": sum(r.get("boundary") == "created" and r.get("method") == "POST" for r in rows),
+                      "output_tokens": sum(r.get("charged") or 0 for r in rows if r.get("boundary") == "usage")}}
+
+
+def host_gate(card_path: Path, endpoint: str, pins: dict) -> dict:
+    """Refuse a counted run unless its host card passed, for this pin card and the server live now (F.5).
+
+    The live server must match what was checked: build, model, slots, and every server flag
+    except the ones that may vary between restarts (conformance.VARIABLE_FLAGS)."""
+    import conformance
+    card = json.loads(Path(card_path).read_text())
+    problems = []
+    if card.get("schema") != conformance.SCHEMA or card.get("passed") is not True:
+        problems.append("the host card did not pass")
+    if card.get("pins_digest") != conformance.pins_digest(pins):
+        problems.append("the host card was made for another pin card")
+    try:
+        props = conformance._get(endpoint, "/props")
+        slots = [slot.get("n_ctx") for slot in conformance._get(endpoint, "/slots")]
+    except OSError as error:
+        raise SystemExit(f"the model server at {endpoint} did not answer ({error}); no session was started")
+    for key, live in (("build_info", props.get("build_info")), ("model_path", props.get("model_path")),
+                      ("slots", slots)):
+        if card.get(key) != live:
+            problems.append(f"{key} is {live!r} now, {card.get(key)!r} on the card")
+    command = conformance.server_command(int(endpoint.rsplit(":", 1)[1].split("/")[0]))
+    if command is None or conformance.pinned_flags(command) != conformance.pinned_flags(card.get("server_command") or []):
+        problems.append("the server was restarted with other flags since the card was made")
+    if problems:
+        raise SystemExit("not a counted run: " + "; ".join(problems) +
+                         ". Rerun conformance.py for this server, or run without --host-card (uncounted).")
+    return {"path": str(card_path), "sha256": conformance.sha256_file(card_path), "passed": True}
+
+
+def session_path(path: str, virtual_env: str | None) -> str:
+    """PATH for a session without the harness's own venv: `uv run` puts it first, and a session
+    that inherits it runs the repository's python and uvicorn instead of the workspace's."""
+    venvs = {Path(v) / "bin" for v in (virtual_env, sys.prefix if sys.prefix != sys.base_prefix else None) if v}
+    return os.pathsep.join(entry for entry in path.split(os.pathsep) if entry and Path(entry) not in venvs)
 
 
 def start_child(argv: list[str], **kwargs) -> subprocess.Popen:
@@ -624,7 +793,13 @@ def run_suite(
     specs: str | None = None,
     extras: list[Path] = (),
     context_files: bool = False,
+    budget: dict | None = None,
 ) -> Path:
+    taken = guarded_listeners(GUARDED_PORTS)
+    if taken:
+        named = ", ".join(f"port {row['port']} (pid {row['pid']}, {row['command']})" for row in taken)
+        raise SystemExit(f"a server is already listening on {named}; stop it and rerun "
+                         "(no session was started)")
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
     workspace.mkdir()
@@ -673,10 +848,20 @@ def run_suite(
         "PI_CODING_AGENT_DIR": str(run / "profile"),
         "MELLUM_TRACE_FILE": str(trace),
     }
-    env.pop("VIRTUAL_ENV", None)   # else uv warns in the workspace venv
+    # Without the harness venv on PATH; without VIRTUAL_ENV, else uv warns in the workspace venv.
+    env["PATH"] = session_path(env.get("PATH", ""), env.pop("VIRTUAL_ENV", None))
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
+    # With a budget, wall time is only a hang-guard: a run that hits it is censored (F.5).
+    timeout_reason, budget_log, proxy = "deadline", None, None
+    if budget is not None:
+        # An explicit deadline keeps its meaning (an uncounted run's --deadline); otherwise the
+        # suite's hang-guard applies, and a run it ends is censored.
+        if deadline is None:
+            deadline, timeout_reason = budget["wall_safety_seconds"], "wall_safety"
+        budget_log = run / "proxy.jsonl"
+        (run / "budget-limits.json").write_text(json.dumps(budget, indent=2) + "\n")
     started = time.monotonic()
     groups: list[int] = []
     leaked: list[dict] = []
@@ -688,11 +873,29 @@ def run_suite(
     # The sweep runs however the loop ends, including a SIGTERM (main turns it
     # into SystemExit): a stopped run must still end the servers it started.
     try:
+        if budget is not None:
+            # Inside the try, so a stop from here on still ends the proxy in the finally.
+            models_file = run / "profile" / "models.json"
+            models = json.loads(models_file.read_text())
+            target, suffix = proxy_target(models["providers"][provider]["baseUrl"])
+        if budget is not None and not is_loopback(target):
+            # The proxy forwards to loopback only. An uncounted run on another host (a LAN
+            # profile) goes without it, bounded by the hang-guard alone, and says so.
+            note = f"budget not enforced: the proxy is loopback-only and the profile targets {target}"
+            (run / "budget-unenforced").write_text(note + "\n")
+            (run / "budget-limits.json").unlink()
+            print(f"warning: {note}", file=sys.stderr)
+        elif budget is not None:
+            proxy, port = start_budget_proxy(budget, target, budget_log)
+            (run / "proxy.json").write_text(json.dumps({"pid": proxy.pid, "port": port, "target": target}) + "\n")
+            models["providers"][provider]["baseUrl"] = f"http://127.0.0.1:{port}{suffix}"
+            models_file.write_text(json.dumps(models, indent=2) + "\n")
+            started = time.monotonic()
         for prompt in prompts:
             remaining = None if deadline is None else deadline - (time.monotonic() - started)
             if remaining is not None and remaining <= 0:
-                (run / "deadline").write_text("hit\n")
-                termination_reason = "deadline"
+                (run / timeout_reason).write_text("hit\n")
+                termination_reason = timeout_reason
                 break
             # The spec-derived contract scopes itself to the phase this prompt names.
             env["ACCEPTANCE_PROMPT"] = prompt
@@ -710,13 +913,16 @@ def run_suite(
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
             try:
-                ended = wait_or_stall(child, run, trace, remaining, stall)
+                ended = wait_or_stall(child, run, trace, remaining, stall,
+                                      budget_log=budget_log, timeout_reason=timeout_reason)
             finally:
                 elapsed += time.monotonic() - child_started
             termination_reason = ended or "exited"
             if ended:
                 break
     finally:
+        if proxy is not None:
+            stop_budget_proxy(proxy)
         for pgid in groups:
             leaked.extend({"pid": pid, "pgid": pgid, "command": command}
                           for pid, command in sweep_group(pgid))
@@ -740,37 +946,44 @@ def run_suite(
 
 
 def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
-                  stall: float | None) -> str | None:
-    """Wait for one Pi child; end it at the deadline, or when a command stalls.
+                  stall: float | None, *, budget_log: Path | None = None,
+                  timeout_reason: str = "deadline") -> str | None:
+    """Wait for one Pi child; end it at the deadline, when a command stalls, or on budget.
 
-    Returns "deadline" or "stalled" when the session was ended, else None.
+    Returns timeout_reason ("deadline" or "wall_safety"), "stalled" or "budget" when the
+    session was ended, else None. A child that exits on its own after its budget was spent
+    (Pi stops at the 429) still ends as "budget".
     """
-    if stall is None:
+    if stall is None and budget_log is None:
         try:
             child.wait(timeout=remaining)
             return None
         except subprocess.TimeoutExpired:
-            reason = "deadline"
+            reason = timeout_reason
     else:
         until = None if remaining is None else time.monotonic() + remaining
         reason = None
         while child.poll() is None:
             if until is not None and time.monotonic() >= until:
-                reason = "deadline"
+                reason = timeout_reason
                 break
-            open_call = open_tool_call(trace.read_text().splitlines(), time.time())
+            if budget_exhausted(budget_log):
+                reason = "budget"
+                break
+            open_call = (open_tool_call(trace.read_text().splitlines(), time.time())
+                         if stall is not None else None)
             if open_call and open_call[0] >= stall:
                 (run / "stalled").write_text(json.dumps(
                     {"seconds": open_call[0], "limit": stall, "command": open_call[1]}) + "\n")
                 reason = "stalled"
                 break
-            time.sleep(1)
+            time.sleep(0.25 if budget_log is not None else 1)
         if reason is None:
-            return None
+            return "budget" if budget_exhausted(budget_log) else None
     kill_tree(child.pid)
     child.wait()
-    if reason == "deadline":
-        (run / "deadline").write_text("hit\n")
+    if reason in ("deadline", "wall_safety"):
+        (run / reason).write_text("hit\n")
     return reason
 
 
@@ -867,15 +1080,16 @@ def execution_outcome(run: Path) -> dict:
     replies = [row["message"] for row in rows if row.get("type") == "message_end"
                and (row.get("message") or {}).get("role") == "assistant"]
     reason = execution.get("termination_reason")
-    if reason in ("deadline", "stalled"):
+    if reason in ("deadline", "stalled", "budget", "wall_safety"):
         completion = reason
     elif (reason != "exited" or execution.get("exit_code") != 0
           or (replies and replies[-1].get("stopReason") in ("error", "aborted"))):
         completion = "error"
     else:
         completion = "settled"
-    return {"completion": completion, "exit_code": execution.get("exit_code"),
-            "cleanup_ok": execution.get("cleanup_ok")}
+    # A run the hang-guard ended is censored: reported apart, never averaged in (F.5).
+    return {"completion": completion, "censored": completion == "wall_safety",
+            "exit_code": execution.get("exit_code"), "cleanup_ok": execution.get("cleanup_ok")}
 
 
 # A blocked tool call never reaches the recorder: the worker's guard stops the
@@ -1026,6 +1240,8 @@ def _run_sessions(
     remedies: list[str] = (),
     extras: list[Path] = (),
     context_files: bool = False,
+    budget: dict | None = None,
+    host_card: dict | None = None,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
@@ -1033,7 +1249,7 @@ def _run_sessions(
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
-                            context_files=context_files)
+                            context_files=context_files, budget=budget)
         grades = grade(run_dir / "workspace", suite=suite) if grade_run else []
         from grading import evaluate
         evaluation = evaluate(run_dir / 'workspace', suite, variant=specs)
@@ -1067,7 +1283,12 @@ def _run_sessions(
             "specs": specs,
             "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
             "machine": machine_label(),
-            "deadline": deadline,
+            "pi_version": pi_version(pi_binary),
+            # A counted run passed the host gate; an uncounted one says so (F.5).
+            "counted": host_card is not None,
+            "host_card": host_card,
+            "deadline": deadline if deadline is not None or not budget else budget["wall_safety_seconds"],
+            "budget": budget_record(run_dir),
             "stall": stall,
             "stalled": (json.loads((run_dir / "stalled").read_text())
                         if (run_dir / "stalled").exists() else None),
@@ -1108,6 +1329,15 @@ def _print_task(
     return ok
 
 
+def session_budget(suite: Suite, counted: bool, override: dict | None) -> dict | None:
+    """Every run on a suite with a budget.json is held to it; an uncounted run may pass --budget instead.
+
+    A counted run (one with --host-card) must have its suite's budget."""
+    if counted and suite.budget is None:
+        raise SystemExit(f"suite {suite.name} has no budget.json, so it cannot be a counted run")
+    return override if override is not None else suite.budget
+
+
 def run_suites(
     names: list[str],
     *,
@@ -1126,6 +1356,9 @@ def run_suites(
     remedies: list[str] = (),
     extras: list[Path] = (),
     context_files: bool = False,
+    counted: bool = False,
+    budget: dict | None = None,
+    host_card: dict | None = None,
 ) -> tuple[int, int]:
     # Run easiest first and hardest last, so a slow hard suite never blocks the
     # quicker ones; unknown suites keep alphabetical order after the known tiers.
@@ -1154,6 +1387,7 @@ def run_suites(
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
             single_prompt=single_prompt, specs=specs, profile=profile, stall=stall,
             remedies=remedies, extras=extras, context_files=context_files,
+            budget=session_budget(suite, counted, budget), host_card=host_card,
         )
         sessions_passed += _print_task(suite, results, repeat)
         sessions_total += len(results)
@@ -1215,7 +1449,12 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--dry-run", action="store_true")
     run.add_argument("--grade", action="store_true")
     run.add_argument("--repeat", type=int, default=1)
-    run.add_argument("--deadline", type=float, default=600)
+    run.add_argument("--deadline", type=float, default=None,
+                     help="seconds; not with --host-card (a counted run uses its suite's wall_safety)")
+    run.add_argument("--host-card", type=Path, default=None, metavar="PATH",
+                     help="a passing host card for the live server (conformance.py); makes the run counted")
+    run.add_argument("--budget", type=Path, default=None, metavar="PATH",
+                     help="a budget.json to use instead of the suite's; not with --host-card")
     run.add_argument("--arm", choices=ARMS, default="bare")
     run.add_argument("--remedy", default=None, metavar="LIST",
                      help="remedy units to load on top of the arm: comma-separated names "
@@ -1266,10 +1505,34 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
+    # A run is counted exactly when it has a host card (F.5); run.json says which it was.
+    counted = args.host_card is not None
+    if counted and (args.deadline is not None or args.budget is not None):
+        parser.error("--deadline and --budget are not for a counted run; it uses its suite's budget")
+    override = json.loads(Path(args.budget).read_text()) if args.budget is not None else None
+
+    def counted_gate() -> dict | None:
+        """The host gate for a counted run (F.5); None for an uncounted one."""
+        if not counted:
+            return None
+        import conformance
+        providers = json.loads((Path(args.profile) / "models.json").read_text())["providers"]
+        target, _ = proxy_target(next(iter(providers.values()))["baseUrl"])
+        if not is_loopback(target):
+            raise SystemExit(f"a counted run needs the model server on 127.0.0.1, not {target}; "
+                             "the budget proxy and the host gate are loopback-only")
+        return host_gate(Path(args.host_card).resolve(), target.rstrip("/"), conformance.load_pins())
     remedies, extras = resolve_extras(args.remedy, args.extension)
     args.pi_binary = resolve_pi_binary(args.pi_binary)
     # Pi runs with the workspace as its cwd, so every path handed to it must be absolute.
     args.runs_dir = Path(args.runs_dir).resolve()
+    inside = project_above(args.runs_dir)
+    if inside is not None:
+        message = (f"--runs-dir {args.runs_dir} is inside a project ({inside}); a session there "
+                   "can reach its venv. Use a directory outside any project, such as the default.")
+        if counted:
+            raise SystemExit(message)
+        print(f"warning (uncounted run): {message}", file=sys.stderr)
     args.profile = Path(args.profile).resolve()
     args.suites_dir = Path(args.suites_dir).resolve()
     if args.suite == "all":
@@ -1278,7 +1541,8 @@ def main(argv: list[str] | None = None) -> int:
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
                    single_prompt=args.single_prompt, specs=args.specs,
                    profile=args.profile, stall=args.stall,
-                   remedies=remedies, extras=extras, context_files=args.context_files)
+                   remedies=remedies, extras=extras, context_files=args.context_files,
+                   counted=counted, budget=override, host_card=counted_gate())
         return 0
 
     suite = select_grader(load_suite(args.suites_dir, args.suite), args.grader)
@@ -1295,12 +1559,15 @@ def main(argv: list[str] | None = None) -> int:
                                  extension=settings["extension"], extras=extras,
                                  context_files=args.context_files)))
         return 0
+    budget = session_budget(suite, counted, override)
+    gate = counted_gate()
     results = _run_sessions(
         suite, runs_dir=args.runs_dir, pi_binary=args.pi_binary,
         repeat=args.repeat, grade_run=args.grade, deadline=args.deadline,
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
         profile=args.profile, stall=args.stall,
         remedies=remedies, extras=extras, context_files=args.context_files,
+        budget=budget, host_card=gate,
     )
     _print_task(suite, results, args.repeat)
     return 0

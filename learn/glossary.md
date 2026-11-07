@@ -321,8 +321,39 @@ suites of different length.
 ### Session completion
 
 How a session ended, apart from how good its work is: `settled` (Pi exited
-cleanly), `stalled`, `deadline` (the harness killed it) or `error` (a non-zero
-exit or a last reply that errored). A run record’s `completion` field.
+cleanly), `stalled`, `budget` (it spent its session budget), `wall_safety` (the
+hang-guard ended it; a censored run), `deadline` (an explicit `--deadline` ended
+it) or `error` (a non-zero exit or a last reply that errored). A run record’s
+`completion` field.
+
+### Session budget
+
+The requests and output tokens one session may spend, set per tier in the
+suite’s `budget.json` (Easy: 64 requests, 32,000 output tokens) and enforced by
+a proxy between Pi and llama-server, which answers 429 once either is spent. A
+session that spends it ends as `budget` and counts: it is graded on what it
+built. `run.json` records the limits and what was spent.
+
+### Censored run
+
+A run the hang-guard (`wall_safety`, 1,200 s) ended. Wall time depends on the
+host, so such a run is reported on its own line and never averaged in with the
+rest; `run.json` says `censored: true`.
+
+### Host card
+
+The record `learn/code/conformance.py` writes after checking the live model
+server against the pin card (`learn/code/host/pins.json`): its build, weights,
+flags and slots, capacity, the tool-call protocol, stability, numerics (Metal
+against CPU on the same build, within 1%) and the tool versions. A counted run
+needs a card that passed, for the server that is live.
+
+### Counted run
+
+A harness run given `--host-card`: the host gate checked the card against the
+live server before any session started, and `run.json` says `counted: true`. A
+run without a card still runs (a lesson, `/challenge`) and says `counted: false`;
+only counted runs back a claim.
 
 ### Output tokens
 

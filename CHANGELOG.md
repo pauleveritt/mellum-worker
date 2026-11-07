@@ -6,6 +6,37 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **A harness run counts only with a host card.** `harness.py run --host-card PATH`
+  checks the card from `conformance.py` against the live server (build, model, slot
+  sizes and every pinned flag) and refuses the run if the card failed, was made for
+  another pin card, or the server was restarted differently since. `run.json`
+  records `counted` and `host_card`. A run without a card, such as `/challenge`,
+  still runs, recorded `counted: false`.
+
+- **A harness session's budget is requests and output tokens, enforced, not a wall
+  deadline.** Each tier has a `budget.json` (Easy: 64 requests, 32,000 output tokens;
+  Medium and Hard: 120 and 64,000). The harness runs each session behind the budget
+  proxy; a session that spends its budget ends as `budget` and is graded like any
+  other. Wall time is only a hang-guard (`wall_safety`, 1,200 s): a run that hits it
+  ends `wall_safety` with `censored: true`, to be reported apart and never averaged
+  in. `run.json` gains `budget` (limits and spent) and `censored`. A new `--budget
+  PATH` replaces a tier's budget, and `--deadline` replaces its `wall_safety` (ending
+  as `deadline`, as before); neither is allowed on a counted run. The proxy forwards
+  to `127.0.0.1` only: an uncounted run on another host (a LAN profile) runs without
+  it, bounded by `wall_safety`, and says the budget is not enforced.
+
+- **A counted harness run refuses a `--runs-dir` inside a project.** A directory
+  under a `pyproject.toml` or `.git` lets a session's `uv` or `pip` find that
+  project, and a session on the old branch installed into the repository's `.venv`
+  that way. An uncounted run there (the baseline and lesson-check scripts) warns and
+  goes ahead. Use the default (the system temp dir) or any directory outside a
+  project.
+
+- **A harness session will not start while something listens on port 8000.** That
+  is the suite app's own port, and a server left there from an earlier session
+  answered for the model's app (for 13 hours, across three batches, on the old
+  branch). The harness now names the process and stops before Pi starts.
+
 - **Scoreboards keep grader identities separate.** Current, historical and unknown
   assertion bundles are displayed and grouped independently, so a changed oracle
   cannot silently merge its results with an older one.
@@ -40,6 +71,27 @@ Versions match git tags; pin one in both install lines.
   prefix included: it had read 1,703 for an 11,438-token prompt.
 
 ### Added
+
+- **`learn/code/conformance.py` writes a host card for the Mac.** It checks the live
+  llama-server against `learn/code/host/pins.json` (build, weights sha256, every
+  pinned server flag and no unpinned or repeated one, slot sizes), then capacity,
+  the tool-call protocol, stability, numerics and the tool versions. Numerics checks
+  that `llama-perplexity` is the server's build and compares it on Metal with CPU on
+  the same weights, within 1%: on b11669 Metal
+  returned NaN; on b12110 the two agree within 0.57%. Ported from the old branch's
+  per-rental check, without the pod items.
+
+- **`learn/code/budget-proxy.mjs`, a per-session budget proxy.** It sits between Pi
+  and llama-server, counts requests and the output tokens each response reports,
+  and answers 429 once either limit is spent, logging one `budget_exhausted` row. A
+  successful stream that breaks without reporting usage is charged a full request's
+  tokens, never zero; a failed response (a 400, an unreachable server) is counted as
+  a request but charged nothing, so a host fault never reads as spent budget. Node
+  built-ins only; ported from the old branch's relay.
+
+- **`run.json` names the Pi version the run used** (`pi_version`), read from the
+  binary itself. A result from one Pi is not a result for another, and until now a
+  record could not say which one ran it.
 
 - **Explicit suite grader history.** `--grader current|bc5db20|16cf9f9^` selects
   assertion bundles independently of `--specs`; new records identify their assertion
@@ -276,6 +328,11 @@ Versions match git tags; pin one in both install lines.
   Apple-Silicon path still uses.
 
 ### Fixed
+
+- **A harness session no longer runs the harness's own Python.** Under `uv run`, the
+  session's `PATH` began with the repository's venv, so `python` and `uvicorn` in a
+  session resolved there instead of to the workspace's. The harness now drops that
+  venv's `bin` from the session's `PATH` as well as `VIRTUAL_ENV`.
 
 - **Grading accepts equivalent valid builds and rejects misleading UI.** Title
   blocks may wrap the title element, SQL dates may use date objects, and database

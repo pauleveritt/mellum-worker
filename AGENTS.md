@@ -89,12 +89,17 @@ and evidence with dated corrections; never edit archived plans.
   The floor and every R cycle run through `learn/code/harness.py run --suite <s>
   --arm vanilla` (remedies with `--remedy`), on the pinned llama.cpp profile with
   Pi's default thinking, which is **on**. Pass the pinned Pi 1.4.0 with
-  `--pi-binary`, because a bare `pi` on `PATH` may be an older one. Report budget
-  (`wall`, `turns`, `requests`, `completion`) beside quality. `scripts/screen.sh`
+  `--pi-binary`, because a bare `pi` on `PATH` may be an older one. A counted run
+  passes `--host-card` from `learn/code/conformance.py` for the live server; a run
+  without one is recorded `counted: false`. Every tier run is held to its
+  `budget.json` (requests and output tokens at a proxy). Report budget
+  (`requests`, `output_tokens`, `completion`, `censored`, `wall`) beside quality;
+  a `censored` run is reported apart and never averaged in. `scripts/screen.sh`
   and `scripts/product.sh` are the ladder's rungs. `screen.sh` runs with thinking
-  off, so its numbers never mix with the harness's. Write runs to `runs/`
-  (git-ignored), and promote a kept one to `evals/<date-topic>/` with the raw
-  stripped. A per-run flag or source tweak is an ablation, recorded as such.
+  off, so its numbers never mix with the harness's. Harness runs go outside any
+  project (the default temp dir; a counted run refuses a `--runs-dir` under a
+  `pyproject.toml` or `.git`), and a kept one is promoted to `evals/<date-topic>/`
+  with the raw stripped. A per-run flag or source tweak is an ablation, recorded as such.
 - `prompts/mellum-worker.md` is the only prompt source.
 - **Run Python through `uv run`, never a bare `python`/`python3`** — the pinned
   env and lockfile are what make a run reproducible. (`npm test` is the one

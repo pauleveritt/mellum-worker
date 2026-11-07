@@ -10,6 +10,15 @@ never by line number.
 
 Reopen conditions, not promises.
 
+**Reconcile the budget proxy against the server log.** F.5's proxy counts what
+passes through it; a session that calls llama-server directly (a `curl` to
+:8001 from its own bash) is not counted. lc40's floor caught that by matching
+the server log's generations against the proxy's requests (LC.39's "direct
+server call" case). F.5 left it out to keep the port to one host's needs; the
+F.5 smoke's proxy and trace counts agreed on every counted session.
+*Reopens when* a counted session's server log shows more generations than its
+proxy log, or before a claim rests on a budget a model could step around.
+
 **Kill-by-name test skipped on the GitHub Actions runner.**
 `tests/backend-lifecycle.test.mjs`'s "kill ends every process with the server's
 name" spawns two fake processes under a unique name and asserts `backend.py

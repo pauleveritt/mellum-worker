@@ -1,0 +1,6 @@
+{
+  "max_requests": 5,
+  "max_output_tokens": 32000,
+  "unknown_usage_charge": 16384,
+  "wall_safety_seconds": 1200
+}
