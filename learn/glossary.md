@@ -116,10 +116,11 @@ facts, no guards; those are remedy units. The `worker` arm, and what
 
 ### Base stack
 
-Base for short. The smallest stack of remedy units that gives later remedies a
-fair chance: the units that beat plain Vanilla on their own, such as a stall handler, so a session is not lost before the
-remedy under test can act. It is earned by measurement in R.1 and loaded as `preset:base`;
-plain Vanilla stays in the batch as the anchor. Not the Baseline Worker.
+Base for short: the thin worker plus the few remedy units that give later
+remedies a fair chance, such as a stall handler, so a session is not lost before
+the remedy under test can act (`--arm worker --remedy preset:base`). The units
+are earned in R.1, each by beating plain Vanilla, and plain Vanilla stays in the
+batch as the anchor. Not the Baseline Worker, the old bundle.
 
 ### Baseline Worker
 

@@ -82,8 +82,9 @@ Moved here from R.1's roadmap row on 2026-11-07, when the row became a pointer.
 - **Kept apart:** numbers from the ladder rig (thinking off) never mix with the harness's (thinking on).
 - **Base, earned first (added 2026-11-07, Paul's call):** step one measures a stall handler
   (the bash bound, the fixed foreground-server guard or the log-follow guard) and
-  `prompt/name-the-layout` against plain Vanilla. The units that win become `preset:base`, the
-  measured version of lc40's `base.json`. Step two measures the compile/import check and the
+  `prompt/name-the-layout` against plain Vanilla. The units that win become `preset:base`, and
+  Base is the thin worker plus them, the measured version of lc40's Base. Mode was inert on
+  Easy in the overnight's arm B, so the worker adds no difference of its own. Step two measures the compile/import check and the
   mediated test on Base, with plain Vanilla kept in the batch as the anchor, so every number
   still traces to the floor. If nothing wins, Base is Vanilla and step two runs on the floor.
 
