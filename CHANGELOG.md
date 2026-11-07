@@ -269,6 +269,18 @@ Versions match git tags; pin one in both install lines.
   tests run separately, and required starter tests cannot vanish or be weakened.
   Quality checks use disposable copies; layout reports also name deleted paths.
 
+- **The `guard/foreground-server` unit now blocks the *act*, not the *word*.** It
+  matched a server binary (`uvicorn`, `gunicorn`, …) anywhere on the line, so
+  harmless checks that merely named one — `python -c "import uvicorn"`,
+  `pip show uvicorn`, `pip list | grep uvicorn` — were refused as "you started a
+  server in the foreground." The message made no sense for a pip query, so a
+  worker could not tell why it was blocked and churned through variant after
+  variant into the deadline. The match is now position-aware: the binary counts
+  only in command position — at the start of a segment, after a run-wrapper
+  (`uv`/`poetry`/`pdm run`, `nohup`, `env`, …), or as a `python -m` module — so a
+  real start (`uvicorn app:app`, `uv run … python app.py`, `python -m uvicorn …`)
+  still blocks while naming one in an argument does not.
+
 - **The scoreboard shows one vocabulary for renamed units.** Guard units were
   renamed (e.g. `guard/break-repeat-loops` → `guard/repeat-loops`), but recorded
   run evidence keeps the old names, so the same stack appeared under two names and

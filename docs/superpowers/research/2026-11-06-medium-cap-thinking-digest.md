@@ -121,3 +121,41 @@ config, 278 requests) settled who causes the rare full re-prefills:
 - The manifest-only digest is conjecture: it might recover the read savings
   without the prefill cost, or the cold-start reads might not be the real
   wall-time driver at all.
+
+## Addendum — finer steps as a hard floor backfire at budget 3 (n=1 screen)
+
+The profiler left one residual lever: a shorter worker needs a smaller context,
+so finer steps (fewer requirements per step) should cost fewer turns. A second
+off-by-default knob chases it — `MELLUM_DELEGATE_MAX_REQS_PER_STEP=<n>` lowers
+the per-step requirement budget, which (a) raises the step-count floor
+`ceil(bullets / n)`, (b) re-dispatches an under-floor plan to the architect up to
+twice, and (c) adds a prompt nudge to keep each step small. Unset or ≥5 leaves
+the shipped loop byte-identical.
+
+Screened at **budget 3** on the same win config, rep 1 scored **0/18 and hit the
+1800s deadline** — nothing gradable. The mechanism is deterministic, not
+variance. The medium spec is 55 bullet lines, so the floor is `ceil(55/n)`:
+
+| budget | floor | vs the baseline's natural 16–17 steps |
+|--------|-------|----------------------------------------|
+| 5 (shipped) | 11 | slack — no retry (as measured) |
+| 4 | 14 | slack — nudge only |
+| **3** | **19** | **floor > natural → forces a re-dispatch** |
+| 2 | 28 | — |
+
+Two failures stacked:
+
+1. **Floor overshoot.** The architect wrote 18 steps — below the budget-3 floor
+   of 19 — so the harness rejected the plan ("too coarse") and re-ran the whole
+   (230–450s) architect pass before any worker started.
+2. **Contentless micro-steps.** Splitting 55 requirements across ~19 steps made
+   each step trivial — step 09 was "ensure a `{% block content %}`" on a template
+   that already had one. With nothing to build the worker thrashed (`ls`, `find`,
+   `grep`, even a pytest run) hunting for work until the deadline.
+
+Decision: **stop the run** — reps 2/3 would repeat deterministically — rather than
+burn ~55 more minutes. **Budget 3 is too aggressive for a many-bullet spec:** the
+hard floor over-splits past the grain the requirements actually carry. Recorded
+negative; the knob stays off by default. Budget 4 (floor 14, below the natural
+16–17) forces no retry and no over-split — it isolates the prompt nudge alone.
+Screened next.
