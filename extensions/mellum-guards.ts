@@ -194,9 +194,14 @@ function commandOf(input: unknown): string | undefined {
 	return undefined;
 }
 
-/** Commands that run a long-lived server in the foreground and never return. */
+/** Commands that run a long-lived server in the foreground and never return.
+ * A server BINARY (uvicorn, gunicorn, …) counts only in COMMAND position — at the
+ * start of a segment, after a run-wrapper (uv/poetry/pdm run, nohup, env …), or as a
+ * `python -m` module — so merely NAMING it (`pip show uvicorn`, `import uvicorn`,
+ * `grep uvicorn`) is not a start. Matching the bare word anywhere refused those harmless
+ * checks as "you started a server", which sent a worker thrashing into the deadline. */
 const SERVER_START =
-	/\b(uvicorn|gunicorn|hypercorn|daphne|waitress-serve)\b|\bflask\s+run\b|\bpython\d?\s+-m\s+(http\.server|flask)\b|\bmanage\.py\s+runserver\b|\bfastapi\s+(dev|run)\b|\brails\s+server\b|\bnpm\s+(start|run\s+dev)\b|\bpython\d?(?:\.\d+)?\s+(?:-[\w-]+\s+)*(?:[\w.-]+\/)*(?:app|main|server|serve|asgi|wsgi)\.py\b/;
+	/\bflask\s+run\b|\bmanage\.py\s+runserver\b|\bfastapi\s+(?:dev|run)\b|\brails\s+server\b|\bnpm\s+(?:start|run\s+dev)\b|\bpython\d?(?:\.\d+)?\s+-m\s+(?:http\.server|flask|uvicorn|gunicorn|hypercorn|daphne|waitress)\b|(?:^|[|;&(]|\b(?:nohup|time|exec|env|xargs)\s+|\b(?:uv|poetry|pdm|rye|hatch|pipenv)\s+run\b(?:\s+--?\S+)*\s+)\s*(?:uvicorn|gunicorn|hypercorn|daphne|waitress-serve)\b|\bpython\d?(?:\.\d+)?\s+(?:-[\w-]+\s+)*(?:[\w.-]+\/)*(?:app|main|server|serve|asgi|wsgi)\.py\b/;
 
 /** Whether a shell command is already detached (nohup, or a background `&` operator). */
 export function isBackgrounded(command: string): boolean {

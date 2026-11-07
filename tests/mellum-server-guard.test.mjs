@@ -28,6 +28,21 @@ test("isForegroundServer: the python-script forms the ladder-era pattern missed"
 	assert.equal(isForegroundServer("python -c 'import app'"), false);
 });
 
+test("isForegroundServer: the server NAME as an argument (import/pip/grep) is not a start", () => {
+	// The easy-screen stall: the worker only wanted to CHECK uvicorn, and every
+	// command that merely NAMED it was refused as "you started a server" — nonsense
+	// for an import or a pip query — so it could not understand the block and thrashed.
+	assert.equal(isForegroundServer('uv run --frozen python -c "import uvicorn"'), false);
+	assert.equal(isForegroundServer("uv run --frozen pip show uvicorn"), false);
+	assert.equal(isForegroundServer("uv run --frozen pip install uvicorn"), false);
+	assert.equal(isForegroundServer("uv run --frozen pip list | grep uvicorn"), false);
+	assert.equal(isForegroundServer("python -c 'import gunicorn'"), false);
+	// ...but the real EXECUTION forms must still block:
+	assert.equal(isForegroundServer("uvicorn app:app --reload"), true); // direct binary
+	assert.equal(isForegroundServer("uv run --frozen python -m uvicorn app:app"), true); // -m module
+	assert.equal(isForegroundServer("uv run uvicorn app:app"), true); // wrapper then binary
+});
+
 test("isForegroundServer: a backgrounded server is not blocking", () => {
 	assert.equal(isForegroundServer("uvicorn app:app &"), false);
 	assert.equal(isForegroundServer("nohup uvicorn app:app >/tmp/s.log 2>&1 &"), false);
