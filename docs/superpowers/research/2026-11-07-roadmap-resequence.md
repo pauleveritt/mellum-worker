@@ -61,6 +61,9 @@ is new.
 
 - **R.1's control is plain Vanilla**, as `AGENTS.md` defines the floor. The bash bound is
   measured as a unit, not folded into the control as lc40's `base.json` did.
+  *Corrected 2026-11-07, after Paul's review:* this dropped his plan to measure remedies on a
+  base with just enough fixes to give them a chance. R.1 now earns that base first; see
+  [What R.1 carries](#what-r1-carries).
 - **Easy stays on the M5 Max.** Pods set up slowly (LC.40 found setup cost about as much as the
   cohort), and they pay off only in parallel, which matters for Medium and Hard.
 - **F.6 rather than a new phase** for the pods: it is floor infrastructure.
@@ -77,6 +80,12 @@ Moved here from R.1's roadmap row on 2026-11-07, when the row became a pointer.
   F.3's wall deadline as the budget.
 - **Moved out:** the native `PATH` went to F.5. The stall candidates come from LC.41 and `f0e31ea`.
 - **Kept apart:** numbers from the ladder rig (thinking off) never mix with the harness's (thinking on).
+- **Base, earned first (added 2026-11-07, Paul's call):** step one measures a stall handler
+  (the bash bound, the fixed foreground-server guard or the log-follow guard) and
+  `prompt/name-the-layout` against plain Vanilla. The units that win become `preset:base`, the
+  measured version of lc40's `base.json`. Step two measures the compile/import check and the
+  mediated test on Base, with plain Vanilla kept in the batch as the anchor, so every number
+  still traces to the floor. If nothing wins, Base is Vanilla and step two runs on the floor.
 
 ## `origin/remove-omlx`, scheduled with the sync
 
