@@ -31,7 +31,7 @@ one ladder launch is a smoke that proves the moved ladder works.
 ## 1. What moves, and where
 
 Source paths are in mellum-mlx at the commit recorded in
-`docs/ladder/PROVENANCE.md`.
+`evals/PROVENANCE.md`.
 
 | From (mellum-mlx) | To (mellum-worker) | Notes |
 | --- | --- | --- |
@@ -40,8 +40,8 @@ Source paths are in mellum-mlx at the commit recorded in
 | `conftest.py` | `ladder/conftest.py` | `collect_ignore = ["fixtures"]` |
 | `fixtures/` (tracked files only, 140 KB; no `.venv`, `__pycache__`) | `ladder/fixtures/` | |
 | `prompts/ablation/` | `ladder/prompts/ablation/` | v4a–v4c variants the records cite |
-| `docs/research/ladder/<phase>/` | `docs/ladder/<phase>/` | readable files only, see §2 |
-| `docs/research/ladder/ablation-summary.md` | `docs/ladder/ablation-summary.md` | |
+| `docs/research/ladder/<phase>/` | `evals/<phase>/` | readable files only, see §2 |
+| `docs/research/ladder/ablation-summary.md` | `evals/ablation-summary.md` | |
 | `docs/research/mellum-recovery-2026-10-07/` (and its `.zip`) | `docs/superpowers/research/2026-10-07-mellum-recovery/` | cited by the README |
 | `docs/research/2026-10-07-mellum-omlx-native-cache.md` | `docs/superpowers/research/` | justifies the oMLX settings in the setup skill's step 3 |
 | `docs/research/2026-10-07-mellum-independent-runtime.md` and `-evidence.json` | `docs/superpowers/research/` | backend research M.4 builds on |
@@ -54,7 +54,7 @@ Stays in mellum-mlx: `main.py` (conversion), `tests/test_conversion.py`,
 
 Moved research notes keep their dates and text. Each gets one line under
 its title: "Moved from mellum-mlx on 2026-10-09; see
-`docs/ladder/PROVENANCE.md`." Links inside them are rewritten by §4's
+`evals/PROVENANCE.md`." Links inside them are rewritten by §4's
 rules; nothing else in them is edited.
 
 ## 2. Phase records: readable here, raw in a release
@@ -71,11 +71,11 @@ instead: `trace.jsonl`, `stdout.txt`, `diff.patch` (450 each, ~380 MB).
   plan stops and asks Paul before `gh release create`.
 - Each phase README gains a final line: "Raw traces, stdout and diffs:
   [`<phase>.tar.gz`](https://github.com/pauleveritt/mellum-worker/releases/download/research-2026-10-09/<phase>.tar.gz)."
-- `.gitignore` gains `docs/ladder/**/trace.jsonl`, `stdout.txt`,
+- `.gitignore` gains `evals/**/trace.jsonl`, `stdout.txt`,
   `diff.patch`, so new runs write them locally without committing them.
   Future phases attach their tarball to a new `research-YYYY-MM-DD`
   release; `docs/sdd.md` says so.
-- `docs/ladder/PROVENANCE.md`: source repo, source commit SHA, date,
+- `evals/PROVENANCE.md`: source repo, source commit SHA, date,
   the file list rules above, the release tag, and a SHA-256 per tarball.
 
 Size check: the move adds about 4.5 MB to a clone (records ~4 MB, ladder
@@ -125,7 +125,7 @@ In `ladder/ladder/run_ladder.py` and `pi_profile.py`, `ROOT` splits in two:
   with `REPO_ROOT` and appending the recorder to `subagentOnlyExtensions`.
   `sandbox.py` no longer copies a `.pi/` tree; the `.pi/` copies are not
   moved.
-- `--out` defaults to `REPO_ROOT/docs/ladder/<name>`.
+- `--out` defaults to `REPO_ROOT/evals/<name>`.
 - Each `run.json` adds `worker_version` (from `package.json`) and
   `worker_git` (`git describe --always --dirty` in `REPO_ROOT`).
 - `probe_mode_rpc.py` takes the same paths.
@@ -155,27 +155,27 @@ Each new assertion is shown failing first (`docs/sdd.md`).
 
 - Every `mellum-mlx` link in tracked files is rewritten (86 references in
   11 files today):
-  - `.../mellum-mlx/blob/main/docs/research/ladder/X` → `docs/ladder/X`
+  - `.../mellum-mlx/blob/main/docs/research/ladder/X` → `evals/X`
   - `.../mellum-mlx/blob/main/docs/research/<note>` → `docs/superpowers/research/<note>`
   - a note that stays in mellum-mlx (bf16-q6, CoreAI) → the HF model card
     `https://huggingface.co/pauleveritt/Mellum2.1-12B-A2.5B-Thinking-mlx-6bit`
   - prose ("the research repo", "ablated in mellum-mlx") → "the ladder
-    (`ladder/`)" and "the records (`docs/ladder/`)".
+    (`ladder/`)" and "the records (`evals/`)".
 - `extensions/mellum-guards.ts`: its comment's citation becomes
-  `docs/ladder/...`. Comment-only; no code change.
+  `evals/...`. Comment-only; no code change.
 - `docs/sdd.md`: the standing rule reads "Measured settings are not
-  changed without a ladder run in `ladder/`, recorded in `docs/ladder/`";
+  changed without a ladder run in `ladder/`, recorded in `evals/`";
   the "Spec and plan in mellum-mlx" paragraph keeps its two links (history)
   but says the weights repo may go private and the M.1 design is
   summarized in `docs/recipe.md`. New: raw evidence goes in a
   `research-YYYY-MM-DD` release.
 - `README.md`: "Measured, not guessed" and "Findings" point at
-  `docs/ladder/ablation-summary.md` and the moved notes; the weights line
+  `evals/ablation-summary.md` and the moved notes; the weights line
   names the HF repo. One sentence on running the ladder.
 - `AGENTS.md`: the ladder's commands (`cd ladder && uv run python -m pytest`)
   and the rule that raw files are never committed.
 - Guard test, `tests/docs.test.mjs` or a new `tests/no-mellum-mlx.test.mjs`:
-  fails when a tracked file other than `docs/ladder/PROVENANCE.md`,
+  fails when a tracked file other than `evals/PROVENANCE.md`,
   `CHANGELOG.md` (history), and moved research notes' "moved from" line
   mentions `mellum-mlx`. The SDD records in `docs/superpowers/` written
   before this phase are history and may keep their mentions; the test's
@@ -210,7 +210,7 @@ Each new assertion is shown failing first (`docs/sdd.md`).
 5. §4 rewiring and the guard test.
 6. Smoke: `cd ladder && uv run python -m ladder.run_ladder --mode mode
    --profile baseline --rung 1 --repeat 1 --deadline 600 --out
-   ../docs/ladder/smoke-m6-one-repo`. Pass: the rung passes; requests in
+   ../evals/2026-10-09-smoke-m6-one-repo`. Pass: the rung passes; requests in
    A17's rung-1 range (7–9); the first provider request has the v5 prompt
    as its only system message and seven tools; `run.json` has
    `worker_git`. Its README says one run proves the launch, not the rate.
@@ -228,7 +228,7 @@ Steps 3 and 4 are independent after 2; 6 needs 3; 8 needs 4.
 - The smoke passes as in §6 step 6.
 - `git ls-files | xargs du -ch` under 10 MB; no tracked `trace.jsonl`,
   `stdout.txt`, or `diff.patch`.
-- Every phase README under `docs/ladder/` ends with its tarball link, and
+- Every phase README under `evals/` ends with its tarball link, and
   `PROVENANCE.md` lists a hash for each tarball.
 - After Paul's release step: every tarball URL returns 200 and its hash
   matches `PROVENANCE.md`.

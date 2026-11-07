@@ -3,7 +3,13 @@ import test from "node:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import install from "../extensions/mellum-worker.ts";
-import { checkSetup, formatFindings, loadExpected, providerEntry } from "../extensions/mellum-check.ts";
+import { checkSetup, formatFindings, loadExpected } from "../extensions/mellum-check.ts";
+
+// This file exercises the worker ROLE — the mode machinery, run records and the in-session
+// one-shot that `/mellum <task>` runs. In the primary, `/mellum <task>` now delegates to a
+// fresh worker instead; the in-session one-shot lives in the spawned child, which sets this
+// flag. So these tests run as that child. (Each test file runs in its own process.)
+process.env.MELLUM_WORKER_CHILD = "1";
 
 // No test reads or writes the real ~/.pi/agent: activation reads $HOME/.pi/agent/models.json
 // for the server URL, and the run record defaults to $HOME/.pi/agent.
@@ -13,7 +19,7 @@ const noServer = async () => {
 	throw new TypeError("fetch failed: no server in tests");
 };
 
-const MODEL = { provider: "omlx", id: "Mellum2.1-12B-A2.5B-Thinking-6bit" };
+const MODEL = { provider: "llamacpp", id: "Mellum2.1-12B-A2.5B-Thinking" };
 
 function fakePi({ registryHasModel = true } = {}) {
 	const handlers = {};
@@ -49,47 +55,40 @@ test("falls back to the session's model when the oMLX one is absent", async () =
 	assert.ok(!notes.some((m) => m.includes("not found")), JSON.stringify(notes));
 });
 
-test("guard hooks are inert while mode is off", () => {
+test("the thin worker installs no guard hooks, and its tool_call/turn_end never block or nudge", () => {
 	const { handlers } = fakePi();
-	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined);
-	handlers.turn_end(emptyTurn);
-	assert.equal(handlers.agent_before_settle(), undefined);
+	// Guards (loop breaker, empty-turn nudge, …) are remedy units now; the worker adds none.
+	assert.equal(handlers.agent_before_settle, undefined, "no agent_before_settle hook");
+	// Auto-compaction now runs while the mode is on; the worker registers no cancel hook.
+	assert.equal(handlers.session_before_compact, undefined, "no session_before_compact hook");
+	modeIsOff(handlers);
+	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "tool_call never blocks");
+	assert.equal(handlers.turn_end(emptyTurn), undefined, "turn_end never nudges");
 });
 
-test("guard hooks are live while mode is on", async () => {
+test("tool_call stays unblocked across many reads while the mode is on (no built-in loop breaker)", async () => {
 	const { handlers, mellum } = fakePi();
 	await mellum("on");
-	for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-	assert.ok(handlers.tool_call(read)?.block);
-	handlers.turn_end(emptyTurn);
-	assert.ok(handlers.agent_before_settle()?.continue);
+	modeIsOn(handlers);
+	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "the thin worker never blocks a repeat read");
 });
 
-test("guard state is fresh for each span", async () => {
-	const { handlers, mellum } = fakePi();
-	await mellum("on");
-	for (let i = 0; i < 5; i++) handlers.tool_call(read);
-	await mellum("off");
-	await mellum("on");
-	assert.equal(handlers.tool_call(read), undefined, "the new span does not remember the old reads");
-});
-
-test("activating with the model missing from the registry leaves mode and guards off", async () => {
+test("activating with the model missing from the registry leaves the mode off", async () => {
 	const { handlers, mellum } = fakePi({ registryHasModel: false });
 	await mellum("on");
 	for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined);
 	assert.equal(handlers.before_provider_request({ payload: { messages: [] } }), undefined);
 });
 
-test("context hook is dormant when no mellum span exists, and collapses when one does", () => {
+test("the context hook never rewrites while off: the handoff collapse is a remedy unit now", () => {
 	const { handlers } = fakePi();
 	const plain = [{ role: "user", content: [{ type: "text", text: "hi" }] }];
 	assert.equal(handlers.context({ messages: plain }), undefined);
 	const t = (text) => ({ role: "user", content: [{ type: "text", text }] });
 	const messages = [t("hi"), t("[mellum-worker on]"), t("task"), { role: "assistant", content: [{ type: "text", text: "done" }] }, t("[mellum-worker off]"), t("next")];
-	const out = handlers.context({ messages });
-	assert.ok(out && Array.isArray(out.messages));
-	assert.ok(out.messages.length < messages.length);
+	// The worker no longer collapses a finished span; delegate/collapse-handoffs does
+	// (proved in remedy-delegate.test.mjs). While off, the worker's context hook is inert.
+	assert.equal(handlers.context({ messages }), undefined);
 });
 
 test("MELLUM_STRIP_THINKING reaches the payload, and is off by default", async () => {
@@ -332,35 +331,36 @@ async function withRunsFile(body, { prompt, headless } = {}) {
 	}
 }
 
-test("run record carries host, activation, prompt version, nudges and guard blocks", async () => {
+test("run record carries host, activation, prompt version, and zero nudges and guard blocks", async () => {
 	const { readFileSync } = await import("node:fs");
 	const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 	const rec = await withRunsFile(async () => {
 		const { handlers, mellum } = recordingPi({ mode: "tui" });
 		await mellum("on");
 		handlers.context({ messages: snapshot });
-		for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-		assert.ok(handlers.tool_call(read)?.block, "the sixth identical read is blocked");
+		handlers.tool_call(read);
 		handlers.turn_end(emptyTurn);
-		assert.ok(handlers.agent_before_settle()?.continue, "the empty turn is nudged");
 		await mellum("off");
 	});
-	assert.equal(rec.nudges, 1);
-	assert.equal(rec.guardBlocks, 1);
+	// The thin worker runs no guards, so the record always reports zero; a preset's guard
+	// units own blocking and nudging now.
+	assert.equal(rec.nudges, 0);
+	assert.equal(rec.guardBlocks, 0);
 	assert.equal(rec.activation, "on");
 	assert.equal(rec.host, "tui");
-	assert.equal(rec.promptVersion, "v5");
+	// The worker applies no prompt now (the prompt is a remedy unit), so the record says "none".
+	assert.equal(rec.promptVersion, "none");
 	assert.equal(rec.version, pkg.version);
 });
 
-test("a prompt without a version marker records promptVersion unknown", async () => {
+test("the worker records promptVersion none even when a prompt is set — the prompt is a remedy now", async () => {
 	const rec = await withRunsFile(async () => {
 		const { handlers, mellum } = recordingPi({ mode: "tui" });
 		await mellum("on");
 		handlers.context({ messages: snapshot });
 		await mellum("off");
-	}, { prompt: "no marker" });
-	assert.equal(rec.promptVersion, "unknown");
+	}, { prompt: "a prompt the worker must ignore" });
+	assert.equal(rec.promptVersion, "none");
 });
 
 test("MELLUM_MODE=1 at session_start records activation headless and the host mode", async () => {
@@ -446,7 +446,12 @@ async function recordLines(body) {
 }
 
 const offMarkers = (calls) => calls.sendMessage.filter((m) => m.content === "[mellum-worker off]").length;
-const modeIsOff = (handlers) => { for (let i = 0; i < 8; i++) assert.equal(handlers.tool_call(read), undefined, "guard hooks inert: mode is off"); };
+// The thin worker has no compaction hook now (auto-compaction runs while the mode is on), so the
+// mode is read through before_provider_request: it rewrites the payload while on and returns
+// undefined while off.
+const modeOn = (handlers) => handlers.before_provider_request({ payload: { messages: [] } }, { ui: { notify: () => {} } }) !== undefined;
+const modeIsOff = (handlers) => assert.equal(modeOn(handlers), false, "mode is off");
+const modeIsOn = (handlers, msg = "mode is on") => assert.ok(modeOn(handlers), msg);
 
 test("headless one shot: the handler waits for the run, then restores the model and writes the record", async () => {
 	let h;
@@ -483,8 +488,7 @@ test("one shot with a UI: the handler returns at once and agent_settled turns th
 	const h = headlessPi({ hasUI: true, startsRun: false, startTimeoutMs: 20 });
 	await h.mellum("fix it");
 	assert.equal(h.calls.waitForIdle, 0, "waitForIdle never called");
-	for (let i = 0; i < 5; i++) assert.equal(h.handlers.tool_call(read), undefined);
-	assert.ok(h.handlers.tool_call(read)?.block, "mode still on after return: the sixth identical read is blocked");
+	modeIsOn(h.handlers, "mode still on after return");
 	await h.handlers.agent_settled({}, h.ctx);
 	modeIsOff(h.handlers);
 	assert.equal(offMarkers(h.calls), 1);
@@ -493,8 +497,7 @@ test("one shot with a UI: the handler returns at once and agent_settled turns th
 test("headless ctx without waitForIdle: the handler returns with the mode on and does not throw", async () => {
 	const h = headlessPi({ withWait: false, startsRun: false, startTimeoutMs: 20 });
 	await h.mellum("fix it");
-	for (let i = 0; i < 5; i++) assert.equal(h.handlers.tool_call(read), undefined);
-	assert.ok(h.handlers.tool_call(read)?.block, "mode still on after return");
+	modeIsOn(h.handlers, "mode still on after return");
 	assert.equal(offMarkers(h.calls), 0);
 });
 
@@ -537,7 +540,7 @@ test("without a UI, a missing Mellum model is reported on stderr and the mode st
 	h.ctx.modelRegistry.find = () => undefined;
 	const lines = await captureStderr(() => h.mellum("fix it"));
 	assert.equal(lines.length, 1, "one stderr line");
-	assert.match(lines[0], /omlx\/Mellum2\.1-12B-A2\.5B-Thinking-6bit not found/);
+	assert.match(lines[0], /llamacpp\/Mellum2\.1-12B-A2\.5B-Thinking not found/);
 	modeIsOff(h.handlers);
 });
 
@@ -550,146 +553,22 @@ test("with a UI, a missing Mellum model is a notify error and nothing goes to st
 	modeIsOff(h.handlers);
 });
 
-// Runs `body(dir)` with the process in a fresh project directory holding `files`, restoring cwd and env.
-async function inProject(files, body, { env = {} } = {}) {
-	const { mkdtempSync, writeFileSync, realpathSync } = await import("node:fs");
-	const { tmpdir } = await import("node:os");
-	const dir = realpathSync(mkdtempSync(join_(tmpdir(), "mellum-proj-")));
-	for (const [name, content] of Object.entries(files)) writeFileSync(join_(dir, name), content);
-	const cwd = process.cwd();
-	const saved = Object.fromEntries(Object.keys(env).map((k) => [k, process.env[k]]));
-	Object.assign(process.env, env);
-	process.chdir(dir);
-	try {
-		return await body(dir);
-	} finally {
-		process.chdir(cwd);
-		for (const [k, v] of Object.entries(saved)) {
-			if (v === undefined) delete process.env[k];
-			else process.env[k] = v;
-		}
-	}
-}
-
-const FACTS_MD = "# P\n\n## Mellum\n\n- Test command: make test\n- Do not: add dependencies\n";
-const userMsg = (text) => ({ role: "user", content: [{ type: "text", text }] });
-
-test("/mellum on reads the project's facts, marks the source, and forwards the block on every request", async () => {
-	await inProject({ "AGENTS.md": FACTS_MD }, async () => {
-		const { handlers, ctx, calls, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		const on = calls.sendMessage.find((m) => String(m.content).includes("[mellum-worker on]"));
-		assert.equal(on.content, "[mellum-worker on] facts: agents-md");
-		const payload = { messages: [userMsg("[mellum-worker on] facts: agents-md"), userMsg("task one")] };
-		for (let i = 0; i < 2; i++) {
-			const out = handlers.before_provider_request({ payload }, ctx);
-			assert.equal(out.messages[1].content[0].text, "task one\n\nProject facts:\n- Test command: make test\n- Do not: add dependencies");
-		}
-		assert.equal(payload.messages[1].content[0].text, "task one", "the session's message is unchanged");
-	});
-});
-
-test("headless activation (MELLUM_MODE=1, no marker) forwards the facts to the task message", async () => {
-	await inProject({ "AGENTS.md": FACTS_MD }, async () => {
-		const { handlers, ctx, calls } = recordingPi({ mode: "json" });
-		const saved = process.env.MELLUM_MODE;
-		process.env.MELLUM_MODE = "1";
-		try {
-			await handlers.session_start({}, ctx);
-		} finally {
-			if (saved === undefined) delete process.env.MELLUM_MODE;
-			else process.env.MELLUM_MODE = saved;
-		}
-		assert.equal(calls.sendMessage.length, 0, "headless sends no marker");
-		const out = handlers.before_provider_request({ payload: { messages: [{ role: "system", content: "pi" }, userMsg("Implement specs/phase-1.md")] } }, ctx);
-		assert.deepEqual(out.messages.map((m) => m.role), ["system", "user"]);
-		assert.match(out.messages[1].content[0].text, /^Implement specs\/phase-1\.md\n\nProject facts:\n- Test command: make test\n/);
-	});
-});
-
-test("the run record carries facts: source, test command, chars", async () => {
-	const rec = await inProject({ "AGENTS.md": FACTS_MD }, () => withRunsFile(async () => {
-		const { handlers, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		handlers.context({ messages: snapshot });
-		await mellum("off");
-	}));
-	assert.deepEqual(rec.facts, { source: "agents-md", testCommand: "make test", chars: "Test command: make test".length + "Do not: add dependencies".length });
-});
-
-test("the fallback is detected from a pytest pyproject and recorded", async () => {
-	const rec = await inProject({ "pyproject.toml": '[dependency-groups]\ndev = ["pytest"]\n' }, () => withRunsFile(async () => {
-		const { handlers, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		handlers.context({ messages: snapshot });
-		await mellum("off");
-	}));
-	assert.deepEqual(rec.facts, { source: "detected", testCommand: "uv run --offline python -m pytest -q", chars: "Test command: uv run --offline python -m pytest -q".length });
-});
-
-test("MELLUM_MODE_FACTS=0 records off, marks off, and forwards nothing", async () => {
-	await inProject({ "AGENTS.md": FACTS_MD }, async () => {
-		const rec = await withRunsFile(async () => {
-			const { handlers, ctx, calls, mellum } = recordingPi({ mode: "tui" });
-			await mellum("on");
-			assert.equal(calls.sendMessage.find((m) => String(m.content).includes("[mellum-worker on]")).content, "[mellum-worker on] facts: off");
-			const out = handlers.before_provider_request({ payload: { messages: [userMsg("[mellum-worker on]"), userMsg("t")] } }, ctx);
-			assert.equal(out.messages[1].content[0].text, "t");
-			handlers.context({ messages: snapshot });
-			await mellum("off");
-		});
-		assert.deepEqual(rec.facts, { source: "off", testCommand: null, chars: 0 });
-	}, { env: { MELLUM_MODE_FACTS: "0" } });
-});
-
-test("a section over the cap warns on activation and falls back", async () => {
-	await inProject({ "AGENTS.md": `## Mellum\n- Do not: ${"x".repeat(700)}\n` }, async () => {
-		const { calls, mellum } = recordingPi({ mode: "tui" });
-		await mellum("on");
-		assert.ok(calls.notify.some(([m, l]) => /600/.test(m) && l === "warning"), JSON.stringify(calls.notify));
-		assert.equal(calls.sendMessage.find((m) => String(m.content).includes("[mellum-worker on]")).content, "[mellum-worker on] facts: none");
-	});
-});
-
-test("without a UI the over-cap warning goes to stderr", async () => {
-	await inProject({ "AGENTS.md": `## Mellum\n- Do not: ${"x".repeat(700)}\n` }, async () => {
-		const { calls, mellum } = recordingPi({ mode: "print", hasUI: false });
-		const errs = [];
-		const orig = console.error;
-		console.error = (...a) => errs.push(a.join(" "));
-		try {
-			await mellum("on");
-		} finally {
-			console.error = orig;
-		}
-		assert.ok(errs.some((m) => /600/.test(m)), JSON.stringify(errs));
-		assert.ok(!calls.notify.some(([, l]) => l === "warning"), "no UI notification for the warning");
-	});
-});
-
-test("the parent's handoff summary line names the facts source from the span's on-marker", async () => {
-	const { handlers } = recordingPi();
-	const out = handlers.context({ messages: [userMsg("task"), { role: "custom", customType: "mellum-worker", content: "[mellum-worker on] facts: detected" }, { role: "assistant", content: [{ type: "text", text: "done" }] }, { role: "custom", customType: "mellum-worker", content: "[mellum-worker off]" }, userMsg("next")] });
-	const handoff = out.messages.find((m) => JSON.stringify(m).includes("handoff"));
-	assert.match(JSON.stringify(handoff), /, facts: detected/);
-});
 
 // ---- the server settings check: on activation, in the run record, and /mellum check ----
 
 const FIX = new URL("./fixtures/check/", import.meta.url);
 const fixtureJson = (name) => JSON.parse(readFileSync(new URL(name, FIX), "utf8"));
 const response = (body, status = 200) => ({ ok: status < 300, status, json: async () => body });
-const DRIFT_WARNING =
-	"Mellum server settings differ: max_context_window 32768 (expected 56000), turboquant_kv_enabled true (expected false). Run /mellum check.";
+const LOW_CTX_WARNING = "the llama-server context window is 32768, below the measured 50000. Run /mellum check.";
 
-// A fake oMLX that answers the three GETs from the fixtures and records every call.
-function fakeServer(adminModels = "admin-models-drift.json") {
+// A fake llama-server that answers /health, /props and /v1/models from the fixtures and records every call.
+function fakeServer(props = "props-low.json") {
 	const calls = [];
 	const fetch = async (url, init) => {
 		const u = String(url);
 		calls.push({ url: u, method: init?.method ?? "GET" });
-		if (u.endsWith("/admin/api/models")) return response(fixtureJson(adminModels));
-		if (u.endsWith("/admin/api/global-settings")) return response(fixtureJson("global-settings.json"));
+		if (u.endsWith("/health")) return response(fixtureJson("health.json"));
+		if (u.endsWith("/props")) return response(fixtureJson(props));
 		if (u.endsWith("/v1/models")) return response(fixtureJson("v1-models.json"));
 		return response({}, 404);
 	};
@@ -714,74 +593,45 @@ async function withHome(models, body) {
 
 const warnings = (calls) => calls.notify.filter(([, l]) => l === "warning");
 
-test("activation with drifted server settings warns once with the exact message, and Mode still turns on", async () => {
-	const server = fakeServer("admin-models-drift.json");
+test("activation with a low context window warns once with the exact message, and Mode still turns on", async () => {
+	const server = fakeServer("props-low.json");
 	const { handlers, calls, mellum } = recordingPi({ mode: "tui", fetch: server.fetch });
 	await mellum("on");
-	assert.deepEqual(calls.notify.filter(([m]) => m.startsWith("Mellum server settings differ")), [[DRIFT_WARNING, "warning"]]);
-	assert.deepEqual(server.calls, [{ url: "http://127.0.0.1:8001/admin/api/models", method: "GET" }], "one admin GET, nothing else");
-	for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-	assert.ok(handlers.tool_call(read)?.block, "mode is on: the sixth identical read is blocked");
+	assert.deepEqual(calls.notify.filter(([m]) => m.startsWith("the llama-server")), [[LOW_CTX_WARNING, "warning"]]);
+	assert.deepEqual(
+		server.calls,
+		[
+			{ url: "http://127.0.0.1:8001/health", method: "GET" },
+			{ url: "http://127.0.0.1:8001/props", method: "GET" },
+		],
+		"one /health and one /props GET, nothing else",
+	);
+	modeIsOn(handlers);
 });
 
-test("activation with matching server settings warns nothing", async () => {
-	const server = fakeServer("admin-models-match.json");
+test("activation against a healthy server at the measured context warns nothing", async () => {
+	const server = fakeServer("props.json");
 	const { calls, mellum } = recordingPi({ mode: "tui", fetch: server.fetch });
 	await mellum("on");
 	assert.deepEqual(warnings(calls), []);
-	assert.equal(server.calls.length, 1);
+	assert.equal(server.calls.length, 2);
 });
 
-test("activation ignores server values the client's request overrides (max_tokens, thinking, penalties)", async () => {
-	const admin = fixtureJson("admin-models-match.json");
-	Object.assign(admin.models[0].settings, { max_tokens: 16384, forced_ct_kwargs: null, enable_thinking: false, presence_penalty: 0.5 });
-	const { calls, mellum } = recordingPi({ mode: "tui", fetch: async () => response(admin) });
+test("activation warns when the server does not report status ok", async () => {
+	const fetch = async (url) => (String(url).endsWith("/health") ? response({ status: "loading" }) : response(fixtureJson("props.json")));
+	const { calls, mellum } = recordingPi({ mode: "tui", fetch });
 	await mellum("on");
-	assert.deepEqual(warnings(calls), []);
-	const rec = await withRunsFile(async () => {
-		const { handlers, mellum: m } = recordingPi({ mode: "tui", fetch: async () => response(admin) });
-		await m("on");
-		handlers.context({ messages: snapshot });
-		await m("off");
-	});
-	assert.deepEqual(rec.server, { match: true, diffs: [] });
+	assert.deepEqual(warnings(calls).map(([m]) => m), ["the llama-server did not report status ok. Run /mellum check."]);
 });
 
-test("the three server rules warn on activation and mark the record; their near-misses do not", async () => {
-	const withSettings = (over) => {
-		const admin = fixtureJson("admin-models-match.json");
-		Object.assign(admin.models[0].settings, over);
-		return admin;
-	};
-	const activate = async (over) => {
-		const { calls, mellum } = recordingPi({ mode: "tui", fetch: async () => response(withSettings(over)) });
-		await mellum("on");
-		return warnings(calls).map(([m]) => m);
-	};
-	assert.deepEqual(await activate({ forced_ct_kwargs: ["enable_thinking"], enable_thinking: false }), [
-		"Mellum server settings differ: enable_thinking false (expected true). Run /mellum check.",
-	]);
-	assert.deepEqual(await activate({ force_sampling: true, temperature: 0.6 }), ["Mellum server settings differ: temperature 0.6 (expected 1). Run /mellum check."]);
-	assert.deepEqual(await activate({ thinking_budget_enabled: true }), ["Mellum server settings differ: thinking_budget_enabled true (expected false). Run /mellum check."]);
-	assert.deepEqual(await activate({ enable_thinking: false }), [], "not forced: the request wins");
-	assert.deepEqual(await activate({ force_sampling: false, temperature: 0.6 }), [], "sampling not forced");
-	const rec = await withRunsFile(async () => {
-		const { handlers, mellum } = recordingPi({ mode: "tui", fetch: async () => response(withSettings({ max_tool_result_tokens: 4000 })) });
-		await mellum("on");
-		handlers.context({ messages: snapshot });
-		await mellum("off");
-	});
-	assert.deepEqual(rec.server, { match: false, diffs: [{ key: "max_tool_result_tokens", expected: null, actual: 4000 }] });
-});
-
-test("the activation check uses the baseUrl of the Pi omlx provider", async () => {
+test("the activation check uses the baseUrl of the Pi llamacpp provider", async () => {
 	const models = fixtureJson("pi-models.json");
-	models.providers.omlx.baseUrl = "http://127.0.0.1:9999/v1";
+	models.providers.llamacpp.baseUrl = "http://127.0.0.1:9999/v1";
 	await withHome(models, async () => {
-		const server = fakeServer();
+		const server = fakeServer("props.json");
 		const { mellum } = recordingPi({ mode: "tui", fetch: server.fetch });
 		await mellum("on");
-		assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:9999/admin/api/models"]);
+		assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:9999/health", "http://127.0.0.1:9999/props"]);
 	});
 });
 
@@ -792,8 +642,7 @@ test("an activation check whose fetch never resolves and ignores the signal retu
 	const elapsed = Date.now() - t0;
 	assert.ok(elapsed < 1500, `activation took ${elapsed} ms`);
 	assert.deepEqual(warnings(calls), []);
-	for (let i = 0; i < 5; i++) assert.equal(handlers.tool_call(read), undefined);
-	assert.ok(handlers.tool_call(read)?.block, "mode is on");
+	modeIsOn(handlers);
 });
 
 test("an unreachable server is silent on activation, with or without a UI", async () => {
@@ -806,11 +655,11 @@ test("an unreachable server is silent on activation, with or without a UI", asyn
 });
 
 test("the one-shot and headless activations run the check too; without a UI the warning goes to stderr", async () => {
-	const oneShot = fakeServer();
+	const oneShot = fakeServer("props-low.json");
 	const a = recordingPi({ mode: "tui", hasUI: true, fetch: oneShot.fetch });
 	await a.mellum("fix it");
-	assert.deepEqual(a.calls.notify.filter(([m]) => m === DRIFT_WARNING), [[DRIFT_WARNING, "warning"]]);
-	const headless = fakeServer();
+	assert.deepEqual(a.calls.notify.filter(([m]) => m === LOW_CTX_WARNING), [[LOW_CTX_WARNING, "warning"]]);
+	const headless = fakeServer("props-low.json");
 	const b = recordingPi({ mode: "json", hasUI: false, fetch: headless.fetch });
 	const saved = process.env.MELLUM_MODE;
 	process.env.MELLUM_MODE = "1";
@@ -821,11 +670,11 @@ test("the one-shot and headless activations run the check too; without a UI the 
 		if (saved === undefined) delete process.env.MELLUM_MODE;
 		else process.env.MELLUM_MODE = saved;
 	}
-	assert.deepEqual(lines, [DRIFT_WARNING]);
-	assert.equal(headless.calls.length, 1);
+	assert.deepEqual(lines, [LOW_CTX_WARNING]);
+	assert.equal(headless.calls.length, 2);
 });
 
-test("the run record carries server: match false with the diffs, true when they match, null when unreadable", async () => {
+test("the run record carries server: up with the context window, and up null when unreachable", async () => {
 	const span = async (fetch) =>
 		withRunsFile(async () => {
 			const { handlers, mellum } = recordingPi({ mode: "tui", fetch });
@@ -833,32 +682,22 @@ test("the run record carries server: match false with the diffs, true when they 
 			handlers.context({ messages: snapshot });
 			await mellum("off");
 		});
-	const drift = await span(fakeServer("admin-models-drift.json").fetch);
-	assert.deepEqual(drift.server, {
-		match: false,
-		diffs: [
-			{ key: "max_context_window", expected: 56000, actual: 32768 },
-			{ key: "turboquant_kv_enabled", expected: false, actual: true },
-		],
-	});
-	assert.deepEqual((await span(fakeServer("admin-models-match.json").fetch)).server, { match: true, diffs: [] });
-	assert.deepEqual((await span(noServer)).server, { match: null, diffs: [] });
-	assert.deepEqual((await span(async () => response({}, 401))).server, { match: null, diffs: [] });
+	assert.deepEqual((await span(fakeServer("props-low.json").fetch)).server, { up: true, nCtx: 32768 });
+	assert.deepEqual((await span(fakeServer("props.json").fetch)).server, { up: true, nCtx: 50176 });
+	assert.deepEqual((await span(noServer)).server, { up: null });
+	assert.deepEqual((await span(async () => response({}, 401))).server, { up: null });
 });
 
-// The text /mellum check should print for the drift fixture with HOME holding pi-models.json.
-function expectedCheckText(adminModels) {
+// The text /mellum check should print, built from the same fixtures the fake server answers.
+function expectedCheckText(props) {
 	const ok = (value) => ({ ok: true, value });
-	const template = providerEntry("pi", JSON.parse(readFileSync(new URL("../templates/pi/models.omlx.json", import.meta.url), "utf8")));
 	return formatFindings(
 		checkSetup(
 			{
 				baseUrl: "http://127.0.0.1:8001/v1",
+				health: ok(fixtureJson("health.json")),
+				props: ok(fixtureJson(props)),
 				models: ok(fixtureJson("v1-models.json")),
-				adminModels: ok(fixtureJson(adminModels)),
-				global: ok(fixtureJson("global-settings.json")),
-				provider: { host: "pi", entry: providerEntry("pi", fixtureJson("pi-models.json")) },
-				template,
 			},
 			loadExpected(),
 		),
@@ -867,11 +706,11 @@ function expectedCheckText(adminModels) {
 
 test("/mellum check notifies the findings, GETs only, and never turns Mode on", async () => {
 	await withHome(fixtureJson("pi-models.json"), async () => {
-		const server = fakeServer("admin-models-drift.json");
+		const server = fakeServer("props-low.json");
 		const { handlers, calls, mellum } = recordingPi({ mode: "tui", hasUI: true, fetch: server.fetch });
 		await mellum("check");
-		const text = expectedCheckText("admin-models-drift.json");
-		assert.match(text, /^FAIL settings/);
+		const text = expectedCheckText("props-low.json");
+		assert.match(text, /^FAIL context/);
 		assert.deepEqual(calls.notify, [[text, "error"]]);
 		assert.deepEqual(server.calls.map((c) => c.method), ["GET", "GET", "GET"]);
 		assert.deepEqual(calls.setModel, [], "no model switch");
@@ -882,7 +721,7 @@ test("/mellum check notifies the findings, GETs only, and never turns Mode on", 
 
 test("/mellum check without a UI prints the findings to stdout", async () => {
 	await withHome(fixtureJson("pi-models.json"), async () => {
-		const server = fakeServer("admin-models-match.json");
+		const server = fakeServer("props.json");
 		const { handlers, calls, mellum } = recordingPi({ mode: "print", hasUI: false, fetch: server.fetch });
 		const out = [];
 		const original = console.log;
@@ -892,7 +731,7 @@ test("/mellum check without a UI prints the findings to stdout", async () => {
 		} finally {
 			console.log = original;
 		}
-		assert.deepEqual(out, [expectedCheckText("admin-models-match.json")]);
+		assert.deepEqual(out, [expectedCheckText("props.json")]);
 		assert.deepEqual(calls.notify, []);
 		assert.deepEqual(calls.setModel, []);
 		modeIsOff(handlers);
@@ -909,7 +748,7 @@ async function withLearn(pattern, body, { workerPattern } = {}) {
 	const { realpathSync } = await import("node:fs");
 	const cwd = realpathSync(mkdtempSync(`${tmpdir()}/mellum-learn-cwd-`));
 	const runs = `${mkdtempSync(`${tmpdir()}/mellum-learn-runs-`)}/runs.jsonl`;
-	const moved = (name) => readFileSync(new URL(`${name}.jsonl`, LEARN_FIX), "utf8").replaceAll("/home/user/proj", cwd);
+	const moved = (name) => readFileSync(new URL(`${name}.jsonl`, LEARN_FIX), "utf8").replaceAll("/home/user/proj", JSON.stringify(cwd).slice(1, -1)); // escaped: a Windows path has backslashes
 	writeFileSync(runs, pattern ? moved(pattern) : "");
 	const saved = { HOME: process.env.HOME, RUNS: process.env.MELLUM_MODE_RUNS };
 	process.env.HOME = mkdtempSync(`${tmpdir()}/mellum-home-`);
@@ -1040,7 +879,8 @@ test("/mellum learn 0 warns and reads nothing; a failed write warns and does not
 	await withLearn("servers", async (cwd) => {
 		const records = readFileSync(process.env.MELLUM_MODE_RUNS, "utf8");
 		const gone = `${cwd}/missing-dir`;
-		writeFileSync(process.env.MELLUM_MODE_RUNS, records.replaceAll(cwd, gone));
+		const inJson = (p) => JSON.stringify(p).slice(1, -1);
+		writeFileSync(process.env.MELLUM_MODE_RUNS, records.replaceAll(inJson(cwd), inJson(gone)));
 		const { calls, mellum } = learnPi(gone, { answer: true });
 		await mellum("learn");
 		assert.equal(calls.confirm.length, 1);
@@ -1106,11 +946,11 @@ test("/mellum learn re-reads AGENTS.md after yes: an edit that changes the lines
 });
 
 test("/mellum check <words> is a one-shot task, not the check", async () => {
-	const server = fakeServer("admin-models-match.json");
+	const server = fakeServer("props.json");
 	const { calls, mellum } = recordingPi({ mode: "tui", hasUI: true, fetch: server.fetch });
 	await mellum("check the export totals");
 	assert.equal(calls.setModel.length, 1, "Mode switched to Mellum");
-	assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:8001/admin/api/models"], "only the activation GET");
+	assert.deepEqual(server.calls.map((c) => c.url), ["http://127.0.0.1:8001/health", "http://127.0.0.1:8001/props"], "only the activation GETs");
 });
 
 // ---- /mellum last: the newest run as a Markdown table ----
@@ -1184,4 +1024,41 @@ test("/mellum last with recording off says recording is off", async () => {
 		await mellum("last");
 		assert.ok(calls.notify.some(([m]) => m.includes("run records are off (MELLUM_MODE_RUNS=0)")), JSON.stringify(calls.notify));
 	});
+});
+
+// PowerShell sets no HOME; os.homedir() is USERPROFILE there. The record must not land in the cwd.
+test("with no HOME (Windows PowerShell), the run record goes under the user's home, not the cwd", { skip: process.platform !== "win32" }, async () => {
+	const { mkdtempSync, existsSync } = await import("node:fs");
+	const { tmpdir } = await import("node:os");
+	const { join } = await import("node:path");
+	const profile = mkdtempSync(join(tmpdir(), "mellum-profile-"));
+	const cwd = mkdtempSync(join(tmpdir(), "mellum-cwd-"));
+	const saved = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE, dir: process.cwd() };
+	const handlers = {};
+	const commands = {};
+	const pi = {
+		on: (name, fn) => { handlers[name] = fn; },
+		registerCommand: (name, def) => { commands[name] = def; },
+		getActiveTools: () => ["read"], setActiveTools: () => {}, setModel: async () => true, sendMessage: () => {}, sendUserMessage: () => {},
+	};
+	const ctx = { model: { provider: "anthropic", id: "parent" }, modelRegistry: { find: () => MODEL }, ui: { notify: () => {} } };
+	install(pi, { fetch: noServer });
+	try {
+		delete process.env.HOME;
+		process.env.USERPROFILE = profile;
+		process.chdir(cwd);
+		await commands.mellum.handler("on", ctx);
+		handlers.context({ messages: [
+			{ role: "user", content: [{ type: "text", text: "fix the cart" }] },
+			{ role: "user", content: [{ type: "text", text: "[mellum-worker on]" }] },
+			{ role: "assistant", timestamp: Date.now(), usage: { output: 5 }, content: [{ type: "text", text: "ok" }] },
+		] });
+		await commands.mellum.handler("off", ctx);
+		assert.equal(existsSync(join(profile, ".pi", "agent", "mellum-mode-runs.jsonl")), true, "record under the home folder");
+		assert.equal(existsSync(join(cwd, ".pi")), false, "nothing written into the cwd");
+	} finally {
+		process.chdir(saved.dir);
+		process.env.HOME = saved.HOME;
+		process.env.USERPROFILE = saved.USERPROFILE;
+	}
 });

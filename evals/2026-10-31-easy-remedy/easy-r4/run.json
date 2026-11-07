@@ -1,0 +1,56 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "remedies": [
+    "tool/background-long-commands"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/tool/background-long-commands.ts",
+      "sha256": "c32c64a730025fcb76c22878af940468e8c71b1473f584759c367fd240b379e8"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/extensions/mellum-acceptance.ts",
+      "sha256": "df232dd4da1b3865ce0eb821435882d05c29bf2f3d4d64239363f2ba46ef5bb7"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/extensions/mellum-ncm.ts",
+      "sha256": "2895175cedc5d326bf9665db3780a287f4ebf6b62995988ef1949ce3b9d80242"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 18,
+  "turns": 18,
+  "tool_calls": 17,
+  "tool_errors": 1,
+  "context": 1584,
+  "output_tokens": 6398,
+  "wall": 57.748,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

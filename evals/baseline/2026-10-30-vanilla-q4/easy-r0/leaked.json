@@ -1,0 +1,22 @@
+[
+  {
+    "pid": 79606,
+    "pgid": null,
+    "command": "uv run app.py"
+  },
+  {
+    "pid": 79607,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/runs/baseline-q4-em-20261030T173325Z/20261030T173325Z-easy-1993b2/workspace/.venv/bin/python app.py"
+  },
+  {
+    "pid": 79608,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/runs/baseline-q4-em-20261030T173325Z/20261030T173325Z-easy-1993b2/workspace/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+  },
+  {
+    "pid": 79609,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/runs/baseline-q4-em-20261030T173325Z/20261030T173325Z-easy-1993b2/workspace/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+  }
+]

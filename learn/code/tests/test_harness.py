@@ -1,5 +1,6 @@
 import json
 import time
+from datetime import datetime
 import re
 import os
 import shutil
@@ -64,16 +65,41 @@ def test_pi_argv_isolates_the_child():
     assert argv[-1] == task.prompt
 
 
-def test_arms_select_the_extension_and_guards():
+def test_context_files_switch_keeps_or_drops_agents_md():
+    task = harness.load_suite(SUITES, "add")
+    cold = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", task.prompt)
+    warm = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", task.prompt,
+                           context_files=True)
+    # Cold is the default: the workspace's own AGENTS.md is stripped with everything else.
+    assert "--no-context-files" in cold
+    # Warm keeps it, and drops nothing else from the isolation bundle.
+    assert "--no-context-files" not in warm
+    for flag in ("--no-approve", "--no-extensions", "--no-skills",
+                 "--no-prompt-templates", "--no-themes"):
+        assert flag in warm
+
+
+def test_arms_select_the_extension():
     worker = harness.arm_settings("worker")
     assert worker["extension"].name == "mellum-worker.ts"
-    no_prompt = harness.arm_settings("no-prompt")
-    assert no_prompt["env"]["MELLUM_WORKER_PROMPT"] == "pi"
-    no_nudge = harness.arm_settings("no-nudge")
-    assert json.loads(no_nudge["env"]["MELLUM_GUARDS"]) == {"loopBreaker": True}
-    no_loop = harness.arm_settings("no-loop")
-    assert json.loads(no_loop["env"]["MELLUM_GUARDS"]) == {"emptyFinalNudge": 3}
-    assert harness.arm_settings("bare")["extension"] is None
+    assert worker["env"] == {"MELLUM_MODE": "1"}
+    # The worker is always loaded, even on the bare arm, but mode stays off (no MELLUM_MODE), so bare
+    # still sends vanilla Pi's requests — the engagement is MELLUM_MODE=1, not the extension's presence.
+    bare = harness.arm_settings("bare")
+    assert bare["extension"].name == "mellum-worker.ts"
+    assert "MELLUM_MODE" not in bare["env"]
+    # vanilla is the true floor: no worker extension at all, only the recorder.
+    assert harness.arm_settings("vanilla")["extension"] is None
+
+
+def test_the_dead_ablation_arms_are_gone():
+    # The decoupled worker reads only MELLUM_STRIP_THINKING; MELLUM_GUARDS,
+    # MELLUM_WORKER_PROMPT and MELLUM_MODE_FACTS are read by nothing, so the arms
+    # that set them were inert and have been removed. Ablation is a `--remedy` now.
+    assert harness.ARMS == ("vanilla", "bare", "worker", "strip-thinking")
+    for dead in ("no-prompt", "no-nudge", "no-loop", "no-facts", "server-guard", "no-facts-guard"):
+        with pytest.raises(SystemExit):
+            harness.arm_settings(dead)
 
 
 def test_the_strip_thinking_arm_opens_exactly_one_seam():
@@ -94,17 +120,6 @@ def test_the_record_says_whether_reasoning_was_stripped(tmp_path):
         assert record["arm"] == arm
 
 
-def test_the_server_guard_arm_keeps_the_other_guards_on():
-    env = harness.arm_settings("server-guard")["env"]
-    # MELLUM_GUARDS replaces ENABLED, so the arm must carry the whole set or it
-    # would change three things and be no arm at all.
-    assert json.loads(env["MELLUM_GUARDS"]) == harness.GUARDS_WITH_SERVER
-    assert harness.GUARDS_WITH_SERVER == {"emptyFinalNudge": 3, "loopBreaker": True,
-                                          "blockForegroundServer": True}
-    assert "MELLUM_MODE_FACTS" not in env
-    alone = harness.arm_settings("no-facts-guard")["env"]
-    assert alone["MELLUM_MODE_FACTS"] == "0"
-    assert json.loads(alone["MELLUM_GUARDS"]) == harness.GUARDS_WITH_SERVER
 
 
 def test_two_prompts_share_one_session(tmp_path):
@@ -228,7 +243,59 @@ def test_report_counts_the_trace(tmp_path):
         "requests": 2, "turns": 2, "tool_calls": 1, "tool_errors": 1,
         "final_reply": "done", "context": 1500, "output_tokens": 30,
         "wall": 2.0, "nudges": 0, "empty_finals": 0, "guard_blocks": 0,
+        "reasoning_as_text": 0, "compactions": 0,
     }
+
+
+def test_report_counts_turns_whose_reasoning_reached_the_model_as_text(tmp_path):
+    # A serving stack that misparses reasoning returns it as <think> text, and
+    # Pi feeds it back as things the model said (research note
+    # 2026-10-29-lan-reasoning-leak). The record counts it from the history the
+    # model was sent, so a repaired turn counts 0.
+    run_dir = tmp_path / "r"
+    run_dir.mkdir()
+    history = [
+        {"role": "user", "content": "go"},
+        {"role": "assistant", "content": None, "reasoning": "fine"},
+        {"role": "tool", "content": "ok"},
+        {"role": "assistant", "content": "<think>\nleaked\n</think>\n\nnext"},
+        {"role": "tool", "content": "ok"},
+        {"role": "assistant", "content": "<think>\nagain</think>"},
+    ]
+    _write_trace(run_dir, [
+        {"type": "provider_request", "payload": {"messages": history[:4]}},
+        {"type": "provider_request", "payload": {"messages": history}},
+    ])
+    assert harness.report(run_dir)["reasoning_as_text"] == 2
+
+
+def test_a_challenge_can_require_the_record_to_be_clean(tmp_path):
+    # Some failures live in the record, not the workspace: a challenge's
+    # record.json caps run.json fields, and a run over a cap fails.
+    suite_dir = tmp_path / "suites" / "plumbing"
+    (suite_dir / "grader").mkdir(parents=True)
+    (suite_dir / "task.md").write_text("Do it.")
+    (suite_dir / "record.json").write_text('{"reasoning_as_text": 0}')
+    suite = harness.load_suite(tmp_path / "suites", "plumbing")
+    assert suite.record == {"reasoning_as_text": 0}
+    assert harness.record_failures({"reasoning_as_text": 10}, suite.record) == [
+        "reasoning_as_text is 10 (at most 0)"]
+    assert harness.record_failures({"reasoning_as_text": 0}, suite.record) == []
+    assert harness.record_failures({}, None) == []
+
+
+def test_report_counts_the_compactions_a_full_context_forced(tmp_path):
+    # Pi compacts when the context nears its window: the model summarises its
+    # own history and loses detail. The record counts each one.
+    run_dir = tmp_path / "r"
+    run_dir.mkdir()
+    _write_trace(run_dir, [
+        {"type": "provider_request"},
+        {"type": "before_compact", "reason": "threshold"},
+        {"type": "provider_request"},
+        {"type": "before_compact", "reason": "overflow"},
+    ])
+    assert harness.report(run_dir)["compactions"] == 2
 
 
 def test_report_without_text(tmp_path):
@@ -238,7 +305,8 @@ def test_report_without_text(tmp_path):
     assert harness.report(run_dir) == {
         "requests": 0, "turns": 0, "tool_calls": 0, "tool_errors": 0,
         "final_reply": "", "context": None, "output_tokens": None, "wall": None,
-        "nudges": 0, "empty_finals": 0, "guard_blocks": 0,
+        "nudges": 0, "empty_finals": 0, "guard_blocks": 0, "reasoning_as_text": 0,
+        "compactions": 0,
     }
 
 
@@ -440,7 +508,7 @@ def test_medium_ships_both_spec_variants():
 
 def test_the_split_keeps_the_roadmaps_phases():
     suite = harness.load_suite(harness.SUITES, "medium")
-    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text()
+    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text(encoding="utf-8")
     blocks, current = {}, None
     for line in roadmap.splitlines():
         if line.startswith("## Phase"):
@@ -453,7 +521,7 @@ def test_the_split_keeps_the_roadmaps_phases():
     assert sorted(blocks) == ["phase-1", "phase-2", "phase-3", "phase-4"]
     split = harness.load_variant(suite, "split")
     for name, lines in blocks.items():
-        text = (split / "specs" / f"{name}.md").read_text()
+        text = (split / "specs" / f"{name}.md").read_text(encoding="utf-8")
         for line in lines:
             assert line in text, f"{name} lost: {line}"
 
@@ -481,7 +549,7 @@ def test_medium_base_ships_a_phase1_smoke_test():
 
 def test_medium_asks_for_the_home_page_in_process():
     suite = harness.load_suite(harness.SUITES, "medium")
-    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text()
+    roadmap = (suite.root / "base" / "specs" / "roadmap.md").read_text(encoding="utf-8")
     assert "TestClient" in roadmap, "the roadmap never asks for an in-process check"
     split = (harness.load_variant(suite, "split") / "specs" / "phase-1.md").read_text()
     assert "TestClient" in split
@@ -612,6 +680,47 @@ def test_grade_ignores_a_copied_tests_dir(tmp_path):
     assert results["ruff"] is True
 
 
+def test_grade_ignores_a_dot_venv(tmp_path):
+    # The worker runs `uv` during its task, so a .venv exists at grade time.
+    # ruff's --exclude REPLACES its built-in excludes (which include .venv), so
+    # grade() was linting installed packages (F403 in PyYAML) and failing every
+    # working solution. It must lint the worker's code, not site-packages.
+    workspace = _workspace(tmp_path, "def fizz(n: int) -> str:\n    return str(n)\n")
+    pkg = workspace / ".venv" / "lib" / "site-packages" / "pkg"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("from os import *\n")  # F403, must not fail the worker
+    results = {name: ok for name, ok, _ in harness.grade(workspace)}
+    assert results["ruff"] is True
+
+
+def test_grade_tolerates_style_not_real_errors(tmp_path):
+    # An unused `# noqa` is RUF100 — a style nit, not a real error. The grader
+    # is meant to gate on real errors only (ruff --select F,E9), so it must
+    # tolerate this. The shadowed, stricter grade() (default ruff) reports
+    # RUF100 and wrongly fails a working solution — the exact trap that failed
+    # working lesson solutions (easy was 4/4 on the hidden grader yet FAILED).
+    grades = _grades(
+        tmp_path,
+        "def fizz(x: int) -> str:\n"
+        "    return str(x)  # noqa: D415\n",
+    )
+    assert grades["ruff"] is True
+
+
+def test_harness_has_no_shadowed_top_level_definitions():
+    # A second `def`/`class` of the same name at module scope silently replaces
+    # the first (pyflakes F811) — how the lenient grade() got shadowed by an
+    # older strict copy. Pin the grading harness itself against that bug class.
+    import ast
+    from collections import Counter
+
+    tree = ast.parse(Path(harness.__file__).read_text())
+    defs = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+    names = [node.name for node in tree.body if isinstance(node, defs)]
+    shadowed = sorted(name for name, count in Counter(names).items() if count > 1)
+    assert not shadowed, f"redefined at module scope (later shadows earlier): {shadowed}"
+
+
 @pytest.mark.parametrize("name", ["easy"])
 def test_each_solution_passes_the_graders(tmp_path, name):
     solved = tmp_path / name
@@ -676,19 +785,6 @@ def test_qualify_proves_both_directions():
     assert results == {"known-good": True, "known-broken": False}
 
 
-def test_the_arm_owns_the_facts_knob(tmp_path, monkeypatch):
-    task = harness.load_suite(SUITES, "add")
-    monkeypatch.setenv("MELLUM_MODE_FACTS", "1")
-
-    def seen(arm):
-        run_dir = harness.run_suite(
-            task, runs_dir=tmp_path / arm, profile=PROFILE,
-            pi_binary=str(FIX / "fake-pi-env.sh"), arm=arm,
-        )
-        return (run_dir / "workspace" / "env.txt").read_text().strip()
-
-    assert seen("no-facts") == "MELLUM_MODE_FACTS=0"
-    assert seen("worker") == "MELLUM_MODE_FACTS="
 
 
 def test_the_recorder_loads_after_the_worker_extension():
@@ -835,7 +931,365 @@ def test_a_run_sweeps_the_processes_it_leaves_behind():
             child.kill()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="finds the server by its cwd (lsof); Windows has no such "
+                    "lookup and uses a job object instead: see the windows_ tests")
+def test_a_run_sweeps_a_server_started_in_its_own_session(tmp_path):
+    # Pi's bash tool starts each command detached (a new session and process
+    # group), so a server the model starts is outside Pi's group and survives
+    # killpg. On 2026-10-29 a stalled session's `uvicorn` held port 8000 after
+    # the run. The workspace sweep finds it by its working directory.
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    child = subprocess.Popen(["sleep", "31"], cwd=workspace, start_new_session=True)
+    other = subprocess.Popen(["sleep", "32"], cwd=tmp_path, start_new_session=True)
+    try:
+        time.sleep(0.3)
+        found = harness.sweep_workspace(workspace)
+        assert any("sleep 31" in command for _, command in found), found
+        assert not any("sleep 32" in command for _, command in found), found
+        child.wait(timeout=5)  # killed by the sweep, not by us
+        assert other.poll() is None, "a process outside the workspace was ended"
+    finally:
+        for p in (child, other):
+            if p.poll() is None:
+                p.kill()
+
+
+def test_a_session_never_reads_the_callers_stdin(tmp_path):
+    # Pi with -p appends piped stdin to its prompt. On 2026-10-29 a script fed
+    # the harness its run lines on stdin, and the first session received the
+    # next arm's command as part of its task and ran it. Sessions get no stdin.
+    runs = tmp_path / "runs"
+    result = subprocess.run(
+        [sys.executable, str(HERE.parent / "harness.py"), "run", "--suites-dir", str(SUITES),
+         "--suite", "add", "--pi-binary", str(FIX / "fake-pi-stdin.sh"), "--repeat", "1",
+         "--runs-dir", str(runs)],
+        input="the next arm's command\n", capture_output=True, text=True, timeout=120)
+    assert result.returncode in (0, 1), result.stderr
+    seen = next(runs.iterdir()) / "workspace" / "stdin.txt"
+    assert seen.read_text() == ""
+
+
+@pytest.mark.skipif(os.name == "nt", reason="a SIGTERM stop; Windows stops with a hard kill, covered by "
+                    "test_a_killed_harness_takes_its_sessions_processes_with_it")
+def test_a_stopped_run_still_sweeps_its_workspace(tmp_path):
+    # /lesson stops a run it no longer shows (the learner pressed p mid-run).
+    # On 2026-10-29 the stopped run's server kept port 8000: SIGTERM ended the
+    # harness before its sweep. A stopped run must still end what it started.
+    runs = tmp_path / "runs"
+    harness_run = subprocess.Popen(
+        [sys.executable, str(HERE.parent / "harness.py"), "run", "--suites-dir", str(SUITES),
+         "--suite", "add", "--pi-binary", str(FIX / "fake-pi-server.sh"), "--repeat", "1",
+         "--runs-dir", str(runs)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        deadline = time.monotonic() + 30
+        while not list(runs.glob("*/workspace/server.txt")) and time.monotonic() < deadline:
+            time.sleep(0.2)
+        workspace = next(runs.glob("*/workspace"))
+        assert harness.workspace_members(workspace), "the fake server never started"
+        harness_run.terminate()
+        harness_run.wait(timeout=30)
+        assert harness.workspace_members(workspace) == []
+    finally:
+        if harness_run.poll() is None:
+            harness_run.kill()
+        for w in runs.glob("*/workspace"):
+            harness.sweep_workspace(w)
+
+
+def test_the_think_tag_repair_is_a_unit_not_a_default():
+    # The repair is context/repair-think-tags: a lesson shows the failure
+    # without it, and every later line lists it (spec correction 2026-10-29).
+    argv = harness.pi_argv("pi", PROFILE, harness.RECORDER, "p", "m", "go",
+                           extension=harness.EXTENSION, extras=[Path("/x/unit.ts")])
+    loaded = [argv[i + 1] for i, a in enumerate(argv) if a == "-e"]
+    assert loaded == [str(harness.EXTENSION), str(Path("/x/unit.ts")), str(harness.RECORDER)]
+
+
 def test_a_group_with_nothing_left_reports_nothing(tmp_path):
     child = subprocess.Popen(["sh", "-c", "true"], start_new_session=True)
     child.wait(timeout=5)
     assert harness.sweep_group(child.pid) == []
+
+
+def test_run_profile_flag_points_the_bare_arm_at_another_server(tmp_path, capsys):
+    """--profile swaps the Pi profile (provider, model, sampling) without touching the arm."""
+    profile = tmp_path / "profile"
+    profile.mkdir()
+    (profile / "models.json").write_text(json.dumps({"providers": {"vllm": {
+        "baseUrl": "http://127.0.0.1:8000/v1", "api": "openai-completions",
+        "models": [{"id": "Mellum2.1-12B-A2.5B-Thinking"}]}}}))
+    assert harness.main(["run", "--suite", "easy", "--dry-run", "--profile", str(profile)]) == 0
+    argv = capsys.readouterr().out.split()
+    assert argv[argv.index("--provider") + 1] == "vllm"
+    assert argv[argv.index("--model") + 1] == "Mellum2.1-12B-A2.5B-Thinking"
+    assert "--no-extensions" in argv
+
+
+def test_run_suites_hand_run_suite_the_profile_they_are_given(tmp_path, monkeypatch):
+    """--suite all threads the profile through to run_suite, which copies it into the run."""
+    class Seen(Exception):
+        pass
+
+    def capture(suite, **kw):
+        raise Seen(kw["profile"])
+
+    monkeypatch.setattr(harness, "run_suite", capture)
+    with pytest.raises(Seen) as seen:
+        harness.run_suites(["easy"], runs_dir=tmp_path, profile=tmp_path / "p")
+    assert seen.value.args == (tmp_path / "p",)
+
+
+def _rows(*rows):
+    return [json.dumps(r) for r in rows]
+
+
+def test_open_tool_call_finds_a_call_with_no_result():
+    t0 = "2026-10-28T18:11:25.000Z"
+    trace = _rows({"type": "tool_call", "timestamp": t0, "toolName": "bash", "input": {"command": "uvicorn main:app"}})
+    now = datetime.fromisoformat("2026-10-28T18:13:25+00:00").timestamp()
+    assert harness.open_tool_call(trace, now) == (120.0, "uvicorn main:app")
+
+
+def test_open_tool_call_ignores_a_call_that_returned():
+    trace = _rows(
+        {"type": "tool_call", "timestamp": "2026-10-28T18:11:20.000Z", "toolName": "bash", "input": {"command": "pytest"}},
+        {"type": "tool_result", "timestamp": "2026-10-28T18:11:22.000Z", "toolName": "bash"},
+    )
+    assert harness.open_tool_call(trace, datetime.fromisoformat("2026-10-28T19:00:00+00:00").timestamp()) is None
+
+
+def test_a_stalled_command_ends_the_session_and_is_recorded(tmp_path):
+    started = time.monotonic()
+    run_dir = harness.run_suite(
+        harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs", profile=PROFILE,
+        pi_binary=str(FIX / "fake-pi-stall.sh"), deadline=None, stall=2,
+    )
+    assert time.monotonic() - started < 20, "the stall cutoff did not end the session"
+    stalled = json.loads((run_dir / "stalled").read_text())
+    assert stalled["command"] == "uvicorn main:app" and stalled["seconds"] >= 2
+    assert not (run_dir / "deadline").exists()
+
+
+def test_the_stall_limit_reaches_the_record_and_the_summary(tmp_path, capsys):
+    results = harness._run_sessions(
+        harness.load_suite(SUITES, "add"), runs_dir=tmp_path, pi_binary=str(FIX / "fake-pi-stall.sh"),
+        repeat=1, grade_run=False, deadline=None, profile=PROFILE, stall=2,
+    )
+    run_dir = results[0][0]
+    record = json.loads((run_dir / "run.json").read_text())
+    assert record["stall"] == 2 and record["stalled"]["command"] == "uvicorn main:app"
+    assert harness.build_parser().parse_args(["run", "--suite", "easy", "--stall", "120"]).stall == 120
+
+
+# --remedy and --extension: remedy units and a learner's own extensions, loaded on top of the arm.
+
+def test_resolve_extras_maps_unit_names_and_expands_a_preset():
+    names, paths = harness.resolve_extras("guard/repeat-loops,nudge/empty-turn", [])
+    assert names == ["guard/repeat-loops", "nudge/empty-turn"]
+    assert paths == [harness.REMEDIES / "guard" / "repeat-loops.ts",
+                     harness.REMEDIES / "nudge" / "empty-turn.ts"]
+    names, paths = harness.resolve_extras("preset:baseline-worker", [])
+    preset = json.loads((harness.REMEDIES / "presets" / "baseline-worker.json").read_text())
+    assert names == preset and len(paths) == len(preset) and all(p.is_file() for p in paths)
+
+
+def test_resolve_extras_refuses_an_unknown_unit_and_lists_the_known_ones():
+    with pytest.raises(SystemExit, match="guard/repeat-loops"):
+        harness.resolve_extras("guard/no-such-unit", [])
+
+
+def test_resolve_extras_refuses_a_missing_extension_file(tmp_path):
+    with pytest.raises(SystemExit, match="no extension file"):
+        harness.resolve_extras(None, [tmp_path / "missing.ts"])
+
+
+def test_pi_argv_loads_extras_after_the_arm_and_before_the_recorder():
+    argv = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", "task",
+                           extension=Path("worker.ts"), extras=[Path("a.ts"), Path("b.ts")])
+    loads = [argv[i + 1] for i, a in enumerate(argv) if a == "-e"]
+    assert loads == ["worker.ts", "a.ts", "b.ts", "rec.mjs"]
+
+
+def test_the_parser_takes_remedy_and_repeatable_extension():
+    args = harness.build_parser().parse_args(
+        ["run", "--suite", "add", "--remedy", "preset:baseline-worker",
+         "--extension", "a.ts", "--extension", "b.ts"])
+    assert args.remedy == "preset:baseline-worker"
+    assert args.extension == [Path("a.ts"), Path("b.ts")]
+
+
+def test_a_session_loads_the_extras_and_records_them(tmp_path):
+    own = tmp_path / "my-unit.ts"
+    own.write_text("export default () => {};\n")
+    names, paths = harness.resolve_extras("guard/repeat-loops", [own])
+    results = harness._run_sessions(
+        harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+        pi_binary=str(FIX / "fake-pi-argv.sh"), repeat=1, grade_run=False,
+        deadline=None, remedies=names, extras=paths,
+    )
+    run_dir = results[0][0]
+    argv = (run_dir / "workspace" / "argv.txt").read_text().splitlines()
+    assert str(paths[0]) in argv and str(own) in argv
+    record = json.loads((run_dir / "run.json").read_text())
+    assert record["remedies"] == ["guard/repeat-loops"]
+    assert [e["path"] for e in record["extensions"]] == [str(p) for p in paths]
+    assert all(len(e["sha256"]) == 64 for e in record["extensions"])
+
+
+def test_every_preset_resolves_and_each_tier_builds_on_the_last():
+    presets = {p.stem: json.loads(p.read_text()) for p in (harness.REMEDIES / "presets").glob("*.json")}
+    for name in presets:
+        names, paths = harness.resolve_extras(f"preset:{name}", [])
+        assert all(p.is_file() for p in paths), name
+    assert presets["medium"][:len(presets["easy"])] == presets["easy"]
+
+
+def test_a_relative_pi_binary_path_is_resolved_from_where_the_harness_runs(tmp_path, monkeypatch):
+    # Pi runs with the workspace as its cwd, so a relative --pi-binary path must be made
+    # absolute first; a bare command name (pi) is left for PATH lookup.
+    monkeypatch.chdir(HERE.parent)
+    rel = "tests/fixtures/fake-pi.sh"
+    assert harness.resolve_pi_binary(rel) == str((HERE.parent / rel).resolve())
+    assert harness.resolve_pi_binary("pi") == "pi"
+    results = harness._run_sessions(
+        harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+        pi_binary=harness.resolve_pi_binary(rel), repeat=1, grade_run=False, deadline=None)
+    assert json.loads((results[0][0] / "run.json").read_text())["passed"] is True
+
+
+def test_relative_runs_dir_and_profile_are_made_absolute_before_pi_runs(tmp_path, monkeypatch):
+    # Pi runs with the workspace as its cwd: relative --runs-dir and --profile paths would
+    # resolve the recorder and the profile inside the workspace, where they do not exist.
+    monkeypatch.chdir(tmp_path)
+    shutil.copytree(PROFILE, tmp_path / "prof")
+    seen = {}
+    monkeypatch.setattr(harness, "_run_sessions", lambda suite, **kw: seen.update(kw) or [])
+    monkeypatch.setattr(harness, "_print_task", lambda *a, **k: None)
+    harness.main(["run", "--suites-dir", str(SUITES), "--suite", "add", "--runs-dir", "runs/x", "--profile", "prof"])
+    assert seen["runs_dir"] == tmp_path / "runs" / "x"
+    assert seen["profile"] == tmp_path / "prof"
+
+
+# Windows: no ps, lsof, killpg or SIGKILL, and Pi is an npm .cmd shim.
+windows_only = pytest.mark.skipif(os.name != "nt", reason="Windows process handling")
+
+SHIM = ('@ECHO off\r\nGOTO start\r\n:start\r\nendLocal & goto #_undefined_# 2>NUL || '
+        r'title %COMSPEC% & "%_prog%"  "%dp0%\node_modules\pkg\dist\cli.js" %*' '\r\n')
+
+
+@windows_only
+def test_an_npm_shim_runs_its_script_with_node_directly(tmp_path, monkeypatch):
+    # cmd.exe would mangle a multi-line prompt holding < > % and quotes.
+    (tmp_path / "pi.cmd").write_text(SHIM)
+    (tmp_path / "node.exe").write_text("")
+    monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
+    argv = harness.native_argv(["pi", "--flag", "a <b>\n%c%"])
+    assert argv == [str(tmp_path / "node.exe"),
+                    str(tmp_path / "node_modules" / "pkg" / "dist" / "cli.js"),
+                    "--flag", "a <b>\n%c%"]
+
+
+def test_native_argv_leaves_other_platforms_alone(monkeypatch):
+    monkeypatch.setattr(harness, "WINDOWS", False)
+    assert harness.native_argv(["pi", "x"]) == ["pi", "x"]
+
+
+def _alive(pid: int) -> bool:
+    return any(row["ProcessId"] == pid for row in harness.windows_processes())
+
+
+@windows_only
+def test_a_windows_workspace_sweep_ends_a_process_left_inside_it(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    child = harness.start_child([sys.executable, "-c", "import time; time.sleep(120)",
+                                 str(workspace / "app.py")], cwd=workspace)
+    try:
+        found = harness.sweep_workspace(workspace)
+        assert child.pid in [pid for pid, _ in found]
+        child.wait(timeout=10)
+    finally:
+        child.kill()
+
+
+@windows_only
+def test_a_windows_group_sweep_ends_a_child_its_parent_left_behind(tmp_path):
+    marker = tmp_path / "orphan.pid"
+    parent = harness.start_child([sys.executable, "-c", textwrap.dedent(f"""
+        import subprocess, sys
+        orphan = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        open({str(marker)!r}, "w").write(str(orphan.pid))
+        """)])
+    parent.wait(timeout=30)
+    orphan = int(marker.read_text())
+    try:
+        found = harness.sweep_group(parent.pid)
+        assert orphan in [pid for pid, _ in found]
+        assert not _alive(orphan)
+    finally:
+        harness.kill_tree(orphan)
+
+
+def test_windows_relaunches_in_utf8_mode(monkeypatch):
+    # Traces are UTF-8; Windows reads files in its ANSI code page by default.
+    monkeypatch.setattr(harness, "WINDOWS", True)
+    argv = harness.utf8_relaunch_argv(["harness.py", "run"], utf8_mode=0)
+    assert argv == [sys.executable, "-X", "utf8", "harness.py", "run"]
+
+
+def test_utf8_mode_or_other_platforms_need_no_relaunch(monkeypatch):
+    monkeypatch.setattr(harness, "WINDOWS", False)
+    assert harness.utf8_relaunch_argv(["harness.py"], utf8_mode=0) is None
+    monkeypatch.setattr(harness, "WINDOWS", True)
+    assert harness.utf8_relaunch_argv(["harness.py"], utf8_mode=1) is None
+
+
+@windows_only
+def test_a_shell_script_pi_runs_through_bash_on_windows(tmp_path):
+    # Windows cannot start a .sh file itself; a --pi-binary script runs through bash.
+    script = tmp_path / "fake-pi.sh"
+    script.write_text("#!/bin/sh\necho hi\n")
+    argv = harness.native_argv([str(script), "--flag"])
+    assert Path(argv[0]).name.lower() in ("bash", "bash.exe")
+    assert argv[1:] == [str(script), "--flag"]
+
+
+@windows_only
+def test_a_killed_harness_takes_its_sessions_processes_with_it(tmp_path):
+    # Stopping a run on Windows is a hard kill: no SIGTERM, so no sweep runs.
+    # The job object is set to end its processes when the harness that holds it dies.
+    marker = tmp_path / "grandchild.pid"
+    # The session: starts a grandchild, records its pid (path as argv[1]), then waits.
+    session = tmp_path / "session.py"
+    session.write_text(textwrap.dedent("""
+        import subprocess, sys, time
+        g = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        open(sys.argv[1], "w").write(str(g.pid))
+        time.sleep(120)
+        """))
+    # The harness stand-in: starts the session in a job, then waits to be killed.
+    holder_py = tmp_path / "holder.py"
+    holder_py.write_text(textwrap.dedent("""
+        import sys, time
+        sys.path.insert(0, sys.argv[1])
+        import harness
+        harness.start_child([sys.executable, sys.argv[2], sys.argv[3]])
+        time.sleep(120)
+        """))
+    holder = subprocess.Popen([sys.executable, str(holder_py), str(HERE.parent),
+                               str(session), str(marker)])
+    try:
+        deadline = time.monotonic() + 30
+        while not marker.exists() and time.monotonic() < deadline:
+            time.sleep(0.2)
+        grandchild = int(marker.read_text())
+        assert any(row["ProcessId"] == grandchild for row in harness.windows_processes())
+        holder.kill()
+        holder.wait(timeout=10)
+        time.sleep(1)
+        assert not any(row["ProcessId"] == grandchild for row in harness.windows_processes())
+    finally:
+        holder.kill()
+        if marker.exists():
+            harness.kill_tree(int(marker.read_text()))

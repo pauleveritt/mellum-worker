@@ -1,0 +1,27 @@
+{
+  "suite": "hard",
+  "flow_mode": "forced",
+  "memory": null,
+  "coder_feedback": true,
+  "visible": false,
+  "graded": false,
+  "hidden_passed": 30,
+  "hidden_total": 34,
+  "todo": true,
+  "phases": 7,
+  "phase_results": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "phase_rounds": [],
+  "north_star": "A centralized platform for managing, tracking, and resolving community complaints with comprehensive reporting and audit capabilities.",
+  "model": "Mellum2.1-12B-A2.5B-Thinking",
+  "thinking": "medium",
+  "started": "2026-10-29T01:53:28Z",
+  "finished": "2026-10-29T04:57:17Z"
+}

@@ -1,0 +1,24 @@
+{
+  "suite": "medium",
+  "flow_mode": "forced",
+  "memory": null,
+  "coder_feedback": true,
+  "visible": true,
+  "graded": true,
+  "hidden_passed": 18,
+  "hidden_total": 18,
+  "todo": true,
+  "phases": 4,
+  "phase_results": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "phase_rounds": [],
+  "north_star": "A mobile-first application that empowers users to report, track, and resolve community complaints through an intuitive four-phase workflow.",
+  "model": "Mellum2.1-12B-A2.5B-Thinking",
+  "thinking": "medium",
+  "started": "2026-10-29T05:58:21Z",
+  "finished": "2026-10-29T06:38:56Z"
+}

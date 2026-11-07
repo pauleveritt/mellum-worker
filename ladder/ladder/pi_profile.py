@@ -15,11 +15,12 @@ import os
 import shutil
 from pathlib import Path
 
-from .omlx_profiles import REQUEST_PARAMS
+from .omlx_profiles import effective_request
 
 LADDER_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = LADDER_ROOT.parent
 MODEL_ID = "Mellum2.1-12B-A2.5B-Thinking-6bit"
+DEFAULT_BASE_URL = "http://127.0.0.1:8001/v1"
 COPIED_FILES = ("settings.json", "models.json", "auth.json", "AGENTS.md")
 LINKED_DIRS = ("git", "npm")
 
@@ -63,18 +64,22 @@ def mirror_agent_dir(
 def direct_agent_dir(
     dest: Path,
     profile: str,
-    base_url: str = "http://127.0.0.1:8001/v1",
+    base_url: str = DEFAULT_BASE_URL,
     *,
     provider: str = "omlx",
     model_id: str = MODEL_ID,
     context_window: int = 56000,
+    request_overrides: dict | None = None,
 ) -> Path:
-    """A minimal Pi agent directory whose omlx model entry sends the profile's request values.
+    """A minimal Pi agent directory whose model entry sends the profile's request values.
 
     Direct mode uses this instead of the operator's profile so that temperature,
-    caps, and penalties are the ladder's, not Pi's defaults.
+    caps, and penalties are the ladder's, not Pi's defaults. ``provider``,
+    ``base_url`` and ``model_id`` point the OpenAI-completions entry at any
+    server (oMLX by default, llama.cpp or a plain mlx_lm.server);
+    ``request_overrides`` applies sampling overrides for a screen.
     """
-    request = dict(REQUEST_PARAMS[profile])
+    request = effective_request(profile, request_overrides)
     max_tokens = request.pop("max_tokens")
     entry = {
         "id": model_id,

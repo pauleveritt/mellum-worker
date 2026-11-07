@@ -1,0 +1,93 @@
+{
+  "suite": "medium",
+  "arm": "bare",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.8,
+    "limit": 120.0,
+    "command": "uvicorn app:app --reload"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 18,
+  "checks_ran": false,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+    "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+    "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+    "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form",
+    "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+    "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 6,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 3,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 5,
+      "total": 5
+    }
+  },
+  "record_failures": [],
+  "requests": 9,
+  "turns": 9,
+  "tool_calls": 9,
+  "tool_errors": 1,
+  "context": 1905,
+  "output_tokens": 1936,
+  "wall": 26.195,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 84400,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python /Users/mac/projects/mellum-worker/.venv/bin/uvicorn app:app --reload"
+    },
+    {
+      "pid": 84402,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -B -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 84403,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": []
+}

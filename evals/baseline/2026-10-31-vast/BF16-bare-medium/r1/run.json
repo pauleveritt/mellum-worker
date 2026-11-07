@@ -1,0 +1,80 @@
+{
+  "suite": "medium",
+  "arm": "bare",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.4,
+    "limit": 120.0,
+    "command": "python app.py"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 5,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 0,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 5,
+      "total": 5
+    }
+  },
+  "record_failures": [],
+  "requests": 36,
+  "turns": 36,
+  "tool_calls": 34,
+  "tool_errors": 3,
+  "context": 3213,
+  "output_tokens": 16671,
+  "wall": 239.631,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 88196,
+      "pgid": null,
+      "command": "python app.py"
+    },
+    {
+      "pid": 88197,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -B -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 88198,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": []
+}

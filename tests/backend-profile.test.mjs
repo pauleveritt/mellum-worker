@@ -21,7 +21,7 @@ test("the committed profile is exactly what the generator writes", () => {
 
 test("the profile carries the settings and the llama.cpp provider", () => {
   const p = JSON.parse(readFileSync(PROFILE, "utf8")).providers.llamacpp;
-  assert.equal(p.baseUrl, "http://127.0.0.1:8002/v1");
+  assert.equal(p.baseUrl, "http://127.0.0.1:8001/v1");
   assert.equal(p.apiKey, "not-needed");
   const m = p.models[0];
   assert.equal(m.id, "Mellum2.1-12B-A2.5B-Thinking");

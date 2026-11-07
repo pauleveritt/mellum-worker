@@ -117,9 +117,19 @@ function factsOf(r: Record<string, unknown>): string {
 
 function serverOf(r: Record<string, unknown>): string {
 	if (!isObject(r.server)) return DASH;
-	if (r.server.match === true) return "settings match";
-	if (r.server.match === null) return "unreadable";
-	const keys = (Array.isArray(r.server.diffs) ? r.server.diffs : []).map((d) => (isObject(d) ? str(d.key) : undefined)).filter(Boolean);
+	const s = r.server;
+	if (s.match === true) return "settings match";
+	if (s.match === null) return "unreadable";
+	// A llama.cpp run records liveness (up, nCtx) and no settings match — that is not "differs".
+	if (s.match === undefined) {
+		if (s.up === true) {
+			const ctx = num(s.nCtx);
+			return ctx ? `up, ctx ${thousands(ctx)}` : "up";
+		}
+		if (s.up === false) return "down";
+		return DASH;
+	}
+	const keys = (Array.isArray(s.diffs) ? s.diffs : []).map((d) => (isObject(d) ? str(d.key) : undefined)).filter(Boolean);
 	return keys.length ? `differs: ${keys.join(", ")}` : "differs";
 }
 

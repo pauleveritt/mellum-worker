@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-	ENABLED,
 	isBackgrounded,
 	isForegroundServer,
 	backgroundForm,
@@ -54,10 +53,6 @@ test("backgroundForm: detached, logged, prints the pid", () => {
 	const bg = backgroundForm("uvicorn app:app --port 8001");
 	assert.match(bg, /^nohup uvicorn app:app --port 8001 /);
 	assert.match(bg, /&\s*echo "server pid \$!"$/);
-});
-
-test("foreground-server guard stays dormant until a screen enables it", () => {
-	assert.equal(ENABLED.blockForegroundServer, undefined);
 });
 
 test("serverGuard: blocks a foreground bash server, allows everything else", () => {

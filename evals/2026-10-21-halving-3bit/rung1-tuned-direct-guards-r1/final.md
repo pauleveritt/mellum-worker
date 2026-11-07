@@ -1,0 +1,1 @@
+The cart total now correctly accounts for item quantity.

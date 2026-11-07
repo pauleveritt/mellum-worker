@@ -76,11 +76,11 @@ lifecycle: closed
 
 ### Task 3: A18 — baseline, Mode with facts off
 
-**Files:** Create `docs/ladder/ablation-a18-agentclinic-facts-off/README.md` and its readable run files; modify `docs/ladder/ablation-summary.md`.
+**Files:** Create `evals/2026-10-09-ablation-a18-agentclinic-facts-off/README.md` and its readable run files; modify `evals/ablation-summary.md`.
 
 - [ ] **Step 1:** oMLX check: `curl -s -m 3 http://127.0.0.1:8001/v1/models` lists `Mellum2.1-12B-A2.5B-Thinking-6bit`, else stop and report. Note `wc -l ~/.pi/agent/mellum-mode-runs.jsonl`.
-- [ ] **Step 2:** From `ladder/`, in the background with a log (each run can take minutes; poll the table, do not block the tool): `nohup uv run python -m ladder.run_ladder --mode mode --profile baseline --rung 6 --rung 7 --rung 8 --rung 9 --repeat 3 --deadline 600 --mode-facts off --out ../docs/ladder/ablation-a18-agentclinic-facts-off < /dev/null > /tmp/a18.log 2>&1 &`. Expect 12 rows in `table.md`.
-- [ ] **Step 3:** README in the existing phase-README shape (look at `docs/ladder/ablation-a17-mode-v012/README.md`): launch, passes per rung, median requests per rung, `outside_write_list` per run (from each `run.json`'s `check.details`), wall, notes on failure shapes. Archive raw files with `uv run python -m ladder.archive_raw --out /Users/pauleveritt/projects/pauleveritt/mellum-worker-raw-research-2026-10-09 --tag research-2026-10-09 ../docs/ladder/ablation-a18-agentclinic-facts-off/` and add the link and hash lines. Add an A18 row to `ablation-summary.md`. Run log line count unchanged.
+- [ ] **Step 2:** From `ladder/`, in the background with a log (each run can take minutes; poll the table, do not block the tool): `nohup uv run python -m ladder.run_ladder --mode mode --profile baseline --rung 6 --rung 7 --rung 8 --rung 9 --repeat 3 --deadline 600 --mode-facts off --out ../evals/2026-10-09-ablation-a18-agentclinic-facts-off < /dev/null > /tmp/a18.log 2>&1 &`. Expect 12 rows in `table.md`.
+- [ ] **Step 3:** README in the existing phase-README shape (look at `evals/2026-10-09-ablation-a17-mode-v012/README.md`): launch, passes per rung, median requests per rung, `outside_write_list` per run (from each `run.json`'s `check.details`), wall, notes on failure shapes. Archive raw files with `uv run python -m ladder.archive_raw --out /Users/pauleveritt/projects/pauleveritt/mellum-worker-raw-research-2026-10-09 --tag research-2026-10-09 ../evals/2026-10-09-ablation-a18-agentclinic-facts-off/` and add the link and hash lines. Add an A18 row to `ablation-summary.md`. Run log line count unchanged.
 - [ ] **Step 4:** `git status` shows no raw files staged. Commit `docs(ladder): A18 — AgentClinic rungs with facts off (baseline)` with a CHANGELOG line.
 
 ### Task 4: Mode reads and forwards project facts
@@ -107,9 +107,9 @@ lifecycle: closed
 
 ### Task 5: A19 and A20, the ship decision, the research note
 
-**Files:** Create `docs/ladder/ablation-a19-facts-on/`, `docs/ladder/ablation-a20-facts-fallback-only/`, `docs/superpowers/research/2026-10-09-m7-project-facts.md` (+ evidence dir); modify `docs/ladder/ablation-summary.md`.
+**Files:** Create `evals/2026-10-10-ablation-a19-facts-on/`, `evals/2026-10-10-ablation-a20-facts-fallback-only/`, `docs/superpowers/research/2026-10-09-m7-project-facts.md` (+ evidence dir); modify `evals/ablation-summary.md`.
 
-- [ ] **Step 1:** oMLX check and run-log count as in Task 3. A19: same command shape with `--rung 1` … `--rung 9 --repeat 3 --mode-facts on --out ../docs/ladder/ablation-a19-facts-on` (27 runs). Then A20: `--rung 6` … `--rung 9 --repeat 3 --strip-facts-section --out ../docs/ladder/ablation-a20-facts-fallback-only` (12 runs). Background with logs, polled.
+- [ ] **Step 1:** oMLX check and run-log count as in Task 3. A19: same command shape with `--rung 1` … `--rung 9 --repeat 3 --mode-facts on --out ../evals/2026-10-10-ablation-a19-facts-on` (27 runs). Then A20: `--rung 6` … `--rung 9 --repeat 3 --strip-facts-section --out ../evals/2026-10-10-ablation-a20-facts-fallback-only` (12 runs). Background with logs, polled.
 - [ ] **Step 2:** READMEs, archives, hashes and summary rows as in Task 3. Each README states the A17/A18 comparison it answers.
 - [ ] **Step 3: Decide.** Apply the ship rule from Global Constraints literally and write the verdict with the numbers into the research note: honesty header (What is measured / What is conjecture), the phase-1 probe evidence (copy `/private/tmp/claude-501/-Users-pauleveritt-projects-pauleveritt-mellum-worker/a6d84638-af5f-4638-99a2-5f712fa04072/scratchpad/briefs/runs.jsonl` into the evidence dir if it still exists; otherwise cite the spec's table), A18/A19/A20 per rung, `outside_write_list` counts, A20's share of the gain, What would falsify this, Risks.
 - [ ] **Step 4:** Commit `docs(ladder): A19 and A20 — project facts on and fallback only; verdict` with a CHANGELOG line.

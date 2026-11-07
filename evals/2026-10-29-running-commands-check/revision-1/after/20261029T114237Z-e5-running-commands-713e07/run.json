@@ -1,0 +1,60 @@
+{
+  "suite": "e5-running-commands",
+  "arm": "bare",
+  "remedies": [
+    "guard/break-repeat-loops",
+    "guard/stay-in-workspace",
+    "guard/refuse-whole-file-rewrite",
+    "guard/block-foreground-server"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/break-repeat-loops.ts",
+      "sha256": "f8a241528b16813e033c58db9276fc0c51a12c2c3c122f993889a18c58ca99d3"
+    },
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/stay-in-workspace.ts",
+      "sha256": "63e27a82b616377c2929bacd2c8744bcea3d6925e579112d4f6ec5e194c20d27"
+    },
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/refuse-whole-file-rewrite.ts",
+      "sha256": "46357d0dc1474d23747f56d766c418884230b7c6a89884e9fb814c7d04e4f1b7"
+    },
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/block-foreground-server.ts",
+      "sha256": "465719fa4afaa025eea8047e3c87339d2d1f50dd2f1892151e70251041ca299d"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_challenge.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "requests": 11,
+  "turns": 11,
+  "tool_calls": 7,
+  "tool_errors": 0,
+  "context": 4871,
+  "output_tokens": 1942,
+  "wall": 214.681,
+  "nudges": 3,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

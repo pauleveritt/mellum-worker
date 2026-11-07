@@ -14,6 +14,7 @@ import platform
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import signal
@@ -29,17 +30,19 @@ from pathlib import Path
 CODE = Path(__file__).resolve().parent
 RUNS = Path(tempfile.gettempdir()) / "mellum-eval-runs"
 SUITES = CODE / "suites"
-RECORDER = CODE / "record-pi.mjs"
+RECORDER = CODE.parent.parent / "extensions" / "mellum-recorder.ts"
 PROFILE = CODE / "profile"
 EXTENSION = CODE.parents[1] / "extensions" / "mellum-worker.ts"
-GUARDS_WITH_SERVER = {"emptyFinalNudge": 3, "loopBreaker": True,
-                      "blockForegroundServer": True}
-ARMS = ("bare", "worker", "no-prompt", "no-nudge", "no-loop", "no-facts",
-        "server-guard", "no-facts-guard", "strip-thinking")
+# The think-tag repair (a no-op on a correctly served reply). The flow loads it in every session; in
+# the harness it is the remedy unit context/repair-think-tags, listed by the lines that want it.
+THINK_TAGS = CODE.parents[1] / "extensions" / "mellum-think-tags.ts"
+REMEDIES = CODE.parents[1] / "remedies"
+ARMS = ("vanilla", "bare", "worker", "strip-thinking")
 # Every knob an arm may set. A run clears them from the inherited environment
-# first, so an exported value cannot make two arms the same policy.
-ARM_ENV_KEYS = ("MELLUM_MODE", "MELLUM_GUARDS", "MELLUM_WORKER_PROMPT",
-                "MELLUM_MODE_FACTS", "MELLUM_STRIP_THINKING")
+# first, so an exported value cannot make two arms the same policy. The decoupled
+# worker reads only these two; the old guards/prompt/facts env vars are gone with
+# the ablation arms that set them — ablation is a `--remedy` now, not an `--arm`.
+ARM_ENV_KEYS = ("MELLUM_MODE", "MELLUM_STRIP_THINKING")
 FLAGS = [
     "-p", "--no-approve", "--no-extensions", "--no-skills",
     "--no-prompt-templates", "--no-themes", "--no-context-files",
@@ -56,6 +59,8 @@ class Suite:
     canary: str | None = None
     root: Path | None = None
     layout: dict | None = None
+    # Caps on run.json fields (record.json): a failure that lives in the record.
+    record: dict | None = None
 
     @property
     def prompt(self) -> str:
@@ -90,6 +95,9 @@ def load_suite(suites_dir: Path, name: str) -> Suite:
     layout = None
     if (base / "layout.json").is_file():
         layout = json.loads((base / "layout.json").read_text())
+    record = None
+    if (base / "record.json").is_file():
+        record = json.loads((base / "record.json").read_text())
     return Suite(
         name=name,
         prompts=prompts,
@@ -99,7 +107,14 @@ def load_suite(suites_dir: Path, name: str) -> Suite:
         canary=canary,
         root=base,
         layout=layout,
+        record=record,
     )
+
+
+def record_failures(metrics: dict, caps: dict | None) -> list[str]:
+    """The run.json fields over a challenge's caps, as reasons a learner can read."""
+    return [f"{key} is {metrics.get(key, 0)} (at most {cap})"
+            for key, cap in (caps or {}).items() if (metrics.get(key) or 0) > cap]
 
 
 def profile_pin(profile_dir: Path) -> tuple[str, str]:
@@ -118,33 +133,188 @@ def new_run(runs_dir: Path, name: str) -> Path:
 def arm_settings(arm: str) -> dict:
     if arm not in ARMS:
         raise SystemExit(f"unknown arm {arm}; choose from {', '.join(ARMS)}")
-    if arm == "bare":
+    if arm == "vanilla":
+        # The true floor: no worker extension at all, only the recorder (added by pi_argv). Every
+        # guard and remedy must then come in explicitly through --remedy. This is the base the
+        # lessons build up from, with nothing hidden.
         return {"extension": None, "env": {}}
+    if arm == "bare":
+        # The worker is always loaded, even on the bare arm, but mode stays off (no MELLUM_MODE), so
+        # bare still sends vanilla Pi's requests — MELLUM_MODE=1 below is what engages the worker.
+        # The baseline tests pin that worker-off is inert.
+        return {"extension": EXTENSION, "env": {}}
+    # Only worker and strip-thinking reach here (vanilla and bare returned above).
     env = {"MELLUM_MODE": "1"}
-    if arm == "no-prompt":
-        env["MELLUM_WORKER_PROMPT"] = "pi"
-    elif arm == "no-nudge":
-        env["MELLUM_GUARDS"] = json.dumps({"loopBreaker": True})
-    elif arm == "no-loop":
-        env["MELLUM_GUARDS"] = json.dumps({"emptyFinalNudge": 3})
-    elif arm == "no-facts":
-        env["MELLUM_MODE_FACTS"] = "0"
-    elif arm == "server-guard":
-        # The full set: MELLUM_GUARDS replaces ENABLED, so a partial object
-        # would silently drop the nudge and the loop breaker.
-        env["MELLUM_GUARDS"] = json.dumps(GUARDS_WITH_SERVER)
-    elif arm == "no-facts-guard":
-        env["MELLUM_GUARDS"] = json.dumps(GUARDS_WITH_SERVER)
-        env["MELLUM_MODE_FACTS"] = "0"
-    elif arm == "strip-thinking":
+    if arm == "strip-thinking":
         # Opens the seam the worker closes by default (A12): earlier reasoning is
-        # dropped from the payload, everything else identical.
+        # dropped from the payload, everything else identical. The worker reads
+        # MELLUM_STRIP_THINKING directly; it is the one ablation arm still live
+        # after the decoupling. The rest ablated bundle parts the worker no longer
+        # has, so they are gone — ablate with a `--remedy` unit instead.
         env["MELLUM_STRIP_THINKING"] = "1"
     return {"extension": EXTENSION, "env": env}
 
 
+# Windows has no ps, lsof, killpg or SIGKILL: processes are listed through CIM,
+# a run's "group" is the tree under the Pi child (orphans keep their parent's
+# pid), and a kill is taskkill /T /F, which ends the whole tree at once.
+WINDOWS = os.name == "nt"
+KILL_SIGNALS = (signal.SIGTERM,) if WINDOWS else (signal.SIGTERM, signal.SIGKILL)
+# A Windows child's job object, by its pid. A process stays in its job after its
+# parent exits, so the job finds a server the model backgrounded from a shell
+# that is gone, which a parent-pid walk cannot.
+JOBS: dict[int, int] = {}
+
+if WINDOWS:
+    import ctypes
+    from ctypes import wintypes
+
+    _K32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    _K32.CreateJobObjectW.restype = wintypes.HANDLE
+    _K32.CreateJobObjectW.argtypes = (ctypes.c_void_p, wintypes.LPCWSTR)
+    _K32.AssignProcessToJobObject.argtypes = (wintypes.HANDLE, wintypes.HANDLE)
+    _K32.QueryInformationJobObject.argtypes = (
+        wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD, ctypes.c_void_p)
+    _K32.TerminateJobObject.argtypes = (wintypes.HANDLE, wintypes.UINT)
+    _NTDLL = ctypes.WinDLL("ntdll")
+    _NTDLL.NtResumeProcess.argtypes = (wintypes.HANDLE,)
+
+    class _JobPids(ctypes.Structure):
+        _fields_ = [("assigned", wintypes.DWORD), ("listed", wintypes.DWORD),
+                    ("ids", ctypes.c_size_t * 4096)]
+
+    class _JobLimits(ctypes.Structure):  # JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+        _fields_ = [("per_process_time", ctypes.c_int64), ("per_job_time", ctypes.c_int64),
+                    ("flags", wintypes.DWORD), ("min_ws", ctypes.c_size_t),
+                    ("max_ws", ctypes.c_size_t), ("active_limit", wintypes.DWORD),
+                    ("affinity", ctypes.c_size_t), ("priority", wintypes.DWORD),
+                    ("scheduling", wintypes.DWORD), ("io", ctypes.c_uint64 * 6),
+                    ("process_memory", ctypes.c_size_t), ("job_memory", ctypes.c_size_t),
+                    ("peak_process", ctypes.c_size_t), ("peak_job", ctypes.c_size_t)]
+
+    _K32.SetInformationJobObject.argtypes = (
+        wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD)
+
+
+def start_child(argv: list[str], **kwargs) -> subprocess.Popen:
+    """Start a child in a group of its own: a session on POSIX, a job object on Windows.
+
+    On Windows the child starts suspended and resumes only once it is in its
+    job, so nothing it starts can escape the job.
+    """
+    argv = native_argv(argv)
+    if not WINDOWS:
+        return subprocess.Popen(argv, start_new_session=True, **kwargs)
+    child = subprocess.Popen(argv, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                             | 0x00000004, **kwargs)  # CREATE_SUSPENDED
+    handle = int(child._handle)  # type: ignore[attr-defined]
+    job = _K32.CreateJobObjectW(None, None)
+    if job:
+        # Stopping a run on Windows is a hard kill, so no sweep runs: have the OS end
+        # the job's processes when the harness, which holds the job's handle, dies.
+        limits = _JobLimits(flags=0x2000)  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        _K32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
+    if job and _K32.AssignProcessToJobObject(job, handle):
+        JOBS[child.pid] = job
+    _NTDLL.NtResumeProcess(handle)
+    return child
+
+
+def job_pids(job: int) -> list[int]:
+    """The live processes in a Windows job object."""
+    pids = _JobPids()
+    if not _K32.QueryInformationJobObject(job, 3, ctypes.byref(pids), ctypes.sizeof(pids), None):
+        return []  # 3: JobObjectBasicProcessIdList
+    return [int(pids.ids[i]) for i in range(pids.listed)]
+
+
+def native_argv(argv: list[str]) -> list[str]:
+    """On Windows, run an npm .cmd shim's script with node directly, and a .sh through bash.
+
+    Pi installs as pi.cmd, and cmd.exe would mangle a multi-line prompt that
+    holds < > % or quotes. Elsewhere the argv is returned unchanged.
+    """
+    if not WINDOWS:
+        return argv
+    if argv[0].lower().endswith(".sh") and Path(argv[0]).is_file():
+        # Windows cannot start a shell script itself; run it through bash (Git Bash).
+        return [shutil.which("bash") or "bash", *argv]
+    found = shutil.which(argv[0])
+    if found is None:
+        return argv
+    if found.lower().endswith((".cmd", ".bat")):
+        shim = Path(found).read_text(errors="ignore")
+        script = re.search(r'"%dp0%\\([^"]+\.[cm]?js)"', shim)
+        if script:
+            base = Path(found).parent
+            node = base / "node.exe"
+            launcher = str(node) if node.is_file() else (shutil.which("node") or "node")
+            return [launcher, str(base / script.group(1)), *argv[1:]]
+    return [found, *argv[1:]]
+
+
+def windows_processes() -> list[dict]:
+    """Every live process on Windows: ProcessId, ParentProcessId, ExecutablePath, CommandLine."""
+    query = ("Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,"
+             "ExecutablePath,CommandLine | ConvertTo-Json -Compress")
+    try:
+        out = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", query],
+                             capture_output=True, text=True, check=False, timeout=60).stdout
+        rows = json.loads(out or "[]")
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return []
+    return rows if isinstance(rows, list) else [rows]
+
+
+def _command(row: dict) -> str:
+    return (row.get("CommandLine") or row.get("ExecutablePath") or "").strip()
+
+
+def windows_tree(root: int) -> list[tuple[int, str]]:
+    """The live processes under `root` (and root itself), by parent pid."""
+    rows = windows_processes()
+    children: dict[int, list[dict]] = {}
+    for row in rows:
+        children.setdefault(row["ParentProcessId"], []).append(row)
+    found = [(row["ProcessId"], _command(row)) for row in rows if row["ProcessId"] == root]
+    stack, seen = [root], {root, os.getpid()}
+    while stack:
+        for row in children.get(stack.pop(), []):
+            pid = row["ProcessId"]
+            if pid not in seen:
+                seen.add(pid)
+                found.append((pid, _command(row)))
+                stack.append(pid)
+    return [(pid, command) for pid, command in found if pid != os.getpid()]
+
+
+def kill_tree(pid: int) -> None:
+    """End a process and everything under it (on Windows, its whole job). Never raises."""
+    if WINDOWS:
+        if pid in JOBS:
+            _K32.TerminateJobObject(JOBS[pid], 1)
+        try:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)],
+                           capture_output=True, check=False, timeout=60)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        return
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        pass
+
+
 def group_members(pgid: int) -> list[tuple[int, str]]:
     """Every live process in one process group, by pid and command line."""
+    if WINDOWS:
+        if pgid not in JOBS:
+            return windows_tree(pgid)
+        pids = set(job_pids(JOBS[pgid])) - {os.getpid()}
+        if not pids:
+            return []
+        commands = {row["ProcessId"]: _command(row) for row in windows_processes()}
+        return [(pid, commands.get(pid, "")) for pid in sorted(pids)]
     out = subprocess.run(["ps", "-A", "-o", "pid=,pgid=,command="],
                          capture_output=True, text=True, check=False).stdout
     members = []
@@ -170,6 +340,12 @@ def sweep_group(pgid: int, grace: float = 1.0) -> list[tuple[int, str]]:
         return []
 
     def signal_all(signal_number: int) -> None:
+        if WINDOWS:
+            if pgid in JOBS:
+                _K32.TerminateJobObject(JOBS[pgid], 1)
+            for pid, _ in group_members(pgid):
+                kill_tree(pid)
+            return
         # killpg is the right call, but a sandboxed or re-parented group can
         # refuse it, so fall back to each pid. The sweep must never raise.
         try:
@@ -183,11 +359,73 @@ def sweep_group(pgid: int, grace: float = 1.0) -> list[tuple[int, str]]:
             except OSError:
                 pass
 
-    for signal_number in (signal.SIGTERM, signal.SIGKILL):
+    for signal_number in KILL_SIGNALS:
         signal_all(signal_number)
         deadline = time.monotonic() + grace
         while time.monotonic() < deadline:
             if not group_members(pgid):
+                return found
+            time.sleep(0.05)
+    return found
+
+
+def workspace_members(workspace: Path) -> list[tuple[int, str]]:
+    """Every live process whose working directory is inside `workspace`."""
+    root = os.path.realpath(workspace)
+    if WINDOWS:
+        # Windows does not expose another process's cwd; a server the model
+        # left behind runs the workspace's .venv python or names a workspace path.
+        needle = os.path.normcase(root)
+        return [(row["ProcessId"], _command(row)) for row in windows_processes()
+                if row["ProcessId"] != os.getpid()
+                and needle in os.path.normcase(" ".join(
+                    (row.get(key) or "").replace("/", "\\")
+                    for key in ("ExecutablePath", "CommandLine")))]
+    out = subprocess.run(["lsof", "-w", "-d", "cwd", "-F", "pn"],
+                         capture_output=True, text=True, check=False).stdout
+    pids, pid = [], None
+    for line in out.splitlines():
+        if line.startswith("p"):
+            pid = int(line[1:])
+        elif line.startswith("n") and pid is not None and pid != os.getpid():
+            cwd = os.path.realpath(line[1:])
+            if cwd == root or cwd.startswith(root + os.sep):
+                pids.append(pid)
+    if not pids:
+        return []
+    listed = subprocess.run(["ps", "-o", "pid=,command=", "-p", ",".join(map(str, pids))],
+                            capture_output=True, text=True, check=False).stdout
+    members = []
+    for line in listed.splitlines():
+        parts = line.split(None, 1)
+        if len(parts) == 2 and parts[0].isdigit():
+            members.append((int(parts[0]), parts[1].strip()))
+    return members
+
+
+def sweep_workspace(workspace: Path, grace: float = 1.0) -> list[tuple[int, str]]:
+    """End every process still running inside a run's workspace, and report it.
+
+    Pi's bash tool starts each command detached, in a session and process
+    group of its own, so the group sweep never reaches a server the model
+    started. Its working directory is the workspace, so that finds it. The
+    sweep must never raise.
+    """
+    found = workspace_members(workspace)
+    if not found:
+        return []  # nothing left: skip the kill-and-recheck (each listing takes ~1 s on Windows)
+    for signal_number in KILL_SIGNALS:
+        for pid, _ in workspace_members(workspace):
+            if WINDOWS:
+                kill_tree(pid)
+                continue
+            try:
+                os.kill(pid, signal_number)
+            except OSError:
+                pass
+        deadline = time.monotonic() + grace
+        while time.monotonic() < deadline:
+            if not workspace_members(workspace):
                 return found
             time.sleep(0.05)
     return found
@@ -250,6 +488,52 @@ def layout_report(root: Path, pristine: dict[str, str],
     return {"created": created, "modified": modified, "out_of_layout": outside}
 
 
+def resolve_pi_binary(pi_binary: str) -> str:
+    """Pi runs with the workspace as its cwd, so a --pi-binary given as a relative path is made
+    absolute here; a bare command name such as `pi` is left for PATH lookup."""
+    if os.sep in pi_binary or (os.altsep and os.altsep in pi_binary):
+        return str(Path(pi_binary).resolve())
+    return pi_binary
+
+
+def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str], list[Path]]:
+    """The remedy units (`--remedy`, names or `preset:<name>`) and a learner's own extensions
+    (`--extension`), as (unit names, files to load in order). Unknown names are refused."""
+    names: list[str] = []
+    for item in (remedy or "").split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if item.startswith("preset:"):
+            preset = REMEDIES / "presets" / f"{item.removeprefix('preset:')}.json"
+            if not preset.is_file():
+                known = sorted(f"preset:{q.stem}" for q in (REMEDIES / "presets").glob("*.json"))
+                raise SystemExit(f"no preset {item!r}; known: {', '.join(known)}")
+            names += json.loads(preset.read_text())
+        else:
+            names.append(item)
+    paths: list[Path] = []
+    for name in names:
+        path = REMEDIES / f"{name}.ts"
+        if not path.is_file():
+            # as_posix: unit names use "/" on every OS (guard/repeat-loops, not guard\repeat-loops)
+            known = sorted(q.relative_to(REMEDIES).with_suffix("").as_posix()
+                           for q in REMEDIES.glob("*/*.ts"))
+            raise SystemExit(f"no remedy unit {name!r}; known: {', '.join(known)}")
+        paths.append(path)
+    for path in extensions:
+        if not Path(path).is_file():
+            raise SystemExit(f"no extension file {path}")
+        paths.append(Path(path).resolve())
+    return names, paths
+
+
+def extension_record(paths: list[Path]) -> list[dict]:
+    """Each loaded file and its SHA-256, so a record says exactly what ran."""
+    return [{"path": str(p), "sha256": hashlib.sha256(Path(p).read_bytes()).hexdigest()}
+            for p in paths]
+
+
 def pi_argv(
     pi_binary: str,
     profile: Path,
@@ -261,19 +545,26 @@ def pi_argv(
     extension: Path | None = None,
     session_id: str | None = None,
     session_dir: Path | None = None,
+    extras: list[Path] = (),
+    context_files: bool = False,
 ) -> list[str]:
+    # The default run is cold: --no-context-files drops the workspace's own AGENTS.md too.
+    # context_files=True keeps it (warm), so a run can measure what the suite's AGENTS.md is worth.
+    flags = [f for f in FLAGS if f != "--no-context-files"] if context_files else FLAGS
     session = (
         ["--session-id", session_id, "--session-dir", str(session_dir)]
         if session_id and session_dir
         else []
     )
     extra = ["-e", str(extension)] if extension is not None else []
+    for path in extras:
+        extra += ["-e", str(path)]
     # The recorder goes last: Pi runs before_provider_request handlers in load
     # order and each may replace the payload, so a recorder placed first would
     # log the messages before the worker appends its facts block. The cost is
     # that a compaction the worker refuses is not visible from here.
     return [
-        pi_binary, *FLAGS, "--provider", provider, "--model", model,
+        pi_binary, *flags, "--provider", provider, "--model", model,
         *session, *extra, "-e", str(recorder), prompt,
     ]
 
@@ -293,6 +584,30 @@ def load_variant(suite: Suite, name: str) -> Path:
     return variant
 
 
+def open_tool_call(trace_lines, now: float) -> tuple[float, str] | None:
+    """The oldest tool call still waiting for its result: (seconds open, command).
+
+    A foreground server never returns, so its call stays open; a stall cutoff
+    reads this to end the session instead of waiting out the whole deadline.
+    """
+    pending: list[dict] = []
+    for line in trace_lines:
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if row.get("type") == "tool_call":
+            pending.append(row)
+        elif row.get("type") == "tool_result" and pending:
+            pending.pop(0)
+    if not pending:
+        return None
+    call = pending[0]
+    opened = datetime.fromisoformat(call["timestamp"].replace("Z", "+00:00")).timestamp()
+    command = (call.get("input") or {}).get("command") or call.get("toolName", "")
+    return round(now - opened, 1), command
+
+
 def run_suite(
     suite: Suite,
     *,
@@ -301,8 +616,11 @@ def run_suite(
     profile: Path = PROFILE,
     pi_binary: str = "pi",
     deadline: float | None = None,
+    stall: float | None = None,
     single_prompt: bool = False,
     specs: str | None = None,
+    extras: list[Path] = (),
+    context_files: bool = False,
 ) -> Path:
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
@@ -341,6 +659,9 @@ def run_suite(
     sessions = run / "sessions"
     sessions.mkdir()
     provider, model = profile_pin(profile)
+    # Record the pinned model so run.json (assembled later, out of this scope) and the
+    # scoreboard can name which model produced the run.
+    (run / "model.txt").write_text(f"{provider}/{model}\n")
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
     env = {
@@ -348,38 +669,45 @@ def run_suite(
         "PI_CODING_AGENT_DIR": str(run / "profile"),
         "MELLUM_TRACE_FILE": str(trace),
     }
+    env.pop("VIRTUAL_ENV", None)   # else uv warns in the workspace venv
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
     started = time.monotonic()
     groups: list[int] = []
-    for prompt in prompts:
-        remaining = None if deadline is None else deadline - (time.monotonic() - started)
-        if remaining is not None and remaining <= 0:
-            (run / "deadline").write_text("hit\n")
-            break
-        argv = pi_argv(
-            pi_binary, run / "profile", recorder, provider, model, prompt,
-            extension=settings["extension"],
-            session_id=session_id, session_dir=sessions,
-        )
-        try:
-            child = subprocess.Popen(argv, cwd=workspace, env=env,
-                                     start_new_session=True)
-            groups.append(child.pid)
-        except FileNotFoundError:
-            raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
-        try:
-            child.wait(timeout=remaining)
-        except subprocess.TimeoutExpired:
-            os.killpg(child.pid, signal.SIGKILL)
-            child.wait()
-            (run / "deadline").write_text("hit\n")
-            break
     leaked: list[dict] = []
-    for pgid in groups:
-        leaked.extend({"pid": pid, "pgid": pgid, "command": command}
-                      for pid, command in sweep_group(pgid))
+    # The sweep runs however the loop ends, including a SIGTERM (main turns it
+    # into SystemExit): a stopped run must still end the servers it started.
+    try:
+        for prompt in prompts:
+            remaining = None if deadline is None else deadline - (time.monotonic() - started)
+            if remaining is not None and remaining <= 0:
+                (run / "deadline").write_text("hit\n")
+                break
+            # The spec-derived contract scopes itself to the phase this prompt names.
+            env["ACCEPTANCE_PROMPT"] = prompt
+            argv = pi_argv(
+                pi_binary, run / "profile", recorder, provider, model, prompt,
+                extension=settings["extension"],
+                session_id=session_id, session_dir=sessions, extras=extras,
+                context_files=context_files,
+            )
+            try:
+                # No stdin: Pi with -p appends piped stdin to its prompt.
+                child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
+                groups.append(child.pid)
+            except FileNotFoundError:
+                raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
+            ended = wait_or_stall(child, run, trace, remaining, stall)
+            if ended:
+                break
+    finally:
+        for pgid in groups:
+            leaked.extend({"pid": pid, "pgid": pgid, "command": command}
+                          for pid, command in sweep_group(pgid))
+        swept = {entry["pid"] for entry in leaked}
+        leaked.extend({"pid": pid, "pgid": None, "command": command}
+                      for pid, command in sweep_workspace(workspace) if pid not in swept)
     (run / "leaked.json").write_text(json.dumps(leaked, indent=2) + "\n")
     if pristine is not None and suite.layout is not None:
         (run / "layout.json").write_text(
@@ -389,11 +717,53 @@ def run_suite(
     return run
 
 
+def wait_or_stall(child, run: Path, trace: Path, remaining: float | None,
+                  stall: float | None) -> str | None:
+    """Wait for one Pi child; end it at the deadline, or when a command stalls.
+
+    Returns "deadline" or "stalled" when the session was ended, else None.
+    """
+    if stall is None:
+        try:
+            child.wait(timeout=remaining)
+            return None
+        except subprocess.TimeoutExpired:
+            reason = "deadline"
+    else:
+        until = None if remaining is None else time.monotonic() + remaining
+        reason = None
+        while child.poll() is None:
+            if until is not None and time.monotonic() >= until:
+                reason = "deadline"
+                break
+            open_call = open_tool_call(trace.read_text().splitlines(), time.time())
+            if open_call and open_call[0] >= stall:
+                (run / "stalled").write_text(json.dumps(
+                    {"seconds": open_call[0], "limit": stall, "command": open_call[1]}) + "\n")
+                reason = "stalled"
+                break
+            time.sleep(1)
+        if reason is None:
+            return None
+    kill_tree(child.pid)
+    child.wait()
+    if reason == "deadline":
+        (run / "deadline").write_text("hit\n")
+    return reason
+
+
 def grader_touched(run: Path, suite: Suite) -> bool:
     if suite.canary is None:
         return False
     text = (Path(run) / "trace.jsonl").read_text(errors="ignore")
     return suite.canary in text or f"suites/{suite.name}" in text
+
+
+def grade_env(workspace: Path) -> dict[str, str]:
+    """A grader subprocess's environment: the workspace on PYTHONPATH, and no
+    VIRTUAL_ENV — uv warns when it points at a venv other than the run's."""
+    return {k: v for k, v in os.environ.items()
+            if k != "VIRTUAL_ENV"} | {"PYTHONPATH": str(workspace)}
 
 
 def grade(workspace: Path) -> list[tuple[str, bool, str]]:
@@ -414,9 +784,10 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
     )
     results = []
     for name, command in commands:
+        # The tools print UTF-8; Windows would decode it as its ANSI code page and lose the output.
         result = subprocess.run(
             command, cwd=workspace, capture_output=True, text=True, check=False,
-            env={**os.environ, "PYTHONPATH": str(workspace)},
+            encoding="utf-8", errors="replace", env=grade_env(workspace),
         )
         output = [line for line in (result.stdout + result.stderr).splitlines()
                   if line.strip()]
@@ -528,6 +899,16 @@ def report(run: Path) -> dict:
         "nudges": continued,
         "empty_finals": len(empties) - continued,
         "guard_blocks": guard_blocks,
+        # Assistant turns the model was sent back with its reasoning as <think>
+        # text (a serving fault; the largest history in the session).
+        "reasoning_as_text": max(
+            (sum("<think>" in str(m.get("content") or "")
+                 for m in (row.get("payload") or {}).get("messages") or []
+                 if m.get("role") == "assistant")
+             for row in rows if row.get("type") == "provider_request"),
+            default=0),
+        # Times Pi compacted a context that neared its window, losing detail.
+        "compactions": sum(row.get("type") == "before_compact" for row in rows),
     }
 
 
@@ -597,12 +978,19 @@ def _run_sessions(
     arm: str = "bare",
     single_prompt: bool = False,
     specs: str | None = None,
+    profile: Path = PROFILE,
+    stall: float | None = None,
+    remedies: list[str] = (),
+    extras: list[Path] = (),
+    context_files: bool = False,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
         run_dir = run_suite(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
-                            single_prompt=single_prompt, specs=specs)
+                            single_prompt=single_prompt, specs=specs,
+                            profile=profile, stall=stall, extras=extras,
+                            context_files=context_files)
         grades = grade(run_dir / "workspace") if grade_run else []
         tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
         failed_checks = len(missing)
@@ -610,22 +998,30 @@ def _run_sessions(
             ok for name, ok, _ in grades if name in {"ruff", "complexipy"}
         ) if grades else True
         contaminated = (run_dir / "contaminated").exists()
-        passed = tests_passed and quality_ok and not contaminated
         metrics = report(run_dir)
+        over = record_failures(metrics, suite.record)
+        passed = tests_passed and quality_ok and not contaminated and not over
         leaked_file = run_dir / "leaked.json"
         if leaked_file.is_file():
             metrics["leaked"] = json.loads(leaked_file.read_text())
         layout_file = run_dir / "layout.json"
         if layout_file.is_file():
             metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
+        model_file = run_dir / "model.txt"
         record = {
             "suite": suite.name,
             "arm": arm,
+            "model": model_file.read_text().strip() if model_file.is_file() else None,
+            "remedies": list(remedies),
+            "extensions": extension_record(list(extras)),
             "single_prompt": single_prompt,
             "specs": specs,
             "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
             "machine": machine_label(),
             "deadline": deadline,
+            "stall": stall,
+            "stalled": (json.loads((run_dir / "stalled").read_text())
+                        if (run_dir / "stalled").exists() else None),
             "passed": passed,
             "tests_passed": tests_passed,
             "quality_ok": quality_ok,
@@ -634,6 +1030,7 @@ def _run_sessions(
             "checks_ran": checks_ran,
             "missing_checks": missing,
             "check_groups": check_groups(suite.expected, missing),
+            "record_failures": over,
             **{key: value for key, value in metrics.items()
                if key != "final_reply"},
         }
@@ -671,11 +1068,19 @@ def run_suites(
     arm: str = "bare",
     single_prompt: bool = False,
     specs: str | None = None,
+    profile: Path = PROFILE,
+    stall: float | None = None,
+    remedies: list[str] = (),
+    extras: list[Path] = (),
+    context_files: bool = False,
 ) -> tuple[int, int]:
+    # Run easiest first and hardest last, so a slow hard suite never blocks the
+    # quicker ones; unknown suites keep alphabetical order after the known tiers.
     order = {"easy": 0, "medium": 1, "hard": 2}
     available = sorted(
         (
-            path.name for path in Path(suites_dir).iterdir()
+            path.name
+            for path in Path(suites_dir).iterdir()
             if ((path / "grader").is_dir() or (path / "tests").is_dir())
             and ((path / "task.md").exists() or (path / "prompts").is_dir())
         ),
@@ -693,7 +1098,8 @@ def run_suites(
         results = _run_sessions(
             suite, runs_dir=runs_dir, pi_binary=pi_binary,
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
-            single_prompt=single_prompt, specs=specs,
+            single_prompt=single_prompt, specs=specs, profile=profile, stall=stall,
+            remedies=remedies, extras=extras, context_files=context_files,
         )
         sessions_passed += _print_task(suite, results, repeat)
         sessions_total += len(results)
@@ -717,7 +1123,8 @@ def _line(
 ) -> str:
     tag = suite.name + (f" [{index}/{repeat}]" if repeat > 1 else "")
     n_text = f"n={repeat}; " if repeat == 1 else ""
-    deadline = " deadline" if (Path(run_dir) / "deadline").exists() else ""
+    deadline = (" deadline" if (Path(run_dir) / "deadline").exists()
+                else " stalled" if (Path(run_dir) / "stalled").exists() else "")
     label = "CONTAMINATED" if contaminated else ("PASS" if passed else "FAIL")
     notes = []
     if not quality_ok:
@@ -738,7 +1145,7 @@ def _print_grades(grades: list[tuple[str, bool, str]]) -> None:
         print(f"{label}: {'PASS' if ok else 'FAIL'}" + (f" ({detail})" if not ok else ""))
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run", help="run one eval suite or all of them")
@@ -754,10 +1161,42 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--repeat", type=int, default=1)
     run.add_argument("--deadline", type=float, default=600)
     run.add_argument("--arm", choices=ARMS, default="bare")
+    run.add_argument("--remedy", default=None, metavar="LIST",
+                     help="remedy units to load on top of the arm: comma-separated names "
+                          "(guard/repeat-loops) or preset:<name>")
+    run.add_argument("--extension", type=Path, action="append", default=[], metavar="PATH",
+                     help="a Pi extension of your own to load (repeatable)")
+    run.add_argument("--stall", type=float, default=None, metavar="SECONDS",
+                     help="end a session as stalled when one tool call has run this long "
+                          "with no result (a foreground server); off by default")
+    run.add_argument("--profile", type=Path, default=PROFILE,
+                     help="the Pi profile directory (models.json) the sessions use; "
+                          "default the pinned llama.cpp profile")
     run.add_argument("--single-prompt", action="store_true",
                      help="send the suite's prompts as one brief instead of steps")
+    run.add_argument("--context-files", action="store_true",
+                     help="keep the workspace's own AGENTS.md (warm); off by default the run is "
+                          "cold (--no-context-files strips it)")
     run.add_argument("--specs", metavar="VARIANT", default=None, choices=["joined", "split"],
                      help="use the suite's spec variant: one joined roadmap, or one file per phase")
+    return parser
+
+
+def utf8_relaunch_argv(argv: list[str], utf8_mode: int) -> list[str] | None:
+    """The command that reruns the harness in UTF-8 mode, or None when not needed.
+
+    Traces, specs and records are UTF-8, but Windows reads files in its ANSI
+    code page unless Python runs in UTF-8 mode.
+    """
+    if not WINDOWS or utf8_mode:
+        return None
+    return [sys.executable, "-X", "utf8", *argv]
+
+
+def main(argv: list[str] | None = None) -> int:
+    # A stopped run (SIGTERM, as /lesson sends) unwinds normally, so its sweep runs.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "qualify":
@@ -770,15 +1209,23 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
+    remedies, extras = resolve_extras(args.remedy, args.extension)
+    args.pi_binary = resolve_pi_binary(args.pi_binary)
+    # Pi runs with the workspace as its cwd, so every path handed to it must be absolute.
+    args.runs_dir = Path(args.runs_dir).resolve()
+    args.profile = Path(args.profile).resolve()
+    args.suites_dir = Path(args.suites_dir).resolve()
     if args.suite == "all":
         run_suites(["all"], suites_dir=args.suites_dir, runs_dir=args.runs_dir,
                    pi_binary=args.pi_binary, grade_run=args.grade,
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
-                   single_prompt=args.single_prompt, specs=args.specs)
+                   single_prompt=args.single_prompt, specs=args.specs,
+                   profile=args.profile, stall=args.stall,
+                   remedies=remedies, extras=extras, context_files=args.context_files)
         return 0
 
     suite = load_suite(args.suites_dir, args.suite)
-    provider, model = profile_pin(PROFILE)
+    provider, model = profile_pin(args.profile)
     if args.dry_run:
         settings = arm_settings(args.arm)
         if args.specs:
@@ -786,18 +1233,25 @@ def main(argv: list[str] | None = None) -> int:
             prompt = _read_prompt(sorted((variant / "prompts").glob("*.md"))[0])
         else:
             prompt = suite.prompt
-        print(shlex.join(pi_argv(args.pi_binary, PROFILE, RECORDER, provider,
+        print(shlex.join(pi_argv(args.pi_binary, args.profile, RECORDER, provider,
                                  model, prompt,
-                                 extension=settings["extension"])))
+                                 extension=settings["extension"], extras=extras,
+                                 context_files=args.context_files)))
         return 0
     results = _run_sessions(
         suite, runs_dir=args.runs_dir, pi_binary=args.pi_binary,
         repeat=args.repeat, grade_run=args.grade, deadline=args.deadline,
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
+        profile=args.profile, stall=args.stall,
+        remedies=remedies, extras=extras, context_files=args.context_files,
     )
     _print_task(suite, results, args.repeat)
     return 0
 
 
 if __name__ == "__main__":
+    relaunch = utf8_relaunch_argv(sys.argv, sys.flags.utf8_mode)
+    if relaunch is not None:
+        # PYTHONUTF8 carries UTF-8 mode on to the grader subprocesses too.
+        sys.exit(subprocess.run(relaunch, env={**os.environ, "PYTHONUTF8": "1"}).returncode)
     sys.exit(main())

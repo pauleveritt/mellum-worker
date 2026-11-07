@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { filterForMellum, MARK_ON, MARK_OFF, BOOTSTRAP_MARKER } from "../extensions/mellum-worker.ts";
+import { filterForMellum, withFacts, MARK_ON, MARK_OFF, BOOTSTRAP_MARKER } from "../extensions/mellum-worker.ts";
 
 const text = (role, t) => ({ role, content: [{ type: "text", text: t }] });
 
@@ -53,7 +53,7 @@ test("stripThinking removes earlier reasoning and nothing else", () => {
 	assert.equal(payload.messages[3].reasoning_content, "mine", "input not mutated");
 });
 
-test("keepSystem leaves Pi's system message while still narrowing the tools", () => {
+test("keepSystem leaves Pi's system message in place, and the thin worker leaves the tools alone", () => {
 	const payload = {
 		messages: [{ role: "system", content: "pi base prompt" }, text("user", "task")],
 		tools: [{ type: "function", function: { name: "read" } }, { type: "function", function: { name: "subagent" } }],
@@ -61,7 +61,8 @@ test("keepSystem leaves Pi's system message while still narrowing the tools", ()
 	const out = filterForMellum(payload, "v5", { keepSystem: true });
 	assert.equal(out.messages[0].role, "system");
 	assert.equal(out.messages[0].content, "pi base prompt");
-	assert.deepEqual(out.tools.map((t) => t.function.name), ["read"]);
+	// Tool-narrowing is context/narrow-tools now; filterForMellum passes the tools through.
+	assert.deepEqual(out.tools.map((t) => t.function.name), ["read", "subagent"]);
 });
 
 test("without an on-marker (headless activation) only the bootstrap is dropped", () => {
@@ -84,10 +85,10 @@ test("a prompt queued just before the on-marker is kept, and marker messages nev
 	assert.deepEqual(out.messages.map(m => m.role), ["system", "user"]);
 	assert.equal(out.messages[1].content[0].text, "fix the cart total");
 	assert.ok(!JSON.stringify(out.messages).includes(MARK_ON));
-	assert.deepEqual(out.tools.map(t => t.function.name), ["read"], "pi-subagents' re-added tools are filtered out");
+	assert.deepEqual(out.tools.map(t => t.function.name), ["read", "subagent"], "the thin worker leaves tool-narrowing to context/narrow-tools");
 });
 
-test("a developer-role instruction message is replaced too, and tool_choice naming a removed tool is dropped", () => {
+test("a developer-role instruction message is replaced too, and the thin worker leaves tools and tool_choice to the unit", () => {
 	const payload = {
 		messages: [{ role: "developer", content: "pi base" }, text("user", "task")],
 		tools: [{ type: "function", function: { name: "subagent" } }],
@@ -95,8 +96,9 @@ test("a developer-role instruction message is replaced too, and tool_choice nami
 	};
 	const out = filterForMellum(payload, "v5");
 	assert.deepEqual(out.messages.map(m => m.role), ["system", "user"]);
-	assert.ok(!("tools" in out), "an empty tool list is removed, not sent");
-	assert.ok(!("tool_choice" in out));
+	// filterForMellum no longer touches tools/tool_choice; context/narrow-tools does.
+	assert.deepEqual(out.tools.map(t => t.function.name), ["subagent"]);
+	assert.deepEqual(out.tool_choice, { type: "function", function: { name: "subagent" } });
 });
 
 test("markers between the prompt and the on-marker are skipped: [prompt, OFF, ON] keeps the prompt", () => {
@@ -390,96 +392,33 @@ test("runRecord schema 2 passes meta through and defaults what is omitted", asyn
 });
 
 const FACTS = "\n\nProject facts:\n- Test command: make test";
-const userText = (m) => (typeof m.content === "string" ? m.content : m.content.map((p) => p.text ?? "").join("|"));
 
-test("facts are appended to each user message after the on-marker, not to tool or earlier messages", () => {
-	const payload = {
-		messages: [
-			{ role: "system", content: "pi" },
-			text("user", "parent task"),
-			{ role: "assistant", content: "parent answer" },
-			text("user", MARK_ON),
-			{ role: "user", content: "string task" },
-			{ role: "assistant", content: "", tool_calls: [{ id: "1" }] },
-			{ role: "tool", tool_call_id: "1", content: "r" },
-			text("user", "second task"),
-		],
-	};
-	const out = filterForMellum(payload, "v5", { facts: FACTS });
-	const users = out.messages.filter((m) => m.role === "user");
-	assert.equal(users.length, 2);
-	assert.equal(users[0].content, "string task" + FACTS);
-	assert.equal(users[1].content[0].text, "second task" + FACTS);
-	assert.equal(out.messages.find((m) => m.role === "tool").content, "r", "tool result untouched");
-	assert.equal(out.messages[0].content, "v5", "system prompt untouched");
-	assert.ok(!JSON.stringify(out).includes("parent task"), "pre-marker messages are not sent");
-	assert.equal(payload.messages[4].content, "string task", "input not mutated");
-	assert.equal(payload.messages[7].content[0].text, "second task", "input content arrays not mutated");
-});
-
-test("the task Pi queued just before the on-marker also gets the facts", () => {
-	const payload = { messages: [text("user", "fix the cart"), text("user", MARK_ON)] };
-	const out = filterForMellum(payload, "v5", { facts: FACTS });
-	assert.equal(out.messages.length, 2);
-	assert.equal(out.messages[1].content[0].text, "fix the cart" + FACTS);
-});
-
-test("headless: no marker, expectMarker false, every kept user message gets the facts but the bootstrap and assistants do not", () => {
-	const payload = {
-		messages: [
-			{ role: "system", content: "pi" },
-			text("user", `${BOOTSTRAP_MARKER} ... superpowers`),
-			text("user", "the task"),
-			{ role: "assistant", content: "ok" },
-			text("user", "a follow-up"),
-		],
-	};
-	const out = filterForMellum(payload, "v5", { expectMarker: false, facts: FACTS });
-	assert.deepEqual(out.messages.map((m) => m.role), ["system", "user", "assistant", "user"]);
-	assert.equal(out.messages[1].content[0].text, "the task" + FACTS);
-	assert.equal(out.messages[2].content, "ok");
-	assert.equal(out.messages[3].content[0].text, "a follow-up" + FACTS);
-});
-
-test("array content goes in the last text part, or a new text part after an image-only part", () => {
+// Project-facts injection is the context/add-project-facts remedy unit now, and reading the
+// facts (AGENTS.md, the pytest fallback, the cap, MELLUM_MODE_FACTS) is tested in
+// mellum-facts.test.mjs. What stays the worker's export is the withFacts placement primitive
+// the unit builds on, so its mechanics — append point, multimodal, idempotency — are tested
+// here directly rather than through the removed filterForMellum facts path.
+test("withFacts appends to a string message and to the last text part of array content, after an image too", () => {
 	const img = { type: "image_url", image_url: { url: "data:image/png;base64,AAAA" } };
-	const payload = {
-		messages: [
-			text("user", MARK_ON),
-			{ role: "user", content: [{ type: "text", text: "look" }, img, { type: "text", text: "and fix" }, img] },
-			{ role: "user", content: [img] },
-			{ role: "user", content: [] },
-		],
-	};
-	const out = filterForMellum(payload, "v5", { facts: FACTS });
-	const [a, b, c] = out.messages.slice(1).map((m) => m.content);
-	assert.equal(a[0].text, "look");
-	assert.equal(a[2].text, "and fix" + FACTS);
-	assert.deepEqual(a[3], img);
-	assert.deepEqual(b[0], img);
-	assert.equal(b[1].type, "text");
-	assert.match(b[1].text, /^Project facts:\n- Test command: make test$/);
-	assert.equal(c.length, 1);
-	assert.equal(c[0].type, "text");
-	assert.equal(payload.messages[2].content.length, 1, "input not mutated");
+	assert.equal(withFacts({ role: "user", content: "t" }, FACTS).content, "t" + FACTS);
+	const arr = { role: "user", content: [{ type: "text", text: "look" }, img, { type: "text", text: "and fix" }, img] };
+	const out = withFacts(arr, FACTS);
+	assert.equal(out.content[2].text, "and fix" + FACTS);
+	assert.deepEqual(out.content[3], img, "the trailing image is untouched");
+	assert.equal(arr.content[2].text, "and fix", "input not mutated");
+	const onlyImage = withFacts({ role: "user", content: [img] }, FACTS);
+	assert.deepEqual(onlyImage.content[0], img);
+	assert.equal(onlyImage.content[1].type, "text", "a new text part carries the facts after an image-only message");
+	assert.match(onlyImage.content[1].text, /Project facts:/);
 });
 
-test("applying the filter twice to the same input gives one facts block per message", () => {
-	const payload = { messages: [text("user", MARK_ON), text("user", "t1"), { role: "user", content: "t2" }] };
-	const once = filterForMellum(payload, "v5", { facts: FACTS });
-	const twice = filterForMellum(payload, "v5", { facts: FACTS });
-	assert.deepEqual(twice, once);
-	for (const m of twice.messages.filter((x) => x.role === "user")) assert.equal(userText(m).split("Project facts:").length, 2);
-	// and a payload that already carries the block does not get a second one
-	const again = filterForMellum({ messages: [text("user", MARK_ON), ...once.messages.slice(1)] }, "v5", { facts: FACTS });
-	for (const m of again.messages.filter((x) => x.role === "user")) assert.equal(userText(m).split("Project facts:").length, 2);
-});
-
-test("empty or absent facts leave the payload as before", () => {
-	const payload = { messages: [text("user", MARK_ON), text("user", "t1")] };
-	const base = filterForMellum(payload, "v5");
-	assert.deepEqual(filterForMellum(payload, "v5", { facts: "" }), base);
-	assert.equal(base.messages[1].content[0].text, "t1");
+test("withFacts is idempotent: a message already ending with the block gets no second one", () => {
+	const once = withFacts({ role: "user", content: "t" }, FACTS);
+	assert.equal(withFacts(once, FACTS), once, "a string already ending with the block is returned unchanged");
+	const arrOnce = withFacts({ role: "user", content: [{ type: "text", text: "t" }] }, FACTS);
+	const arrTwice = withFacts(arrOnce, FACTS);
+	const text = arrTwice.content.filter((p) => p.type === "text").map((p) => p.text).join("");
+	assert.equal(text.split("Project facts:").length, 2, "exactly one facts block after re-applying");
 });
 
 test("runRecord carries facts from the meta, and omits the field when there is none", async () => {

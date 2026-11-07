@@ -1,0 +1,1 @@
+The test suite now passes. The endpoint /sum has been implemented reading numbers.txt and returning the column sums.

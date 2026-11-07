@@ -1,38 +1,85 @@
 [project]
 site_name = "Small AI Learning Center"
-site_url = "https://pauleveritt.github.io/mellum-worker/"
+site_url = "https://andrevanzuydam.github.io/mellum-worker/"
 site_description = "Small coding models, measured: problems, fixes, evidence."
-repo_url = "https://github.com/pauleveritt/mellum-worker"
+repo_url = "https://github.com/andrevanzuydam/mellum-worker"
 docs_dir = "learn"
 site_dir = "site"
-exclude_docs = "code/"
+exclude_docs = """
+code/
+challenges/
+"""
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/badges.js"]
 nav = [
-  { "Home" = "index.md" },
-  { "Introduction" = "introduction/index.md" },
-  { "Getting started" = ["getting-started/index.md", "getting-started/base-pi-on-llamacpp.md", "getting-started/ditch.md",
-    "getting-started/harness.md",
-    "getting-started/suite.md", "getting-started/worker-extension.md",
-    "getting-started/troubleshoot.md"] },
-  { "Pathologies" = "pathologies.md" },
-  { "Lessons" = ["lessons/index.md", "lessons/baseline.md",
-    "lessons/primary-agent.md", "lessons/short-prompt.md",
-    "lessons/thinking-working-memory.md",
-    "lessons/guards-for-empty-turns.md",
-    "lessons/project-facts.md", "lessons/write-only-listed.md",
-    "lessons/prose-brief.md", "lessons/intercom-block.md",
-    "lessons/one-spec-per-phase.md"] },
+  { "Home" = ["index.md"] },
+  { "Introduction" = ["introduction/index.md"] },
+  { "Getting Started" = ["getting-started/index.md", "getting-started/base-pi-on-llamacpp.md",
+    "getting-started/working-with-pi.md", "getting-started/eval-suites.md", "getting-started/the-harness.md",
+    "getting-started/extensions.md", "getting-started/troubleshoot.md"] },
+  { "Lessons" = ["lessons/index.md",
+    { "Easy" = ["lessons/easy/name-the-layout.md", "lessons/easy/developer-frame.md",
+      "lessons/easy/verify-the-spec.md", "lessons/easy/guards-you-didnt-need.md"] },
+  ] },
+  { "The Challenge" = [
+    "challenge/index.md",
+    "challenge/easy.md", "challenge/medium.md", "challenge/hard.md", "challenge/remedies.md",
+  ] },
+  { "Pathologies" = ["pathologies.md"] },
+  { "Scoreboard" = ["scoreboard.md"] },
+  { "Glossary" = ["glossary.md"] },
   { "About" = [
     "about/index.md", "about/how-to-read.md",
     "about/evidence.md", "about/contributing.md",
+    { "Project" = ["project/index.md", "project/toolchain.md"] },
+    { "Lesson Template" = "lesson-template.md" },
+    "credits.md",
   ] },
-  { "Project" = ["project/index.md", "project/toolchain.md"] },
-  { "Glossary" = "glossary.md" },
-  { "Lesson template" = "lesson-template.md" },
-  { "Credits" = "credits.md" },
 ]
 
+[project.theme]
+language = "en"
+features = [
+  "content.code.copy",
+  "content.code.select",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.integrate",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
 [project.markdown_extensions]
+admonition = {}
+attr_list = {}
+md_in_html = {}
+pymdownx.details = {}
 pymdownx.superfences = {}
+pymdownx.tabbed.alternate_style = true
 
 [project.markdown_extensions.zensical_glossary]
 glossary_file = "glossary.md"

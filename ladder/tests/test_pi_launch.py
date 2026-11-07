@@ -153,3 +153,16 @@ def test_child_env_removes_ladder_python_from_path():
         {"VIRTUAL_ENV": "/ladder-env", "PATH": "/ladder-env/bin:/usr/bin"}, "/tmp/trace"
     )
     assert env["PATH"] == "/usr/bin"
+
+
+def test_preflight_python_identity_survives_a_symlinked_temp_dir(tmp_path):
+    """macOS: /var is a link to /private/var, and Python 3.15 reports the real path."""
+    from ladder.pi_launch import same_venv_python
+
+    real = tmp_path / "private" / "ws" / ".venv" / "bin"
+    real.mkdir(parents=True)
+    (real / "python").write_text("")
+    (tmp_path / "link").symlink_to(tmp_path / "private")
+    via_link = tmp_path / "link" / "ws" / ".venv" / "bin" / "python"
+    assert same_venv_python(str(real / "python"), via_link)
+    assert not same_venv_python(str(tmp_path / "elsewhere" / "python"), via_link)

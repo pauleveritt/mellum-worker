@@ -1,0 +1,19 @@
+{
+  "arm": "bare",
+  "date": "2026-10-31",
+  "id": "20261031T071251Z-easy-b27fce",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 1,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M",
+  "passed": false,
+  "stack": [
+    "mellum-acceptance",
+    "mellum-ncm",
+    "tool/background-long-commands"
+  ],
+  "suite": "easy",
+  "tool_calls": 182,
+  "turns": 188,
+  "version": "0c0f3935",
+  "wall": 1253.481
+}

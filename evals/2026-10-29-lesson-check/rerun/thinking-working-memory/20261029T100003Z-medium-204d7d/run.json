@@ -1,0 +1,50 @@
+{
+  "suite": "medium",
+  "arm": "worker",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 2700.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 1,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 1,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 0,
+      "total": 5
+    }
+  },
+  "requests": 119,
+  "turns": 119,
+  "tool_calls": 110,
+  "tool_errors": 22,
+  "context": 88415,
+  "output_tokens": 70451,
+  "wall": 1230.434,
+  "nudges": 2,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

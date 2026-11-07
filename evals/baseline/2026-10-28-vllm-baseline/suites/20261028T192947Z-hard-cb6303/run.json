@@ -1,0 +1,99 @@
+{
+  "suite": "hard",
+  "arm": "bare",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 2700.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 34,
+  "checks_ran": false,
+  "missing_checks": [
+    "grader_tests/test_migrations.py::test_all_migrations_are_recorded",
+    "grader_tests/test_migrations.py::test_index_exists",
+    "grader_tests/test_migrations.py::test_note_column",
+    "grader_tests/test_migrations.py::test_open_tickets_view",
+    "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop",
+    "grader_tests/test_migrations.py::test_resolved_at_is_backfilled",
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+    "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+    "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+    "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form",
+    "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+    "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids",
+    "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record",
+    "grader_tests/test_phase5.py::test_archive_only_when_resolved",
+    "grader_tests/test_phase5.py::test_audit_records_each_transition_in_order_with_monotonic_seq",
+    "grader_tests/test_phase5.py::test_ids_are_never_reused_after_archive",
+    "grader_tests/test_phase5.py::test_stats_open_excludes_resolved_and_archived",
+    "grader_tests/test_phase6.py::test_archived_defined_by_archived_at",
+    "grader_tests/test_phase6.py::test_report_exact_sums",
+    "grader_tests/test_phase6.py::test_totals_are_integers",
+    "grader_tests/test_visits.py::test_visits_filter_sort_and_limit",
+    "grader_tests/test_visits.py::test_visits_range_is_inclusive_and_minutes_bound"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 6,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 3,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 5,
+      "total": 5
+    },
+    "test_phase5.py": {
+      "missing": 5,
+      "total": 5
+    },
+    "test_phase6.py": {
+      "missing": 3,
+      "total": 3
+    },
+    "test_visits.py": {
+      "missing": 2,
+      "total": 2
+    },
+    "test_migrations.py": {
+      "missing": 6,
+      "total": 6
+    }
+  },
+  "requests": 173,
+  "turns": 173,
+  "tool_calls": 165,
+  "tool_errors": 119,
+  "context": 114064,
+  "output_tokens": 222616,
+  "wall": 2695.705,
+  "nudges": 2,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

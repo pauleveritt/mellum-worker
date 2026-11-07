@@ -10,6 +10,8 @@ backends: []
 
 For Windows, macOS, and Linux. These instructions use the native `llama-server` from llama.cpp and do not require Homebrew.
 
+![A small robot with a wrench untangling a cable between a laptop and a server box](../assets/illustrations/troubleshoot.webp){ .illustration }
+
 ## 1. Identify what is failing
 
 Open a terminal and run each command separately:
@@ -219,6 +221,9 @@ On Fedora:
 sudo dnf install -y curl ca-certificates git gcc gcc-c++ make
 ```
 
+On atomic Fedora (Silverblue, Kinoite) `dnf` is unavailable: install these in a
+`toolbox` container, or layer them with `rpm-ostree install` and reboot.
+
 On Arch Linux, perform a normal full system update before installing prerequisites:
 
 ```bash
@@ -282,6 +287,24 @@ This starts a local CPU test with a limited context size. Leave the terminal ope
 - **Split model:** Download every required shard and follow the model publisher's loading instructions.
 - **Out of memory:** Choose a smaller model or quantisation, reduce context size, and close other memory-intensive applications. CPU mode still needs enough system RAM.
 
+### Choose a llama.cpp build, or force GPU offload
+
+`install.sh` picks a prebuilt llama.cpp for your hardware. To choose one
+yourself, set `MELLUM_LLAMA_FLAVOR` — `cuda-13.4`, `cuda-12.8`, `vulkan` or
+`cpu` — before the install or the server start.
+
+By default the server runs with llama.cpp's `--fit`, which splits the model
+across GPU and CPU to fit free memory, so it stays portable to a small machine.
+Where there is GPU memory to spare, set `MELLUM_NGL` (e.g. `999`) to force full
+GPU offload.
+
+### Verify or restart the server
+
+- `uv run scripts/backend.py verify` checks the downloaded weights against
+  Hugging Face's sha256.
+- `uv run scripts/backend.py kill` ends every `llama-server` process, not just
+  the one in the pidfile — use it when a stale server is holding the port.
+
 ## 7. Test the connection
 
 After the server finishes loading, use a second terminal.
@@ -304,7 +327,7 @@ curl http://127.0.0.1:8000/v1/models
 | --- | --- |
 | Connection refused | Confirm the server is still running and listening on port 8000. Read its startup error. |
 | Health endpoint returns 503 | The model may still be loading. Check progress in the server terminal. |
-| Address already in use | Choose another port, such as `--port 8001`, and update your client URL. |
+| Address already in use | Choose another port, such as `--port 8090` (not 8001 — the course's own server uses that), and update your client URL. |
 | 401 response | If API-key authentication is enabled, configure the client with the same key. |
 | 404 response | Check the endpoint. An OpenAI-compatible client usually needs a base URL ending in `/v1`. |
 | Browser works but your app fails | Check the app's base URL, model ID, authentication, and any tool-calling requirements. |

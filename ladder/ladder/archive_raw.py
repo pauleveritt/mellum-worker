@@ -3,7 +3,7 @@
 Raw files are never committed. Each phase directory gets `<phase>.tar.gz`
 holding them at their original relative paths, attached to a `research-*`
 release. Same inputs give the same bytes, so the SHA-256 in
-`docs/ladder/PROVENANCE.md` can be checked after a rebuild.
+`evals/PROVENANCE.md` can be checked after a rebuild.
 
     uv run python -m ladder.archive_raw --out DIR --tag TAG PHASE_DIR...
 """
@@ -15,7 +15,7 @@ import tarfile
 from pathlib import Path
 
 RAW_NAMES = ("trace.jsonl", "stdout.txt", "diff.patch")
-RELEASE_URL = "https://github.com/pauleveritt/mellum-worker/releases/download"
+RELEASE_URL = "https://github.com/andrevanzuydam/mellum-worker/releases/download"
 
 
 def _normalize(info: tarfile.TarInfo) -> tarfile.TarInfo:

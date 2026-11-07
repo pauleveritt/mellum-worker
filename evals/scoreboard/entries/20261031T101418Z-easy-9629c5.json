@@ -1,0 +1,17 @@
+{
+  "arm": "worker",
+  "date": "2026-10-31",
+  "id": "20261031T101418Z-easy-9629c5",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 4,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "arm:worker"
+  ],
+  "suite": "easy",
+  "tool_calls": 27,
+  "turns": 29,
+  "version": "\u2014",
+  "wall": 118.926
+}

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ladder Monitor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" />
+<style>
+  /* JetBrains Darcula-inspired scheme */
+  :root { color-scheme: dark; --bg:#2b2b2b; --card:#3c3f41; --text:#a9b7c6; --mut:#808080; --line:#4b4b4b;
+          --pass:#499c54; --fail:#c75450; --run:#cc7832; --idle:#4b4b4b; --accent:#cc7832;
+          --mono:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 var(--mono); }
+  header { display:flex; align-items:baseline; gap:.75rem; padding:16px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:1.05rem; margin:0; color:var(--accent); font-weight:700; } .ts { color:var(--mut); font-variant-numeric:tabular-nums; }
+  main { padding:16px; max-width:1100px; margin:0 auto; }
+  h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--mut); margin:1.25rem 0 .5rem; }
+  .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+  .cell { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--idle); border-radius:10px; padding:12px; }
+  .cell.pass { border-left-color:var(--pass); } .cell.fail { border-left-color:var(--fail); }
+  .cell.run { border-left-color:var(--run); }
+  .cell .r { color:var(--mut); font-size:.8rem; } .cell .p { font-size:1.4rem; font-weight:600; font-variant-numeric:tabular-nums; }
+  .cell .w { color:var(--mut); font-size:.8rem; }
+  .feed { display:flex; flex-direction:column; gap:8px; }
+  .turn { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+  .turn code { color:#6897bb; font-size:.82rem; word-break:break-all; }
+  .turn p { margin:.35rem 0 0; color:var(--mut); font-size:.85rem; }
+  .empty { color:var(--mut); }
+  .prompt { display:flex; flex-direction:column; gap:8px; }
+  .pblock { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+  .plabel { display:block; color:var(--mut); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.25rem; }
+  .pblock pre { margin:0; white-space:pre-wrap; word-break:break-word; font:12.5px/1.45 var(--mono); color:var(--text); }
+  .pblock pre { border-left:2px solid var(--accent); padding-left:8px; }
+  .cell { cursor:pointer; transition:border-color .1s; } .cell:hover { border-color:var(--accent); }
+  .detail { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:4px; }
+  .detail .head { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+  .detail .head b { color:var(--accent); } .detail .x { cursor:pointer; color:var(--mut); border:1px solid var(--line); border-radius:6px; padding:1px 8px; background:transparent; font-family:var(--mono); }
+  .run { display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:baseline; padding:7px 0; border-top:1px solid var(--line); }
+  .run .verdict { font-weight:700; } .run .verdict.ok { color:var(--pass); } .run .verdict.no { color:var(--fail); }
+  .run .meta { color:var(--mut); font-size:.82rem; } .run .meta b { color:var(--text); font-weight:500; }
+  .run .w { color:var(--mut); font-size:.8rem; white-space:nowrap; }
+  .intel { display:flex; flex-direction:column; gap:8px; }
+  .intel .c { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--fail); border-radius:8px; padding:8px 10px; }
+  .intel .told { color:var(--text); } .intel .told b { color:var(--run); } .intel .truth { color:var(--mut); font-size:.85rem; margin-top:.2rem; }
+  .editor { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px; }
+  .editor label { color:var(--mut); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; }
+  .editor textarea { width:100%; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:12.5px/1.45 var(--mono); resize:vertical; min-height:52px; }
+  .editor .bar { display:flex; gap:10px; align-items:center; }
+  .editor button { background:var(--accent); color:#2b2b2b; border:none; border-radius:6px; padding:5px 14px; font-family:var(--mono); font-weight:700; cursor:pointer; }
+  .editor .msg { color:var(--pass); font-size:.82rem; }
+  .runbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .chip { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:999px; padding:5px 14px; font-family:var(--mono); font-size:.85rem; cursor:pointer; }
+  .chip:hover { border-color:var(--accent); color:var(--accent); }
+  .chip.on { background:var(--run); color:#2b2b2b; border-color:var(--run); font-weight:700; }
+  .chip.play.on { background:var(--pass); border-color:var(--pass); }
+  .chip.pause.on { background:var(--fail); border-color:var(--fail); }
+  .chip.stop.on { background:var(--fail); border-color:var(--fail); color:#2b2b2b; }
+  .live { font-size:.8rem; font-weight:700; letter-spacing:.02em; }
+  .live.on { color:var(--pass); } .live.off { color:var(--mut); font-weight:400; }
+  .runbar .msg { color:var(--mut); font-size:.82rem; margin-left:4px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tina4js@1.5.2/dist/tina4js.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script>
+  const { signal, html, sse } = Tina4;
+  const data = signal({ updatedAt: "—", sweep: [], active: [], intel: [] });
+  const selected = signal(null);   // drill-down: a rung's past runs + summaries
+  const ovSystem = signal("");     // system-prompt override being edited
+  const ovAppend = signal("");     // text appended to the system prompt
+  const saveMsg = signal("");
+  const runMsg = signal("");       // feedback from starting a run
+  // The known ladder (1-12), unioned with any rung the sweep actually reports,
+  // so a rung is never hidden: one with no result shows as idle ("—"), never dropped.
+  const BASE_RUNGS = Array.from({ length: 12 }, (_, i) => i + 1);
+  const rungsToShow = () => {
+    const s = new Set(BASE_RUNGS);
+    (data.value.sweep || []).forEach((r) => s.add(r.rung));
+    return [...s].sort((a, b) => a - b);
+  };
+
+  const apply = (raw) => {
+    try { data.value = typeof raw === "string" ? JSON.parse(raw) : raw; } catch (e) {}
+  };
+
+  // Subscribe to the live feed. Prefer the client's SSE module; fall back to
+  // the browser's EventSource if the IIFE build doesn't expose it.
+  try {
+    if (sse && typeof sse.connect === "function") {
+      const stream = sse.connect("/events");
+      if (typeof stream.pipe === "function") stream.pipe(data, (msg) => (typeof msg === "string" ? JSON.parse(msg) : msg));
+      else if (typeof stream.on === "function") stream.on("message", (m) => apply(m));
+      else new EventSource("/events").onmessage = (e) => apply(e.data);
+    } else {
+      new EventSource("/events").onmessage = (e) => apply(e.data);
+    }
+  } catch (e) {
+    new EventSource("/events").onmessage = (e) => apply(e.data);
+  }
+
+  // Click a rung to load its past runs and summaries.
+  const selectRung = (n) => {
+    fetch("/rung?n=" + n).then((r) => r.json()).then((d) => (selected.value = d)).catch(() => {});
+  };
+
+  // A run is active if the dashboard launched a sweep, or a worker is live
+  // (feed/trace fresh — catches runs started from a terminal too).
+  const isRunning = () => data.value.runningAll || (data.value.activity && data.value.activity.active);
+
+  // Start one full pass of the whole ladder (1-12) from the dashboard.
+  const startAll = () => {
+    runMsg.value = "starting the full ladder…";
+    fetch("/run-all", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })
+      .then((r) => r.json())
+      .then((d) => { runMsg.value = d.ok ? ("running the full ladder (1-12) — " + d.model) : ("could not start: " + d.error); })
+      .catch(() => (runMsg.value = "could not reach the server"));
+  };
+  // Stop whatever is running.
+  const stopRun = () => {
+    runMsg.value = "stopping…";
+    fetch("/stop", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })
+      .then((r) => r.json())
+      .then((d) => { runMsg.value = d.stopped && d.stopped.length ? ("stopped: " + d.stopped.join(", ")) : "nothing was running"; })
+      .catch(() => (runMsg.value = "could not reach the server"));
+  };
+
+  // The prompt editor is UNCONTROLLED: load fills the textareas via the DOM and
+  // save reads them back, so typing is never fought by a reactive value binding.
+  const el = (id) => document.getElementById(id);
+  const loadOverride = () => {
+    fetch("/override").then((r) => r.json()).then((o) => {
+      if (el("ov-system")) el("ov-system").value = o.system || "";
+      if (el("ov-append")) el("ov-append").value = o.append || "";
+    }).catch(() => {});
+  };
+  const saveOverride = () => {
+    const body = { system: el("ov-system") ? el("ov-system").value : "", append: el("ov-append") ? el("ov-append").value : "" };
+    saveMsg.value = "saving…";
+    fetch("/override", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
+      .then((r) => r.json())
+      .then(() => { saveMsg.value = "saved — applies on the worker's next turn"; setTimeout(() => (saveMsg.value = ""), 4000); })
+      .catch(() => (saveMsg.value = "save failed"));
+  };
+
+  // Play / pause the worker between turns (writes the mellum-control file).
+  const setControl = (state) => {
+    fetch("/control", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ state }) })
+      .then((r) => r.json()).then((d) => (data.value = { ...data.value, control: d.state })).catch(() => {});
+  };
+
+  const cell = (n) => {
+    const s = (data.value.sweep || []).find((x) => x.rung === n);
+    const status = !s ? "idle" : s.n < 3 ? "run" : s.pass === s.n ? "pass" : "fail";
+    const label = !s ? "—" : s.pass + "/" + s.n;
+    const wall = s && s.wall ? s.wall + "s" : "";
+    return html`<div class=${"cell " + status} @click=${() => selectRung(n)}>
+      <div class="r">rung ${n}</div><div class="p">${label}</div><div class="w">${wall}</div>
+    </div>`;
+  };
+
+  const app = html`
+    <header>
+      <h1>Ladder Monitor</h1>
+      <span class=${() => "live " + (isRunning() ? "on" : "off")}>${() => {
+        const a = data.value.activity || {};
+        if (!isRunning()) return "○ idle";
+        const done = (data.value.sweep || []).map((r) => r.rung);
+        const rung = a.rung || (done.length ? Math.max(...done) + 1 : null);
+        return "● RUNNING" + (rung ? " — rung " + rung : "") + (a.ageSec != null ? " · " + a.ageSec + "s ago" : "");
+      }}</span>
+      <span class="ts">updated ${() => data.value.updatedAt}</span>
+    </header>
+    <main>
+      <h2>Worker controls</h2>
+      <div class="runbar">
+        <button class=${() => "chip play" + (data.value.control !== "pause" ? " on" : "")} @click=${() => setControl("play")}>▶ Play</button>
+        <button class=${() => "chip pause" + (data.value.control === "pause" ? " on" : "")} @click=${() => setControl("pause")}>⏸ Pause</button>
+        <span class="msg">${() => "worker is " + (data.value.control === "pause" ? "paused" : "running") + " (needs mellum-control loaded)"}</span>
+      </div>
+      <h2>Start a run — ${() => data.value.model || "the configured model"}</h2>
+      <div class="runbar">
+        <button class=${() => "chip" + (isRunning() ? " stop on" : "")} @click=${() => (isRunning() ? stopRun() : startAll())}>${() => isRunning() ? "■ Stop run" : "▶ Start full ladder run (1-12)"}</button>
+        <span class="msg">${() => runMsg.value}</span>
+      </div>
+      <h2>Rungs</h2>
+      <div class="grid">${() => rungsToShow().map(cell)}</div>
+      ${() => {
+        const d = selected.value;
+        if (!d) return html`<div class="empty" style="margin-top:6px">click a rung to see its past runs</div>`;
+        const runs = d.runs || [];
+        return html`<div class="detail">
+          <div class="head"><b>rung ${d.rung}</b><button class="x" @click=${() => (selected.value = null)}>close</button></div>
+          ${!runs.length ? html`<div class="empty">no runs recorded for this rung yet</div>` : runs.map((r) => html`
+            <div class="run">
+              <span class=${"verdict " + (r.passed ? "ok" : "no")}>${r.passed ? "PASS" : "FAIL"}</span>
+              <span class="meta"><b>${r.run}</b> — ${r.sentence}${r.diff ? html` · ${r.diff.split("\n")[0]}` : null}${r.deadline ? " · deadline hit" : ""}</span>
+              <span class="w">${r.wall}s</span>
+            </div>`)}
+        </div>`;
+      }}
+      <h2>Intelligence centre — told vs truth</h2>
+      <div class="intel">${() => {
+        const cs = data.value.intel || [];
+        if (!cs.length) return html`<div class="empty">no contradictions — load mellum-rethink to have the worker push back on false claims</div>`;
+        return cs.slice().reverse().map((c) => html`<div class="c">
+          <div class="told">told: <b>${c.claim}</b></div>
+          <div class="truth">truth: ${c.observed}</div>
+        </div>`);
+      }}</div>
+      <h2>Prompt — context being fed</h2>
+      <div class="prompt">${() => {
+        const p = data.value.prompt;
+        if (!p) return html`<div class="empty">no prompt captured yet — run with the feed extension</div>`;
+        return html`
+          <div class="pblock"><span class="plabel">system</span><pre>${p.system}</pre></div>
+          <div class="pblock"><span class="plabel">task / injected</span><pre>${p.task}</pre></div>`;
+      }}</div>
+      <h2>Edit the system prompt</h2>
+      <div class="editor">
+        <label>replace system prompt (blank = leave as-is)</label>
+        <textarea id="ov-system" placeholder="e.g. You are a careful worker. Stream large files; never load them whole."></textarea>
+        <label>append to system prompt</label>
+        <textarea id="ov-append" placeholder="e.g. Always re-run the acceptance test before you finish."></textarea>
+        <div class="bar"><button @click=${saveOverride}>Save override</button><span class="msg">${() => saveMsg.value}</span></div>
+      </div>
+      <h2>Live worker feed</h2>
+      <div class="feed">${() => {
+        const turns = data.value.active || [];
+        if (!turns.length) return html`<div class="empty">waiting for a worker run with the feed extension…</div>`;
+        return turns.slice().reverse().map((t) => html`<div class="turn">
+          ${t.call ? html`<code>${t.call}</code>` : null}
+          ${t.think ? html`<p>${t.think}</p>` : null}
+        </div>`);
+      }}</div>
+    </main>
+  `;
+  document.getElementById("app").appendChild(app);
+  loadOverride(); // fill the editor now that the textareas exist in the DOM
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.0,
+    "limit": 120.0,
+    "command": "uvicorn main:app --reload"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": false,
+  "contaminated": false,
+  "failed_checks": 4,
+  "checks_ran": false,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 33,
+  "turns": 33,
+  "tool_calls": 33,
+  "tool_errors": 7,
+  "context": 1755,
+  "output_tokens": 18918,
+  "wall": 293.37,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 82677,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python /Users/mac/projects/mellum-worker/.venv/bin/uvicorn main:app --reload"
+    },
+    {
+      "pid": 82678,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+    },
+    {
+      "pid": 82679,
+      "pgid": null,
+      "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+    }
+  ],
+  "out_of_layout": [
+    "main.py"
+  ]
+}

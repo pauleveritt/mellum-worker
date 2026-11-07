@@ -88,7 +88,7 @@ Deferred to INT.2 on 2026-10-24; no Flow files were extracted here.
 - Create from `pr-1`: `extensions/mellum-flow.ts`, `learn/code/flow_run.py`, `learn/code/tests/test_flow_run.py`, `tests/mellum-flow.test.mjs`
 - Create: a new spec/plan for Flow after exploring it.
 
-- [ ] **Step 1: Diff the flow files against `main` and list dependencies (`mellum-contract`, `mellum-knowledge`, `mellum-loop`, `mellum-plan`, `mellum-surgical`, `mellum-quality`, `mellum-ncm`).**
+- [ ] **Step 1: Diff the flow files against `main` and list dependencies (`mellum-contract`, `mellum-knowledge`, `mellum-loop`, `mellum-plan`, `mellum-surgical`, `mellum-quality`, `mellum-verify`).**
 - [ ] **Step 2: Decide which dependencies are required and which are experiments.**
 - [ ] **Step 3: Rebase only the minimal flow/examine patch onto `main`.**
 - [ ] **Step 4: Run one hard flow with visible and hidden results.**

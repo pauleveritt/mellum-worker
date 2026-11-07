@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Complaints Board{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Complaints Board</h1>
+    <div class="row">
+        {% for complaint in complaints %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Reported by {{ complaint.agent_name }}</h5>
+                    <p class="card-text"><strong>Timestamp:</strong> {{ complaint.timestamp.strftime('%Y-%m-%d') }}</p>
+                    <p class="card-text">{{ complaint.text }}</p>
+                {% if complaint.status == 'open' %}
+                <span class="badge bg-warning">Open</span>
+                <form method="POST" action="/complaints/{{ complaint.id }}/resolve" class="d-inline ml-2">
+                    <button type="submit" class="btn btn-sm btn-warning">Resolve</button>
+                </form>
+                {% else %}
+                <span class="badge bg-success">Resolved</span>
+                <form method="POST" action="/complaints/{{ complaint.id }}/reopen" class="d-inline ml-2">
+                    <button type="submit" class="btn btn-sm btn-secondary">Reopen</button>
+                </form>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <!-- Complaint submission form -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <form method="POST" action="/complaints" class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Submit a Complaint</h5>
+                    <div class="mb-3">
+                        <label for="agent_name" class="form-label">Agent Name</label>
+                        <input type="text" class="form-control" id="agent_name" name="agent_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="text" class="form-label">Complaint</label>
+                        <textarea class="form-control" id="text" name="text" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
