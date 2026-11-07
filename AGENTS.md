@@ -75,6 +75,11 @@ and evidence with dated corrections; never edit archived plans.
 
 ## Working rules
 
+- **Use Pi's extension machinery as deeply as is useful.** Before adding prompt
+  text, look for the hook that turns it into a guarantee; the
+  [survey](docs/superpowers/research/2026-11-07-pi-extension-surface-survey.md)
+  maps them, and every doc's `## Persuasion → enforcement` names the one used.
+  Procedure for cycles, docs and squash-merges: the `mellum-dev` skill, §15.
 - `npm test` runs the suite; every new test is shown to fail first.
 - The ladder, from `ladder/`: `uv run python -m pytest` for its tests,
   `uv run python -m ladder.run_ladder --help` for runs. Never commit

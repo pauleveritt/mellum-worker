@@ -146,6 +146,9 @@ watches it happen:
 
 ## 10. One PR per win or learning
 
+> 2026-11-07: how `integration` reaches `main` (one PR plus a digest, or themed
+> PRs) is open with Paul. Until it is settled, cycles land on `integration` (§15).
+
 Every verified win and every real learning lands as its own small, focused
 change on **this repo** (`andrevanzuydam/mellum-worker`, the master since
 2026-10-29; there is no upstream) — never batched into a grab-bag. One change,
@@ -236,9 +239,9 @@ so they are not dropped:
 
 ## 14. Git discipline (ours and the harness's)
 
-- **Atomic, pushed commits.** One change, one reason, test shown to fail first;
-  commit and push so every change is individually revertible (`git revert <hash>`,
-  `git bisect` to find a regression). The history is the incremental trail.
+- **One branch and worktree per feature cycle, squash-merged into `integration`**
+  (§15). Inside the cycle: atomic commits, one change, one reason, test shown to
+  fail first. Push only when Paul asks.
 - **Checkpoint tags at known-good milestones** — `checkpoint-YYYY-MM-DD-<what>`,
   a clear revert anchor, never a release tag (those match `package.json`).
 - **The harness checkpoints too.** The flow git-inits the workspace and commits
@@ -247,3 +250,43 @@ so they are not dropped:
   run or the grade. Leverage this, don't fight it.
 - End commit messages and PR bodies with the attribution lines the session
   specifies. Keep the framework name out of every commit, PR and doc.
+
+## 15. Re-boot working rules (from 2026-11-07)
+
+The source is [`docs/sdd.md`](../../../docs/sdd.md); `tests/docs-caps.test.mjs` enforces the doc shape.
+
+- **One session per feature cycle.** Start from the brief in `FIXES.md` (main checkout,
+  git-excluded); brainstorm first; end the session at close with a brief for the next one.
+- **Short documents, three sections.** Every spec, plan and research note dated 2026-11-07 or
+  later opens with `## For Andre` (what changed, why, the result, what to look at) and has
+  `## Ladder run` and `## Persuasion → enforcement`. Specs ≤ 100 lines, plans and notes ≤ 150.
+  Say it once; leave Superpowers' default verbosity out.
+- **Use Pi's extension machinery as deeply as is useful.** Before adding prompt text, find the
+  hook that makes the behaviour a guarantee — a `tool_call` block or rewrite, a `tool_result`
+  replacement, a `message_end` fix, a settle gate, `registerTool`, a replacement `bash` or a
+  `spawnHook`. The [survey](../../../docs/superpowers/research/2026-11-07-pi-extension-surface-survey.md)
+  maps them. Name the hook and what it guarantees in the doc's enforcement section.
+- **Budget counts as much as quality.** Report wall time, turns and context beside pass/fail.
+- **Open a cycle:** a roadmap row first, then work in its own worktree:
+
+  ```bash
+  git worktree add .claude/worktrees/<cycle> -b <cycle> integration
+  ```
+
+  Never switch the main checkout's branch (it holds the old `lc40-thin-worker`, a reference only).
+- **Close a cycle:** `## Result`, plan to `plans/archive/`, Status and `## Now` current, suites
+  green. Then squash onto `integration` without checking it out, and clean up:
+
+  ```bash
+  git rebase integration          # only if integration moved since the cycle began
+  git diff --quiet || exit 1      # everything committed
+  C=$(git commit-tree HEAD^{tree} -p integration -F <message-file>)
+  git update-ref refs/heads/integration $C
+  git diff --quiet integration HEAD && echo "trees equal"
+  git -C <main checkout> worktree remove .claude/worktrees/<cycle>
+  git -C <main checkout> branch -D <cycle>
+  ```
+
+  The squash message names the row, what shipped, what was measured, and lists the cycle's
+  commit subjects (`git log --reverse --format='- %s' integration..HEAD`).
+

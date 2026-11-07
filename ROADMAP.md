@@ -8,8 +8,8 @@ tangents go to the backlog, never into the current cycle.
 ## Now
 
 **Active:** none; F.2 closed 2026-11-07 (survey, backlog, questions for Andre).
-**Next:** R.1, Easy remedies on the floor — brainstorm first.
-**After:** A.1, Andre's architect as an opt-in unit.
+**Next:** F.3, a trustworthy instrument — brainstorm first.
+**After:** R.1, Easy remedies with Vanilla as the interleaved control; then A.1, Andre's architect as an opt-in unit.
 **Parked:** everything in [`BACKLOG.md`](BACKLOG.md), each with a reopen condition.
 
 ## Direction
@@ -32,6 +32,7 @@ by default, so every later unit's effect can be credited to it.
 | --- | --- | --- | --- |
 | **F.1** | Loading the worker registers no `delegate` tool and no nudge, proven by a payload check on Easy; dead wood outside Vanilla's closure removed after review. Housekeeping. | Delegation as an opt-in unit (A.1); any remedy; changing Vanilla. | closed 2026-11-07 — [spec](docs/superpowers/specs/2026-11-07-worker-without-delegate-design.md), [plan](docs/superpowers/plans/archive/2026-11-07-f1-floor.md), [record](evals/2026-11-07-f1-payload/table.md). Payload check met: `worker` and `bare` on Easy sent Pi's four tools, no `delegate`, no nudge (n = 1 each). Orphan extensions, `dashboard/` and `HANDOVER.md` removed, each restorable from 63b6563. |
 | **F.2** | Housekeeping: the Pi extension-surface survey brought over from the old branch and corrected (the harness runs thinking on), cut to the floor's units; the backlog pruned to entries the re-boot still wants; the questions for Andre about the live tools F.1 kept. | Building any unit the survey ranks (R.1); deciding how `integration` reaches Andre; removing anything Andre has not answered on. | closed 2026-11-07 — [plan](docs/superpowers/plans/archive/2026-11-07-f2-housekeeping.md), [survey](docs/superpowers/research/2026-11-07-pi-extension-surface-survey.md). Survey re-checked on 21 units, thinking-on corrected; backlog 45 → 22 entries; four questions for Andre open in the plan. |
+| **F.3** | Housekeeping, the instrument. The single-source suites and their test brought over from the old branch (16cf9f9, 7b791ff, 9105bd4), keeping the `original` variant; budget measured honestly: elapsed time from the process, whether the deadline fired (`completion`) in `run.json`, turns distinct from requests. Proven by a Vanilla smoke on Easy, n = 1–2, that lands the new fields, one of them on a deadline. | A Vanilla baseline (Vanilla runs as R.1's interleaved control arm instead); any remedy; settle-layer timeouts and additive `entries` (with the first `check/*` arm); a stronger `qualify` (owed before any grader is cited as qualified). | candidate — next. Scope from a read-only review of the suites and harness (2026-11-07), recorded as F.3's first research note. |
 
 ### Remedies (R)
 
@@ -40,7 +41,7 @@ guarantee through a Pi hook comes before another sentence of prompt.
 
 | Cycle | Ships | Excludes | Status |
 | --- | --- | --- | --- |
-| **R.1** | The first Easy remedy units on the floor, each measured on quality and budget. Candidates: a settle fix, a shipped mediated test, a compile/import check, bounded commands. | Architect mode; a preset inherited from the old worker; a rate from a screen. | candidate — after F.1. |
+| **R.1** | The first Easy remedy units on the floor, each measured on quality and budget. Vanilla is the control arm, interleaved with each unit in the same batch (no older baseline), n ≥ 12, preregistered; quality read from the full Phase 1 acceptance package, since Easy's hidden checks sit at the ceiling; budget from F.3's fields. Candidates: a compile/import check, a shipped mediated test, bounded commands, `PATH` via `spawnHook`. | Architect mode; a preset inherited from the old worker; a rate from a screen; numbers from the ladder rig (thinking off) mixed with the harness (thinking on). | candidate — after F.3. Cross-check: Vanilla on corrected Easy near the old branch's 11/12 hidden all-pass says the port is faithful. |
 
 ### Architect (A)
 
