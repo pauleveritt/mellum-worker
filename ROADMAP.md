@@ -8,7 +8,7 @@ tangents go to the backlog, never into the current cycle.
 ## Now
 
 **Active:** none; F.4 is closed, and the order below was [re-sequenced](docs/superpowers/research/2026-11-07-roadmap-resequence.md) on 2026-11-07.
-**Next:** sync `integration` to `origin/main` (Andre's three commits) and `origin/remove-omlx` (llama.cpp on :8001 the only backend), then F.5, runs we can trust on the M5 Max.
+**Next:** F.5, runs we can trust on the M5 Max; `integration` was synced to `origin/main` and `origin/remove-omlx` on 2026-11-07 (`e881e1d`, `a146ca9`).
 **After:** R.1, F.6, R.2, R.3, then A.1, Andre's architect as an opt-in unit.
 **Parked:** everything in [`BACKLOG.md`](BACKLOG.md), each with a reopen condition.
 
