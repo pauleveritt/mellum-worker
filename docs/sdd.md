@@ -90,7 +90,9 @@ sections contain an assessment, not an empty heading. Before proposing prompt
 text, assess the applicable Pi hooks from the extension-surface survey. Name
 the hook and its guarantee; when no Pi hook applies, explain why and identify
 the mechanism that enforces the behavior instead. Review verifies that choice;
-the document checker verifies structure and length.
+the document checker verifies structure and length. Andre's own notes, merged
+from `origin/main`, keep his shape: the checker lists each one as exempt by
+name, and our documents cite them as input rather than restating them.
 
 Each implementation plan also carries a non-empty `## Close` section. It links
 the [branch/worktree procedure](#branches-and-worktrees) and schedules the squash

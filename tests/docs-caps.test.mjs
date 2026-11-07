@@ -64,6 +64,10 @@ test("the roadmap trifecta: ROADMAP.md, BACKLOG.md and ARCHIVE.md, and no per-ph
 const SHAPE_FROM = "2026-11-07";
 const SHAPE = { specs: 100, plans: 150, research: 150 };
 const SECTIONS = [/^For Andre$/, /^Ladder run$/, /^Persuasion (→|->) enforcement$/];
+// Andre's own notes, merged from origin/main, are written in his shape, not for him to read.
+const SHAPE_EXEMPT = new Set([
+	"research/2026-11-07-request-metric-and-architect-direct-on-easy.md",
+]);
 
 function documentSections(text) {
 	const sections = [];
@@ -89,7 +93,7 @@ test("documents from the re-boot on are short and carry For Andre, Ladder run an
 	for (const [kind, cap] of Object.entries(SHAPE)) {
 		const dir = `docs/superpowers/${kind}`;
 		if (!existsSync(resolve(ROOT, dir))) continue;
-		for (const f of readdirSync(resolve(ROOT, dir)).filter((f) => f.endsWith(".md") && f.slice(0, 10) >= SHAPE_FROM)) {
+		for (const f of readdirSync(resolve(ROOT, dir)).filter((f) => f.endsWith(".md") && f.slice(0, 10) >= SHAPE_FROM && !SHAPE_EXEMPT.has(`${kind}/${f}`))) {
 			const text = read(`${dir}/${f}`);
 			assert.ok(lines(text) <= cap, `${kind} ${f} is ${lines(text)} lines (cap ${cap})`);
 			const sections = documentSections(text);
