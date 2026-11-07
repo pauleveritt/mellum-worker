@@ -53,8 +53,8 @@ harness finding, not a claim about the worker.
 
 ## 4. Document caps are not advisory
 
-`ROADMAP.md` 400 lines; a Ships/Excludes cell 900 chars; a Status cell 1,000;
-a backlog entry 1,200; a plan 400 lines and 25% fenced; a spec 400 lines.
+`ROADMAP.md` 400 lines; a Ships cell 400 chars, Excludes 250, Status 300, and a
+closed row links to its detail; a backlog entry 1,200; a plan 400 lines and 25% fenced; a spec 400 lines.
 `tests/docs-caps.test.mjs` enforces them. **Over cap means a research or verdict
 doc is owed** — move the narrative to `docs/superpowers/research/` and link it —
 **not that the wording gets trimmed.** `## Now` is a pointer, never a narrative.

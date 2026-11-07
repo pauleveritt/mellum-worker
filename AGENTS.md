@@ -61,8 +61,8 @@ to need one.
 
 ## Document caps are not advisory
 
-`ROADMAP.md` caps at 400 lines; a Ships or Excludes cell at 900 characters, a
-Status cell at 1,000, a backlog entry at 1,200, a plan at 400 lines and 25%
+`ROADMAP.md` caps at 400 lines; a Ships cell at 400 characters, an Excludes cell
+at 250 and a Status cell at 300, and a closed row links to its detail; a backlog entry at 1,200, a plan at 400 lines and 25%
 fenced, a spec at 400 lines. From 2026-11-07 a spec caps at 100 lines and a plan
 or research note at 150, and each opens with `## For Andre` and carries
 `## Ladder run` and `## Persuasion → enforcement` sections. `tests/docs-caps.test.mjs` enforces them. Over

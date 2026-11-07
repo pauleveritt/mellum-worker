@@ -45,8 +45,9 @@ prose rules and an executable gate are both needed.
 | Document | Cap | Over cap means |
 | --- | --- | --- |
 | `ROADMAP.md` whole file | 400 lines | Something owes a move to `research/` or deletion |
-| Roadmap **Ships** or **Excludes** cell | 900 chars | A verdict doc is owed |
-| Roadmap **Status** cell | 1,000 chars | A verdict doc is owed |
+| Roadmap **Ships** cell | 400 chars | The detail belongs in the spec or plan |
+| Roadmap **Excludes** cell | 250 chars | The detail belongs in the spec or plan |
+| Roadmap **Status** cell | 300 chars; a closed or superseded row carries a link | A verdict doc is owed |
 | **Backlog entry** | 1,200 chars | A research doc is owed; the entry keeps a link and a reopen condition |
 | **Plan** | 400 lines, 25% fenced | Split the feature cycle |
 | **Spec** | 400 lines | Split the design |
@@ -150,6 +151,11 @@ Archived plans stay out of the checker scope. Historical debt is not a
 current regression, and repeatedly flagging it trains people to ignore the
 gate. Specs and research are not archived: decisions and evidence stay at
 their original paths, with dated corrections beside the original reasoning.
+
+A roadmap row is a pointer, not a report: what ships, what is out, the state,
+and links to the spec, plan, record or note that hold the detail. The cell caps
+were lowered from 900/900/1,000 on 2026-11-07, after rows on the old branch grew
+to near 1,000 characters by restating their plans.
 
 Closed feature cycles keep their roadmap rows (state, date and links) while
 their phase is active. An over-cap closed row owes a research doc.

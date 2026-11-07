@@ -12,14 +12,26 @@ test("ROADMAP.md is at most 400 lines", () => {
 	assert.ok(lines(read("ROADMAP.md")) <= 400);
 });
 
-test("roadmap cells: Ships and Excludes at most 900 chars, Status at most 1000", () => {
+// A row is a pointer: the detail lives in the spec, plan, record or research note it links.
+// Lowered from 900/900/1,000 on 2026-11-07, when old rows had grown into reports.
+const CELL = { ships: 400, excludes: 250, status: 300 };
+
+test("roadmap cells: Ships at most 400 chars, Excludes 250, Status 300", () => {
 	const rows = read("ROADMAP.md").split("\n").filter((l) => /^\| \*\*/.test(l));
 	assert.ok(rows.length > 0, "no feature-cycle rows found");
 	for (const row of rows) {
 		const [, cycle, ships, excludes, status] = row.split("|").map((c) => c.trim());
-		assert.ok(ships.length <= 900, `${cycle} Ships cell is ${ships.length} chars`);
-		assert.ok(excludes.length <= 900, `${cycle} Excludes cell is ${excludes.length} chars`);
-		assert.ok(status.length <= 1000, `${cycle} Status cell is ${status.length} chars`);
+		assert.ok(ships.length <= CELL.ships, `${cycle} Ships cell is ${ships.length} chars`);
+		assert.ok(excludes.length <= CELL.excludes, `${cycle} Excludes cell is ${excludes.length} chars`);
+		assert.ok(status.length <= CELL.status, `${cycle} Status cell is ${status.length} chars`);
+	}
+});
+
+test("a closed or superseded roadmap row links to where its detail lives", () => {
+	const rows = read("ROADMAP.md").split("\n").filter((l) => /^\| \*\*/.test(l));
+	for (const row of rows) {
+		const [, cycle, , , status] = row.split("|").map((c) => c.trim());
+		if (/^(closed|superseded)\b/.test(status)) assert.match(status, /\]\(/, `${cycle} Status has no link`);
 	}
 });
 

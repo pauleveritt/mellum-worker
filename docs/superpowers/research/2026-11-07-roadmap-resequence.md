@@ -65,6 +65,19 @@ is new.
   cohort), and they pay off only in parallel, which matters for Medium and Hard.
 - **F.6 rather than a new phase** for the pods: it is floor infrastructure.
 
+## What R.1 carries
+
+Moved here from R.1's roadmap row on 2026-11-07, when the row became a pointer.
+
+- **Before any run:** preregister the assertion digest and the execution policy, with grader
+  identity fixed.
+- **Quality:** the repaired thirteen-check Phase 1 oracle. The old four-check rates do not
+  transfer, so quality and budget are established together in the new batch.
+- **Budget:** requests and output tokens, with censored runs reported apart (F.5). This replaced
+  F.3's wall deadline as the budget.
+- **Moved out:** the native `PATH` went to F.5. The stall candidates come from LC.41 and `f0e31ea`.
+- **Kept apart:** numbers from the ladder rig (thinking off) never mix with the harness's (thinking on).
+
 ## `origin/remove-omlx`, scheduled with the sync
 
 Andre's branch (2026-11-05, not merged) removes the oMLX path and makes llama.cpp on :8001 the
