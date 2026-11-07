@@ -1062,3 +1062,10 @@ test("with no HOME (Windows PowerShell), the run record goes under the user's ho
 		process.env.USERPROFILE = saved.USERPROFILE;
 	}
 });
+
+test("the /mellum description does not promise a prompt or tools the thin worker never swaps", async () => {
+	const commands = {};
+	install({ on: () => {}, registerCommand: (name, def) => { commands[name] = def; }, registerTool: () => {} });
+	assert.doesNotMatch(commands.mellum.description, /prompt|tools/);
+	assert.match(commands.mellum.description, /Mellum mode/);
+});

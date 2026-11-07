@@ -33,11 +33,12 @@ badges let you trust it, and what is still open.
 
 ### Challenge
 
-<!-- zensical-glossary-aliases: The Challenge, Easy, Medium, Hard -->
+<!-- zensical-glossary-aliases: The Challenge, Easy, Medium, Hard, Tier -->
 The three levels learners attempt to test what they have learnt: Easy (one
-prompt, 4 hidden checks), Medium (four prompts, 18 checks) and Hard (eleven
-prompts, 34 checks). They are the eval suites `easy`, `medium` and `hard`;
-[The Challenge](challenge/index.md) explains how to attempt them.
+prompt, 13 hidden checks), Medium (four prompts, 18 checks) and Hard (eleven
+prompts, 34 checks). Each level is a **tier**. They are the eval suites `easy`,
+`medium` and `hard`; [The Challenge](challenge/index.md) explains how to attempt
+them.
 
 ### Phase
 
@@ -96,27 +97,53 @@ Until 2026-10-29, the n=3 comparison of Vanilla Pi and the Baseline Worker on
 easy, medium and hard. S0 Start Here now teaches reading
 Vanilla Pi's failures and naming what went wrong; the worker is a preset, not a lesson.
 
+### Mellum mode
+
+The state `/mellum on` switches on and `/mellum off` switches off. While it is
+on, the session's model is Mellum, and every request leaves out the turns from
+before mode began, so Mellum sees only its own task. The worker also counts the
+span's requests, tool calls and output tokens. Turning it off restores the
+previous model and writes the span's run record. A headless run turns it on at
+session start with `MELLUM_MODE=1`, which is what the `worker` arm sets. Mode
+changes no prompt, tool or guard; remedy units do that.
+
+### Thin worker
+
+The `/mellum` worker with Mellum mode on and nothing else: the command tool and
+the mode machinery. It bundles nothing: no prompt swap, no tool narrowing, no
+facts, no guards; those are remedy units. The `worker` arm, and what
+`/challenge <tier>` runs before you switch any unit on.
+
+### Base stack
+
+Base for short. The smallest stack of remedy units that gives later remedies a
+fair chance: the units that beat plain Vanilla on their own, such as a stall handler, so a session is not lost before the
+remedy under test can act. It is earned by measurement in R.1 and loaded as `preset:base`;
+plain Vanilla stays in the batch as the anchor. Not the Baseline Worker.
+
 ### Baseline Worker
 
-The `/mellum` worker in Mellum mode (`MELLUM_MODE=1`): only the command tool and
-the mode machinery — switch to Mellum, drop the pre-marker history, track the
-span, write the run record. It bundles nothing: no prompt swap, no tool
-narrowing, no facts, no guards. Those are all remedy units now, and the
-`baseline-worker` preset is the explicit set that reconstructs the worker's old
-bundle. The `worker` arm.
+The worker as it was until LC.29 (2026-10-31): Mellum mode plus a bundled
+prompt, tool narrowing, project facts and guards. Records, lessons and
+scoreboard rows from before then mean this bundle. The bundle now lives as
+`preset:baseline-worker`, so today's Baseline Worker is the thin worker plus that
+preset.
 
 ### Vanilla Pi
 
-<!-- zensical-glossary-aliases: Baseline Pi, bare Pi, plain Pi -->
+<!-- zensical-glossary-aliases: Baseline Pi, plain Pi -->
 Pi with no worker extension and no remedies: Pi’s base system prompt, the
-built-in tools and no worker guards or facts. The `vanilla` arm, and what
-`/challenge <tier>:vanilla` runs.
+built-in tools and no worker guards or facts. The `vanilla` arm, the floor, and
+what `/challenge <tier>:vanilla` runs. Not the `bare` arm, which loads the
+worker extension with mode off.
 
 ### Arm
 
 One configuration in an experiment. The arms are `vanilla` (no worker
-extension, the floor), `bare` (the worker loaded but mode off), `worker`
-(Mellum mode on) and `strip-thinking`. To remove one remediation you drop a
+extension, the floor), `bare` (the worker extension loaded but mode off; it
+sends Vanilla's requests, but it is not Vanilla), `worker` (the thin worker,
+Mellum mode on) and `strip-thinking`. A harness run with no `--arm` is `bare`,
+so a counted run names its arm. To remove one remediation you drop a
 `--remedy` unit from the stack — that is the ablation now, not a per-arm knob.
 
 ### Floor
@@ -159,8 +186,10 @@ with `--remedy <kind>/<name>`.
 ### Preset
 
 A named list of remedy units, loaded with `--remedy preset:<name>`.
-`preset:easy` is the measured Easy stack; each tier's preset builds on the
-previous one. `preset:baseline-worker` is the explicit set of units that
+`preset:easy` is meant to be the measured Easy stack, and each tier's preset
+builds on the previous one. Until R.1–R.3 measure them on the repaired
+oracle, `easy`, `medium` and `hard` hold the same four units carried from
+before the repair, so treat them as placeholders. `preset:baseline-worker` is the explicit set of units that
 reconstructs the worker's old, pre-decoupling bundle.
 
 ### Before and after

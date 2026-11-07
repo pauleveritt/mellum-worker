@@ -6,6 +6,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The glossary names the worker's states apart.** New entries for Mellum mode and the thin
+  worker; the Baseline Worker now means the bundle as it was before 2026-10-31 (today's
+  `preset:baseline-worker`); "bare Pi" is no longer another name for Vanilla Pi, since `bare` is
+  a different arm; Easy's check count is 13; the tier presets are marked as placeholders until
+  R.1–R.3 measure them.
+
 - **A harness run counts only with a host card.** `harness.py run --host-card PATH`
   checks the card from `conformance.py` against the live server (build, model, slot
   sizes and every pinned flag) and refuses the run if the card failed, was made for
@@ -328,6 +334,11 @@ Versions match git tags; pin one in both install lines.
   Apple-Silicon path still uses.
 
 ### Fixed
+
+- **`/challenge <tier>:vanilla` runs Vanilla Pi.** It ran the `bare` arm, which loads the
+  worker extension with mode off, so the comparison a learner made against the worker was not
+  against the floor. It now runs the `vanilla` arm, and the `/mellum` command's description no
+  longer promises a worker prompt and tools the thin worker never swaps in.
 
 - **A harness session no longer runs the harness's own Python.** Under `uv run`, the
   session's `PATH` began with the repository's venv, so `python` and `uvicorn` in a

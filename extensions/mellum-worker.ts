@@ -1,14 +1,14 @@
 /**
- * Mellum mode: run the small model inside the main session with the worker's prompt
- * and tools, and show it nothing from before the mode began.
+ * Mellum mode: run the small model inside the main session, and show it nothing from before
+ * the mode began. Mode switches the model only; prompts, tools and guards are remedy units.
  *
  *   /mellum <task>  – (in the primary) the full delegation loop: an architect pass writes the
  *                     handover — a failing acceptance test + a brief — then the bare worker runs
  *                     it to pass, and the frozen acceptance test is the verdict. In a spawned
  *                     worker child (MELLUM_WORKER_CHILD=1) it is instead the in-session one shot:
  *                     switch to Mellum, run the task, switch back when settled.
- *   /mellum on      – stay on for several turns (switch model, tools, mark the start)
- *   /mellum off     – restore the previous model and tools
+ *   /mellum on      – stay on for several turns (switch the model, mark the start)
+ *   /mellum off     – restore the previous model and write the run record
  *   /mellum check   – compare the local llama-server and the Pi provider entry with the measured
  *                     settings and print the findings; never switches, never writes
  *   /mellum learn [n] – name what went wrong in the last n runs (default 10) in this directory
@@ -1790,7 +1790,7 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	}
 
 	pi.registerCommand("mellum", {
-		description: "mellum <task> | on | off | check | learn [n] | last — run Mellum with the worker prompt and tools inside this session",
+		description: "mellum <task> | on | off | check | learn [n] | last — turn Mellum mode on in this session: Mellum sees only what comes after",
 		handler: async (args: string, ctx: any) => {
 			const sub = parseSubcommand(args);
 			if (sub.cmd === "off") return deactivate(ctx);

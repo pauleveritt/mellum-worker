@@ -2,7 +2,7 @@
  * mellum-remedies: switch remedy units on and off in a live Pi session.
  *
  * Every unit under remedies/<kind>/ is installed at session start behind its own switch, and all
- * start off, so the session is bare Pi until the learner turns something on:
+ * start off, so the session is plain Pi until the learner turns something on:
  *
  *   /remedy                          a picker of every unit, marked on or off
  *   /remedy on guard/repeat-loops
@@ -226,7 +226,7 @@ function readRecords(): any[] {
 function recordLabel(r: any, i: number): string {
 	const date = String(r.at ?? "").replace("T", " ").slice(0, 16);
 	const rem = r.remedies?.length ?? 0;
-	const base = r.arm === "bare" ? "vanilla" : "worker";
+	const base = r.arm === "vanilla" || r.arm === "bare" ? "vanilla" : "worker"; // older records ran :vanilla on "bare"
 	const stack = rem ? `${base}+${rem}` : base;
 	return `${i + 1}. ${r.tier} · ${stack} · ${r.passed}/${r.total} · ${r.turns} turns · ${Math.round(r.wall)} s · ${date}`;
 }
@@ -335,13 +335,20 @@ async function submitChallenge(ctx: any): Promise<void> {
 	ctx.ui.notify(`submitted ${picked.length} run${picked.length === 1 ? "" : "s"} — ${prUrl}`, "info");
 }
 
+/** A `/challenge` tier token as the suite and arm it runs: `<tier>:vanilla` is the vanilla arm (no worker
+ * extension, the floor); a plain tier runs the worker, mode on. */
+export function challengeTarget(tok: string): { tier: string; arm: "vanilla" | "worker" } {
+	const vanilla = tok.endsWith(":vanilla");
+	return { tier: vanilla ? tok.slice(0, -":vanilla".length) : tok, arm: vanilla ? "vanilla" : "worker" };
+}
+
 /** Run a challenge tier through the harness `runs` times on `arm` with `units` loaded, score and record it. */
 async function runChallenge(tier: string, units: string[], runs: number, arm: string, ctx: any): Promise<void> {
 	if (!existsSync(join(ROOT, "learn", "code", "harness.py"))) {
 		return ctx.ui.notify("/challenge runs from a mellum-worker checkout (no learn/code/harness.py here)", "error");
 	}
 	const runsDir = mkdtempSync(join(tmpdir(), `challenge-${tier}-`));
-	// --arm worker turns the worker on (MELLUM_MODE=1); --arm bare is vanilla Pi. /remedy units stack on top.
+	// --arm worker turns the worker on (MELLUM_MODE=1); --arm vanilla loads no worker extension. /remedy units stack on top.
 	const argv = ["run", "python", "learn/code/harness.py", "run", "--suite", tier, "--arm", arm, "--grade", "--repeat", String(runs), "--runs-dir", runsDir];
 	if (units.length) argv.push("--remedy", units.join(","));
 	const base = arm === "worker" ? "worker" : "vanilla Pi";
@@ -532,11 +539,10 @@ export default async function (pi: any): Promise<void> {
 			const nTok = toks.find((t) => /^n=\d+$/.test(t));
 			const runs = nTok ? Math.max(1, Number(nTok.slice(2))) : 1;
 			if (!tierTok) {
-				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the worker with the remedies you have on (${on.size} on now); add :vanilla (e.g. easy:vanilla) for bare Pi with no worker; n sets how many runs, default 1. /challenge submit opens a PR with the runs you choose`, "info");
+				return ctx.ui.notify(`/challenge easy|medium|hard [n=1] — runs that tier on the worker with the remedies you have on (${on.size} on now); add :vanilla (e.g. easy:vanilla) for Vanilla Pi, with no worker extension; n sets how many runs, default 1. /challenge submit opens a PR with the runs you choose`, "info");
 			}
-			const vanilla = tierTok.endsWith(":vanilla");
-			const tier = vanilla ? tierTok.slice(0, -":vanilla".length) : tierTok;
-			void runChallenge(tier, [...on], runs, vanilla ? "bare" : "worker", ctx)
+			const { tier, arm } = challengeTarget(tierTok);
+			void runChallenge(tier, [...on], runs, arm, ctx)
 				.catch((e) => ctx.ui?.notify?.(`challenge failed to start: ${(e as Error)?.message ?? e}`, "error"));
 		},
 	});

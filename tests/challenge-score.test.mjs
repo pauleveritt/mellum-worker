@@ -151,3 +151,9 @@ test("the challenge feed shows the live turns and tool calls, then the final sco
 	assert.match(done, /rep 1: pass · 12 turns/);
 	assert.match(done, /rep 2: fail · 9 turns/);
 });
+
+test("a tier with :vanilla runs the vanilla arm, the floor; a bare tier runs the worker", async () => {
+	const { challengeTarget } = await host();
+	assert.deepEqual(challengeTarget("easy:vanilla"), { tier: "easy", arm: "vanilla" });
+	assert.deepEqual(challengeTarget("hard"), { tier: "hard", arm: "worker" });
+});

@@ -173,20 +173,20 @@ is on, the footer shows `remedies: N on`. A unit that adds a tool registers it
 the first time it is switched on; Pi cannot remove a tool, so the tool stays
 offered after `off` until you restart Pi (its hooks do stop).
 
-### `/challenge`: score a tier on the Baseline Worker with the remedies you have on
+### `/challenge`: score a tier on the thin worker with the remedies you have on
 
 `/challenge <tier>` runs a challenge suite through the harness on the real
-model. It runs on the **Baseline Worker** (the shipped `/mellum` bundle), with
-the remedy units you have switched on stacked on top, then scores the runs. It
-is how you see what a remedy stack buys over the Baseline Worker: switch some
+model. It runs on the **thin worker** (`/mellum` with Mellum mode on and nothing
+bundled), with the remedy units you have switched on stacked on top, then scores
+the runs. It is how you see what a remedy stack buys over the thin worker: switch some
 units on with `/remedy`, run `/challenge easy`, read the passes, the turns and
 the wall-clock.
 
 | Command | What it does |
 | --- | --- |
-| `/challenge easy` | Run the easy tier once (n=1) on the Baseline Worker + the units you have on |
+| `/challenge easy` | Run the easy tier once (n=1) on the thin worker + the units you have on |
 | `/challenge medium n=3` | Run the medium tier three times |
-| `/challenge easy:vanilla` | Run it on Vanilla Pi (no worker) for comparison |
+| `/challenge easy:vanilla` | Run it on Vanilla Pi (no worker extension) for comparison |
 | `/challenge submit` | Pick scored runs and open a pull request with them |
 
 `n` sets how many runs and defaults to 1, so `/challenge easy` on its own is the
