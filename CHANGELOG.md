@@ -6,6 +6,20 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **The ladder can now measure the plan-delegation loop directly
+  (`run_ladder --mode plan`).** Until now every plan-loop result was a scratch
+  screen; the ladder's modes drove the single worker or the flow, never the
+  `/mellum` architect/worker split. The new `plan` mode launches the `/mellum`
+  loop over a whole-spec rung, points the spawned architect and workers at the
+  same backend (they inherit `PI_CODING_AGENT_DIR`), and records the delegate
+  profiler's request split (architect vs worker vs total) as the cost axis —
+  the parent trace cannot see the children. A new from-base rung (13,
+  `agentclinic-plan`) ships all four phase specs with no implementation, so the
+  architect plans the whole build and the phase-4 oracle scores phases 1 to 4.
+  The plan arm runs at the model's shipped sampling (temperature 1.0 / top_p
+  0.95 / top_k 20) with a per-repeat seed, not the ladder's greedy default, so
+  `--repeat` gives real variance.
+
 - **Plan delegation (`MELLUM_DELEGATE_PLAN=1`) — the simplest shape, no per-step
   tests.** The architect splits the spec into small ordered step docs
   (`stepNN.md`, each carrying the verbatim spec it covers and a link back to the

@@ -299,4 +299,17 @@ RUNGS: dict[int, Rung] = {
             start=1,
         )
     },
+    # The whole-spec plan arm: build all four phases from base in one run, for the
+    # ``/mellum`` plan-delegation loop (run_ladder --mode plan). The architect splits
+    # the four phase specs into step docs and a fresh worker builds each; the phase-4
+    # oracle scores phases 1..4. Distinct from rungs 6-9, which build one phase on a
+    # fixture of the ones before it.
+    13: Rung(
+        13,
+        "agentclinic-plan",
+        "Implement all four phases of the complaints app from the specs in specs/ "
+        "— phase 1 home, phase 2 board, phase 3 add, phase 4 resolve/reopen — in order.",
+        AGENTCLINIC_FACTS_CMD,
+        check_agentclinic(4),
+    ),
 }

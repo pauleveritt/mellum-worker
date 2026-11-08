@@ -315,6 +315,60 @@ def build_pi_mode_args(sentence: str, extra_extensions: tuple[Path, ...] = ()) -
     return [*args, sentence]
 
 
+def build_pi_plan_args(sentence: str, model: str = MODEL) -> list[str]:
+    """The ``/mellum`` plan-delegation loop as the parent: Pi loads the worker
+    extension (which registers ``/mellum``) and the recorder, then runs the command
+    over the whole-spec sentence. The command's architect splits the spec and
+    spawns fresh worker children; they inherit ``PI_CODING_AGENT_DIR`` from this
+    parent, so they reach the same backend. ``--mode json`` keeps the parent stream
+    machine-parseable; the delegate profiler (not the parent trace) is the cost
+    axis, since the children's requests never reach the parent's recorder."""
+    return [
+        "pi",
+        "-p",
+        "--mode",
+        "json",
+        "--no-session",
+        "--no-approve",
+        "--no-skills",
+        "--no-prompt-templates",
+        "--no-themes",
+        "--model",
+        model,
+        "-e",
+        str(MODE_EXT),
+        "-e",
+        str(RECORD_EXT),
+        f"/mellum {sentence}",
+    ]
+
+
+def delegate_profile_summary(path: Path) -> dict[str, int]:
+    """The request split from the delegate profiler (``MELLUM_DELEGATE_PROFILE``):
+    one JSON line per request, tagged with the agent role ("architect: …" /
+    "worker: …"). The parent's trace cannot see the spawned children, so this is
+    the plan arm's cost axis. A missing or unreadable file reads as zero."""
+    total = architect = worker = 0
+    try:
+        contents = path.read_text()
+    except OSError:
+        return {"total": 0, "architect": 0, "worker": 0}
+    for line in contents.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        total += 1
+        try:
+            role = json.loads(line).get("role", "")
+        except (ValueError, TypeError):
+            continue
+        if isinstance(role, str) and role.startswith("architect"):
+            architect += 1
+        elif isinstance(role, str) and role.startswith("worker"):
+            worker += 1
+    return {"total": total, "architect": architect, "worker": worker}
+
+
 def parse_pi_json(stdout: str, with_reentries: bool = False):
     """Final assistant stop reason and visible text from Pi's JSON event stream.
 
@@ -590,6 +644,8 @@ def run_once(
     )
     paths, lines = baseline_index(ws)
     trace = scratch / "trace.jsonl"
+    delegate_profile: Path | None = None
+    plan_sampling: dict | None = None
     if mode == "primary":
         agent_dir = mirror_agent_dir(
             pi_agent_dir or Path.home() / ".pi" / "agent", scratch / "pi-agent", [ws]
@@ -622,6 +678,35 @@ def run_once(
         (ws / "plan").mkdir(exist_ok=True)
         (ws / "plan" / "TASK.md").write_text(rung.sentence + "\n")
         args = build_pi_flow_args(thinking, model, guards)
+    elif mode == "plan":
+        provider_name, model_id = model.split("/", 1)
+        # The plan loop ships at the model's OWN sampling (temperature 1.0 / top_p
+        # 0.95 / top_k 20 — pyproject [tool.mellum]), not the ladder's greedy
+        # default: greedy with a fixed seed makes every --repeat identical, and
+        # the screen this confirms ran at the shipped sampling. The per-rep seed
+        # varies so --repeat gives real variance instead of one repeated run.
+        plan_sampling = {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 20,
+            "seed": 1000 + repeat,
+        }
+        agent_dir = direct_agent_dir(
+            scratch / "pi-agent", prof, base_url,
+            provider=provider_name, model_id=model_id,
+            context_window=context_window,
+            request_overrides=plan_sampling,
+        )
+        env = child_env(dict(os.environ), str(trace), agent_dir, offline=True)
+        # The /mellum plan loop; the architect/worker children inherit this env
+        # (PI_CODING_AGENT_DIR included), so they reach the same backend. The other
+        # plan levers (ARCHITECT_DIRECT, WORKER_DIRECT, SMOKE, REMEDY, TURN_CAP)
+        # come from the operator's environment and are recorded below for the arm.
+        env["MELLUM_DELEGATE_PLAN"] = "1"
+        env["MELLUM_DELEGATE_VERBOSE"] = "0"  # keep the parent's JSON stream clean
+        delegate_profile = scratch / "delegate-profile.jsonl"
+        env["MELLUM_DELEGATE_PROFILE"] = str(delegate_profile)
+        args = build_pi_plan_args(rung.sentence, model)
     else:
         provider_name, model_id = model.split("/", 1)
         # Effort ramp: the initial attempt (0) starts quick — thinking off, small
@@ -769,7 +854,7 @@ def run_once(
             "provider": provider,
             "base_url": base_url,
             "model": model,
-        } if mode in ("direct", "flow") else None,
+        } if mode in ("direct", "flow", "plan") else None,
         "harness": "pi",
         "plain": plain,
         "guards": guards,
@@ -807,6 +892,19 @@ def run_once(
         "versions": versions,
         "launch": launch,
         "telemetry": telemetry,
+        "delegate": (
+            {
+                **delegate_profile_summary(delegate_profile),
+                "sampling": plan_sampling,
+                "settings": {
+                    k: v
+                    for k, v in os.environ.items()
+                    if k.startswith("MELLUM_DELEGATE") or k == "MELLUM_TURN_CAP"
+                },
+            }
+            if mode == "plan" and delegate_profile is not None
+            else None
+        ),
         "process": {
             "exitCode": returncode
             if returncode is not None and returncode >= 0
@@ -895,7 +993,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--mode",
-        choices=["direct", "primary", "mode", "flow"],
+        choices=["direct", "primary", "mode", "flow", "plan"],
         default="direct",
     )
     parser.add_argument("--profile", choices=sorted(PROFILES), required=True)
