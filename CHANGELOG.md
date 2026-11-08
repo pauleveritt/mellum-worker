@@ -114,13 +114,17 @@ Versions match git tags; pin one in both install lines.
   full passes against none, but at 47 and 61 median requests against a 25.2 limit. The four
   placeholder units are gone; `preset:easy` is Base, which is Vanilla. Records:
   `evals/2026-11-07-r1-step-two/`, `evals/2026-11-07-r1-step-three/`.
+- **`prompt/verify-the-spec` screened on Easy.** The line reached every request, and the model
+  still missed the title override in 3 of 3 sessions (n = 3, a lead). Record:
+  `evals/2026-11-08-r1-verify-screen/`.
 - **Two pathologies from R.1.** "Works past the finish": with an acceptance test shown, most runs
   kept going to the budget after the work passed. "A check the model's own server breaks": a
   launch check hid why the app would not start, and the model went hunting for servers.
 - **`scripts/r1_batch.py`, interleaved Easy batches.** It runs counted Easy sessions through the
   real harness round-robin across arms, resumes a killed batch without repeating a session, and
   writes `table.md`. Budget medians leave out stalled and censored sessions, as R.1's
-  preregistration fixes.
+  preregistration fixes. The report also counts each check's misses per arm, because a mean or a
+  full-pass count hides a unit that moved one check.
 - **Easy ships its mediated tests.** `learn/code/suites/easy/mediated/test_01_home.py` is Phase
   1's acceptance test, written from `specs/roadmap.md`: it covers each of the 13 hidden checks
   (a test maps them) plus the project's own tests and the `__main__` block. Dry-run, it passes the

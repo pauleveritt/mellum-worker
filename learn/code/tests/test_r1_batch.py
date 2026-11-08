@@ -36,12 +36,12 @@ def test_a_finished_session_is_not_run_again(tmp_path):
     assert ran == ["bounded"]
 
 
-def _record(root: Path, name: str, *, failed=0, ran=True, completion="settled", requests=10, output=1000):
+def _record(root: Path, name: str, *, failed=0, ran=True, completion="settled", requests=10, output=1000, missing=()):
     run = root / name / "2026-x-easy-abc"
     run.mkdir(parents=True)
     (run / "run.json").write_text(json.dumps({
         "checks_ran": ran, "failed_checks": failed, "completion": completion,
-        "censored": completion == "wall_safety",
+        "censored": completion == "wall_safety", "missing_checks": list(missing),
         "budget": {"spent": {"requests": requests, "output_tokens": output}}}))
 
 
@@ -65,3 +65,36 @@ def test_the_report_writes_a_table_row_per_arm(tmp_path):
     _record(tmp_path, "bounded-r01", failed=1)
     table = r1_batch.table(r1_batch.summarize(tmp_path, checks=13))
     assert "| vanilla | 1 |" in table and "| bounded | 1 |" in table
+
+
+TITLE = "grader_tests/test_phase1_acceptance.py::test_title"
+LAUNCH = "grader_tests/test_phase1_acceptance.py::test_launch"
+
+
+def test_the_report_counts_each_checks_misses_over_the_sessions_that_were_graded(tmp_path):
+    _record(tmp_path, "vanilla-r01", failed=2, missing=[TITLE, LAUNCH])
+    _record(tmp_path, "vanilla-r02", failed=1, missing=[TITLE])
+    # A session whose checks never ran says nothing about any one check.
+    _record(tmp_path, "vanilla-r03", ran=False, missing=[TITLE, LAUNCH])
+    stats = r1_batch.summarize(tmp_path, checks=13)["vanilla"]
+    assert stats["graded"] == 2
+    assert stats["misses"] == {"test_title": 2, "test_launch": 1}
+
+
+def test_the_per_check_table_has_a_row_per_missed_check_most_missed_first(tmp_path):
+    _record(tmp_path, "vanilla-r01", failed=1, missing=[TITLE])
+    _record(tmp_path, "vanilla-r02", failed=1, missing=[TITLE])
+    _record(tmp_path, "unit-r01", failed=1, missing=[LAUNCH])
+    table = r1_batch.check_table(r1_batch.summarize(tmp_path, checks=13))
+    assert "| Check | unit (of 1) | vanilla (of 2) |" in table
+    # "launch" sorts before "title" by name, so this order can only come from the miss counts.
+    assert table.index("test_title") < table.index("test_launch")
+    assert "| test_title | 0 | 2 |" in table
+    assert "| test_launch | 1 | 0 |" in table
+
+
+def test_report_writes_both_tables(tmp_path):
+    _record(tmp_path, "vanilla-r01", failed=1, missing=[TITLE])
+    assert r1_batch.main(["report", str(tmp_path)]) == 0
+    written = (tmp_path / "table.md").read_text()
+    assert "| vanilla | 1 |" in written and "| test_title | 1 |" in written

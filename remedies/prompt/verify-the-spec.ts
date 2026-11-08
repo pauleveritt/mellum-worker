@@ -2,7 +2,7 @@
  * spec lists and actually run the project's own tests — not after reading files or starting a
  * server. Agnostic: it names no requirement, route, file or expected value; the model reads the
  * requirements from the spec itself. Appends one line to each user message. New unit; unmeasured
- * (easy-ladder, 2026-11-02). */
+ * (easy-ladder, 2026-11-02); screened on Easy 2026-11-08, see its evidence. */
 import type { PiLike, UnitMeta } from "../install.ts";
 
 const LINE =
@@ -14,7 +14,7 @@ export const meta: UnitMeta = {
 	pathology: "Declares done with a spec requirement unimplemented or unverified",
 	does: "Tells the model to check every spec requirement and run the tests before finishing",
 	lesson: "",
-	evidence: "new unit; unmeasured (easy-ladder, 2026-11-02)",
+	evidence: "screen, n = 3, Easy, 2026-11-08: reached every request, title override still missed 3 of 3",
 };
 
 /** Append `line` to a user message's content, whether it is a plain string or content blocks. */

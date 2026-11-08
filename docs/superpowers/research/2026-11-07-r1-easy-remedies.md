@@ -117,3 +117,6 @@ arms cleared quality and failed budget, at 47 and 61 median requests against a 2
 - n = 24 sees moderate effects only; `bounded` missed by one full pass, which is inside the noise.
 - The budget limit is relative to Vanilla's median, so a cheaper Vanilla batch moves every
   verdict with it.
+- 2026-11-08: Easy separates remedies poorly. Vanilla's misses sit on two checks (title override
+  46 of 48, launch 17 of 48), so these verdicts are about Easy, not a unit's general value
+  ([screen note](2026-11-08-verify-the-spec-screen.md)).

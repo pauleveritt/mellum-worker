@@ -8,13 +8,15 @@ Sessions run round-robin (round 1 of every arm, then round 2, ...) so drift in t
 every arm alike; each goes to OUT/<arm>-r<NN>/, and a session whose run.json exists is skipped,
 so a killed batch resumes. The report counts as the R.1 preregistration fixes
 (docs/superpowers/research/2026-11-07-r1-preregistration.md): mean checks and full passes over
-every session; budget medians over the sessions that neither stalled nor were censored.
+every session; budget medians over the sessions that neither stalled nor were censored. A second
+table counts each check's misses per arm, over the sessions whose checks ran.
 """
 import argparse
 import json
 import statistics
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -62,8 +64,11 @@ def summarize(out: Path, *, checks: int) -> dict[str, dict]:
         passed = [checks - r["failed_checks"] if r.get("checks_ran") else 0 for r in runs]
         clean = [r for r in runs if r.get("completion") != "stalled" and not r.get("censored")]
         spent = [r.get("budget", {}).get("spent", {}) for r in clean]
+        graded = [r for r in runs if r.get("checks_ran")]
         stats[arm] = {
             "n": len(runs),
+            "graded": len(graded),
+            "misses": Counter(str(m).rsplit("::", 1)[-1] for r in graded for m in r.get("missing_checks") or []),
             "mean_checks": sum(passed) / len(runs),
             "full_passes": sum(1 for p in passed if p == checks),
             "stalled": sum(1 for r in runs if r.get("completion") == "stalled"),
@@ -85,6 +90,20 @@ def table(stats: dict[str, dict]) -> str:
         for arm, s in stats.items())
 
 
+def check_table(stats: dict[str, dict]) -> str:
+    """Which checks each arm missed, most missed first: a mean or a full-pass count can hide a unit
+    that moved one check. A session whose checks never ran is left out of its arm's denominator."""
+    totals = Counter()
+    for s in stats.values():
+        totals.update(s["misses"])
+    arms = list(stats)
+    head = "| Check | " + " | ".join(f"{a} (of {stats[a]['graded']})" for a in arms) + " |\n"
+    rule = "|---|" + "---|" * len(arms) + "\n"
+    rows = sorted(totals, key=lambda check: (-totals[check], check))
+    return head + rule + "".join(
+        f"| {check} | " + " | ".join(str(stats[a]["misses"][check]) for a in arms) + " |\n" for check in rows)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -104,7 +123,8 @@ def main(argv: list[str] | None = None) -> int:
                   lambda arm, target: harness_argv(arms[arm], target, host_card=args.host_card,
                                                    pi_binary=args.pi_binary))
     else:
-        text = table(summarize(args.out, checks=args.checks))
+        stats = summarize(args.out, checks=args.checks)
+        text = f"{table(stats)}\n## Misses per check\n\n{check_table(stats)}"
         (args.out / "table.md").write_text(text)
         print(text, end="")
     return 0
