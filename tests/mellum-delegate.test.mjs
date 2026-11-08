@@ -576,7 +576,7 @@ test("remedyArgs renders the resolved units as -e file arguments for the spawned
 
 test("guardArgs renders ONLY the guard units — the safety bounds an architect sub-agent also needs", async () => {
 	const { guardArgs } = await load();
-	const args = guardArgs("preset:easy,guard/repeat-loops,guard/turn-cap");
+	const args = guardArgs("preset:baseline-worker,guard/repeat-loops,guard/turn-cap");
 	// every pair is `-e <a guard unit file>`; no other kind of unit rides along
 	assert.ok(args.length >= 4, args.join(" "));
 	for (let i = 0; i < args.length; i += 2) {
@@ -584,7 +584,7 @@ test("guardArgs renders ONLY the guard units — the safety bounds an architect 
 		assert.match(args[i + 1], /\/remedies\/guard\/[^/]+\.ts$/);
 	}
 	assert.ok(args.some((a) => /repeat-loops\.ts$/.test(a)), "loop breaker is a safety guard the architect wants");
-	assert.ok(args.some((a) => /foreground-server\.ts$/.test(a)), "from preset:easy");
+	assert.ok(args.some((a) => /foreground-server\.ts$/.test(a)), "from preset:baseline-worker");
 	assert.ok(!args.some((a) => /turn-cap\.ts$/.test(a)),
 		"turn-cap is worker-tuned (a low budget) — it must NOT cap the architect, which needs many turns to write the plan");
 	assert.ok(!args.some((a) => /\/prompt\//.test(a)),

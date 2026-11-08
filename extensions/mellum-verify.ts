@@ -25,7 +25,7 @@
  *   VERIFY_MAX     how many times to send the worker back (default 5).
  *   VERIFY_PYTEST  the pytest command (default: uv run --offline python -m pytest).
  */
-import { execSync } from "node:child_process";
+import { runBounded } from "./bounded.ts";
 
 export interface Verdict {
 	passed: boolean;
@@ -69,20 +69,19 @@ export function verifyEnv(cwd: string): NodeJS.ProcessEnv {
 	return env;
 }
 
-/** Run the verification (a named test, or the whole suite when `test` is empty) in `cwd`; never throws. */
-export function runTest(test: string, pytest: string, cwd: string): Verdict {
-	try {
-		const out = execSync(verifyCommand(test, pytest), {
-			cwd,
-			env: verifyEnv(cwd),
-			encoding: "utf8",
-			stdio: ["ignore", "pipe", "pipe"],
-		});
-		return parsePytest(0, out);
-	} catch (e: any) {
-		const code = typeof e?.status === "number" ? e.status : 1;
-		return parsePytest(code, `${e?.stdout ?? ""}${e?.stderr ?? ""}`);
+/** The verify timeout: below the harness's 180 s stall cutoff, so a hung test cannot stall the session. */
+export const VERIFY_TIMEOUT_MS = 150_000;
+
+/** Run the verification (a named test, or the whole suite when `test` is empty) in `cwd`. A test
+ * command that hangs is stopped with its process group and reads red: it ran the model's code.
+ * Throws only when the command could not start (exit 127 from the shell), which is our tooling. */
+export function runTest(test: string, pytest: string, cwd: string, timeoutMs = VERIFY_TIMEOUT_MS): Verdict {
+	const r = runBounded("sh", ["-c", verifyCommand(test, pytest)], { cwd, env: verifyEnv(cwd), timeoutMs });
+	if (!r.started || r.code === 127) throw new Error(`verify: the test command could not start: ${r.out.trim()}`);
+	if (r.timedOut) {
+		return parsePytest(1, `${r.out}\n[verify] the test command timed out after ${Math.round(timeoutMs / 1000)} s and was stopped.`);
 	}
+	return parsePytest(r.code ?? 1, r.out);
 }
 
 /** Read the gate config from the environment. Read AT SETTLE TIME, never at load:
@@ -100,7 +99,7 @@ export function gateConfig() {
 
 export default function (pi: { on: (event: string, handler: (ev: any, ctx?: any) => unknown) => void }) {
 	let used = 0;
-	pi.on("agent_before_settle", (_event: any, ctx: any) => {
+	pi.on("agent_before_settle", (event: any, ctx: any) => {
 		const { test, all, max, pytest } = gateConfig();
 		// Active when a named acceptance test is set (mediation) OR whole-suite verify is on (VERIFY_ALL).
 		if ((test === "" && !all) || !(used < max)) return undefined;
@@ -114,7 +113,8 @@ export default function (pi: { on: (event: string, handler: (ev: any, ctx?: any)
 		if (v.passed) return undefined; // every concept met — let it settle
 		used += 1;
 		return {
-			entries: [{ type: "custom_message", customType: "mellum-verify", content: gateMessage(v), display: true }],
+			// Pi keeps the entries the last handler returns, so keep the earlier handlers' too.
+			entries: [...(event?.entries ?? []), { type: "custom_message", customType: "mellum-verify", content: gateMessage(v), display: true }],
 			continue: true,
 		};
 	});

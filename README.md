@@ -68,7 +68,7 @@ Then start the model and Pi:
 ```bash
 bash run.sh                    # Pi in this repo: the course, /lesson, /remedy
 bash run.sh ~/code/my-project  # Pi in your own project, with /mellum loaded
-MELLUM_REMEDY=preset:easy bash run.sh ~/code/my-project   # with the Easy stack on
+MELLUM_REMEDY=tool/bounded-commands bash run.sh ~/code/my-project   # with a remedy unit on
 ```
 
 The first `run.sh` downloads the Q4_K_M weights (about 8 GB) into the

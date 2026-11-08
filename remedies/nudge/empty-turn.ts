@@ -16,11 +16,13 @@ export function install(pi: PiLike, opts: { max?: number } = {}): void {
 		if (event?.message?.role === "assistant") last = event.message;
 		return undefined;
 	});
-	pi.on("agent_before_settle", () => {
+	pi.on("agent_before_settle", (event: any) => {
 		if (!last) return undefined;
 		const decision = nudge(last);
-		if (decision) last = undefined;
-		return decision;
+		if (!decision) return undefined;
+		last = undefined;
+		// Pi keeps the entries the last handler returns, so keep the earlier handlers' too.
+		return { ...decision, entries: [...(event?.entries ?? []), ...decision.entries] };
 	});
 }
 

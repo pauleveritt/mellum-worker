@@ -112,9 +112,10 @@ A preset is a named list of units in `remedies/presets/<name>.json`.
 
 | Preset | Units | What it is |
 | --- | --- | --- |
-| `easy` | 4 | Three prompt fragments — name the layout, the Python-developer frame, verify the whole spec — and the foreground-server guard |
-| `medium` | 4 | The same four units as `easy` today |
-| `hard` | 4 | The same four units as `easy` today |
+| `base` | 0 | Measured in R.1: no unit beat Vanilla Pi on Easy within budget, so Base is Vanilla |
+| `easy` | 0 | Measured in R.1: Base, since no unit stacked on it won within budget |
+| `medium` | 4 | Placeholder until R.2: name the layout, the Python-developer frame, verify the whole spec, and the foreground-server guard |
+| `hard` | 4 | Placeholder until R.3: the same four units as `medium` |
 | `baseline-worker` | 5 | The worker's own set: narrow tools, the empty-turn nudge, and three guards (repeat loops, outside the workspace, foreground servers) |
 
 ## Two ways to apply them
@@ -125,7 +126,7 @@ repeated. An unknown name is refused before anything runs.
 
 ```bash
 uv run python learn/code/harness.py run --suite easy --remedy guard/repeat-loops
-uv run python learn/code/harness.py run --suite easy --remedy preset:easy,nudge/empty-turn
+uv run python learn/code/harness.py run --suite easy --remedy preset:easy,tool/bounded-commands
 uv run python learn/code/harness.py run --suite easy --extension path/to/yours.ts
 ```
 

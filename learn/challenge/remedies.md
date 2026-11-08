@@ -6,9 +6,10 @@ title: Remedies
 
 ![A small robot fitting a new part onto itself](../assets/illustrations/build-a-remedy.webp){ .illustration }
 
-You do not need to read all of these. Start from a preset — `/remedy
-preset:easy` switches on the whole Easy stack at once — run the tier, and reach
-for a single unit only when the trace shows a problem the preset missed. Each
+You do not need to read all of these. Start from the tier's preset (`/remedy
+preset:<tier>`), run the tier, and reach for a single unit only when the trace
+shows a problem the preset missed. On Easy the preset is empty: in R.1 no unit
+beat Vanilla Pi within budget, so every unit there is yours to try. Each
 row is one problem and the unit that answers it; the last column is the
 `/remedy` command that switches it on in a live Pi.
 
@@ -19,6 +20,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Reruns commands against files or directories that do not exist | `guard/exists`: Blocks a read/edit of a missing file, or a command that only opens a missing path | screen: recorded a 100+ call thrash rerunning tests against a missing dir; unmeasured on the ladder | `/remedy on guard/exists` |
+| Waits on foreground log-follow after backgrounding a server | `guard/foreground-log-follow`: Blocks foreground tail-follow and requests a finite log snapshot | LC.37 G4 stalled on tail-follow; unit-tested, pending a fresh screen | `/remedy on guard/foreground-log-follow` |
 | Starts a foreground server and hangs to the deadline | `guard/foreground-server`: Blocks a foreground server start and shows the background form | screen: the hang recurs in the vLLM baseline's web-app rungs; unmeasured as a remedy | `/remedy on guard/foreground-server` |
 | Searches the whole machine and hangs the run | `guard/outside-workspace`: Blocks a recursive search outside the workspace | screen: recorded hangs; searches only, writes are not covered | `/remedy on guard/outside-workspace` |
 | Repeats the same call with nothing changed | `guard/repeat-loops`: Blocks a call made 5 times in a row unchanged | ladder: part of the guard set behind phase 2b's 15/15 | `/remedy on guard/repeat-loops` |
@@ -45,7 +47,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Builds each file to completion in turn, so the layout drifts and earlier parts break | `prompt/concept-sketch`: Sketch every file first (signatures and stubs), then fill the bodies one at a time | new unit (prose v1); unmeasured — a lead, see the next-concept research note | `/remedy on prompt/concept-sketch` |
-| Invents its own file layout instead of the one the spec names | `prompt/name-the-layout`: Tells the model to take the file layout from the spec | new unit; unmeasured | `/remedy on prompt/name-the-layout` |
+| Invents its own file layout instead of the one the spec names | `prompt/name-the-layout`: Injects the spec-layout instruction once per task | task-scoped delivery verified locally; coding effect unmeasured | `/remedy on prompt/name-the-layout` |
 | Works without a focused, careful developer frame (ships typos, declares done unchecked) | `prompt/python-developer`: Prepends a meticulous experienced-Python-developer, spec-driven role to the system prompt | theory; unmeasured (easy-ladder, 2026-11-02) | `/remedy on prompt/python-developer` |
 | Declares done with a spec requirement unimplemented or unverified | `prompt/verify-the-spec`: Tells the model to check every spec requirement and run the tests before finishing | new unit; unmeasured (easy-ladder, 2026-11-02) | `/remedy on prompt/verify-the-spec` |
 
@@ -54,6 +56,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Runs a server in the foreground and waits forever | `tool/background-long-commands`: Reruns a long command in the background and returns its startup output | unit-tested; not measured on the suites | `/remedy on tool/background-long-commands` |
+| Starts a command that never exits, such as a foreground server, and hangs to the cutoff | `tool/bounded-commands`: Sets Pi's bash timeout (30 s, or MELLUM_BOUND_SECONDS) when the model gave none; caps a chosen one at 120 s | LC.41 overnight (n = 12): foreground stalls 10/12 to 1/12 on Easy; the 120 s cap, added for that one, is unit-tested only | `/remedy on tool/bounded-commands` |
 | Loses track of a long task | `tool/keep-a-plan`: Keeps a TODO.md it writes, follows and amends | unit-tested; not measured on the suites | `/remedy on tool/keep-a-plan` |
 | Guesses an API it never saw | `tool/lookup-library-docs`: Adds a lookup over the installed packages' docs | unit-tested; not measured on the suites | `/remedy on tool/lookup-library-docs` |
 
@@ -62,6 +65,8 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Finishes with lint or type errors | `check/code-quality`: Runs the quality checks before finishing | unit-tested; not measured on the suites | `/remedy on check/code-quality` |
+| Settles on code that does not compile or import | `check/compile-import`: Fails a .py write that does not compile; at settle, imports each module written and sends failures back (at most 3) | unit-tested; R.1 measures it on Base | `/remedy on check/compile-import` |
+| Declares done while a spec requirement it never tested is unmet | `check/mediated-test`: Shows the request's own acceptance test, reruns a frozen copy before finishing and sends the failures back | dry-run: red on the Phase 4 id miss in 6 of 6 Base sessions, green on the complete build; screen pending | `/remedy on check/mediated-test` |
 
 ### Workflows
 

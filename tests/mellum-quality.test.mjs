@@ -87,3 +87,18 @@ test("the default export settles quietly when the worker's code is clean", async
 	install({ on: (name, fn) => { handlers[name] = fn; } }, { run: () => "", cwd: "/ws" });
 	assert.equal(handlers.agent_before_settle({ context: { canContinue: false } }), undefined);
 });
+
+test("the ruff runner stops a hung linter and never blocks settle on it", async () => {
+	const { boundedRuffRunner } = await import("../extensions/mellum-quality.ts");
+	const { mkdtempSync, writeFileSync, chmodSync } = await import("node:fs");
+	const { tmpdir } = await import("node:os");
+	const { join } = await import("node:path");
+	const dir = mkdtempSync(join(tmpdir(), "fake-uvx-"));
+	const bin = join(dir, "uvx");
+	writeFileSync(bin, "#!/bin/sh\nsleep 30 & sleep 30\n");
+	chmodSync(bin, 0o755);
+	const t0 = Date.now();
+	assert.equal(boundedRuffRunner(1000, bin)(dir, "F"), null);
+	assert.ok(Date.now() - t0 < 4000, `took ${Date.now() - t0} ms`);
+	assert.equal(boundedRuffRunner(1000, join(dir, "missing"))(dir, "F"), null);
+});

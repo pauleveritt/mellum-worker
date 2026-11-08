@@ -108,7 +108,7 @@ The three-unit stack, then with verification added:
 
 ```bash
 uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy prompt/name-the-layout,prompt/python-developer,guard/foreground-server --grade --repeat 6 --deadline 600
-uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --grade --repeat 6 --deadline 600
+uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy prompt/name-the-layout,prompt/python-developer,guard/foreground-server,prompt/verify-the-spec --grade --repeat 6 --deadline 600
 ```
 
 !!! success "Key points"

@@ -407,8 +407,9 @@ export default function (pi: { on: (event: string, handler: (event: any, ctx?: a
 		set.turnEnd(event);
 		return undefined;
 	});
-	pi.on("agent_before_settle", () => {
+	pi.on("agent_before_settle", (event: any) => {
 		const result = set.beforeSettle();
-		return result;
+		// Pi keeps the entries the last handler returns, so keep the earlier handlers' too.
+		return result && { ...result, entries: [...(event?.entries ?? []), ...result.entries] };
 	});
 }

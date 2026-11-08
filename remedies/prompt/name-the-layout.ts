@@ -1,6 +1,7 @@
 /** Remedy unit (prompt): tell the model to take the file layout from the project's own spec,
  * instead of inventing one. Agnostic — it names no path, file or route of any suite; the model
- * reads the layout from the spec itself. Appends one line to each user message. */
+ * reads the layout from the spec itself. One explicit instruction per task. */
+import { installTaskPrompt } from "../task-prompt.ts";
 import type { PiLike, UnitMeta } from "../install.ts";
 
 const LINE =
@@ -9,27 +10,13 @@ const LINE =
 
 export const meta: UnitMeta = {
 	pathology: "Invents its own file layout instead of the one the spec names",
-	does: "Tells the model to take the file layout from the spec",
+	does: "Injects the spec-layout instruction once per task",
 	lesson: "",
-	evidence: "new unit; unmeasured",
+	evidence: "task-scoped delivery verified locally; coding effect unmeasured",
 };
 
-/** Append `line` to a user message's content, whether it is a plain string or content blocks. */
-function append(content: any, line: string): any {
-	if (typeof content === "string") return `${content}\n\n${line}`;
-	if (Array.isArray(content)) return [...content, { type: "text", text: `\n\n${line}` }];
-	return content;
-}
-
 export function install(pi: PiLike): void {
-	pi.on("before_provider_request", (event) => {
-		const payload = event?.payload;
-		if (!payload || !Array.isArray(payload.messages)) return undefined;
-		return {
-			...payload,
-			messages: payload.messages.map((m: any) => (m.role === "user" ? { ...m, content: append(m.content, LINE) } : m)),
-		};
-	});
+ installTaskPrompt(pi, "prompt/name-the-layout", LINE);
 }
 
 export default (pi: PiLike) => install(pi);

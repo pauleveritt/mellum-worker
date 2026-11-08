@@ -7,6 +7,7 @@ names no module, import or mechanism. The prompts and specs as first shipped sta
 """
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -215,3 +216,80 @@ def test_expected_ids_describe_every_declared_hidden_check(name):
                 for node in ast.parse(path.read_text()).body
                 if isinstance(node, ast.FunctionDef) and node.name.startswith('test_')}
     assert set(suite.expected) == declared
+
+
+# Easy's mediated tests (R.1): written from the roadmap, a superset of the hidden grader, and able
+# to fail the known miss. Each hidden check names the mediated test that covers it.
+EASY_COVERAGE = {
+    "test_home_still_returns_200_and_tagline": "test_home_answers_200_with_the_tagline_word_for_word",
+    "test_home_has_html5_doctype": "test_home_starts_with_the_html5_doctype",
+    "test_home_html_element_declares_english_language": "test_home_html_element_declares_english",
+    "test_home_still_has_navigation_links": "test_home_navbar_shows_the_brand_and_links_home_and_complaints",
+    "test_home_renders_home_template_extending_shared_base": "test_home_is_rendered_from_home_html_which_extends_base_html",
+    "test_layout_has_responsive_viewport": "test_layout_head_has_viewport_bootstrap_css_and_favicon",
+    "test_layout_has_bootstrap5_cdn_stylesheet_in_head": "test_layout_head_has_viewport_bootstrap_css_and_favicon",
+    "test_layout_has_python_favicon": "test_layout_head_has_viewport_bootstrap_css_and_favicon",
+    "test_layout_ends_body_with_bootstrap5_cdn_bundle": "test_layout_body_ends_with_the_bootstrap5_js_bundle",
+    "test_layout_title_defaults_to_agentclinic": "test_a_page_title_is_agentclinic_by_default",
+    "test_extending_page_can_override_layout_title": "test_a_page_that_extends_the_layout_can_set_its_own_title",
+    "test_home_has_hero_and_welcoming_paragraph": "test_home_has_a_hero_holding_the_tagline_and_a_welcoming_paragraph",
+    "test_main_guard_launches_uvicorn_with_reload_and_keeps_serving": "test_running_app_py_starts_uvicorn_with_reload_and_serves_home",
+}
+
+
+def _test_names(path: Path) -> set[str]:
+    return set(re.findall(r"^def (test_\w+)", path.read_text(), re.M))
+
+
+def test_every_hidden_easy_check_names_the_mediated_test_that_covers_it():
+    root = _suite("easy").root
+    hidden = set().union(*(_test_names(p) for p in (root / "grader").glob("test_phase1_*.py")))
+    mediated = _test_names(root / "mediated" / "test_01_home.py")
+    assert set(EASY_COVERAGE) == hidden
+    assert set(EASY_COVERAGE.values()) <= mediated
+
+
+def _easy_mediated(tmp_path, fixture: str, edit=None):
+    """Run Easy's mediated tests from outside a base + fixture workspace, as the unit does."""
+    root = _suite("easy").root
+    workspace = tmp_path / fixture
+    shutil.copytree(root / "base", workspace)
+    shutil.copytree(root / "fixtures" / fixture, workspace, dirs_exist_ok=True)
+    if edit:
+        edit(workspace)
+    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"} | {"PYTHONPATH": str(workspace)}
+    return subprocess.run(["uv", "run", "--offline", "python", "-m", "pytest", str(root / "mediated"), "-q",
+                           "-p", "no:cacheprovider"], cwd=workspace, env=env, capture_output=True, text=True)
+
+
+def test_the_easy_mediated_tests_pass_the_complete_build(tmp_path):
+    result = _easy_mediated(tmp_path, "known-good")
+    assert result.returncode == 0, result.stdout[-2000:]
+
+
+def test_the_easy_mediated_tests_fail_the_broken_build(tmp_path):
+    assert _easy_mediated(tmp_path, "known-broken").returncode == 1
+
+
+def test_the_easy_mediated_tests_fail_a_layout_whose_title_cannot_be_overridden(tmp_path):
+    def fixed_title(workspace):
+        base = workspace / "templates" / "base.html"
+        base.write_text(re.sub(r"<title>.*?</title>", "<title>AgentClinic</title>", base.read_text(), flags=re.S))
+
+    result = _easy_mediated(tmp_path, "known-good", fixed_title)
+    assert result.returncode == 1
+    assert "test_a_page_that_extends_the_layout_can_set_its_own_title" in result.stdout
+
+
+def test_the_easy_launch_check_shows_why_app_py_exited_at_once(tmp_path):
+    """A start that dies at once (a port already held, say) reports its own output, not an empty log."""
+    def dies_at_once(workspace):
+        app = workspace / "app.py"
+        app.write_text(app.read_text().replace(
+            'if __name__ == "__main__":',
+            'if __name__ == "__main__":\n    import sys\n    sys.exit("ERROR: [Errno 48] Address already in use")\n',
+            1))
+
+    result = _easy_mediated(tmp_path, "known-good", dies_at_once)
+    assert result.returncode == 1
+    assert "Address already in use" in result.stdout, result.stdout[-2000:]

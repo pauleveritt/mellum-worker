@@ -89,13 +89,14 @@ From a trusted checkout, run a level in Pi with `/challenge`. It runs on the
 
 ```
 /challenge easy
-/remedy preset:easy
+/remedy on tool/bounded-commands
 /challenge easy
 ```
 
 The first line runs Easy on the thin worker with nothing extra — your
-baseline. The next two switch on the whole Easy stack on top and run it again, so
-you can watch the score move. For Vanilla Pi with no worker extension, add `:vanilla`
+baseline. The next two switch on one unit and run it again, so you can watch the
+score move. (`/remedy preset:easy` switches on Easy's measured stack, which R.1
+left empty: no unit beat Vanilla Pi within budget.) For Vanilla Pi with no worker extension, add `:vanilla`
 (`/challenge easy:vanilla`). `/challenge easy n=3` runs three times; `/challenge
 submit` opens a pull request with the runs you pick. While it runs, the model's
 turns stream so you see what it is doing, and the result reports the passes, the
@@ -109,7 +110,7 @@ exactly how every [lesson](../lessons/index.md) is built.
 
 ```bash
 uv run python learn/code/harness.py run --suite easy --repeat 3 --grade
-uv run python learn/code/harness.py run --suite medium --remedy preset:easy --repeat 3 --grade
+uv run python learn/code/harness.py run --suite medium --remedy preset:medium --repeat 3 --grade
 uv run python learn/code/harness.py run --suite hard --remedy preset:hard --extension path/to/yours.ts --repeat 3 --grade
 ```
 

@@ -50,7 +50,9 @@ entries below.
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
 | 18 | A defective oracle | none — repair assertions with wrong and valid alternative builds |
 | 19 | The workspace controls its examiner | none — trusted dependencies/configuration and structured results |
-| 20 | The default, not the hook | none yet — a check that exercises the override is an R.1 candidate |
+| 20 | The default, not the hook | `check/mediated-test` carries a check for it; it lost on budget in R.1 |
+| 21 | Works past the finish | none yet — a check that ends the run at green is open |
+| 22 | A check the model's own server breaks | none — a harness fix (the check reports what the app printed) |
 
 ## It says it is done and it is not
 
@@ -212,7 +214,21 @@ entries below.
     `test_extending_page_can_override_layout_title`
     ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-07-f5-smoke/table.md)). **Answer:** none yet as a
     unit; a check that renders an extending page and reads its title is a
-    candidate for R.1.
+    candidate for R.1. 2026-11-08: R.1's mediated test carries that check. It
+    was the test's most frequent re-dispatch, and 11 of 48 mediated sessions
+    still ended without the block
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-07-r1-step-three/table.md)).
+
+## It does not stop when it is done
+
+21. **Works past the finish.** The work already passes, and the run keeps going
+    until the budget is gone. **Seen:** R.1 step three, where 32 of 48 sessions
+    shown an acceptance test ended on the request or token budget though 33 had
+    reached 13 of 13 on the hidden grade, and some of those that hit the budget
+    were never sent back by the test
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-07-r1-step-three/table.md)).
+    **Answer:** none yet; a check that ends the run once the test is green is
+    the open question.
 
 ## It ships a defect it never ran
 
@@ -248,10 +264,19 @@ entries below.
     No model run is implied.
     **Answer:** use trusted dependencies and configuration, external hidden tests,
     disposable per-check copies, and structured per-test outcomes.
+22. **A check the model's own server breaks (not the model's fault).** A check
+    that launches the app collides with a server the model left running, and
+    reports the failure without its reason, so the model goes hunting.
+    **Seen:** R.1 step three, where Easy's mediated launch check reported an
+    empty log when the port was already held; 10 of 48 sessions hit it, and one
+    spent its turns finding and killing its own servers
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-07-r1-step-three/table.md)).
+    **Answer:** the check reports what the app printed (fixed); a check of
+    behaviour should not depend on the state the model leaves behind.
 
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–16 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–22 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*

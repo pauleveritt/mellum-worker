@@ -72,7 +72,8 @@ actions; they do not tell the model where a file goes.
 **Lesson check:** 2 of 3 on the local host, the fastest pass at 15 turns
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 
-The unit appends one agnostic line to each turn: read the project's own spec for
+The unit adds one agnostic instruction, once per task (the 2 of 3 above was measured
+when it appended the line to every turn): read the project's own spec for
 where each file and route belongs, and create files at exactly those paths — do
 not invent your own layout. It names no path, file or route of any suite; the
 model reads the layout from the spec itself. That is the line between a remedy

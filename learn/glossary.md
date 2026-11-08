@@ -187,10 +187,11 @@ with `--remedy <kind>/<name>`.
 ### Preset
 
 A named list of remedy units, loaded with `--remedy preset:<name>`.
-`preset:easy` is meant to be the measured Easy stack, and each tier's preset
-builds on the previous one. Until R.1–R.3 measure them on the repaired
-oracle, `easy`, `medium` and `hard` hold the same four units carried from
-before the repair, so treat them as placeholders. `preset:baseline-worker` is the explicit set of units that
+Each tier's preset is the measured stack for that tier, built on the one
+before it. R.1 measured `base` and `easy` against Vanilla Pi on Easy's 13
+checks and left both empty: no unit won within the 20% budget limit.
+`medium` and `hard` hold four units carried from before the oracle repair;
+treat them as placeholders until R.2 and R.3 measure them. `preset:baseline-worker` is the explicit set of units that
 reconstructs the worker's old, pre-decoupling bundle.
 
 ### Before and after
@@ -233,6 +234,34 @@ nothing changed in between. An edit, write or bash call clears the memory.
 A function wired to an event that observes a tool call or a turn and decides
 whether to block it or ask for one more request. The loop breaker and the
 empty-final nudge are guards; they are code, not metadata.
+
+### Stall handler
+
+A remedy unit that keeps a command which never returns, such as a server started
+in the foreground or a `tail -f`, from holding the session until the stall
+cutoff: `tool/bounded-commands` bounds every bash call, and the foreground-server
+and log-follow guards refuse the command before it runs.
+
+### Settle check
+
+A check that runs when the model tries to finish (`agent_before_settle`) and, while
+it is red, sends the model back with a message instead of letting the session
+settle. Each one adds its message to the earlier ones, and runs its command under
+a timeout that stops the whole process group.
+
+### Mediated test
+
+<!-- zensical-glossary-aliases: mediated tests -->
+An acceptance test the model did not write: written from the spec by whoever hands
+the work over, shown to the model once per task, and rerun from a frozen copy
+outside the project before the model may finish. Editing or deleting the copy the
+model saw changes nothing. The `check/mediated-test` unit; a suite's tests live in
+`mediated/`.
+
+### Compile/import check
+
+The `check/compile-import` unit: a `.py` write that does not compile comes back as
+a failed write, and at settle every module the session wrote must import.
 
 ### Strip thinking
 

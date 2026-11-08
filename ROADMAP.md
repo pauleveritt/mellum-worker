@@ -7,9 +7,9 @@ tangents go to the backlog, never into the current cycle.
 
 ## Now
 
-**Active:** none; F.5 is closed ([plan](docs/superpowers/plans/archive/2026-11-07-f5-run-trust.md)), and the order was [re-sequenced](docs/superpowers/research/2026-11-07-roadmap-resequence.md) on 2026-11-07.
-**Next:** R.1, Easy remedies, counted with `--host-card` under F.5's budgets.
-**After:** F.6, R.2, R.3, then A.1, Andre's architect as an opt-in unit.
+**Active:** none; R.1 closed 2026-11-08 ([note](docs/superpowers/research/2026-11-07-r1-easy-remedies.md)).
+**Next:** F.6, parallel runs on pods.
+**After:** R.2, R.3, then A.1, Andre's architect as an opt-in unit.
 **Parked:** everything in [`BACKLOG.md`](BACKLOG.md), each with a reopen condition.
 
 ## Direction
@@ -44,7 +44,7 @@ guarantee through a Pi hook comes before another sentence of prompt.
 
 | Cycle | Ships | Excludes | Status |
 | --- | --- | --- | --- |
-| **R.1** | Easy remedy units on the M5 Max under F.5's host card and budgets, n ≥ 12, preregistered. The settle fix lands first. First, Base is earned: a stall handler and the layout fragment against plain Vanilla. Then the compile/import check and the mediated test on Base, plain Vanilla kept in the batch. [Carried detail](docs/superpowers/research/2026-11-07-roadmap-resequence.md#what-r1-carries) | Architect mode; a preset inherited from the old worker, or a Base assumed before it is measured; a rate from a screen; numbers from the ladder rig (thinking off) mixed with the harness (thinking on). | candidate — after F.5. Re-sequenced 2026-11-07 ([note](docs/superpowers/research/2026-11-07-roadmap-resequence.md)): budget is requests, not F.3's wall deadline. |
+| **R.1** | Easy remedy units on the M5 Max under F.5's host card and budgets, n ≥ 12, preregistered. The settle fix lands first. First, Base is earned: a stall handler and the layout fragment against plain Vanilla. Then the compile/import check and the mediated test on Base, plain Vanilla kept in the batch. [Carried detail](docs/superpowers/research/2026-11-07-roadmap-resequence.md#what-r1-carries) | Architect mode; a preset inherited from the old worker, or a Base assumed before it is measured; a rate from a screen; numbers from the ladder rig (thinking off) mixed with the harness (thinking on). | closed 2026-11-08 — [plan](docs/superpowers/plans/archive/2026-11-07-r1-easy-remedies.md), [note](docs/superpowers/research/2026-11-07-r1-easy-remedies.md), [overnight](evals/2026-11-07-r1-step-three/table.md). No unit beat Vanilla within budget: `preset:base` and `preset:easy` are `[]`. |
 | **R.2** | Medium remedy units, opened by a Vanilla baseline on the repaired 18-check oracle in the same batch. The mediated-test screen preregistered on the old branch (`20c538b`) is the first candidate. | Units chosen before Medium's own Vanilla batch; architect mode. | candidate — after F.6. |
 | **R.3** | Hard remedy units, opened by a Vanilla baseline on the repaired 34-check oracle in the same batch. | As R.2. | candidate — after R.2. |
 

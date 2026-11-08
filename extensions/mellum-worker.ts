@@ -48,6 +48,7 @@ import { type ProjectFacts } from "./mellum-facts.ts";
 import { type Activation, type Msg, runRecord, textOf, spanStats, type SpanStats } from "./mellum-record.ts";
 import { formatMerge, formatReport, learnFromTexts, mergeSuggestion, modeRunsFile, overCap, recordFiles } from "./mellum-learn.ts";
 import { formatLast, pickLast } from "./mellum-last.ts";
+import { isInjectedRemedy, WORKER_TASK_QUERY } from "./mellum-task.ts";
 
 export const MARK_ON = "[mellum-worker on]";
 export const MARK_OFF = "[mellum-worker off]";
@@ -1374,7 +1375,7 @@ export function filterForMellum(payload: any, systemPrompt: string, opts: { expe
 		// Pi delivers a queued marker after the user message it was queued for, so the
 		// prompt that started the mode sits just before the marker (possibly behind an
 		// off-marker). Keep it unless a later user message already carries the task.
-		const laterUser = msgs.slice(start).some((m) => m.role === "user" && !isMarker(m));
+		const laterUser = msgs.slice(start).some((m) => m.role === "user" && !isMarker(m) && !isInjectedRemedy(m));
 		if (!laterUser) {
 			let j = markerAt - 1;
 			while (j >= 0 && isMarker(msgs[j])) j--;
@@ -1385,7 +1386,7 @@ export function filterForMellum(payload: any, systemPrompt: string, opts: { expe
 		// message rather than the whole parent history, and say so.
 		markerMissing = true;
 		for (let i = msgs.length - 1; i >= 0; i--) {
-			if (msgs[i].role === "user" && !isMarker(msgs[i]) && !isBootstrap(msgs[i])) {
+			if (msgs[i].role === "user" && !isMarker(msgs[i]) && !isBootstrap(msgs[i]) && !isInjectedRemedy(msgs[i])) {
 				start = i;
 				break;
 			}
@@ -1599,6 +1600,8 @@ export default function (pi: any, options: { startTimeoutMs?: number; fetch?: ty
 	let warnedMissing = false;
 	// Per-span counters for the one-line summary shown at /mellum off.
 	let span = { startedAt: 0, requests: 0, toolCalls: 0, outputTokens: 0 };
+	// Expose identity only: optional remedies decide what to do with the span.
+	pi.events?.on(WORKER_TASK_QUERY, (reply: (task: object | null) => void) => reply(active ? span : null));
 	let activeModel = "";
 	// The parent's context as last seen while on, plus assistant turns since; the run record is built from these.
 	let lastContext: Msg[] = [];

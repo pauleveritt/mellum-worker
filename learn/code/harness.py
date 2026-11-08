@@ -700,6 +700,22 @@ def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str
     return names, paths
 
 
+MEDIATED_UNIT = "mediated-test.ts"
+
+
+def mediated_tests(suite: Suite, prompt_number: int | None) -> list[Path]:
+    """The suite's mediated tests (`mediated/test_NN_<topic>.py`) for one prompt: a test belongs
+    to prompt NN and every later one, since later phases must keep the earlier ones. None is all."""
+    chosen = []
+    for path in sorted((suite.root / "mediated").glob("test_*.py")):
+        match = re.match(r"test_(\d+)_", path.name)
+        if match is None:
+            raise SystemExit(f"mediated test {path.name} must be named test_NN_<topic>.py")
+        if prompt_number is None or int(match.group(1)) <= prompt_number:
+            chosen.append(path)
+    return chosen
+
+
 def extension_record(paths: list[Path]) -> list[dict]:
     """Each loaded file and its SHA-256, so a record says exactly what ran."""
     return [{"path": str(p), "sha256": hashlib.sha256(Path(p).read_bytes()).hexdigest()}
@@ -800,6 +816,9 @@ def run_suite(
         named = ", ".join(f"port {row['port']} (pid {row['pid']}, {row['command']})" for row in taken)
         raise SystemExit(f"a server is already listening on {named}; stop it and rerun "
                          "(no session was started)")
+    mediated = any(Path(path).name == MEDIATED_UNIT for path in extras)
+    if mediated and (suite.root is None or not (suite.root / "mediated").is_dir()):
+        raise SystemExit(f"check/mediated-test needs the suite's mediated/ tests; {suite.name} has none")
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
     workspace.mkdir()
@@ -850,6 +869,8 @@ def run_suite(
     }
     # Without the harness venv on PATH; without VIRTUAL_ENV, else uv warns in the workspace venv.
     env["PATH"] = session_path(env.get("PATH", ""), env.pop("VIRTUAL_ENV", None))
+    env.pop("MELLUM_MEDIATED_TEST", None)   # only this run's suite hands mediated tests over
+    handed: list[list[str]] = []
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
@@ -891,7 +912,7 @@ def run_suite(
             models["providers"][provider]["baseUrl"] = f"http://127.0.0.1:{port}{suffix}"
             models_file.write_text(json.dumps(models, indent=2) + "\n")
             started = time.monotonic()
-        for prompt in prompts:
+        for number, prompt in enumerate(prompts, 1):
             remaining = None if deadline is None else deadline - (time.monotonic() - started)
             if remaining is not None and remaining <= 0:
                 (run / timeout_reason).write_text("hit\n")
@@ -899,6 +920,12 @@ def run_suite(
                 break
             # The spec-derived contract scopes itself to the phase this prompt names.
             env["ACCEPTANCE_PROMPT"] = prompt
+            if mediated:
+                # Read from the suite, never the workspace: the unit freezes them when Pi loads it.
+                files = mediated_tests(suite, None if single_prompt else number)
+                env["MELLUM_MEDIATED_TEST"] = os.pathsep.join(str(path) for path in files)
+                handed.append([path.name for path in files])
+                (run / "mediated.json").write_text(json.dumps(handed) + "\n")
             argv = pi_argv(
                 pi_binary, run / "profile", recorder, provider, model, prompt,
                 extension=settings["extension"],

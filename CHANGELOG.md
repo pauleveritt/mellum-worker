@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **`prompt/name-the-layout` is shown once per task.** It appended its line to every user
+  message; it is now one visible injected message per task, kept across tool requests and
+  compaction and dropped when the task changes. This is the delivery the lc40 lead (n = 6)
+  measured, and the one R.1 measures. The task-prompt lifecycle it uses comes with it.
+
 - **The glossary names the worker's states apart.** New entries for Mellum mode and the thin
   worker; the Baseline Worker now means the bundle as it was before 2026-10-31 (today's
   `preset:baseline-worker`); "bare Pi" is no longer another name for Vanilla Pi, since `bare` is
@@ -77,6 +82,49 @@ Versions match git tags; pin one in both install lines.
   prefix included: it had read 1,703 for an 11,438-token prompt.
 
 ### Added
+
+- **`tool/bounded-commands`, a remedy for the foreground stall.** It gives every bash call Pi's
+  own timeout (30 s, or `MELLUM_BOUND_SECONDS`) when the model set none, and caps a chosen one at
+  120 s, below the harness's 180 s stall cutoff. Pi then stops the whole process group and hands
+  control back, so a server started in the foreground no longer hangs the session. Ported from
+  `lc40-thin-worker`; R.1 measures it against Vanilla.
+- **`guard/foreground-log-follow`, a remedy for the log-follow stall.** It refuses `tail -f` and
+  its spellings (`-F`, `--follow`, behind `timeout`, `env`, `uv run` or `nohup`) when run in the
+  foreground, and asks for a finite snapshot such as `tail -n 50`. A finite read, a help query or
+  a backgrounded follow is let through. Ported from `lc40-thin-worker` in a module of its own, so
+  the foreground-server guard is unchanged.
+- **`check/mediated-test`, an acceptance test the model did not write.** With the unit loaded, the
+  harness hands prompt NN its suite's `mediated/test_NN_*.py` and every earlier one, read from the
+  suite and never the workspace (recorded in `mediated.json`). The unit shows the test once per
+  task, and before the model may finish it reruns a frozen copy from outside the project and sends
+  the failures back, at most 5 times. Editing or deleting the copy the model saw changes nothing.
+  Ported from `lc40-thin-worker`.
+- **`check/compile-import`, never settle on code that does not compile or import.** A `write` or
+  `edit` of a `.py` file in the workspace is compiled at once; a `SyntaxError` turns it into a
+  failed write carrying the compiler's message. At settle, each module the session wrote is
+  imported in its own process (60 s, stopped with its process group), and failures send the model
+  back, at most 3 times. It keys on the file extension and the model's own writes; R.1 measures it.
+- **`preset:base`, measured and empty.** R.1's step one (n = 12 per arm, counted, on the repaired
+  13-check oracle) earned no unit a place in Base: Vanilla stalled once in 12, below the rule's
+  bar for a stall handler, and `name-the-layout` scored below Vanilla. Base is Vanilla until a
+  unit beats it. Record: `evals/2026-11-07-r1-step-one/`.
+- **`preset:easy` is measured, and empty.** R.1's overnight (n = 24 per arm, counted) judged
+  `fg-server`, `bounded-commands` and the mediated test with each of them against Vanilla Pi. The
+  handlers missed the quality bar (`bounded` by one full pass). The mediated arms reached 15 and 18
+  full passes against none, but at 47 and 61 median requests against a 25.2 limit. The four
+  placeholder units are gone; `preset:easy` is Base, which is Vanilla. Records:
+  `evals/2026-11-07-r1-step-two/`, `evals/2026-11-07-r1-step-three/`.
+- **Two pathologies from R.1.** "Works past the finish": with an acceptance test shown, most runs
+  kept going to the budget after the work passed. "A check the model's own server breaks": a
+  launch check hid why the app would not start, and the model went hunting for servers.
+- **`scripts/r1_batch.py`, interleaved Easy batches.** It runs counted Easy sessions through the
+  real harness round-robin across arms, resumes a killed batch without repeating a session, and
+  writes `table.md`. Budget medians leave out stalled and censored sessions, as R.1's
+  preregistration fixes.
+- **Easy ships its mediated tests.** `learn/code/suites/easy/mediated/test_01_home.py` is Phase
+  1's acceptance test, written from `specs/roadmap.md`: it covers each of the 13 hidden checks
+  (a test maps them) plus the project's own tests and the `__main__` block. Dry-run, it passes the
+  complete build and fails the broken build and a layout whose title a page cannot override.
 
 - **`learn/code/conformance.py` writes a host card for the Mac.** It checks the live
   llama-server against `learn/code/host/pins.json` (build, weights sha256, every
@@ -335,6 +383,20 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **Two red settle checks both reach the model.** Pi keeps only the entries the last settle
+  handler returns, so with two gates loaded (say the quality check and the empty-turn nudge) the
+  earlier one's message was lost while both spent a re-dispatch. The quality, verify and guard
+  handlers and `nudge/empty-turn` now add their message to the ones before it.
+- **A settle check that hangs no longer hangs the session.** The quality check's ruff and the
+  verify gate's pytest now run under a timeout (60 s and 150 s, below the 180 s stall cutoff)
+  that stops the command and every process it started. A hung test reads red, since it ran the
+  model's code; a hung or missing linter is our tooling, and settle goes on. A check that passes
+  but leaves a server behind reads as passed, not timed out, and the server is stopped with it,
+  so it cannot hold the port for the model's next launch.
+- **Easy's mediated launch check says why the app would not start.** When `python app.py` died at
+  once (in R.1 step three, because the model's own server already held the port), the check
+  reported an empty log, and the model went hunting for the cause. It now shows what the app
+  printed.
 - **`/challenge <tier>:vanilla` runs Vanilla Pi.** It ran the `bare` arm, which loads the
   worker extension with mode off, so the comparison a learner made against the worker was not
   against the floor. It now runs the `vanilla` arm, and the `/mellum` command's description no

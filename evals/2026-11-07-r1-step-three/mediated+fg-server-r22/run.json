@@ -1,0 +1,170 @@
+{
+  "grader": {
+    "revision": "current",
+    "assertion_digest": "337644606cd9d203a25b456dfb495fdc50f3ecc516c0096a6904cb78cbe629b5",
+    "execution_policy": "trusted-copy-v1"
+  },
+  "suite": "easy",
+  "arm": "worker",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "guard/foreground-server",
+    "check/mediated-test"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.claude/worktrees/r1-easy-remedies/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.claude/worktrees/r1-easy-remedies/remedies/check/mediated-test.ts",
+      "sha256": "2dc96f84ee3c503b9e6ab1bc9b1da0b6ed2303a2328f4eed788d521c7f2a5f18"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "pi_version": "1.4.0",
+  "counted": true,
+  "host_card": {
+    "path": "/Users/pauleveritt/mellum-runs/r1/host-card-overnight.json",
+    "sha256": "65563a8d7df5942965a4dd0e850584e0bf12f2952b39fb21af8bfe51750038f2",
+    "passed": true
+  },
+  "deadline": 1200,
+  "budget": {
+    "limits": {
+      "max_requests": 64,
+      "max_output_tokens": 32000,
+      "unknown_usage_charge": 16384,
+      "wall_safety_seconds": 1200
+    },
+    "spent": {
+      "requests": 64,
+      "output_tokens": 28970
+    }
+  },
+  "stall": 180.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": true,
+  "quality_ok": false,
+  "project_tests": {
+    "exit_code": 2,
+    "collected": [],
+    "reports": {},
+    "passed": false,
+    "collection_errors": [
+      "/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-grading-envs/f592be164e77587c5813ed2c518566b5b9065d7f87b500bc9ba2793a5e23e3d3/lib/python3.14/site-packages/_pytest/python.py:493: in importtestmodule\n    mod = import_path(\n/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-grading-envs/f592be164e77587c5813ed2c518566b5b9065d7f87b500bc9ba2793a5e23e3d3/lib/python3.14/site-packages/_pytest/pathlib.py:587: in import_path\n    importlib.import_module(module_name)\n/Users/pauleveritt/Library/Application Support/uv/python/cpython-3.14.2-macos-aarch64-none/lib/python3.14/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1398: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1371: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1342: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:938: in _load_unlocked\n    ???\n/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-grading-envs/f592be164e77587c5813ed2c518566b5b9065d7f87b500bc9ba2793a5e23e3d3/lib/python3.14/site-packages/_pytest/assertion/rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\n/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-grading-envs/f592be164e77587c5813ed2c518566b5b9065d7f87b500bc9ba2793a5e23e3d3/lib/python3.14/site-packages/_pytest/assertion/rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\n/Users/pauleveritt/Library/Application Support/uv/python/cpython-3.14.2-macos-aarch64-none/lib/python3.14/ast.py:46: in parse\n    return compile(source, filename, mode, flags,\nE     File \"/private/var/folders/m4/jc_jynrj6z10mk0t80pkj8l80000gn/T/mellum-grade-e00k4gy7/project/tests/test_home.py\", line 1\nE       Phase 1 \u2014 Home Page: the request's acceptance test, written from `specs/roadmap.md`.\nE               ^\nE   SyntaxError: invalid character '\u2014' (U+2014)"
+    ],
+    "inventory": {},
+    "execution_overrides": [],
+    "unexecuted_tests": [],
+    "integrity_ok": false,
+    "integrity_violations": [
+      "tests/test_home.py"
+    ],
+    "required_passed": true
+  },
+  "hidden_reports": {
+    "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    }
+  },
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase1_acceptance.py": {
+      "missing": 0,
+      "total": 9
+    }
+  },
+  "record_failures": [],
+  "requests": 63,
+  "turns": 62,
+  "tool_calls": 61,
+  "tool_errors": 16,
+  "context": 29756,
+  "output_tokens": 24757,
+  "wall": 286.667,
+  "nudges": 0,
+  "empty_finals": 1,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 1,
+  "leaked": [],
+  "out_of_layout": [],
+  "completion": "budget",
+  "censored": false,
+  "exit_code": -9,
+  "cleanup_ok": true
+}

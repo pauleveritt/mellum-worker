@@ -1,0 +1,217 @@
+{
+  "grader": {
+    "revision": "current",
+    "assertion_digest": "337644606cd9d203a25b456dfb495fdc50f3ecc516c0096a6904cb78cbe629b5",
+    "execution_policy": "trusted-copy-v1"
+  },
+  "suite": "easy",
+  "arm": "worker",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "guard/foreground-server",
+    "check/mediated-test"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.claude/worktrees/r1-easy-remedies/remedies/guard/foreground-server.ts",
+      "sha256": "dc7609ca2917ad7ebc0601fe3660380d8b5153b2b6e03ecf8072a07c0253abe4"
+    },
+    {
+      "path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/.claude/worktrees/r1-easy-remedies/remedies/check/mediated-test.ts",
+      "sha256": "2dc96f84ee3c503b9e6ab1bc9b1da0b6ed2303a2328f4eed788d521c7f2a5f18"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M5 Max, 128 GiB",
+  "pi_version": "1.4.0",
+  "counted": true,
+  "host_card": {
+    "path": "/Users/pauleveritt/mellum-runs/r1/host-card-overnight.json",
+    "sha256": "65563a8d7df5942965a4dd0e850584e0bf12f2952b39fb21af8bfe51750038f2",
+    "passed": true
+  },
+  "deadline": 1200,
+  "budget": {
+    "limits": {
+      "max_requests": 64,
+      "max_output_tokens": 32000,
+      "unknown_usage_charge": 16384,
+      "wall_safety_seconds": 1200
+    },
+    "spent": {
+      "requests": 19,
+      "output_tokens": 9026
+    }
+  },
+  "stall": 180.0,
+  "stalled": {
+    "seconds": 180.2,
+    "limit": 180.0,
+    "command": "tail -f /tmp/mellum-server.log"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "project_tests": {
+    "exit_code": 1,
+    "collected": [
+      "tests/test_home.py::test_home_returns_the_tagline",
+      "tests/test_home.py::test_home_has_the_shared_navigation"
+    ],
+    "reports": {
+      "tests/test_home.py::test_home_returns_the_tagline": {
+        "setup": "passed",
+        "call": "failed",
+        "teardown": "passed"
+      },
+      "tests/test_home.py::test_home_has_the_shared_navigation": {
+        "setup": "passed",
+        "call": "failed",
+        "teardown": "passed"
+      }
+    },
+    "passed": false,
+    "collection_errors": [],
+    "inventory": {
+      "tests/test_home.py::test_home_returns_the_tagline": 1,
+      "tests/test_home.py::test_home_has_the_shared_navigation": 1
+    },
+    "execution_overrides": [],
+    "unexecuted_tests": [],
+    "integrity_ok": true,
+    "integrity_violations": [],
+    "required_passed": false
+  },
+  "hidden_reports": {
+    "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    }
+  },
+  "contaminated": false,
+  "failed_checks": 13,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title",
+    "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph",
+    "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+    "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+    "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+    "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving",
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    },
+    "test_phase1_acceptance.py": {
+      "missing": 9,
+      "total": 9
+    }
+  },
+  "record_failures": [],
+  "requests": 19,
+  "turns": 19,
+  "tool_calls": 17,
+  "tool_errors": 3,
+  "context": 17101,
+  "output_tokens": 9026,
+  "wall": 265.184,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 52641,
+      "pgid": null,
+      "command": "uv run uvicorn app:app --port 8000 --log-level debug"
+    },
+    {
+      "pid": 52642,
+      "pgid": null,
+      "command": "/Users/pauleveritt/mellum-runs/r1/step3/mediated+fg-server-r05/20261108T045321Z-easy-3ec1de/workspace/.venv/bin/python /Users/pauleveritt/mellum-runs/r1/step3/mediated+fg-server-r05/20261108T045321Z-easy-3ec1de/workspace/.venv/bin/uvicorn app:app --port 8000 --log-level debug"
+    },
+    {
+      "pid": 52643,
+      "pgid": null,
+      "command": "tail -f /tmp/mellum-server.log"
+    }
+  ],
+  "out_of_layout": [],
+  "completion": "stalled",
+  "censored": false,
+  "exit_code": -9,
+  "cleanup_ok": true
+}

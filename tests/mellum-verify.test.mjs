@@ -67,3 +67,19 @@ test("verifyEnv: worker cwd on PYTHONPATH, VIRTUAL_ENV stripped (so a held-out c
 		else process.env.VIRTUAL_ENV = prev;
 	}
 });
+
+test("runTest stops a test command that hangs, with its process group, and reports it red", async () => {
+	const { runTest } = await import("../extensions/mellum-verify.ts");
+	const { tmpdir } = await import("node:os");
+	const t0 = Date.now();
+	const v = runTest("", "sh -c 'sleep 30 & sleep 30' x", tmpdir(), 1000);
+	assert.equal(v.passed, false);
+	assert.match(v.output, /timed out after 1 s/);
+	assert.ok(Date.now() - t0 < 4000, `took ${Date.now() - t0} ms`);
+});
+
+test("runTest throws when the test command cannot start, so the gate never blocks on our tooling", async () => {
+	const { runTest } = await import("../extensions/mellum-verify.ts");
+	const { tmpdir } = await import("node:os");
+	assert.throws(() => runTest("", "no-such-binary-r1", tmpdir(), 1000));
+});

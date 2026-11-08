@@ -1796,3 +1796,56 @@ def test_a_counted_run_needs_a_loopback_server(tmp_path):
     with pytest.raises(SystemExit, match="loopback"):
         harness.main(["run", "--suite", "easy", "--runs-dir", str(tmp_path / "r"), "--profile", str(profile),
                       "--pi-binary", str(FIX / "fake-pi.sh"), "--host-card", str(tmp_path / "card.json")])
+
+
+def _mediated_suite(tmp_path):
+    root = tmp_path / "suites" / "steps"
+    shutil.copytree(SUITES / "steps", root)
+    (root / "mediated").mkdir()
+    for name in ("test_01_one.py", "test_02_two.py"):
+        (root / "mediated" / name).write_text("def test_it():\n    pass\n")
+    return harness.load_suite(tmp_path / "suites", "steps")
+
+
+MEDIATED_UNIT = harness.REMEDIES / "check" / "mediated-test.ts"
+
+
+def test_mediated_tests_belong_to_their_prompt_and_every_later_one(tmp_path):
+    suite = _mediated_suite(tmp_path)
+    assert [p.name for p in harness.mediated_tests(suite, 1)] == ["test_01_one.py"]
+    assert [p.name for p in harness.mediated_tests(suite, 2)] == ["test_01_one.py", "test_02_two.py"]
+    assert [p.name for p in harness.mediated_tests(suite, None)] == ["test_01_one.py", "test_02_two.py"]
+
+
+def test_a_mediated_test_must_name_its_prompt(tmp_path):
+    suite = _mediated_suite(tmp_path)
+    (suite.root / "mediated" / "test_extra.py").write_text("")
+    with pytest.raises(SystemExit, match="test_NN_"):
+        harness.mediated_tests(suite, 1)
+
+
+def test_each_prompt_gets_its_mediated_tests_from_outside_the_workspace(tmp_path):
+    suite = _mediated_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])
+    first, second = (run_dir / "workspace" / "mediated.txt").read_text().splitlines()
+    mediated = suite.root / "mediated"
+    assert first.split(os.pathsep) == [str(mediated / "test_01_one.py")]
+    assert second.split(os.pathsep) == [str(mediated / "test_01_one.py"), str(mediated / "test_02_two.py")]
+    assert not (run_dir / "workspace" / "mediated").exists()
+    assert json.loads((run_dir / "mediated.json").read_text()) == [["test_01_one.py"],
+                                                                   ["test_01_one.py", "test_02_two.py"]]
+
+
+def test_a_session_without_the_unit_gets_no_mediated_tests(tmp_path, monkeypatch):
+    monkeypatch.setenv("MELLUM_MEDIATED_TEST", "/leaked/from/the/driver.py")
+    suite = _mediated_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-mediated.sh"))
+    assert (run_dir / "workspace" / "mediated.txt").read_text().splitlines() == ["unset", "unset"]
+
+
+def test_the_unit_needs_the_suites_mediated_tests(tmp_path):
+    with pytest.raises(SystemExit, match="mediated"):
+        harness.run_suite(harness.load_suite(SUITES, "steps"), runs_dir=tmp_path / "runs", profile=PROFILE,
+                          pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])

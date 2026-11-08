@@ -48,12 +48,12 @@ test("/remedy on guard/repeat-loops blocks the sixth identical call; off stops i
 	assert.equal(pi.ui.status.remedies, undefined);
 });
 
-test("/remedy preset:easy turns on every unit in the preset", async () => {
+test("/remedy preset:baseline-worker turns on every unit in the preset", async () => {
 	const pi = fakePi();
 	await (await host()).default(pi);
-	await pi.run("remedy", "preset:easy");
-	const easyPreset = JSON.parse(readFileSync(new URL("../remedies/presets/easy.json", import.meta.url)));
-	assert.equal(pi.ui.status.remedies, `remedies: ${easyPreset.length} on`);
+	await pi.run("remedy", "preset:baseline-worker");
+	const preset = JSON.parse(readFileSync(new URL("../remedies/presets/baseline-worker.json", import.meta.url)));
+	assert.equal(pi.ui.status.remedies, `remedies: ${preset.length} on`);
 	assert.equal(pi.fire("tool_call", { toolName: "bash", input: { command: "uv run python app.py" } })?.block, true);
 });
 

@@ -44,7 +44,8 @@ machinery takes the credit the prompts earned.
 
 **Badge:** `screen`
 
-**The condition:** the Easy set that passes 6/6 — `preset:easy`. **The guard:**
+**The condition:** the Easy set that passes 6/6 — the four units `preset:easy`
+held before R.1 measured it empty (2026-11-08), spelled out in the commands below. **The guard:**
 `guard/foreground-server`, in the set, refusing a foreground server start. **The
 gate:** the mediated acceptance gate (`mellum-acceptance` derives a structural
 test from the spec; `mellum-verify` re-runs it at settle and re-dispatches a red
@@ -67,7 +68,7 @@ turn, and the run shipped without the HTML5 doctype its own contract checks for.
 
 **Badge:** `screen`
 
-**Remedy unit:** `guard/foreground-server`; switch it on live in Pi with `/remedy on guard/foreground-server`, then read its firing in the run record — `--remedy preset:easy` versus the same with the gate's two extensions.
+**Remedy unit:** `guard/foreground-server`; switch it on live in Pi with `/remedy on guard/foreground-server`, then read its firing in the run record — the four-unit set below versus the same with the gate's two extensions.
 
 **Remedy code:** [`remedies/guard/foreground-server.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/guard/foreground-server.ts) — the unit wires the guard; the block itself is `serverGuard` in [`extensions/mellum-guards.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/extensions/mellum-guards.ts). In Pi the `/lesson` panel shows the unit file inline under this step.
 
@@ -107,8 +108,8 @@ reach for enforcement only where guidance stops being enough.
 The 6/6 set, then the same with the NCM gate stacked on:
 
 ```bash
-uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --grade --repeat 6 --deadline 600
-uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --extension extensions/mellum-acceptance.ts --extension extensions/mellum-verify.ts --grade --repeat 6 --deadline 600
+uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy prompt/name-the-layout,prompt/python-developer,guard/foreground-server,prompt/verify-the-spec --grade --repeat 6 --deadline 600
+uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy prompt/name-the-layout,prompt/python-developer,guard/foreground-server,prompt/verify-the-spec --extension extensions/mellum-acceptance.ts --extension extensions/mellum-verify.ts --grade --repeat 6 --deadline 600
 ```
 
 !!! success "Key points"

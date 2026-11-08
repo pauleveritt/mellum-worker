@@ -22,7 +22,7 @@
  * the tool that already gets that right.
  */
 
-import { spawnSync } from "node:child_process";
+import { runBounded } from "./bounded.ts";
 
 export interface Violation {
 	file: string;
@@ -131,11 +131,14 @@ export function resolveConfig(env: string | undefined): Config {
 	return { ...DEFAULTS };
 }
 
-/** The shipped runner: `uvx ruff check` over the workspace, real-error rules only. */
-export const defaultRuffRunner: RuffRunner = (cwd, select) => {
-	const result = spawnSync(
-		"uvx",
-		[
+/** `uvx ruff check` over the workspace, real-error rules only, stopped with its process group at
+ * `timeoutMs`. Ruff runs none of the model's code, so a hang or a missing binary is our tooling:
+ * null, and settle goes on. */
+export function boundedRuffRunner(timeoutMs: number, bin = "uvx"): RuffRunner {
+	return (cwd, select) => {
+		const result = runBounded(
+			bin,
+			[
 			"ruff",
 			"check",
 			"--select",
@@ -146,12 +149,16 @@ export const defaultRuffRunner: RuffRunner = (cwd, select) => {
 			"grader_tests",
 			"--output-format=concise",
 			".",
-		],
-		{ cwd, encoding: "utf8" },
-	);
-	if (result.error || result.status === null) return null; // could not run ruff
-	return (result.stdout || "") + (result.stderr || "");
-};
+			],
+			{ cwd, timeoutMs },
+		);
+		if (!result.started || result.timedOut || result.code === null) return null; // could not run ruff
+		return result.out;
+	};
+}
+
+/** The shipped runner: ruff, stopped after 60 s. */
+export const defaultRuffRunner: RuffRunner = boundedRuffRunner(60_000);
 
 export default function (
 	pi: { on: (event: string, handler: (event: unknown) => unknown) => void },
@@ -161,5 +168,9 @@ export default function (
 	const run = options.run ?? defaultRuffRunner;
 	const cwd = options.cwd ?? process.cwd();
 	const check = createQualityCheck(cfg.max, run, cwd, cfg.select);
-	pi.on("agent_before_settle", () => check());
+	pi.on("agent_before_settle", (event: any) => {
+		const result = check();
+		// Pi keeps the entries the last handler returns, so keep the earlier handlers' too.
+		return result && { ...result, entries: [...(event?.entries ?? []), ...result.entries] };
+	});
 }

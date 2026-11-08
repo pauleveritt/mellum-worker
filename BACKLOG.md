@@ -145,19 +145,32 @@ Retired on 2026-10-13 as instrument work the current checks already cover
 on pass/fail but differ in verification or report, and the existing `check`
 fields cannot show it.
 
-**The mediated test.** Your main model turns a request or a spec phase into
-a failing test, shows it, and hands it to the worker as "make this pass";
-completion is scored by the hidden tests and write list, with the test
-written once and not by the worker. Measured in the triage note's order: a
-rung 9 screen (three runs) first, then a preregistered run on rungs 6–9
-against A21's 9/12, then a command that records the test beside the request.
-Andre's [PR #1](https://github.com/pauleveritt/mellum-worker/pull/1) is a
-candidate implementation (`--acceptance-test`; an n = 1 rung 9 screen on
-mlx-lm, [digest](docs/superpowers/research/2026-10-20-pr-digest.md)).
-*Reopens when* someone can run the rung 9 screen and wants the result; the
-closed cycle and its design inputs are in [`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20).
-2026-10-24, on Andre's fork: `--acceptance-test` and `--redispatch` are on
-`main` again after a merge dropped them ([LEARNING](LEARNING.md) §VII.1).
+**The mediated test, cheaper.** An external, complete test, shown to the
+worker and re-run at settle (`check/mediated-test`). 2026-11-08, R.1 (Easy,
+counted, n = 24): 15 and 18 of 24 full passes against Vanilla's none, at 47
+and 61 median requests against 21, so it lost on budget; 32 of 48 sessions
+ended on budget, most after reaching 13/13
+([R.1 note](docs/superpowers/research/2026-11-07-r1-easy-remedies.md)). The
+earlier rung 9 plan and Andre's `--acceptance-test` are in
+[`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20) and the
+[digest](docs/superpowers/research/2026-10-20-pr-digest.md). *Reopens when* a
+variant that stops at green, re-dispatches less, or tracks the oracle more
+closely is ready for a preregistered Easy batch against Vanilla.
+
+**Stall handlers judged on stalls.** In R.1 step three (n = 24) Vanilla stalled
+in 4 sessions; `guard/foreground-server` and `tool/bounded-commands` in none.
+Step one's stall rule would have admitted both, but step three judged only
+quality, and they missed it
+([table](evals/2026-11-07-r1-step-three/table.md)). *Reopens when* a cycle
+builds a tier's Base (R.2's Medium, or Easy again): preregister a batch that
+judges each handler on stalls at n = 24. Screen `guard/foreground-log-follow`
+again too: Screen 1 dropped it at n = 3, and mediated+fg-server then stalled on
+`tail -f` in 5 of 24.
+
+**`check/compile-import` needs a failure to guard.** It never acted in R.1's
+Screen 2: no write failed to compile or import in three sessions, and a
+`SyntaxError` showed in 1 of Screen 1's 15. *Reopens when* a tier's traces
+show a compile or import failure in 2 or more of 12 sessions.
 
 **Freeze-the-oracle exit gate.** Make "done" an external test the worker cannot
 weaken, instead of its own final message. Promote the ladder's scorer checks
