@@ -116,12 +116,66 @@ invariant holds, which the worker cannot talk its way past.
   test that. The honest reading is "the loop is overhead at this size," not "the
   loop is never worth it" — the ladder's larger rung is how we learn which.
 
+## The exit-gate, measured — it closes Phase 4 at settle, but the live-server spiral reaches the stall first
+
+Built the exit-gate the paradigm calls for: a complete, external, frozen medium
+acceptance test (`ladder/fixtures/acceptance/test_medium.py`, authored from the
+phase 1–4 spec, a superset of the hidden oracle — green on `agentclinic-done`
+both test and oracle, and precisely red on the id-in-route miss, 1 of its 8
+functions), run by `mellum-verify` at settle: while red it hands the agent back
+only its failing test functions for a short corrective turn, up to five. Placed
+outside the workspace, so the agent cannot see or weaken it. One pass, then a
+check with a small turn afterwards. Gated one-pass medium, n=3:
+
+| rep | score | req | gate | outcome |
+|-----|-------|-----|------|---------|
+| 1 | — | 132 | never reached | STALL (censored): live-server spiral before settle |
+| 2 | **18/18** | 61 | fired, 1 redispatch | **ok — the gate closed the gap** |
+| 3 | 5/18 | — | fired 2× | censored (stopped mid-spiral): 55 uvicorn starts, never converged |
+
+1. **The gate works, exactly as designed.** Rep 2 settled short, `mellum-verify`
+   re-ran the frozen test, named the unmet concept, and one small corrective turn
+   carried it to a clean 18/18 at 61 requests — a fifth of the architect loop,
+   with the deep Phase-4 contract closed by a **harness guarantee, not a prose
+   rule**. The dry-runs plus rep 2 prove the mechanism end to end.
+
+2. **But the gate only runs at settle, and 2 of 3 reps never settled.** The
+   dominant failure is not Phase 4 — it is a **live-server debugging spiral**: the
+   fixed small model, confused by an HTTP behaviour (a 303 that reads as 200, a
+   TestClient 422 its own route signature causes), tries to debug by spinning up
+   `uvicorn` / `python app.py` and `curl`-ing `localhost`, which blocks or forks a
+   background server that disagrees with the in-process `TestClient`, and thrashes
+   there (28–55 server starts) until the stall guard kills it — before it ever
+   reaches the gate. `guard/foreground-server` does not stop it; the model evades
+   with `nohup … &`, `| tee`, and `.venv/bin/python app.py`.
+
+3. **So the exit-gate is necessary but not sufficient on this paradigm.** It
+   reliably closes Phase 4 for a rep that stays in-process and settles; it cannot
+   rescue a rep that rabbit-holes into a live server and never settles. Reliability
+   now turns on killing that spiral.
+
+## Decision (updated)
+
+- **The exit-gate is validated and kept** — the `test_medium.py` fixture and the
+  `mellum-verify` wiring close the Phase-4 contract a prose rule could not. For a
+  settling rep it delivers the full pass the refinement only coin-flipped.
+- **The next lever is a live-server guard, not more gate.** A guard that refuses
+  `uvicorn` / `python app.py` / a background server plus `curl` and points the
+  agent at `TestClient` would keep it in-process, let it settle, and let the gate
+  finish the job. That is the measured next step toward a reliable one-pass pass.
+
 ## What would falsify this / Risks
 
 - **n=2, two tiers, a scratch driver** — a screen, not a `run_ladder` rate, and
   the skill is explicit that conclusions come from the real harness. The gap is
   large enough that noise is unlikely to erase it, but the exact multiple will
   move.
+- **The gated result rests on one converged rep.** Rep 2 is a clean, decisive
+  demonstration (and the dry-runs prove the test sound), but one converged rep is
+  a mechanism proof, not a reliability rate. The spiral may even be *induced* by
+  the gate — handing a confused small model "these tests still fail" can push it
+  toward live-server debugging; a paired gated-vs-ungated run at larger n, once a
+  live-server guard exists, would separate the gate's effect from the spiral's.
 - **The stronger preamble is a confound.** The one-pass arm carries the
   reduced-thinking prompt; the plan-loop baselines were measured before it.
   Part of the saving may be the prompt, not the single-pass structure. A paired
