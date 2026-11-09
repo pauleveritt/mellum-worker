@@ -226,6 +226,47 @@ Mean 18.0/18, mean 103 requests, mean 1001s.
   and the guard in its preset) is how the 3 of 3 becomes a rate, paired against the
   architect loop at larger n, with a rung past four phases.
 
+## The clean-exit fixes — 3 of 3 clean, but the redispatch path did not recur to test them
+
+Rep 2 above reached a correct 18/18 and then idled into the stall guard. The tail
+showed why: the gate redispatched naming two acceptance-test functions, and the
+worker — the test being held out beside the workspace, not in it — went hunting
+for the file with `find / -name test_medium.py`, a whole-machine crawl that ate
+the time to the stall. Two fixes, both test-first, suite 715 pass:
+
+- `guard/outside-workspace` now blocks a bare-root crawl. It refused
+  `grep -rl x /Users /var` but let a lone `/` through — the path matcher wanted a
+  character after the slash — so `find /` ran unguarded. One character (`*` for
+  `+`); the Windows spelling already did it.
+- `mellum-verify`'s redispatch message now says the acceptance test is **held
+  out** — not a file in the workspace, do not search for it; each name is a
+  behaviour to satisfy, checked with the worker's own in-workspace tests.
+
+Re-ran the gated one-pass medium with both fixes, n=3:
+
+| rep | score | req | gate fired | server blocked | curl blocked | wall | guard |
+|-----|-------|-----|-----------|----------------|--------------|------|-------|
+| 1 | **18/18** | 76 | 0 | 4 | 0 | 547s | ok |
+| 2 | **18/18** | 56 | 0 | 0 | 0 | 663s | ok |
+| 3 | **18/18** | 100 | 0 | 3 | 0 | 844s | ok |
+
+Mean 77 requests, mean 685s. **3 of 3 at 18/18 and 3 of 3 `guard=ok`** — no
+stall, and leaner than the first gated+guard run (103 req, 1001s).
+
+The honest catch: **the gate fired zero times across all three reps.** Every rep
+built correctly at first settle, so none hit the redispatch path that stalled the
+earlier rep 2 — the exact failure the two fixes target did not recur here, so this
+run does not directly test them against it. What it does show is the guard holding
+across another three reps (six in all now — every server and curl attempt refused,
+no spiral) and a cleaner, cheaper run. The fixes are proven at the unit grain
+(`find /` blocked; the message names the test as held out); the integration proof —
+a rep that settles short, redispatches, and *now* exits clean instead of hunting —
+still wants a run where the gate fires red, which is variance-dependent. One
+on-screen moment in rep 3 is the clearest live evidence either way: the worker
+tried to start uvicorn, the guard refused it, and the worker's own reasoning
+turned — *"the rule says not to start servers, we need to fix the route"* — to
+`TestClient` in process.
+
 ## What would falsify this / Risks
 
 - **n=2, two tiers, a scratch driver** — a screen, not a `run_ladder` rate, and
@@ -260,6 +301,13 @@ Mean 18.0/18, mean 103 requests, mean 1001s.
   child, where the worker should use `TestClient`, and the node suite pins the
   read/search/remote-fetch cases it must leave alone. A preregistered
   `--mode one-pass` run settles both the rate and the exit.
+- **The two clean-exit fixes are unit-proven but not yet integration-proven.** The
+  re-run went 3 of 3 clean, but the gate fired zero times, so the redispatch →
+  hunt → stall path the fixes target never arose to be tested end to end. They are
+  correct at the unit grain; a run where the gate fires red is what shows them
+  turning a would-be stall into a clean exit. Until then the clean-exit claim
+  rests on the unit tests plus the one live refuse-and-pivot in rep 3, not on a
+  reproduced-then-fixed stall.
 
 **The one-pass preamble (verbatim):**
 
