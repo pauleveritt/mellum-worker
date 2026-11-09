@@ -28,8 +28,10 @@ def select_grader(suite, name='current'):
 
 def grader_identity(suite) -> dict:
     digest = hashlib.sha256()
+    from phase_boundary import in_scope
+    phase = getattr(suite, 'phase', None)
     paths = [(f'grader/{p.relative_to(suite.tests)}', p) for p in suite.tests.rglob('*')
-             if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc']
+             if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc' and in_scope(p.name, phase)]
     base = suite.grader_base or (suite.root / 'base' if suite.root else None)
     if base:
         paths += [(f'base/{name}', base / name) for name in ('pyproject.toml', 'uv.lock')
@@ -42,5 +44,6 @@ def grader_identity(suite) -> dict:
     for name, path in sorted(paths):
         digest.update(name.encode() + b'\0' + path.read_bytes() + b'\0')
     digest.update(json.dumps(suite.expected).encode())
-    return {'revision': suite.grader_revision, 'assertion_digest': digest.hexdigest(),
-            'execution_policy': EXECUTION_POLICY}
+    identity = {'revision': suite.grader_revision, 'assertion_digest': digest.hexdigest(),
+                'execution_policy': EXECUTION_POLICY}
+    return identity if phase is None else identity | {'phase': phase}

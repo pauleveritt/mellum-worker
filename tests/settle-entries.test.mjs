@@ -66,7 +66,10 @@ test("the mediated test keeps an earlier gate's message", async (t) => {
 		}
 	});
 	process.env.MELLUM_MEDIATED_TEST = join(dir, "test_01_x.py");
-	process.env.VERIFY_PYTEST = "false"; // red without running pytest
+	// Red without running pytest: a stand-in that reports test_x failed.
+	const standIn = join(dir, "pytest.mjs");
+	writeFileSync(standIn, 'import { appendFileSync } from "node:fs";\nfor (const l of [{ event: "outcome", test: "test_01_x.py::test_x", when: "call", outcome: "failed", message: "assert False" }, { event: "finished", exit: 1 }]) appendFileSync(process.env.MELLUM_GATE_REPORT, JSON.stringify(l) + "\\n");\nprocess.exit(1);\n');
+	process.env.VERIFY_PYTEST = `"${process.execPath}" ${standIn}`;
 	const { default: mediated } = await import("../remedies/check/mediated-test.ts");
 	const pi = fakePi();
 	redQuality(pi);

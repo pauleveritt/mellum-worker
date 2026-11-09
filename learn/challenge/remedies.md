@@ -24,6 +24,7 @@ row is one problem and the unit that answers it; the last column is the
 | Starts a foreground server and hangs to the deadline | `guard/foreground-server`: Blocks a foreground server start and shows the background form | screen: the hang recurs in the vLLM baseline's web-app rungs; unmeasured as a remedy | `/remedy on guard/foreground-server` |
 | Searches the whole machine and hangs the run | `guard/outside-workspace`: Blocks a recursive search outside the workspace | screen: recorded hangs; searches only, writes are not covered | `/remedy on guard/outside-workspace` |
 | Repeats the same call with nothing changed | `guard/repeat-loops`: Blocks a call made 5 times in a row unchanged | ladder: part of the guard set behind phase 2b's 15/15 | `/remedy on guard/repeat-loops` |
+| Edits the supplied tests until they pass instead of changing the code | `guard/supplied-tests`: Refuses write and edit on the tests the request supplied and restores them after any tool that changed them; new test files are untouched | Easy count (n = 32): all five hidden-full non-strict Base sessions changed the supplied test; unmeasured as a remedy | `/remedy on guard/supplied-tests` |
 | Calls tools with no end | `guard/turn-cap`: Blocks calls past a budget (default 200) and asks for a summary | dormant in the worker; unmeasured | `/remedy on guard/turn-cap` |
 | Rewrites a whole file to change a few lines | `guard/whole-file-rewrite`: Blocks `write` to an existing file and asks for `edit` | recorded once; dormant in the worker (its column never went non-zero) | `/remedy on guard/whole-file-rewrite` |
 
@@ -56,7 +57,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Runs a server in the foreground and waits forever | `tool/background-long-commands`: Reruns a long command in the background and returns its startup output | unit-tested; not measured on the suites | `/remedy on tool/background-long-commands` |
-| Starts a command that never exits, such as a foreground server, and hangs to the cutoff | `tool/bounded-commands`: Sets Pi's bash timeout (30 s, or MELLUM_BOUND_SECONDS) when the model gave none; caps a chosen one at 120 s | LC.41 overnight (n = 12): foreground stalls 10/12 to 1/12 on Easy; the 120 s cap, added for that one, is unit-tested only | `/remedy on tool/bounded-commands` |
+| Starts a command that never exits, such as a foreground server, and hangs to the cutoff | `tool/bounded-commands`: Sets Pi's bash timeout (30 s, or MELLUM_BOUND_SECONDS) when the model gave none or one that is not a positive number; caps a chosen or configured one at 120 s | LC.41 overnight (n = 12): foreground stalls 10/12 to 1/12 on Easy; the 120 s cap, added for that one, is unit-tested only | `/remedy on tool/bounded-commands` |
 | Loses track of a long task | `tool/keep-a-plan`: Keeps a TODO.md it writes, follows and amends | unit-tested; not measured on the suites | `/remedy on tool/keep-a-plan` |
 | Guesses an API it never saw | `tool/lookup-library-docs`: Adds a lookup over the installed packages' docs | unit-tested; not measured on the suites | `/remedy on tool/lookup-library-docs` |
 

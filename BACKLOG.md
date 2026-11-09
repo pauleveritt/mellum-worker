@@ -244,5 +244,11 @@ repairs. Its review found that `_post_forms` compares a form action exactly, so 
 rendering `http://testserver/...` fails on Medium and on Easy's `f7-roadmap` bundle, while the
 mediated tests accept it; and the board heading must equal `Complaints Board` exactly, so
 `<h1>Complaints Board <small>today</small></h1>` fails. Fix under a new grader identity.
-*Reopens when* R.2 grades Medium Phase 3 or 4, Easy's bundle is first used on Phase 3 or later, or a run
-misses one of these checks on a build that meets its roadmap.
+**2026-11-09, F.8:** the exact heading check is also in Easy's `f7-roadmap` Phase 2, so R.1a can meet it.
+*Reopens when* R.1a is about to start, R.2 grades Medium Phase 3 or 4, Easy's bundle is first used on
+Phase 3 or later, or a run misses one of these checks on a build that meets its roadmap.
+
+**Session cleanup has not run on Linux.** `stopSessionProcesses` finds what a session left running by
+reading process environments with `ps axeww`; F.8 kept it and its tests have run only on macOS, so the
+review's "exercise cleanup on Linux" is still open ([F.8 note](docs/superpowers/research/2026-11-09-f8-phase-boundary.md)).
+No Docker. *Reopens when* this branch is pushed and CI runs on `ubuntu-latest`, or a Linux pod is approved.

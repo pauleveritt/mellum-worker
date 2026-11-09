@@ -15,16 +15,22 @@ export const MAX_TIMEOUT_SECONDS = 120;
 
 export const meta: UnitMeta = {
 	pathology: "Starts a command that never exits, such as a foreground server, and hangs to the cutoff",
-	does: `Sets Pi's bash timeout (${DEFAULT_TIMEOUT_SECONDS} s, or MELLUM_BOUND_SECONDS) when the model gave none; caps a chosen one at ${MAX_TIMEOUT_SECONDS} s`,
+	does: `Sets Pi's bash timeout (${DEFAULT_TIMEOUT_SECONDS} s, or MELLUM_BOUND_SECONDS) when the model gave none or one that is not a positive number; caps a chosen or configured one at ${MAX_TIMEOUT_SECONDS} s`,
 	lesson: "",
 	evidence: "LC.41 overnight (n = 12): foreground stalls 10/12 to 1/12 on Easy; the 120 s cap, added for that one, is unit-tested only",
 };
 
-/** The bound for this run: `MELLUM_BOUND_SECONDS` when it is a positive number, else the default.
- * Every bounded call carries the value in its `tool_call` input, so a trace shows which ran. */
+/** A timeout Pi will enforce: a finite number above 0. Pi runs a call with anything else unbounded. */
+function enforceable(value: unknown): value is number {
+	return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/** The bound for this run: `MELLUM_BOUND_SECONDS` when it is a positive number, else the default,
+ * and never above the cap. Every bounded call carries the value in its `tool_call` input, so a
+ * trace shows which ran. */
 function boundSeconds(): number {
 	const value = Number(process.env.MELLUM_BOUND_SECONDS);
-	return Number.isFinite(value) && value > 0 ? value : DEFAULT_TIMEOUT_SECONDS;
+	return enforceable(value) ? Math.min(value, MAX_TIMEOUT_SECONDS) : DEFAULT_TIMEOUT_SECONDS;
 }
 
 export function install(pi: PiLike): void {
@@ -32,9 +38,9 @@ export function install(pi: PiLike): void {
 	pi.on("tool_call", (event) => {
 		if (event?.toolName !== "bash" || !event.input || typeof event.input !== "object") return undefined;
 		const chosen = event.input.timeout;
-		if (chosen === undefined || chosen === null) {
+		if (!enforceable(chosen)) {
 			event.input.timeout = seconds;   // Pi: "mutate event.input in place"
-		} else if (typeof chosen === "number" && chosen > MAX_TIMEOUT_SECONDS) {
+		} else if (chosen > MAX_TIMEOUT_SECONDS) {
 			event.input.timeout = MAX_TIMEOUT_SECONDS;
 		}
 		return undefined;

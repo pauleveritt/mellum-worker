@@ -68,6 +68,8 @@ class Suite:
     grader_base: Path | None = None
     # The session budget (budget.json): requests and output tokens, enforced at a proxy (F.5).
     budget: dict | None = None
+    # F.8: grade this phase and every earlier one only (phase_boundary.phase_scope); None is all.
+    phase: int | None = None
 
     @property
     def prompt(self) -> str:
@@ -408,17 +410,22 @@ def readable_tree(run: Path, extras: list[Path], extension: Path | None) -> tupl
     return root, [moved(path) for path in extras], moved(extension) if extension is not None else None
 
 
-def hand_over(files: list[Path], place: Path) -> list[Path]:
-    """Copies of the mediated tests a session user can read but not list: the directory is traverse-only."""
+def hand_over(files: list[Path], place: Path, owner: str | None = None) -> list[Path]:
+    """Private copies of the mediated tests for one session, which reads and then deletes them (F.8).
+
+    The directory and copies are the session user's (the owner) and nobody else's, so the unit can
+    remove them before the model's first turn and no path to the suite reaches the session."""
     place = Path(place)
     place.mkdir(exist_ok=True)
-    place.chmod(0o711)
+    place.chmod(0o700)
     copies = []
     for path in files:
         copy = place / Path(path).name
         shutil.copyfile(path, copy)
-        copy.chmod(0o644)
+        copy.chmod(0o600)
         copies.append(copy)
+    if owner is not None:
+        chown_tree(place, owner)
     return copies
 
 
@@ -797,6 +804,10 @@ def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str
 
 # A unit that hands a mediated test over: both halves, or either alone.
 MEDIATED_UNITS = {"mediated-test.ts", "mediated-test-show.ts", "mediated-test-settle.ts"}
+# F.8: the guard that keeps the supplied tests as supplied, told which they are by the harness.
+SUPPLIED_UNIT = "supplied-tests.ts"
+# F.8: units whose settle check writes a verdict the harness reads (MELLUM_GATE_LOG).
+SETTLE_UNITS = {"mediated-test.ts", "mediated-test-settle.ts"}
 
 
 def mediated_tests(suite: Suite, prompt_number: int | None) -> list[Path]:
@@ -907,7 +918,11 @@ def run_suite(
     context_files: bool = False,
     budget: dict | None = None,
     session_user: str | None = None,
+    phase: int | None = None,
+    seed: Path | None = None,
 ) -> Path:
+    if phase is not None and (single_prompt or specs is not None):
+        raise SystemExit("a phase run sends one phase's prompt; not with --single-prompt or --specs")
     taken = guarded_listeners(GUARDED_PORTS)
     if taken:
         named = ", ".join(f"port {row['port']} (pid {row['pid']}, {row['command']})" for row in taken)
@@ -926,6 +941,9 @@ def run_suite(
         shutil.copytree(suite.root / "base", workspace, dirs_exist_ok=True)
     if suite.start is not None:
         shutil.copytree(suite.start, workspace, dirs_exist_ok=True)
+    if seed is not None:
+        from phase_boundary import seed as seed_from
+        seed_from(seed, workspace)
     prompts = list(suite.prompts)
     if specs is not None:
         variant = load_variant(suite, specs)
@@ -948,6 +966,9 @@ def run_suite(
     pristine = file_hashes(workspace) if suite.layout is not None else None
     (run / 'brief.json').write_text(json.dumps({'variant': specs}) + '\n')
     prompts = (["\n\n".join(prompts)] if single_prompt else list(prompts))
+    if phase is not None:
+        from phase_boundary import phase_prompt
+        prompts = [phase_prompt(suite, phase)]
     (run / "prompt.txt").write_text("\n\n".join(prompts) + "\n")
     trace = run / "trace.jsonl"
     trace.touch()
@@ -959,14 +980,16 @@ def run_suite(
     (run / "model.txt").write_text(f"{provider}/{model}\n")
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
+    gate_log = run / "gate.jsonl" if any(Path(path).name in SETTLE_UNITS for path in extras) else None
+    if gate_log is not None:
+        gate_log.touch()
     handed_dir, source_env = None, os.environ
     if session_user is not None:
         # F.6: the run root stays root's; the session owns only what Pi writes, and loads a copy of the units.
         _, extras, worker = readable_tree(run, list(extras), settings["extension"])
         settings = {**settings, "extension": worker}
         recorder.chmod(0o644)
-        handed_dir = Path(tempfile.mkdtemp(prefix="mellum-handed-"))
-        for name in ("workspace", "profile", "sessions", "trace.jsonl"):
+        for name in ("workspace", "profile", "sessions", "trace.jsonl", *(["gate.jsonl"] if gate_log else [])):
             chown_tree(run / name, session_user)
         import pwd
         source_env = session_user_env(os.environ, home=pwd.getpwnam(session_user).pw_dir, user=session_user)
@@ -978,7 +1001,20 @@ def run_suite(
     # Without the harness venv on PATH; without VIRTUAL_ENV, else uv warns in the workspace venv.
     env["PATH"] = session_path(env.get("PATH", ""), env.pop("VIRTUAL_ENV", None))
     env.pop("MELLUM_MEDIATED_TEST", None)   # only this run's suite hands mediated tests over
+    env.pop("MELLUM_MEDIATED_HANDED", None)
+    env.pop("MELLUM_GATE_LOG", None)
+    if gate_log is not None:
+        env["MELLUM_GATE_LOG"] = str(gate_log)
+    env.pop("MELLUM_SUPPLIED_TESTS", None)   # only this run's suite names its supplied tests
+    supplied: dict[str, bytes] = {}
+    if any(Path(path).name == SUPPLIED_UNIT for path in extras):
+        from grading import _prepared_tests
+        supplied = _prepared_tests(suite, specs)
+        env["MELLUM_SUPPLIED_TESTS"] = os.pathsep.join(sorted(supplied))
     handed: list[list[str]] = []
+    if mediated:
+        # Outside the repository and the run, and deleted by the unit once read (F.8).
+        handed_dir = Path(tempfile.mkdtemp(prefix="mellum-handed-"))
     for key in ARM_ENV_KEYS:
         env.pop(key, None)
     env.update(settings["env"])
@@ -1026,16 +1062,36 @@ def run_suite(
                 (run / timeout_reason).write_text("hit\n")
                 termination_reason = timeout_reason
                 break
+            # A supplied test changed in an earlier prompt starts this one as supplied (F.8).
+            for rel, content in supplied.items():
+                target = workspace / rel
+                # Never through a link the session planted: on a pod this runs as root. A test left
+                # unrestored is still caught by the integrity check when the run is graded.
+                if any(parent.is_symlink() for parent in target.parents if parent.is_relative_to(workspace)) \
+                        or not target.parent.resolve().is_relative_to(workspace.resolve()):
+                    continue
+                if target.is_symlink() or target.is_dir():
+                    shutil.rmtree(target) if target.is_dir() and not target.is_symlink() else target.unlink()
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(content)
             # The spec-derived contract scopes itself to the phase this prompt names.
             env["ACCEPTANCE_PROMPT"] = prompt
             if mediated:
                 # Read from the suite, never the workspace: the unit freezes them when Pi loads it.
-                files = mediated_tests(suite, None if single_prompt else number)
-                paths = files if handed_dir is None else hand_over(files, handed_dir)
+                if phase is not None:
+                    from phase_boundary import phase_mediated
+                    files = phase_mediated(suite, phase)
+                else:
+                    files = mediated_tests(suite, None if single_prompt else number)
+                paths = hand_over(files, handed_dir, owner=session_user)
                 env["MELLUM_MEDIATED_TEST"] = os.pathsep.join(str(path) for path in paths)
+                env["MELLUM_MEDIATED_HANDED"] = "1"
                 handed.append([{"name": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
                                for path in files])
                 (run / "mediated.json").write_text(json.dumps(handed) + "\n")
+            if gate_log is not None:
+                from phase_boundary import gate_verdicts
+                seen = len(gate_verdicts(run))
             argv = pi_argv(
                 pi_binary, run / "profile", recorder, provider, model, prompt,
                 extension=settings["extension"],
@@ -1058,6 +1114,15 @@ def run_suite(
             termination_reason = ended or "exited"
             if ended:
                 break
+            if gate_log is not None and number < len(prompts):
+                # F.8: the next prompt builds on this one, so it starts only after a green settle check.
+                from phase_boundary import gate_verdicts
+                verdicts = gate_verdicts(run)[seen:]
+                last = verdicts[-1].get("status") if verdicts else None
+                if last != "green":
+                    (run / "unverified_exit").write_text(json.dumps({"prompt": number, "last": last}) + "\n")
+                    termination_reason = "unverified_exit"
+                    break
     finally:
         if proxy is not None:
             stop_budget_proxy(proxy)
@@ -1214,7 +1279,7 @@ def _execution(run: Path) -> dict:
 def execution_outcome(run: Path) -> dict:
     """How the session ended, apart from how good its artifact is.
 
-    A deadline or a stall is what ended it; otherwise a non-zero exit or a last reply
+    A deadline, a stall, a budget or an unverified exit between prompts (F.8) is what ended it; otherwise a non-zero exit or a last reply
     that errored is an error, and anything else settled. A leaked server is a separate
     fact (cleanup_ok, leaked): it does not turn a settled session into an error.
     """
@@ -1224,7 +1289,7 @@ def execution_outcome(run: Path) -> dict:
     replies = [row["message"] for row in rows if row.get("type") == "message_end"
                and (row.get("message") or {}).get("role") == "assistant"]
     reason = execution.get("termination_reason")
-    if reason in ("deadline", "stalled", "budget", "wall_safety"):
+    if reason in ("deadline", "stalled", "budget", "wall_safety", "unverified_exit"):
         completion = reason
     elif (reason != "exited" or execution.get("exit_code") != 0
           or (replies and replies[-1].get("stopReason") in ("error", "aborted"))):
@@ -1388,14 +1453,26 @@ def _run_sessions(
     host_card: dict | None = None,
     session_user: str | None = None,
     grade_user: str | None = None,
+    phase: int | None = None,
+    from_checkpoint: Path | None = None,
 ) -> list[tuple]:
     results = []
+    started_from = None
+    if from_checkpoint is not None:
+        if phase is None:
+            raise SystemExit("--from-checkpoint starts a phase run; give --phase")
+        import phase_boundary
+        manifest = phase_boundary.verify_checkpoint(from_checkpoint, suite, phase, grade_user)
+        started_from = {"path": str(from_checkpoint), "phase": manifest["phase"], "commit": manifest["commit"]}
+    # A phase's acceptance includes the lint gate, so a phase run is always graded (F.8).
+    grade_run = grade_run or phase is not None
     for _ in range(repeat):
         run_dir = run_suite(suite, runs_dir=runs_dir, pi_binary=pi_binary,
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
-                            context_files=context_files, budget=budget, session_user=session_user)
+                            context_files=context_files, budget=budget, session_user=session_user,
+                            phase=phase, seed=from_checkpoint)
         grades = grade(run_dir / "workspace", suite=suite) if grade_run else []
         from grading import evaluate
         evaluation = evaluate(run_dir / 'workspace', suite, variant=specs, grade_user=grade_user)
@@ -1454,6 +1531,20 @@ def _run_sessions(
                if key != "final_reply"},
             **execution_outcome(run_dir),
         }
+        if phase is not None:
+            import phase_boundary
+            mediated = phase_boundary.mediated_result(run_dir / "workspace", suite,
+                                                      phase_boundary.phase_mediated(suite, phase), grade_user)
+            record["boundary"] = phase_boundary.decide(
+                run_dir, suite, ending=record["completion"], evaluation=evaluation, quality_ok=quality_ok,
+                contaminated=contaminated, record_failures=over, mediated=mediated,
+                armed=any(Path(path).name in SETTLE_UNITS for path in extras))
+            record["from_checkpoint"] = started_from
+            record["checkpoint"] = None
+            if record["boundary"]["accepted"]:
+                manifest = phase_boundary.write_checkpoint(run_dir / "workspace", suite, record["boundary"],
+                                                           run_dir / "checkpoint")
+                record["checkpoint"] = {"path": str(run_dir / "checkpoint"), "commit": manifest["commit"]}
         (run_dir / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         results.append((run_dir, passed, tail, grades, metrics,
                         tests_passed, quality_ok, contaminated))
@@ -1622,6 +1713,20 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--context-files", action="store_true",
                      help="keep the workspace's own AGENTS.md (warm); off by default the run is "
                           "cold (--no-context-files strips it)")
+    run.add_argument("--phase", type=int, default=None, metavar="N",
+                     help="send only phase N's prompt and grade phases 1..N, with the mediated tests and "
+                          "lint; records the boundary verdict in run.json (F.8)")
+    run.add_argument("--from-checkpoint", type=Path, default=None, metavar="DIR",
+                     help="start phase N from a verified checkpoint of phase N-1 (needed for N > 1)")
+    checkpoint_p = sub.add_parser("checkpoint", help="accept a saved build for one phase and checkpoint it; no model")
+    checkpoint_p.add_argument("--workspace", type=Path, required=True)
+    checkpoint_p.add_argument("--suite", required=True)
+    checkpoint_p.add_argument("--suites-dir", type=Path, default=SUITES)
+    checkpoint_p.add_argument("--grader", default="current")
+    checkpoint_p.add_argument("--phase", type=int, required=True)
+    checkpoint_p.add_argument("--out", type=Path, required=True)
+    checkpoint_p.add_argument("--trace", type=Path, default=None,
+                              help="the build's trace.jsonl for the contamination check; default the one beside it")
     run.add_argument("--specs", metavar="VARIANT", default=None,
                      help="use one of the suite's spec variants (spec-variants/<name>): original, joined or split")
     return parser
@@ -1653,8 +1758,31 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{suite.name}: {'QUALIFIED' if ok else 'NOT QUALIFIED'}")
         return 0 if ok else 1
 
+    if args.command == "checkpoint":
+        import phase_boundary
+        suite = phase_boundary.phase_scope(select_grader(load_suite(Path(args.suites_dir).resolve(), args.suite),
+                                                         args.grader), args.phase)
+        workspace = Path(args.workspace).resolve()
+        trace = args.trace if args.trace is not None else workspace.parent / "trace.jsonl"
+        verdict = phase_boundary.accept_saved(workspace, suite, trace=trace if trace.is_file() else None)
+        for reason in verdict["reasons"]:
+            print(f"rejected: {reason}", file=sys.stderr)
+        if not verdict["accepted"]:
+            print(f"{suite.name} phase {args.phase}: NOT ACCEPTED")
+            return 1
+        manifest = phase_boundary.write_checkpoint(workspace, suite, verdict, Path(args.out).resolve())
+        print(f"{suite.name} phase {args.phase}: ACCEPTED, checkpoint {args.out} at {manifest['commit'][:12]} "
+              f"(contamination {verdict['contaminated']})")
+        return 0
+
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
+    if args.phase is not None and (args.single_prompt or args.specs or args.suite == "all"):
+        parser.error("--phase runs one phase of one suite; not with --single-prompt, --specs or --suite all")
+    if args.phase is not None and args.phase > 1 and args.from_checkpoint is None:
+        parser.error(f"--phase {args.phase} starts from phase {args.phase - 1}'s accepted work: give --from-checkpoint")
+    if args.from_checkpoint is not None and args.phase is None:
+        parser.error("--from-checkpoint needs --phase")
     if args.session_user is not None and (args.suite == "all" or os.geteuid() != 0):
         parser.error("--session-user needs one suite and a run as root")
     if args.grade_user is not None and os.geteuid() != 0:
@@ -1700,12 +1828,18 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     suite = select_grader(load_suite(args.suites_dir, args.suite), args.grader)
+    if args.phase is not None:
+        from phase_boundary import phase_scope
+        suite = phase_scope(suite, args.phase)
     provider, model = profile_pin(args.profile)
     if args.dry_run:
         settings = arm_settings(args.arm)
         if args.specs:
             variant = load_variant(suite, args.specs)
             prompt = _read_prompt(sorted((variant / "prompts").glob("*.md"))[0])
+        elif args.phase is not None:
+            from phase_boundary import phase_prompt
+            prompt = phase_prompt(suite, args.phase)
         else:
             prompt = suite.prompt
         print(shlex.join(pi_argv(args.pi_binary, args.profile, RECORDER, provider,
@@ -1722,6 +1856,7 @@ def main(argv: list[str] | None = None) -> int:
         profile=args.profile, stall=args.stall,
         remedies=remedies, extras=extras, context_files=args.context_files,
         budget=budget, host_card=gate, session_user=args.session_user, grade_user=args.grade_user,
+        phase=args.phase, from_checkpoint=Path(args.from_checkpoint).resolve() if args.from_checkpoint else None,
     )
     _print_task(suite, results, args.repeat)
     return 0

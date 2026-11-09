@@ -367,8 +367,30 @@ rate and per-attempt spending limit beside it.
 
 A requested roadmap phase whose current acceptance, prior-phase regression
 checks, supplied-test integrity and quality checks have passed under trusted
-verification. Its checkpoint can seed the next requested phase. This is the
-target workflow; a model's final message alone does not establish acceptance.
+verification. Its checkpoint can seed the next requested phase. A model's final
+message alone does not establish acceptance. Since F.8, `harness run --phase N`
+decides it: a strict pass on phases 1 to N plus every mediated test up to N, on
+whatever the session left, however it ended.
+
+### Gate verdict
+
+How one settle check of the mediated test ended: `green` (every test function in
+the frozen files passed), `red` (sent back with the failures), `exhausted` (still
+red once the send-backs were used) or `infrastructure` (the tooling gave no
+answer, even after one silent retry). Only `green` lets a multi-prompt run move
+on; the harness records the last one beside its own verdict but never trusts it.
+
+### Phase scope
+
+Grading a requested phase on its own checks and every earlier phase's, leaving
+later phases out, so an Easy Phase 1 build can be graded by the four-phase
+bundle. A scoped grader identity names its phase.
+
+### Verified checkpoint
+
+The accepted work of one phase, committed with the flow's git checkpointing and a
+manifest of files, grader and verdict. A later phase starts only from one whose
+files are unchanged and whose earlier phases still pass today's acceptance.
 
 ### Expected IDs
 

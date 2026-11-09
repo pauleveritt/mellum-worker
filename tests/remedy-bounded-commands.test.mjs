@@ -76,6 +76,27 @@ test("tool/bounded-commands takes its seconds from MELLUM_BOUND_SECONDS when set
 	assert.equal(event.input.timeout, 10);
 });
 
+test("tool/bounded-commands clamps a configured MELLUM_BOUND_SECONDS to the cap", async () => {
+	// F.8: MELLUM_BOUND_SECONDS=300 installed 300 when the model set none, past the 120 s cap.
+	const unit = await import("../remedies/tool/bounded-commands.ts");
+	const pi = fakePi();
+	process.env.MELLUM_BOUND_SECONDS = "300";
+	try { unit.default(pi); } finally { delete process.env.MELLUM_BOUND_SECONDS; }
+	const event = { toolName: "bash", input: { command: "python app.py" } };
+	pi.fire("tool_call", event);
+	assert.equal(event.input.timeout, unit.MAX_TIMEOUT_SECONDS);
+});
+
+test("tool/bounded-commands gives the bound to a chosen timeout that is not a positive number", async () => {
+	// Pi runs a bash call with no timeout at all unless the timeout is above 0.
+	const { unit, pi } = await installed();
+	for (const bad of [0, -1, Number.NaN, Number.POSITIVE_INFINITY, "600", "soon", true]) {
+		const event = { toolName: "bash", input: { command: "uvicorn app:app", timeout: bad } };
+		pi.fire("tool_call", event);
+		assert.equal(event.input.timeout, unit.DEFAULT_TIMEOUT_SECONDS, String(bad));
+	}
+});
+
 test("tool/bounded-commands ignores a MELLUM_BOUND_SECONDS that is not a positive number", async () => {
 	const unit = await import("../remedies/tool/bounded-commands.ts");
 	for (const bad of ["0", "-5", "soon", ""]) {

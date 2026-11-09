@@ -1842,14 +1842,32 @@ def test_each_prompt_gets_its_mediated_tests_from_outside_the_workspace(tmp_path
     run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
                                 pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])
     first, second = (run_dir / "workspace" / "mediated.txt").read_text().splitlines()
-    mediated = suite.root / "mediated"
-    assert first.split(os.pathsep) == [str(mediated / "test_01_one.py")]
-    assert second.split(os.pathsep) == [str(mediated / "test_01_one.py"), str(mediated / "test_02_two.py")]
+    assert [Path(p).name for p in first.split(os.pathsep)] == ["test_01_one.py"]
+    assert [Path(p).name for p in second.split(os.pathsep)] == ["test_01_one.py", "test_02_two.py"]
     assert not (run_dir / "workspace" / "mediated").exists()
     digest = hashlib.sha256(b"def test_it():\n    pass\n").hexdigest()
     assert json.loads((run_dir / "mediated.json").read_text()) == [
         [{"name": "test_01_one.py", "sha256": digest}],
         [{"name": "test_01_one.py", "sha256": digest}, {"name": "test_02_two.py", "sha256": digest}]]
+
+
+def test_a_local_run_hands_over_copies_and_exports_no_suite_path(tmp_path):
+    """F.8: the session's environment named the suite's own files, so a command could read them."""
+    suite = _mediated_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])
+    lines = (run_dir / "workspace" / "mediated.txt").read_text().splitlines()
+    assert all(str(suite.root) not in line and str(run_dir) not in line for line in lines)
+    assert (run_dir / "workspace" / "handed.txt").read_text().splitlines() == ["1", "1"]
+
+
+def test_no_handed_copy_survives_a_run(tmp_path):
+    suite = _mediated_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])
+    for line in (run_dir / "workspace" / "mediated.txt").read_text().splitlines():
+        for path in line.split(os.pathsep):
+            assert not Path(path).exists() and not Path(path).parent.exists(), path
 
 
 @pytest.mark.parametrize("unit", ["mediated-test-show.ts", "mediated-test-settle.ts"])
@@ -1872,6 +1890,54 @@ def test_the_unit_needs_the_suites_mediated_tests(tmp_path):
     with pytest.raises(SystemExit, match="mediated"):
         harness.run_suite(harness.load_suite(SUITES, "steps"), runs_dir=tmp_path / "runs", profile=PROFILE,
                           pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])
+
+
+# F.8: supplied tests are named to their guard and restored before each prompt.
+
+SUPPLIED_UNIT = harness.REMEDIES / "guard" / "supplied-tests.ts"
+
+
+def _supplied_suite(tmp_path):
+    root = tmp_path / "suites" / "steps"
+    shutil.copytree(SUITES / "steps", root)
+    (root / "base" / "tests").mkdir(parents=True, exist_ok=True)
+    (root / "base" / "tests" / "test_home.py").write_text("def test_home():\n    assert ORIGINAL\n")
+    return harness.load_suite(tmp_path / "suites", "steps")
+
+
+def test_the_supplied_tests_guard_is_told_which_tests_were_supplied(tmp_path):
+    suite = _supplied_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-supplied.sh"), extras=[SUPPLIED_UNIT])
+    lines = (run_dir / "workspace" / "supplied.txt").read_text().splitlines()
+    assert lines and all(line == "tests/test_home.py" for line in lines)
+
+
+def test_supplied_tests_are_restored_before_each_prompt(tmp_path):
+    suite = _supplied_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-supplied.sh"), extras=[SUPPLIED_UNIT])
+    assert (run_dir / "workspace" / "seen.txt").read_text().count("assert ORIGINAL") == len(suite.prompts) == 2
+
+
+def test_without_the_guard_no_supplied_list_is_exported(tmp_path, monkeypatch):
+    monkeypatch.setenv("MELLUM_SUPPLIED_TESTS", "tests/leaked.py")
+    suite = _supplied_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-supplied.sh"))
+    assert set((run_dir / "workspace" / "supplied.txt").read_text().splitlines()) == {"unset"}
+
+
+def test_restoring_supplied_tests_never_writes_through_a_symlink_the_session_planted(tmp_path, monkeypatch):
+    """On a pod the restore runs as root: a tests/ symlink must not steer root's write elsewhere."""
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    monkeypatch.setenv("FAKE_OUTSIDE", str(outside))
+    suite = _supplied_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+                                pi_binary=str(FIX / "fake-pi-symlink-tests.sh"), extras=[SUPPLIED_UNIT])
+    assert len((run_dir / "workspace" / "prompts.txt").read_text().splitlines()) == 2
+    assert list(outside.iterdir()) == []
 
 
 # F.6: on a pod a session runs as an unprivileged user, so the checkout (and the hidden grader) stay root's.
@@ -1921,14 +1987,18 @@ def test_a_session_users_tree_refuses_a_unit_from_elsewhere(tmp_path):
         harness.readable_tree(tmp_path, [outside], None)
 
 
-def test_handed_tests_are_copied_where_a_session_user_can_read_but_not_list(tmp_path):
+def test_handed_tests_are_private_to_the_session_that_consumes_them(tmp_path):
+    """F.8: the unit deletes what it was handed, so the directory belongs to the session's user."""
+    import pwd
     source = tmp_path / "test_01_one.py"; source.write_text("x = 1\n")
-    source.chmod(0o600)
+    source.chmod(0o644)
     place = tmp_path / "handed"
-    copied = harness.hand_over([source], place)
+    me = pwd.getpwuid(os.getuid()).pw_name
+    copied = harness.hand_over([source], place, owner=me)
     assert copied == [place / "test_01_one.py"] and copied[0].read_text() == "x = 1\n"
-    assert copied[0].stat().st_mode & 0o777 == 0o644
-    assert place.stat().st_mode & 0o777 == 0o711
+    assert copied[0].stat().st_mode & 0o777 == 0o600
+    assert place.stat().st_mode & 0o777 == 0o700
+    assert place.stat().st_uid == os.getuid() and copied[0].stat().st_uid == os.getuid()
 
 
 def test_the_user_sweep_ends_what_the_user_left(tmp_path, monkeypatch):

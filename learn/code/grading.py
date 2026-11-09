@@ -25,6 +25,14 @@ def grade_env(workspace=None):
                 'PYTHONUTF8': '1', 'PYTEST_DISABLE_PLUGIN_AUTOLOAD': '1'}
 
 
+def _grader_ignore(phase):
+    """Caches, and with a phase scope (F.8) every later phase's module: a later phase's checks can
+    import code an earlier phase does not have."""
+    from phase_boundary import in_scope
+    caches = shutil.ignore_patterns('__pycache__', '*.pyc')
+    return lambda folder, names: set(caches(folder, names)) | {name for name in names if not in_scope(name, phase)}
+
+
 def _base(suite):
     return suite.grader_base or (suite.root / 'base' if suite.root else None)
 
@@ -176,7 +184,7 @@ def _project(workspace, suite, root, command, env, trusted, variant, run=_run):
     return result, inventory_log + '\n' + output
 
 
-def evaluate(workspace, suite, *, variant=None, grade_user=None) -> dict:
+def evaluate(workspace, suite, *, variant=None, grade_user=None, include_project=True) -> dict:
     workspace = Path(workspace).resolve()
     base = _base(suite)
     with tempfile.TemporaryDirectory(prefix='mellum-grade-') as scratch:
@@ -184,7 +192,7 @@ def evaluate(workspace, suite, *, variant=None, grade_user=None) -> dict:
         trusted = root / 'trusted'
         trusted.mkdir()
         (trusted / 'pytest.ini').write_text('[pytest]\n')
-        shutil.copytree(suite.tests, trusted / 'grader_tests', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+        shutil.copytree(suite.tests, trusted / 'grader_tests', ignore=_grader_ignore(getattr(suite, 'phase', None)))
         command, env = _command(trusted, base)
         run = partial(_run, user=grade_user)
         if grade_user:
@@ -210,8 +218,12 @@ def evaluate(workspace, suite, *, variant=None, grade_user=None) -> dict:
                 shutil.rmtree(app)
         missing = sorted(set(suite.expected) - passed)
         hidden_ok = bool(hidden_ok and not missing)
-        project, log = _project(workspace, suite, root, command, env, trusted, variant, run)
-        output += '\n' + log
+        if include_project:
+            project, log = _project(workspace, suite, root, command, env, trusted, variant, run)
+            output += '\n' + log
+        else:
+            # Acceptance checks alone (F.8's mediated replay): the project's tests are graded once, elsewhere.
+            project = {'passed': True, 'integrity_ok': True, 'integrity_violations': []}
         lines = output.strip().splitlines()[-20:]
         if missing:
             lines.append('missing expected tests: ' + ', '.join(missing))

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 
@@ -30,8 +30,39 @@ function acceptanceFiles() {
 	return { dir, one, two, env: `${one}${delimiter}${two}` };
 }
 
-// The pytest stand-in prints the files it was handed (a directory) and where it ran, then fails.
-const RED = "sh -c 'pwd; ls \"$1\"; cat \"$1\"/*.py; echo FAILED x.py::test_board - nope; exit 1' sh";
+/** A pytest stand-in (a VERIFY_PYTEST command) speaking the gate's report protocol. By default it
+ * fails test_board with a message naming where it ran and every test file it was handed. With
+ * `greenWhen`, it passes every test once that file exists in the project. `count` gets a line per call;
+ * `infraFirst` answers with no report on that many calls first; `say` is printed like server output. */
+function standIn({ greenWhen, count, infraFirst = 0, say = "", message } = {}) {
+	const dir = mkdtempSync(join(tmpdir(), "mediated-standin-"));
+	const script = join(dir, "pytest.mjs");
+	writeFileSync(script, `
+import { appendFileSync, existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+const dir = process.argv[2];
+const counter = ${JSON.stringify(count ?? null)};
+let calls = 0;
+if (counter) { appendFileSync(counter, "x\\n"); calls = readFileSync(counter, "utf8").split("\\n").filter(Boolean).length; }
+process.stdout.write(${JSON.stringify(say)});
+if (calls && calls <= ${infraFirst}) process.exit(0);
+const emit = (line) => appendFileSync(process.env.MELLUM_GATE_REPORT, JSON.stringify(line) + "\\n");
+const tests = readdirSync(dir).filter((n) => /^test_.*\\.py$/.test(n));
+const green = ${JSON.stringify(greenWhen ?? null)} && existsSync(join(process.cwd(), ${JSON.stringify(greenWhen ?? "")}));
+if (green) {
+	for (const n of tests) for (const m of readFileSync(join(dir, n), "utf8").matchAll(/def (test\\w*)/g)) emit({ event: "outcome", test: n + "::" + m[1], when: "call", outcome: "passed" });
+	emit({ event: "finished", exit: 0 });
+	process.exit(0);
+}
+const seen = tests.map((n) => n + ": " + readFileSync(join(dir, n), "utf8")).join(" | ");
+emit({ event: "outcome", test: dir + "/test_02_board.py::test_board", when: "call", outcome: "failed", message: String(${JSON.stringify(message ?? null)} ?? ("AssertionError: cwd=" + process.cwd() + " saw " + seen)).replaceAll("MEDIATED_DIR", dir) });
+emit({ event: "finished", exit: 1 });
+process.exit(1);
+`);
+	return `"${process.execPath}" ${script}`;
+}
+
+const RED = standIn();
 
 test("check/mediated-test installs nothing when no acceptance test is named", async () => {
 	const unit = await import("../remedies/check/mediated-test.ts");
@@ -83,7 +114,7 @@ test("check/mediated-test lets a green project settle", async () => {
 	const unit = await import("../remedies/check/mediated-test.ts");
 	const files = acceptanceFiles();
 	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
-	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: "sh -c 'echo 2 passed; exit 0' sh" }, async () => {
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: standIn({ greenWhen: "." }) }, async () => {
 		const pi = fakePi();
 		unit.default(pi);
 		assert.equal(pi.handlers.agent_before_settle[0]({}, { cwd }), undefined);
@@ -158,8 +189,8 @@ test("check/mediated-test-settle reads the test when it loads, so later edits ch
 	});
 });
 
-// Prints the copy's location the way pytest does: absolute, relative to the project, and on a FAILED line.
-const RED_WITH_PATHS = "sh -c 'mkdir \"$1/__pycache__\"; echo \"$1/test_01_home.py:3: in test_board\"; echo \"../../..$1/test_01_home.py:3: AssertionError\"; echo \"FAILED ../..$1/test_01_home.py::test_board - nope\"; exit 1' sh";
+// Names the copy's location the way pytest does: absolute, relative to the project, and in a node id.
+const RED_WITH_PATHS = standIn({ message: "AssertionError at MEDIATED_DIR/test_01_home.py:3 and ../../..MEDIATED_DIR/test_01_home.py:3" });
 
 function alive(pid) {
 	try { process.kill(pid, 0); return true; } catch { return false; }
@@ -195,7 +226,7 @@ test("check/mediated-test-settle never tells the model where the copy is, and sa
 	});
 });
 
-for (const [label, pytest] of [["red", RED_WITH_PATHS], ["green", "sh -c 'mkdir \"$1/__pycache__\"; exit 0' sh"]]) {
+for (const [label, pytest] of [["red", RED_WITH_PATHS], ["green", standIn({ greenWhen: "." })]]) {
 	test(`check/mediated-test-settle leaves no copy behind after a ${label} run`, async () => {
 		const unit = await import("../remedies/check/mediated-test-settle.ts");
 		const files = acceptanceFiles();
@@ -256,3 +287,174 @@ for (const name of ["mediated-test-show", "mediated-test-settle"]) {
 		for (const key of ["pathology", "does", "evidence"]) assert.ok(unit.meta[key].length > 0, key);
 	});
 }
+
+// --- F.8: explicit verdicts at settle -----------------------------------------------------------
+
+function gateLog() {
+	const path = join(mkdtempSync(join(tmpdir(), "mediated-log-")), "gate.jsonl");
+	return { path, read: () => (existsSync(path) ? readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : []) };
+}
+
+test("check/mediated-test still checks the last repair after the cap, and it can be green", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	const log = gateLog();
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: standIn({ greenWhen: "fixed" }), MELLUM_MEDIATED_MAX: "1", MELLUM_GATE_LOG: log.path }, async () => {
+		const pi = fakePi();
+		unit.default(pi);
+		const settle = pi.handlers.agent_before_settle[0];
+		assert.equal(settle({}, { cwd })?.continue, true);
+		writeFileSync(join(cwd, "fixed"), "");
+		assert.equal(settle({}, { cwd }), undefined);
+		assert.deepEqual(log.read().map((r) => r.status), ["red", "green"]);
+	});
+});
+
+test("check/mediated-test records exhausted when the check is still red at the cap", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	const log = gateLog();
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: RED, MELLUM_MEDIATED_MAX: "1", MELLUM_GATE_LOG: log.path }, async () => {
+		const pi = fakePi();
+		unit.default(pi);
+		const settle = pi.handlers.agent_before_settle[0];
+		assert.equal(settle({}, { cwd })?.continue, true);
+		assert.equal(settle({}, { cwd }), undefined);
+		const records = log.read();
+		assert.deepEqual(records.map((r) => r.status), ["red", "exhausted"]);
+		assert.deepEqual(records[1].failures, ["test_board"]);
+	});
+});
+
+test("check/mediated-test retries an infrastructure failure once, silently, without spending a send-back", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	const log = gateLog();
+	const count = join(mkdtempSync(join(tmpdir(), "mediated-count-")), "calls");
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: standIn({ count, infraFirst: 2 }), MELLUM_MEDIATED_MAX: "1", MELLUM_GATE_LOG: log.path }, async () => {
+		const pi = fakePi();
+		unit.default(pi);
+		const settle = pi.handlers.agent_before_settle[0];
+		assert.equal(settle({}, { cwd }), undefined, "never sent to the model");
+		assert.equal(readFileSync(count, "utf8").split("\n").filter(Boolean).length, 2, "one retry");
+		assert.equal(settle({}, { cwd })?.continue, true, "the send-back was not spent");
+		assert.deepEqual(log.read().map((r) => r.status), ["infrastructure", "red"]);
+	});
+});
+
+test("check/mediated-test records infrastructure when the check cannot even be prepared", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	const log = gateLog();
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: RED, MELLUM_GATE_LOG: log.path }, async () => {
+		const pi = fakePi();
+		unit.default(pi);
+		await withEnv({ TMPDIR: join(tmpdir(), "no-such-dir-for-mediated") }, async () => {
+			assert.equal(pi.handlers.agent_before_settle[0]({}, { cwd }), undefined);
+		});
+		assert.deepEqual(log.read().map((r) => r.status), ["infrastructure"]);
+	});
+});
+
+test("check/mediated-test takes the gate log path out of the environment", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const log = gateLog();
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, MELLUM_GATE_LOG: log.path }, async () => {
+		unit.default(fakePi());
+		assert.equal(process.env.MELLUM_GATE_LOG, undefined);
+	});
+});
+
+test("check/mediated-test feedback keeps assertions and drops captured server output", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	const say = "INFO:     Uvicorn running on http://127.0.0.1:8000\n".repeat(50);
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, VERIFY_PYTEST: standIn({ say, message: "AssertionError: expected the Open badge" }) }, async () => {
+		const pi = fakePi();
+		unit.default(pi);
+		const text = pi.handlers.agent_before_settle[0]({}, { cwd }).entries[0].content;
+		assert.match(text, /expected the Open badge/);
+		assert.doesNotMatch(text, /Uvicorn/);
+	});
+});
+
+test("mediated feedback names every failure, caps each message and the whole", async () => {
+	const { feedback } = await import("../remedies/mediated-test.ts");
+	const failures = Array.from({ length: 10 }, (_, i) => ({ test: `test_${i}`, message: `AssertionError ${i} ` + "x".repeat(1000) }));
+	const text = feedback({ status: "red", failures, missing: [], detail: "", execution: "frozen" }, "/tmp/mediated-abc123", 0);
+	for (let i = 0; i < 10; i++) assert.match(text, new RegExp(`test_${i}\\b`));
+	assert.ok(text.length < 2400, `${text.length} characters`);
+	assert.doesNotMatch(text, /x{401}/);
+});
+
+test("mediated feedback for a hang says it was stopped, after how long, and what was running", async () => {
+	const { feedback } = await import("../remedies/mediated-test.ts");
+	const text = feedback({ status: "red", failures: [], missing: [], detail: "timed out", timedOutSeconds: 150, running: "test_board", execution: "frozen" }, "/tmp/mediated-abc123", 0);
+	assert.match(text, /stopped after 150 s/);
+	assert.match(text, /test_board/);
+});
+
+// --- F.8: the handover leaves nothing behind ------------------------------------------------------
+
+const CACHE = Symbol.for("mellum.mediated");
+
+test("check/mediated-test removes handed tests and their path before any tool runs", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	try {
+		await withEnv({ MELLUM_MEDIATED_TEST: files.env, MELLUM_MEDIATED_HANDED: "1", VERIFY_PYTEST: RED }, async () => {
+			const pi = fakePi();
+			unit.default(pi);
+			assert.equal(existsSync(files.one) || existsSync(files.two), false, "the copies are gone");
+			assert.equal(existsSync(files.dir), false, "so is their directory");
+			assert.equal(process.env.MELLUM_MEDIATED_TEST, undefined);
+			assert.equal(process.env.MELLUM_MEDIATED_HANDED, undefined);
+			const text = pi.handlers.agent_before_settle[0]({}, { cwd }).entries[0].content;
+			assert.match(text, /ORIGINAL_ONE/, "the gate still runs what was handed");
+		});
+	} finally {
+		delete globalThis[CACHE];
+	}
+});
+
+test("check/mediated-test never deletes a test the user named themselves", async () => {
+	const unit = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	await withEnv({ MELLUM_MEDIATED_TEST: files.env, MELLUM_MEDIATED_HANDED: undefined }, async () => {
+		unit.default(fakePi());
+		assert.ok(existsSync(files.one) && existsSync(files.two));
+		assert.equal(process.env.MELLUM_MEDIATED_TEST, files.env);
+	});
+});
+
+test("check/mediated-test-show and -settle loaded as two units both get the handed tests", async () => {
+	const show = await import("../remedies/check/mediated-test-show.ts");
+	const settle = await import("../remedies/check/mediated-test-settle.ts");
+	const files = acceptanceFiles();
+	const cwd = mkdtempSync(join(tmpdir(), "mediated-ws-"));
+	try {
+		await withEnv({ MELLUM_MEDIATED_TEST: files.env, MELLUM_MEDIATED_HANDED: "1", VERIFY_PYTEST: RED }, async () => {
+			const pi = fakePi();
+			show.default(pi);
+			settle.default(pi);
+			assert.match(pi.handlers.before_agent_start[0]({ messageType: "user" }).message.content, /ORIGINAL_TWO/);
+			assert.match(pi.handlers.agent_before_settle[0]({}, { cwd }).entries[0].content, /ORIGINAL_TWO/);
+		});
+	} finally {
+		delete globalThis[CACHE];
+	}
+});
+
+test("mediated feedback for a collection error keeps its final error line", async () => {
+	const { feedback } = await import("../remedies/mediated-test.ts");
+	const message = "ImportError while importing test module.\nTraceback:\n" + "  File \"app.py\", line 3, in <module>\n".repeat(30) + "E   ModuleNotFoundError: No module named 'models'";
+	const text = feedback({ status: "red", failures: [{ test: "collection", message }], missing: [], detail: "", execution: "frozen" }, "/tmp/mediated-abc123", 0);
+	assert.match(text, /No module named 'models'/);
+});

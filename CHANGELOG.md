@@ -5,6 +5,9 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- **Accepted phases become verified checkpoints, and the next phase starts only from one.** An accepted `--phase` run writes `checkpoint/` (the build with the suite's own project config, committed with the flow's git checkpointing, and a manifest of files, grader and verdict). `--from-checkpoint` refuses, before any session, a checkpoint of another suite or phase, one whose files changed, or one today's acceptance of the earlier phases rejects; phase 2 and later need one. `harness checkpoint --workspace DIR --suite S --phase N --out DIR` makes one from a saved build with no model, recording contamination as `not_checked` when no trace sits beside it.
+- **`harness run --phase N` runs one phase and records whether it was accepted.** It sends only phase N's prompt (Easy's Phases 2 to 4 come from `phase-prompts/`), grades phases 1 to N with lint and the mediated tests through the trusted path on whatever the session left, however it ended, and writes a `boundary` block to `run.json`. Accepted needs a strict pass and every mediated test; the in-session gate's last verdict is recorded beside it, and an exit message or a used-up send-back cap never accepts anything by itself.
+- **`guard/supplied-tests` keeps the tests a request supplied as supplied.** It refuses `write` and `edit` on them and, after every tool, restores any that a command changed, deleted, moved or replaced, telling the model to put its own tests in a new file. The harness names the supplied tests and restores them before each prompt. It is an explicit unit in no preset: the Easy count found every hidden-full but non-strict Base session had changed the supplied test, but the unit's effect is unmeasured.
 - `--grader 658bbea5` selects Medium's checks as they were before the F.7 corrections, so the recorded Medium screen stays reproducible beside corrected grades; two model-written builds from that screen are kept as regression fixtures.
 - Definitions of strict passes, cost per strict pass and accepted phases, so completion and the cost of failed attempts remain explicit when planning a phase-at-a-time worker.
 - Screens of the settle fixes on Easy, with and without a send-back limit of 2, and of Vanilla against Base on Medium, with their records and note. The fixes close the path leak and kept the pass rate; they did not show a saving at n = 6, and Medium finished nothing in either arm.
@@ -29,6 +32,8 @@ Versions match git tags; pin one in both install lines.
   tried on Medium; the batch runner was fixed to Easy.
 
 ### Changed
+- **A run with a settle check no longer moves to the next prompt on an unverified exit.** When the settle check's last verdict for a prompt is anything but green (exhausted, infrastructure, or none at all), the run stops there and reports `unverified_exit` as its completion, because the next phase would build on unverified work. Runs without a settle check are unchanged.
+- **The mediated test's settle check gives an explicit verdict and only goes green on proof.** Each check ends `green`, `red`, `exhausted` (still red once the send-backs are used) or `infrastructure` (our tooling gave no answer after one silent retry, which never reaches the model), written to `MELLUM_GATE_LOG` for the harness. Green needs a pass for every test function in the frozen files, from dependencies frozen when the session began; exit 0 alone, a skip or a project's own pytest no longer counts. The last repair after the cap is now checked too, and the model is sent each failing assertion rather than the tail of a log full of server output.
 - **The mediated tests now reject what the hidden grader rejects on the qualification matrix.** Across 33 broken Medium builds, two of them kept from real runs, and six Easy ones, a mediated test could pass a redirect home, a hidden navbar, scattered date numbers or a disabled control. Each is fixed from the written requirement, and the Easy Phase 2 to 4 checks no longer over-reach on a template name, a card around the add form or an extra badge; `learn/code/qualify_matrix.py` records the result, beside Andre's tests on the same builds.
 - **Easy has a selectable four-phase acceptance bundle.** `--grader f7-roadmap` adds hidden and mediated checks for Easy's Phases 2 to 4, written from its own roadmap (including the exact badge, UTC timestamps and one Bootstrap card per complaint). The default Easy grade stays at its 13 Phase 1 checks.
 - **Medium checks that ids share one allocator.** A new hidden check and mediated test interleave direct construction and route creation, so a build whose two paths each count upward but apart no longer passes. Medium now has 19 hidden checks; `--grader 658bbea5` keeps the original 18.
@@ -448,6 +453,10 @@ Versions match git tags; pin one in both install lines.
   Apple-Silicon path still uses.
 
 ### Fixed
+
+- **A session can no longer find the acceptance tests it was handed.** Every run now hands over private copies outside the repository, and the mediated-test unit deletes them and takes their path out of the shell environment as soon as it has read them, before the model's first turn. Local runs used to export the suite's own file paths to every command.
+
+- **`tool/bounded-commands` holds its 120-second cap under any configuration.** `MELLUM_BOUND_SECONDS=300` used to install 300 seconds when the model gave no timeout, and a chosen timeout of 0, a negative number or a string left the command unbounded; both now get the bound.
 
 - **Two red settle checks both reach the model.** Pi keeps only the entries the last settle
   handler returns, so with two gates loaded (say the quality check and the empty-turn nudge) the
