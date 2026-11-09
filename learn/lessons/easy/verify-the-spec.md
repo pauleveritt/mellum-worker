@@ -12,8 +12,8 @@ backends: [llamacpp]
 
 # E3 · Verify the Whole Spec
 
-A model declares itself done and quietly leaves a requirement behind. The fix is
-not a better test — it is telling the model to account for every requirement, and
+A model declares itself done and quietly leaves a requirement behind. The fix
+isn't a better test — it's telling the model to account for every requirement, and
 to run the tests, before it finishes.
 
 !!! abstract "Overview"
@@ -35,11 +35,11 @@ to run the tests, before it finishes.
 
 **Badge:** `screen`
 
-The model builds the home page, the tagline is there, the page returns 200 — and
-the navbar links the spec asked for are missing. Not a faked check and not the
-wrong place: a *dropped requirement*. The model verified the one thing it thought
-to test and finished on the rest. A requirement it never implemented is a
-requirement it never tested, so its own green run says nothing about it.
+The model builds the home page, the tagline's there, the page returns 200 — and
+the navbar links the spec asked for are gone. Not a faked check and not the wrong
+place: a *dropped requirement*. The model verified the one thing it thought to
+test and finished on the rest. A requirement it never implemented is a requirement
+it never tested, so its own green run says nothing about it.
 
 ## Eval case
 
@@ -48,29 +48,29 @@ requirement it never tested, so its own green run says nothing about it.
 **The condition:** Easy Phase 1, the home page with its required navbar links.
 **Before:** `prompt/name-the-layout` + `prompt/python-developer` +
 `guard/foreground-server`. **After:** the same plus one unit,
-`prompt/verify-the-spec`. The grader is the Easy suite's hidden tests, which
-check each requirement the spec names.
+`prompt/verify-the-spec`. The grader is the Easy suite's hidden tests, which check
+each requirement the spec names.
 
 ## Evidence of the problem
 
 **Badge:** `screen`
 
 At n=6 the three-unit stack read 5 of 6. The one loss, rep `c05e80`, passed the
-tagline check and failed `test_home_still_has_navigation_links` — one check,
-Phase 1. No guard fired, nothing landed outside the layout. The model built a
-working route and simply left out a piece the spec named, then declared done.
-Reading files is not verification; starting a server is not verification; the
-model did one of those and called it checked.
+tagline check and failed `test_home_still_has_navigation_links` — one check, Phase
+1. No guard fired, nothing landed outside the layout. The model built a working
+route and simply left out a piece the spec named, then declared done. Reading
+files isn't verification; starting a server isn't verification; the model did one
+of those and called it checked.
 
 ## Solution
 
 **Badge:** `screen`
 
-One remedy unit, `prompt/verify-the-spec`, appends a line to every turn that
-names the act the role in E2 only gestured at: account for every requirement, and
-run the project's own tests, before finishing. It names no requirement, route or
-value; the model reads them from the spec. It catches the dropped requirement by
-making the model clear the whole list, not only the test it chose to write.
+One remedy unit, `prompt/verify-the-spec`, appends a line to every turn that names
+the act the role in E2 only gestured at: account for every requirement, and run the
+project's own tests, before finishing. It names no requirement, route or value;
+the model reads them from the spec. It catches the dropped requirement by making
+the model clear the whole list, not just the test it chose to write.
 
 ### The code
 
@@ -80,8 +80,8 @@ In a live Pi session you switch it on alongside the earlier units:
 /remedy on prompt/verify-the-spec
 ```
 
-The line and the hook that appends it to each turn, quoted from the file frozen
-at a commit
+The line and the hook that appends it to each turn, quoted from the file frozen at
+a commit
 ([`remedies/prompt/verify-the-spec.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/remedies/prompt/verify-the-spec.ts#L8-L35)):
 
 ```ts
@@ -101,7 +101,7 @@ pi.on("before_provider_request", (event) => {
 });
 ```
 
-It is the same append mechanism as E1 — a `before_provider_request` hook on each
+It's the same append mechanism as E1 — a `before_provider_request` hook on each
 user message — carrying a different instruction. Stack the three prompt units and
 the guard with the course preset: `--remedy preset:easy`.
 
@@ -114,22 +114,22 @@ failed checks
 **Badge:** `reference-run`
 
 Adding the line took the stack from **5/6 to 6/6** at n=6, every rep green with 0
-failed checks, median 25 turns — a touch more deliberate than before, which is
-the verification step doing its work. The result replicated: a second n=6 run of
-the same stack with an enforcement gate stacked on top also passed its prompt
-share, and the gate fired 0 times because the prompts already met its contract
+failed checks, median 25 turns — a touch more deliberate than before, which is the
+verification step doing its work. The result replicated: a second n=6 run of the
+same stack with an enforcement gate stacked on top also passed its prompt share,
+and the gate fired 0 times because the prompts already met its contract
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 n=6 at 6/6 is a strong, replicated lead, not a one-host certainty.
 
 ## Interpretation
 
-The weakest badge is `screen`. The reliability lever on Easy is verification —
-run the real route or test before finishing, and account for every requirement
-the spec names. The code is a single appended line; that it closes the dropped
-requirement on this tier, where enforcement does not, is the lesson. The deeper
-rule carries to any tier — a model's own "done" is a claim, not a check, and the
-spec is the list it has to clear in full. On a harder tier the same claim needs a
-gate behind it, which the Hard lessons build.
+The weakest badge is `screen`. The reliability lever on Easy is verification — run
+the real route or test before finishing, and account for every requirement the
+spec names. The code is a single appended line; that it closes the dropped
+requirement on this tier, where enforcement doesn't, is the lesson. The deeper rule
+carries to any tier — a model's own "done" is a claim, not a check, and the spec is
+the list it has to clear in full. On a harder tier the same claim needs a gate
+behind it, which the Hard lessons build.
 
 ### Run it yourself
 

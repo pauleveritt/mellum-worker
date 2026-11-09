@@ -34,11 +34,11 @@ role — a meticulous developer working to a spec — steadies the hand.
 
 **Badge:** `screen`
 
-With the layout named, the model builds in the right place — and still finishes
-on a mistake it never checked. A stray `if __name__ == "main__":` with the
-underscores wrong, a declared-done it never ran. The work has the right shape
-and a careless flaw inside it. Nothing frames the model as the kind of developer
-who reads twice and runs before it says done.
+With the layout named, the model builds in the right place — and still finishes on
+a mistake it never checked. A stray `if __name__ == "main__":` with the
+underscores wrong, a done declared without a single run. The work has the right
+shape and a careless flaw tucked inside it. Nothing frames the model as the kind
+of developer who reads twice and runs the thing before it says done.
 
 ## Eval case
 
@@ -52,25 +52,25 @@ who reads twice and runs before it says done.
 
 **Badge:** `screen`
 
-With the layout line alone the ladder sat at 2 of 3: the layout is right, the
-finish is not. The failing runs are not in the wrong place, they are the right
-place built carelessly — a typo shipped unchecked, a finish declared without a
-run. The gap is not where the file goes, it is how the work is done.
+With the layout line alone the ladder sat at 2 of 3: the layout's right, the
+finish isn't. The failing runs aren't in the wrong place, they're the right place
+built carelessly — a typo shipped unchecked, a done declared without a run. The
+gap isn't where the file goes. It's how the work is done.
 
 ## Solution
 
 **Badge:** `screen`
 
 One remedy unit, `prompt/python-developer`, prepends a single role to the system
-prompt. Where `name-the-layout` appends a line to each turn, this one reaches
-the front of the whole session — the model works as a careful developer from the
-first token. It names no suite, file or route; a role changes how the model
-works, never what the task is.
+prompt. Where `name-the-layout` appends a line to each turn, this one reaches the
+front of the whole session — the model works as a careful developer from the first
+token. It names no suite, file or route; a role changes how the model works, never
+what the task is.
 
 ### The code
 
-In a live Pi session you switch it on with one command, on top of the layout
-line from E1:
+In a live Pi session you switch it on with one command, on top of the layout line
+from E1:
 
 ```text
 /remedy on prompt/python-developer
@@ -96,8 +96,8 @@ pi.on("before_provider_request", (event) => {
 ```
 
 The role rides in front of Pi's own system prompt. The model reads it first,
-before the task, so every turn is coloured by the frame rather than reminded of
-it. To pass it to a graded run instead, name both units:
+before the task, so every turn is coloured by the frame instead of reminded of it.
+To pass it to a graded run instead, name both units:
 `--remedy prompt/name-the-layout,prompt/python-developer`.
 
 **Lesson check:** 2/3 rose to 3/3 at n=3 on the local host, a screen
@@ -111,18 +111,18 @@ Adding the role took `name-the-layout` from **2/3** to **3/3** at n=3, at 14 to
 20 turns. At n=6 the same stack read **4/6** — the screen at n=3 flattered it, as
 screens do
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-The role helps; it does not finish the job on its own. A screen is a lead, never
-a rate, and a strong lead at small n is still a lead.
+The role helps; it doesn't finish the job on its own. A screen is a lead, never a
+rate, and a strong lead at small n is still a lead.
 
 ## Interpretation
 
 The weakest badge is `screen`. A role prompt makes the model *attempt* care, but
 care comes out as reading files or launching a server, not always as running the
-real check. That is the limit of a frame: it points the model at diligence
-without defining what diligence does. The code shows why — one sentence at the
-head of the prompt, nothing that enforces anything. The next lesson names the
-act — verify every requirement, and run the test — which is what carries the
-stack the rest of the way. The role is the posture; verification is the act.
+real check. That's the limit of a frame: it points the model at diligence without
+saying what diligence does. The code shows why — one sentence at the head of the
+prompt, nothing that enforces a thing. The next lesson names the act — verify every
+requirement, and run the test — which is what carries the stack the rest of the
+way. The role is the posture; verification is the act.
 
 ### Run it yourself
 

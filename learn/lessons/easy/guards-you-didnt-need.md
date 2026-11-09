@@ -36,10 +36,10 @@ sat silent and the prompts did the work.
 **Badge:** `screen`
 
 A tier looks hard, so you reach for a guard, then a gate that re-runs a test and
-sends the model back. It feels safer. But a unit that never fires buys nothing,
-and a gate that only acts when the worker finishes cannot help a worker that
-never does. The danger is a stack that passes *with* the machinery, so the
-machinery takes the credit the prompts earned.
+sends the model back. It feels safer. But a unit that never fires buys nothing, and
+a gate that only acts when the worker finishes can't help a worker that never does.
+The danger is a stack that passes *with* the machinery, so the machinery takes the
+credit the prompts earned.
 
 ## Eval case
 
@@ -47,31 +47,31 @@ machinery takes the credit the prompts earned.
 
 **The condition:** the Easy set that passes 6/6 — `preset:easy`. **The guard:**
 `guard/foreground-server`, in the set, refusing a foreground server start. **The
-gate:** the mediated acceptance gate (`mellum-acceptance` derives a structural
-test from the spec; `mellum-verify` re-runs it at settle and re-dispatches a red
-one), loaded on top with `--extension`. The grader is the Easy hidden tests;
-`run.json` records `guard_blocks` and each gate firing.
+gate:** the mediated acceptance gate (`mellum-acceptance` derives a structural test
+from the spec; `mellum-verify` re-runs it at settle and re-dispatches a red one),
+loaded on top with `--extension`. The grader is the Easy hidden tests; `run.json`
+records `guard_blocks` and each gate firing.
 
 ## Evidence of the problem
 
 **Badge:** `screen`
 
-Across every n=6 run, `guard/foreground-server` fired **0 times** — the model
-never tried the foreground server the guard refuses, so the guard sat silent
-while the prompts carried the pass. Stacking the verify gate on the 6/6 set gave
-**5/6**, not better: the gate fired **0 times** too, because the prompts already
-met its contract before it checked. The one loss spun **66 turns to the deadline
-with no settle attempt**, so the gate — which acts only at finish — never got a
-turn, and the run shipped without the HTML5 doctype its own contract checks for.
+Across every n=6 run, `guard/foreground-server` fired **0 times** — the model never
+tried the foreground server the guard refuses, so the guard sat silent while the
+prompts carried the pass. Stacking the verify gate on the 6/6 set gave **5/6**, not
+better: the gate fired **0 times** too, because the prompts already met its
+contract before it checked. The one loss spun **66 turns to the deadline with no
+settle attempt**, so the gate — which acts only at finish — never got a turn, and
+the run shipped without the HTML5 doctype its own contract checks for.
 
 ## Solution
 
 **Badge:** `screen`
 
-The method is not to trust a guard but to read whether it bit. The guard itself
-is a short function: it looks at a bash command, decides whether it starts a
-foreground server, and either returns a block with a reason or steps aside. The
-run record counts every block it returns, and that count is the evidence.
+The move isn't to trust a guard but to read whether it bit. The guard itself is a
+short function: it looks at a bash command, decides whether it starts a foreground
+server, and either hands back a block with a reason or steps aside. The run record
+counts every block it returns, and that count is the evidence.
 
 ### The code
 
@@ -81,8 +81,8 @@ Switch the guard on live:
 /remedy on guard/foreground-server
 ```
 
-The guard is one function. It returns a block only when the command would hang
-the run, and the reason points the model back in process
+The guard is one function. It returns a block only when the command would hang the
+run, and the reason points the model back in process
 ([`extensions/mellum-guards.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/extensions/mellum-guards.ts#L229-L243)):
 
 ```ts
@@ -99,8 +99,8 @@ export const serverGuard = (call) => {
 };
 ```
 
-Every block it returns is counted in the run record. After a run, read it —
-a guard that reads `0` did nothing this run:
+Every block it returns is counted in the run record. After a run, read it — a guard
+that reads `0` did nothing this run:
 
 ```bash
 # how many times each guard blocked a call, this run
@@ -109,7 +109,7 @@ cat runs/<run-id>/run.json | python -m json.tool | grep -A6 guard_blocks
 
 The gate is loaded the same way, as two extensions on top of the preset, and the
 record logs each time it fires. Both numbers come from the same place: the run
-record, not a hunch.
+record, never a hunch.
 
 **Lesson check:** guard 0× across six reps; the verify gate 5/6, firing 0×
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
@@ -121,22 +121,21 @@ record, not a hunch.
 Two independent n=6 runs agree: the prompt lines pass Easy, and the enforcement
 around them is inert. `guard/foreground-server` blocked nothing in either; the
 verify gate re-dispatched nothing and read 5/6, its one loss a run it structurally
-could not touch
+couldn't touch
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 The verify gate is a finish-time gate, not a watchdog — blind to the failure mode
-that never settles. Its payoff is a harder tier, where the prompts do not already pass and a
-settled "done" hides a real miss.
+that never settles. Its payoff is a harder tier, where the prompts don't already
+pass and a settled "done" hides a real miss.
 
 ## Interpretation
 
 The weakest badge is `screen`. The cheapest thing that passes is the right thing.
-On Easy that is three prompt lines; the guard and the gate add nothing you can
-measure, and a gate can even trap a struggling rep in a loop it cannot finish.
-The habit the code teaches is to read `guard_blocks` before you believe a guard
-helped. This is the method, not a verdict against guards — a guard earns its
-place on the tier where its pathology actually appears. The Medium and Hard
-lessons are exactly that: a guard and a gate read on the tier where they finally
-bite.
+On Easy that's three prompt lines; the guard and the gate add nothing you can
+measure, and a gate can even trap a struggling rep in a loop it can't finish. The
+habit the code teaches is to read `guard_blocks` before you believe a guard helped.
+This is the method, not a verdict against guards — a guard earns its place on the
+tier where its pathology actually appears. The Medium and Hard lessons are exactly
+that: a guard and a gate read on the tier where they finally bite.
 
 ### Run it yourself
 
@@ -150,5 +149,5 @@ uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy pres
 !!! success "Key points"
 
     - A unit that never fires earns nothing; read `guard_blocks` to see it.
-    - The verify gate acts only at finish, so it cannot save a worker that never settles.
+    - The verify gate acts only at finish, so it can't save a worker that never settles.
     - On Easy the prompts pass; reach for enforcement only where guidance stops being enough.

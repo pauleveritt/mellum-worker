@@ -36,10 +36,10 @@ fast pass.
 **Badge:** `screen`
 
 The spec names where each file belongs — `app.py` at the root, templates under
-`templates/`. The model does not read it for that. Left to itself it reaches for
+`templates/`. The model doesn't read it for that. Left to itself it reaches for
 `find` and `ls`, wanders the empty workspace, and settles on a layout it made up,
 `main.py` with the home page inside it. Every hidden check then imports the
-project the spec described and finds nothing there. The work is done; it is just
+project the spec described and finds nothing there. The work's done; it's just
 done in the wrong house.
 
 ## Eval case
@@ -56,21 +56,21 @@ which import the project at the paths the spec names.
 
 **Badge:** `screen`
 
-From the floor the model flailed about fifteen turns shelling `find` and `ls`
-through bash — there is no search tool on Easy — then invented the layout and
+From the floor the model flailed about fifteen turns, shelling `find` and `ls`
+through bash — there's no search tool on Easy — then invented the layout and
 shipped `main.py` with no templates. The plain worker, the old bundle of six
 guards with no prompt, did the same thing and scored 0 of 3. The guards stop bad
-actions; they do not tell the model where a file goes.
+actions; they don't tell the model where a file goes.
 
 ## Solution
 
 **Badge:** `screen`
 
 One remedy unit, `prompt/name-the-layout`, appends a single agnostic line to
-every message the model receives: read the project's own spec for where each
-file belongs, and build there. It names no path, file or route of any suite, so
-the model reads the layout from the spec itself — the line between a remedy and
-coding to the eval.
+every message the model receives: read the project's own spec for where each file
+belongs, and build there. It names no path, file or route of any suite, so the
+model reads the layout from the spec itself — the line between a remedy and coding
+to the eval.
 
 ### The code
 
@@ -83,7 +83,7 @@ the floor is still Vanilla Pi plus the recorder:
 
 That loads one small file. The part that does the work is the line it adds and
 the hook that attaches it to each turn — quoted here from the unit, frozen at a
-commit so the page cannot drift
+commit so the page can't drift
 ([`remedies/prompt/name-the-layout.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/remedies/prompt/name-the-layout.ts#L6-L33)):
 
 ```ts
@@ -102,9 +102,9 @@ pi.on("before_provider_request", (event) => {
 });
 ```
 
-A `before_provider_request` hook sees the request on its way out and rewrites it.
-The model never knows the line was added later; it reads the task and the layout
-instruction as one message. The worker's own task now ends like this:
+A `before_provider_request` hook catches the request on its way out and rewrites
+it. The model never knows the line was added later; it reads the task and the
+layout instruction as one message. The worker's own task now ends like this:
 
 ```text
 Build the home page described in specs/phase1.md.
@@ -135,13 +135,12 @@ settled rate.
 
 The weakest badge is `screen`. The lever on Easy is guidance, not guards. Six
 guards and a facts block earned nothing; one line that points the model at the
-spec earned the pass. The change is small enough to read in full — a constant
-and a hook — and that is the point of showing it: you can see exactly what
-reached the model, and that it carries no answer to the exam. A real codebase
-has the same shape as this task — a convention for where things live, written
-down somewhere the model has to be told to read. The habit the unit teaches is
-the one to keep: take the layout from the spec, never from the model's
-imagination.
+spec earned the pass. The change is small enough to read in full — a constant and
+a hook — and that's the point of showing it: you can see exactly what reached the
+model, and that it carries no answer to the exam. A real codebase has the same
+shape as this task — a convention for where things live, written down somewhere
+the model has to be told to read. The habit the unit teaches is the one to keep:
+take the layout from the spec, never from the model's imagination.
 
 ### Run it yourself
 
