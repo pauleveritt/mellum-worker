@@ -30,6 +30,17 @@ test("gateMessage: names the unmet concepts, says not done, carries the tail", (
 	assert.match(msg, /boom/);
 });
 
+test("gateMessage: says the test is held out, so the worker fixes behaviour instead of hunting the file", () => {
+	// The gated one-pass run (2026-11-08): handed two failing acceptance-test NAMES, the worker
+	// went looking for the test file (`find / -name test_medium.py`) because the file is external
+	// and not in its workspace — and crawled to the stall. The message must say: do not search for
+	// it; each name is a behaviour to satisfy; check with your own in-workspace tests.
+	const msg = gateMessage({ passed: false, failures: ["test_a"], output: "boom" });
+	assert.match(msg, /held out|not .*in your workspace/i);
+	assert.match(msg, /do not (search|look) for/i);
+	assert.match(msg, /your own tests/i);
+});
+
 test("verifyCommand: a named test runs just that file; empty runs the whole suite", () => {
 	const named = verifyCommand("tests/test_phase4.py", "uv run pytest");
 	assert.match(named, /uv run pytest/);

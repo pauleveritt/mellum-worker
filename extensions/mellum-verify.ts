@@ -47,7 +47,10 @@ export function gateMessage(v: Verdict): string {
 	return (
 		"[mellum-verify] The tests still fail, so you are not done. " +
 		`Unmet concepts (failing tests): ${concepts}. ` +
-		"Change the code so each of these passes — one concept at a time — then stop.\n\n" +
+		"This acceptance test is held out — it is NOT a file in your workspace, so do not search for " +
+		"it or its file (no `find`, no listing other directories). Each name above is a behaviour to " +
+		"satisfy: read what the name describes, change the code so that behaviour holds, and check with " +
+		"your own tests in this directory. Fix one concept at a time, then stop.\n\n" +
 		tail
 	);
 }

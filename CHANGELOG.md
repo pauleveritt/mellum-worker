@@ -199,6 +199,14 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The `mellum-verify` gate now tells the worker its acceptance test is held
+  out.** When the gate sends the worker back with the failing test names, a small
+  model read those names as files to open and went hunting the filesystem for
+  them — the test lives beside the workspace, not in it, so the hunt crawled to
+  the stall guard. The redispatch message now says plainly: this test is held
+  out, it is not a file in your workspace, do not search for it; each name is a
+  behaviour to satisfy, checked with your own in-workspace tests.
+
 - **The `mellum-ncm` verify gate is renamed `mellum-verify`.** It borrowed the
   name "next-concept modelling" from an unrelated text-generation paper
   (HazyResearch/ncm) but only re-runs an acceptance test until it passes, so it
