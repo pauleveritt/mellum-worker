@@ -26,7 +26,7 @@ sat silent and the prompts did the work.
     **Objectives**
 
     - Read `guard_blocks` in `run.json` and find the guard that fired 0 times.
-    - Stack the NCM gate on the 6/6 set and watch it add nothing — and cost a rep.
+    - Stack the verify gate on the 6/6 set and watch it add nothing — and cost a rep.
 
 ![A small robot watching a row of alarm bells that never ring while it works](../../assets/illustrations/evidence.webp){ .illustration }
 
@@ -57,7 +57,7 @@ one), loaded on top with `--extension`. The grader is the Easy hidden tests;
 
 Across every n=6 run, `guard/foreground-server` fired **0 times** — the model
 never tried the foreground server the guard refuses, so the guard sat silent
-while the prompts carried the pass. Stacking the NCM gate on the 6/6 set gave
+while the prompts carried the pass. Stacking the verify gate on the 6/6 set gave
 **5/6**, not better: the gate fired **0 times** too, because the prompts already
 met its contract before it checked. The one loss spun **66 turns to the deadline
 with no settle attempt**, so the gate — which acts only at finish — never got a
@@ -71,7 +71,7 @@ turn, and the run shipped without the HTML5 doctype its own contract checks for.
 
 **Remedy code:** [`remedies/guard/foreground-server.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/guard/foreground-server.ts) — the unit wires the guard; the block itself is `serverGuard` in [`extensions/mellum-guards.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/extensions/mellum-guards.ts). In Pi the `/lesson` panel shows the unit file inline under this step.
 
-**Lesson check:** guard 0× across six reps; NCM 5/6 with the gate at 0×
+**Lesson check:** guard 0× across six reps; the verify gate 5/6, firing 0×
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
 
 The move is not to add machinery and hope. It is to add one unit, measure
@@ -86,11 +86,11 @@ reach the failure.
 
 Two independent n=6 runs agree: the prompt lines pass Easy, and the enforcement
 around them is inert. `guard/foreground-server` blocked nothing in either; the
-NCM gate re-dispatched nothing and read 5/6, its one loss a run it structurally
+verify gate re-dispatched nothing and read 5/6, its one loss a run it structurally
 could not touch
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-NCM is a finish-time gate, not a watchdog — blind to the failure mode that never
-settles. Its payoff is a harder tier, where the prompts do not already pass and a
+The verify gate is a finish-time gate, not a watchdog — blind to the failure mode
+that never settles. Its payoff is a harder tier, where the prompts do not already pass and a
 settled "done" hides a real miss.
 
 ## Interpretation
@@ -104,7 +104,7 @@ reach for enforcement only where guidance stops being enough.
 
 ### Run it yourself
 
-The 6/6 set, then the same with the NCM gate stacked on:
+The 6/6 set, then the same with the verify gate stacked on:
 
 ```bash
 uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy preset:easy --grade --repeat 6 --deadline 600
@@ -114,5 +114,5 @@ uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy pres
 !!! success "Key points"
 
     - A unit that never fires earns nothing; read `guard_blocks` to see it.
-    - The NCM gate acts only at finish, so it cannot save a worker that never settles.
+    - The verify gate acts only at finish, so it cannot save a worker that never settles.
     - On Easy the prompts pass; reach for enforcement only where guidance stops being enough.
