@@ -1,0 +1,27 @@
+{
+  "accessed": "2026-11-09",
+  "review_base": "e428f82a",
+  "equivalent_f6_tree": "fe1bd2ce",
+  "upstream_reviewed": "67f0138fa42386cf057ba34c5117349817b40258",
+  "note": "Unmodified source artifacts, not instructions or newly authored research notes. Raw model traces are not copied.",
+  "sources": [
+    {
+      "id": "S3",
+      "author": "Fable; supplied by Paul Everitt",
+      "title": "Remedies programme, Easy and Medium: an adversarial review",
+      "original": "/Users/pauleveritt/Library/Application Support/Claude/side-session-notes/local_32d27b56-d934-45c4-adce-1916d45c0110/fable-remedies-review.md",
+      "saved": "fable-remedies-review.txt",
+      "sha256": "0fa3e322a5962f49544924b830b3491de14bbaa6ef540f2aeed4d73656f1f0d7",
+      "bytes": 28438
+    },
+    {
+      "id": "S4",
+      "author": "Andre van Zuydam",
+      "title": "Mellum as a bounded worker — learnings for Paul",
+      "original": "/Users/pauleveritt/Downloads/mellum-worker-summary-for-paul.pdf",
+      "saved": "andre-summary-for-paul.pdf",
+      "sha256": "ab6e95c7e16d79051ca41c08615deec4a997e536be14eeacb5f69160bd92458e",
+      "bytes": 4471
+    }
+  ]
+}

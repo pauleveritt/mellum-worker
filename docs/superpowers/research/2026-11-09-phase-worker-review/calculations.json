@@ -1,0 +1,63 @@
+{
+  "method": "All retained attempts. Tokens from budget.spent.output_tokens; requests from budget.spent.requests; strict success from passed. null ratio means zero successes.",
+  "groups": [
+    {
+      "batch": "2026-11-08-easy-final-count",
+      "arm": "vanilla",
+      "attempts": 32,
+      "strict": 2,
+      "charged_output": 302732,
+      "proxy_requests": 785,
+      "tokens_per_strict": 151366,
+      "requests_per_strict": 392.5,
+      "median_tokens": 7598.5,
+      "median_requests": 21.5,
+      "max_tokens": 37231,
+      "censored": 0,
+      "over_five_times_counted_vanilla_median": 0
+    },
+    {
+      "batch": "2026-11-08-easy-final-count",
+      "arm": "base",
+      "attempts": 32,
+      "strict": 25,
+      "charged_output": 1098978,
+      "proxy_requests": 2070,
+      "tokens_per_strict": 43959.12,
+      "requests_per_strict": 82.8,
+      "median_tokens": 33993.5,
+      "median_requests": 51.5,
+      "max_tokens": 67777,
+      "censored": 0,
+      "over_five_times_counted_vanilla_median": 14
+    },
+    {
+      "batch": "2026-11-09-medium-final-screen",
+      "arm": "vanilla",
+      "attempts": 3,
+      "strict": 0,
+      "charged_output": 407635,
+      "proxy_requests": 485,
+      "tokens_per_strict": null,
+      "requests_per_strict": null,
+      "median_tokens": 77518,
+      "median_requests": 123,
+      "max_tokens": 301748,
+      "censored": 0
+    },
+    {
+      "batch": "2026-11-09-medium-final-screen",
+      "arm": "base",
+      "attempts": 3,
+      "strict": 0,
+      "charged_output": 772184,
+      "proxy_requests": 1039,
+      "tokens_per_strict": null,
+      "requests_per_strict": null,
+      "median_tokens": 253976,
+      "median_requests": 331,
+      "max_tokens": 291837,
+      "censored": 0
+    }
+  ]
+}

@@ -131,3 +131,11 @@ arms cleared quality and failed budget, at 47 and 61 median requests against a 2
 - 2026-11-08: Easy separates remedies poorly. Vanilla's misses sit on two checks (title override
   46 of 48, launch 17 of 48), so these verdicts are about Easy, not a unit's general value
   ([screen note](2026-11-08-verify-the-spec-screen.md)).
+
+**Dated correction, 2026-11-09:** "re-dispatch does not" make runs long above
+overstates that trace inference. F.6 separates show and settle, and the final
+count shows expensive work after feedback as well as work before any settle.
+The earlier mediated+bounded 18 full passes include one path-heuristic
+contamination flag (r10), not proof the grader was read. The original verdicts
+stand; the [combined review](2026-11-09-phase-worker-review.md) qualifies both
+attribution and cost, and supersedes the proposed automatic next batch.

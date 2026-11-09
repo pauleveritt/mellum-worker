@@ -342,6 +342,28 @@ The selected assertion revision, digest of its trusted inputs, and execution
 policy recorded with a new score. Historical briefs and grader revisions are
 separate inputs; a record without this identity has unknown grader provenance.
 
+### Strict pass
+
+A run that passes the independent hidden checks, the project's required tests
+with the supplied tests preserved, and the quality gates. Passing the hidden
+checks alone is a full pass, not necessarily a strict pass.
+
+### Cost per strict pass
+
+The total cost of every attempt divided by the number of strict passes, including
+failed, retried and budget-ended attempts in the cost. Name the unit: charged
+output tokens, requests, time or money. Itemise censored spend separately and
+retain it in total economic cost; keep censored quality results apart.
+Zero strict passes gives no finite empirical ratio. This metric needs a success
+rate and per-attempt spending limit beside it.
+
+### Accepted phase
+
+A requested roadmap phase whose current acceptance, prior-phase regression
+checks, supplied-test integrity and quality checks have passed under trusted
+verification. Its checkpoint can seed the next requested phase. This is the
+target workflow; a model's final message alone does not establish acceptance.
+
 ### Expected IDs
 
 The test IDs that must have successful structured pytest outcomes for a suite to

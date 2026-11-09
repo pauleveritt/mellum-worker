@@ -145,48 +145,32 @@ Retired on 2026-10-13 as instrument work the current checks already cover
 on pass/fail but differ in verification or report, and the existing `check`
 fields cannot show it.
 
-**The mediated test, cheaper.** An external, complete test, shown to the
-worker and re-run at settle (`check/mediated-test`). 2026-11-08, R.1 (Easy,
-counted, n = 24): 15 and 18 of 24 full passes against Vanilla's none, at 47
-and 61 median requests against 21, so it lost on budget; 32 of 48 sessions
-ended on budget, most after reaching 13/13
-([R.1 note](docs/superpowers/research/2026-11-07-r1-easy-remedies.md)). The
-earlier rung 9 plan and Andre's `--acceptance-test` are in
-[`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20) and the
-[digest](docs/superpowers/research/2026-10-20-pr-digest.md). *Reopens when* a
-variant that stops at green, re-dispatches less, or tracks the oracle more
-closely is ready for an Easy batch against Vanilla. 2026-11-08 correction: re-dispatch never
-exceeded 2 of the cap of 5, and 13 of the 23 sessions never sent back still ran to the budget, so
-re-dispatching less cannot help; the tests that sent sessions back most, the title override and
-the launch, are in the hidden grader too. [F.6](docs/superpowers/research/2026-11-08-f6-held-pod.md):
-the re-run alone, 16 of 24.
+**Fresh context at a send-back.** Fable's trace analysis locates 228,160 of
+Base's proxy/trace token gap after first settle, about 21% of total charged
+output. Removing that charge is a counterfactual, not a measured saving or a
+prediction of a new median. Resetting context can increase rereading, reasoning
+and mistakes; the earlier replayed-thinking ablation raised output by 73%.
+Tool-output trimming is a separate intervention. Existing server-control and
+brief-reasoning candidates come first
+([review](docs/superpowers/research/2026-11-09-phase-worker-review.md)).
+*Reopens when* a corrected, bounded phase trial still shows compaction dominating
+cost after the applicable existing candidates are screened; compare one reset
+policy against corrected Base with identical acceptance and all-attempt costs.
 
-**Stall handlers judged on stalls.** In R.1 step three (n = 24) Vanilla stalled
-in 4 sessions; `guard/foreground-server` and `tool/bounded-commands` in none.
-Step one's stall rule would have admitted both, but step three judged only
-quality, and they missed it
-([table](evals/2026-11-07-r1-step-three/table.md)). *Reopens when* a cycle
-builds a tier's Base (R.2's Medium, or Easy again): preregister a batch that
-judges each handler on stalls at n = 24. Screen `guard/foreground-log-follow`
-again too: Screen 1 could not judge it at n = 3, and mediated+fg-server then stalled on
-`tail -f` in 5 of 24.
+**Stall handlers judged on stalls.** Bounded commands recorded 0/122 stalls;
+plain Vanilla 25/130 across reboot batches. These pooled totals are descriptive;
+R.1 step three's matched 0/24 versus 4/24 did not meet its quality-only rule.
+Retain bounded commands in the explicit phase candidate; F.8 owns its default
+clamp fix. *Reopens when* phase traces justify a handler comparison: fix stall,
+strict-quality and cost rules before a deciding run, with n justified by the
+question. R.1b first screens the relevant existing candidate. A dormant hook
+does not establish uselessness; shown-test/foreground stalled on log-following
+in 5/24. [Census, pairing and limits](docs/superpowers/research/2026-11-09-phase-worker-review/stalls.md).
 
 **`check/compile-import` needs a failure to guard.** R.1's Screen 2 could not
 judge it at n = 3: it never acted, as no write failed to compile or import in three sessions, and a
 `SyntaxError` showed in 1 of Screen 1's 15. *Reopens when* a tier's traces
 show a compile or import failure in 2 or more of 12 sessions.
-
-**Freeze-the-oracle exit gate.** Make "done" an external test the worker cannot
-weaken, instead of its own final message. Promote the ladder's scorer checks
-(`existing_tests_kept`, `outside_write_list`) into a runtime guard on the
-worker, and gate the exit on an actual run of the frozen acceptance test with
-the failure re-dispatched as the next "make this pass". The mediated test
-supplies the external, complete test; the unweakenable half is here
-([note](docs/superpowers/research/2026-10-18-harness-exit-gate.md)).
-*Reopens when* a mediated run moves rung 9 and a trace shows a worker editing or
-deleting a test to exit, or writing outside the allowed paths, on a run that
-then scored as done. 2026-10-24: restored after a merge dropped it; rung 9 has
-moved (screens), but no such trace is recorded yet.
 
 **Benchmark a plain mlx_lm.server against oMLX.** The ladder reaches any
 OpenAI-compatible server (`--provider`, `--base-url`, `--model provider/id`;

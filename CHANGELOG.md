@@ -5,6 +5,7 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- Definitions of strict passes, cost per strict pass and accepted phases, so completion and the cost of failed attempts remain explicit when planning a phase-at-a-time worker.
 - Screens of the settle fixes on Easy, with and without a send-back limit of 2, and of Vanilla against Base on Medium, with their records and note. The fixes close the path leak and kept the pass rate; they did not show a saving at n = 6, and Medium finished nothing in either arm.
 - The counted Easy run of Vanilla against Base (n = 32 each), with its record and result note. Base took 25 strict passes to Vanilla's 2 at 2.40 times the median requests, but 4.47 times the median output tokens, over the 3-times limit fixed beforehand, so `preset:base` and `preset:easy` stay empty.
 

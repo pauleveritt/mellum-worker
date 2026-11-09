@@ -69,3 +69,12 @@ is enforcement. A hint in a prompt fragment would not have closed the route.
   the model's commands inherit. No session used it; this route is still open.
 - n = 6 cannot separate limit 2's lower median from noise, and one strict pass is within noise too.
 - Three sessions on one suite say little about Medium, beyond the same four checks recurring.
+
+**Dated correction, 2026-11-09:** the same four Medium misses do not establish
+four missing features. On retained Base r02/r03, three route/order checks fail
+before their POST because the grader rejects valid `Status: Open` labels;
+allowing that prefix in memory makes all six executions pass. The cross-path
+ID invariant still fails and escapes mediated acceptance. Original scores stay
+unchanged; F.7 owes versioned qualification. The
+[combined review](2026-11-09-phase-worker-review.md) supersedes the interpretation
+"finished nothing" while retaining zero observed strict passes.

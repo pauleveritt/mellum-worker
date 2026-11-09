@@ -1,0 +1,361 @@
+# Remedies programme, Easy and Medium: an adversarial review
+
+Read-only review of the records in `evals/` and the raw traces in `~/mellum-runs/f6/` and
+`~/mellum-runs/r1/`, against the overview Paul was given. Nothing was run on a pod, no model
+session was started. Scripts and intermediates:
+`/private/tmp/claude-501/-Users-pauleveritt-projects-pauleveritt-mellum-worker/3ca45139-7360-4366-bfbd-5fc31f4b696b/scratchpad/review/`
+(`tab.py` recomputes every record; `segs.py` splits traces at each send-back; `cf.py` truncation
+counterfactuals; `stats.py` Fisher exact and bootstrap; `port.py` held-port send-backs; `ctx.py`
+context composition and timeouts; `phases.py` Medium per phase).
+
+Labels: **measured** is read from records or traces; **inference** is a reading of measured
+numbers; **conjecture** is a mechanism or a counterfactual that no run has tested. "Proxy tokens"
+are the budget proxy's charge (`budget.spent.output_tokens`, compaction summaries included);
+"trace tokens" are `run.json`'s `output_tokens` (assistant messages only). "Full" is 13 of 13
+hidden checks; "strict" adds the project's own tests and the lint gate; "near-miss" is at least
+12 of 13.
+
+## 1. Evidence: claims 1 to 10
+
+Every headline figure in the overview reproduces from `run.json`. The disagreements are about
+what sits behind the figures, and they are listed under each claim.
+
+| # | Claim | Verdict | What I got |
+|---|---|---|---|
+| 1 | Vanilla, Easy n = 32 | **Agree** | 2 strict, mean 9.91, median requests 21.0 (trace) / 21.5 (proxy count), 7,598.5 tokens, 7 stalls all on a server start (`app.py` x3, a direct server command x4), 20 of 32 at 12+, title missed 28 of 31 graded (r02's checks never ran). |
+| 2 | Base, Easy n = 32 | **Agree, with caveats** | 25 strict, 30 full, 0 stalls, 50.5 / 51.5 requests (2.40x), 33,993.5 proxy (4.47x), 26,028 trace (3.43x), 10 budget endings. Caveats below. |
+| 3 | Medium n = 3 | **Agree on figures, disagree on the reading** | 0 strict each; 8.33 vs 13.67 of 18; 77,518 vs 253,976 proxy (3.28x; trace 2.72x); the same four phase-4 checks missed by all three Base sessions. The reading misses where Base's Medium tokens went (below). |
+| 4 | Settle re-run works and carries the cost | **Agree** | F.6 settle-only 16 of 24 full vs Vanilla 2 (Fisher p = 0.0001); title misses 22 to 5; all 12 non-stalled sessions passed. Pre-settle spend equals Vanilla (median first segment 7,300 vs Vanilla 8,323); everything above is after the first settle. |
+| 5 | Bounded stops stalls, about equal cost, missed quality by one pass | **Agree, two caveats** | R.1 step three: 0 of 24 stalls vs 4 (p = 0.11 alone; deterministic mechanism, and 0 of 32 vs 7 in the count); 7,967.5 vs 7,842 tokens; 5 vs 0 full (p = 0.05, the rule wanted 6). Caveat: not cost-neutral when paired with the re-run (below). |
+| 6 | fg-server: 0 vs 4 stalls, +0.05; 7 stalls with the mediated test | **Agree, and it is real, with a mechanism** | Guard blocked in 4 of 24 sessions alone (6 blocks) and 14 of 24 with the mediated test (29 blocks). 5 of its 7 stalls were `tail -f` on a server log, one on the guard's own suggested path `/tmp/mellum-server.log`. |
+| 7 | Showing does worse than re-running | **Agree on cost, caveat on passes** | show-only 6 vs settle 16 full (p = 0.008; non-stalled 4/12 vs 12/12, p = 0.001). show-only vs Vanilla 6 vs 2 (p = 0.24): no evidence showing helps. show+settle 11 vs settle 16 is within noise (p = 0.24) and partly censored by the 32,000 cap. |
+| 8 | name-the-layout, verify-the-spec no help | **Agree, as "no sign of a large effect"** | 9.50 vs 10.58 at n = 12, 0 vs 0 full; title missed 3 of 3. Neither screen can see a modest effect. |
+| 9 | log-follow, compile-import unjudged | **Agree** | Hooks never acted at n = 3. |
+| 10 | Settle fixes: leak closed, no saving, cleanup never fired; MAX 2 a lead | **Agree** | Fixed screens: 0 held-port send-backs, 0 hunts; medians 15,878 and 13,803 at n = 6. The offline counterfactual says MAX = 2 would have saved little at the count's median (below). |
+
+### Caveats on claim 2 (the count)
+
+- **The 4.47x is a noisy estimate of a skewed distribution.** Bootstrap 95% interval for the
+  median ratio: proxy **[2.55, 5.77]**, trace [2.46, 4.60], requests [1.64, 3.93]. The mean
+  ratios are lower (proxy 3.63 [2.68, 4.85]; trace 2.91 [2.24, 3.72]). Base's proxy tokens run
+  7,846 to 67,777 and 16 of 32 sessions compacted; the median sits among the compacting
+  sessions. (measured)
+- **Three six-session screens with the same code disagree with the count.** The go-or-no-go
+  screen (same code, same pod, the hours before the count) gave 15,578 (2.05x); the F.6 screen
+  15,830; the fixed screen 15,878. Drawing 6 of the count's 32 Base sessions gives a median at or
+  under 16,000 only 4.6% of the time, and three screens all did. Something in the count's
+  conditions cost more than in the screens, and it is not identified. The held-port send-backs
+  appeared only in the count (8 of 32 sessions; 0 of 12 unfixed screen sessions, p = 0.08) and
+  are one candidate. The count's verdict stands under its rule, but 4.47x should not be quoted
+  as a property of Base. (measured; the cause is conjecture)
+- **Rule choices that did not matter.** Including stalled sessions in the medians: Vanilla's
+  7 stalls cost 6,879 to 12,501 tokens, 5 of 7 above its median; the stall is the last act after
+  the work, not a cheap exit. Dropping r02 (checks never ran) or r27 (read the test) changes no
+  clause. The 10 budget endings are all above Base's median, so a higher cap moves the mean, not
+  the median. (measured)
+- **Where strict and full part.** The 5 Base sessions at 13 of 13 without a strict pass all edited
+  `tests/test_home.py` (`integrity_ok: false`). Five of the six Base sessions that edited it did
+  so in the build phase, before any send-back; two Vanilla sessions (r21, r27) did the same and
+  would also have failed strict had they passed the checks. So this is a background behaviour
+  the longer Base session exposes, not something the send-back caused. (measured)
+- **The compaction cost is a consequence of how the send-back continues the context.** Of the
+  252,534 proxy-only tokens, 228,160 fall after the first settle (7 compactions before, 45
+  after). The re-dispatch appends a message to a context that is already near the threshold of
+  33,616 tokens (50,000 window minus 16,384 reserve), so the next segment compacts almost at
+  once. The earlier turns' thinking is replayed in the payload (`reasoning_content` present in
+  every assistant message sent), and at the moment of a re-dispatch it is the largest part of the
+  payload (for example r11 at its third send-back: 85,893 characters of thinking, 38,167 of tool
+  results, 22,602 of assistant text). Tool results are a median 29% of the payload. (measured)
+- **The held-port send-backs are smaller than the earlier analysis said.** 12 send-backs were
+  flagged for a held port, but only 6 were port-only; the other 6 also named a real code failure.
+  The port-only segments cost 48,174 trace tokens (5.7% of Base, not 14%) and 68,385 proxy. In
+  every case the traces show the session's own backgrounded server (`... app.py &`,
+  `nohup ...`), so the attribution to the model's own process was right. (measured)
+
+### Caveats on claims 4 and 5 together: the pairing is not cost-neutral
+
+F.6's settle-only arm stalled in 12 of 24; stalled sessions cost a median 14,224 trace tokens and
+4 of 12 still passed, settled ones 16,094 and 12 of 12 passed. The count's Base (settle plus
+bounded) stalled in 0 of 32 and cost 26,028 trace / 33,994 proxy. Bounded alone adds nothing
+(7,967 vs 7,842), but paired with the re-run it keeps alive a session that would otherwise have
+died on a foreground server, and that session is then sent back. This cannot be separated from
+the other differences between F.6 and the count (32,000 vs 64,000 cap; the grader-mirroring test
+vs the blind 16-test one), so it is an inference, not a measurement. It means "bounded is free"
+holds only in isolation.
+
+### Caveat on claim 6: the mechanism, and what was not tested
+
+The foreground-server guard's refusal text proposes `nohup ... >/tmp/mellum-server.log 2>&1 &`.
+With the shown test on, the model launched the app in 23 of 24 sessions, the guard fired in 14,
+and 5 of the 7 stalls were a `tail -f` on a log, one on that exact path. The stall is the guard's
+own suggestion followed one step further. (measured; the causal reading is inference.) Two
+confounds: the pairing was with show plus settle (`check/mediated-test`), never with settle-only;
+and all of it is on the Mac. Alone, the guard fired in only 4 sessions, so it could have prevented
+at most 4 of Vanilla's 4 stalls; 0 vs 4 at n = 24 is p = 0.11.
+
+### Caveat on claim 7: showing lengthens the build, and the cap then censors
+
+Showing the test makes the build phase longer: median first-segment trace tokens are 13,019
+(show-only) and 14,678 (show plus settle) against 7,300 (settle-only) and 8,323 (Vanilla). At
+F.6's 32,000 cap the show-plus-settle arm ended on budget 6 times; mediated-r02 was re-dispatched
+with no budget left (a 0-token segment). So "show plus settle passes less than settle alone" (11
+vs 16, p = 0.24) is partly a cap artefact. What is well supported: showing costs about 5,000 to
+7,000 tokens of build, buys no checks over Vanilla (6 vs 2, p = 0.24), and fails the lint gate
+(4 of its 6 full passes not strict; in R.1 12 of 18 for show plus settle plus bounded), the
+finding being an unused import. The lint failures are a real quality cost of showing.
+
+### Claim 3: Medium, read per phase
+
+Medium runs four prompts as four separate agent invocations per session; each phase has its own
+send-back cap of 5. (measured from `instance_start` rows)
+
+- base-r01: phases 1 and 2 each had one send-back and ended green; phases 3 and 4 had **no
+  send-back at all**, never settled, and spent 118,789 trace / 261,311 proxy tokens before the
+  budget ended the run (20 compactions). This session's cost is not the re-run's; it is a build
+  that never says done, which Vanilla also shows (vanilla-r03 phase 4: 142,469 trace, 21
+  compactions, a syntax error, checks never ran).
+- base-r02: phase 1 took 4 send-backs (64,032 trace) on
+  `test_home_is_rendered_from_home_html_which_extends_base_html`, a mediated test with **no
+  hidden counterpart** (Medium's hidden phase-1 checks are status, doctype, language, nav links).
+  Phase 4 took 4 send-backs (94,350 trace), the last naming 10 failing tests, and then the phase
+  ended with 4 of the hidden phase-4 checks still red. Either the fifth run went green while the
+  hidden checks stayed red, or `runTest` threw and the `catch { return undefined }` path let the
+  session end. The trace cannot tell which. (measured; the two readings are inference)
+- base-r03: phase 1 hit the cap of 5 on `test_the_navbar_shows_the_brand_and_links...` (56,637
+  trace), again a mediated-only requirement; phase 4 took 3 send-backs and ended with the same
+  four hidden misses.
+
+So about 120,000 of Base's 486,464 Medium trace tokens (25%) went to phase-1 send-backs on
+requirements the oracle does not have, and the phase-4 misses were either never reached by a
+settle or not caught by the phase-4 test. The right conclusion is not only "more spend is not
+buying finished results"; it is that **on Medium the blind mediated test is miscalibrated in both
+directions**, and that the no-settle phase is a cost both arms share. Per hidden check passed,
+the arms cost about the same: Vanilla 407,635 / 25 checks = 16,305 proxy tokens a check, Base
+772,184 / 41 = 18,834. (measured; "miscalibrated" is inference)
+
+Uncommitted raw runs under `~/mellum-runs/f6/medium-screen/` (old caps, 120 requests / 64,000
+tokens) hold 4 Vanilla (4, 10, stall, 8 of 18) and 3 Base (15, 13, 13) sessions, all but one
+budget-ended. They agree with the final screen's direction and are not in any note.
+
+### Other confounds across the programme
+
+- **Host, caps and code differ across batches.** R.1 (Mac, 64 / 32,000, worker arm for
+  handlers, grader-mirroring test, old AGENTS.md line) vs F.6 (A40, 64 / 32,000, `--arm vanilla`,
+  mirroring test, new AGENTS.md line) vs the count (A40, 128 / 64,000, blind 16-test file). The
+  overview's claims 5 and 6 come from R.1, claims 4 and 7 from F.6, claims 1 and 2 from the
+  count; none of these arms can be pooled, and the launch check is not comparable across the
+  AGENTS.md change (the F.6 note says so).
+- **Budget censoring.** R.1's two mediated arms ended on budget in 20 and 12 of 24 sessions, so
+  their 25,787 and 27,028 medians are censored at 32,000; the count lifted the cap and the median
+  rose. Comparing a censored median to an uncensored one understates how much the cap was doing.
+- **Vanilla's floor moves.** Vanilla's full passes across batches: 0/12, 0/12, 0/24, 2/24, 0/6,
+  2/32; stalls 21 of 110 pooled (19%). Mean checks 9.88 to 11.33. A rule relative to Vanilla's
+  median inherits this drift.
+
+## 2. Conclusions
+
+**Warranted.**
+
+- The re-run at settle is the one unit with a large, repeated, significant effect on Easy's
+  hidden grade (F.6 16 vs 2; the count 30 vs 2 full, 25 vs 2 strict, p = 4e-9). Enforcement beat
+  persuasion for *these* units on *this* suite: the two prompt fragments and the shown test did
+  not move the two checks; the re-run did.
+- Bounded commands end the foreground-server stall by construction, and the data never
+  contradict it (0 of 24, 0 of 6, 0 of 32).
+- Evidence is narrow: one model, one suite, two checks, and the launch check was confounded by a
+  wording change midway.
+
+**Overreached or incomplete.**
+
+- "Showing does worse" should be "showing costs more and buys nothing" (above). The pass-rate
+  difference against settle-only is real; the pass-rate difference *added* to settle-only is
+  within noise and partly the cap.
+- "fg-server paired with the mediated test stalled 7" is real and has a mechanism, but it was
+  measured only with the shown test, which drives server launches. It says the guard's suggested
+  background form is the hazard, not that the guard cannot pair with the re-run.
+- "Bounded about equal cost" is true alone and not shown in the pairing that matters.
+- Bounded's 5 vs 0 full passes (p = 0.05) was a lead the rule did not catch; it has not been
+  followed. On the count's Base it cannot be separated from the re-run.
+- The "4.47x" is reported without its interval. Any sentence that says Base costs 4.5 times
+  Vanilla should carry [2.55, 5.77] and the three discordant screens.
+
+**Missing.**
+
+- The compaction cost (23% of Base's charged output) is a property of continuing the same context
+  into the send-back, not of the send-back itself. The notes record it; they do not say that it is
+  where the proxy-trace gap comes from and that it is addressable without touching the test.
+- On Medium the mediated test's calibration against the oracle is the open problem, and the
+  phases that never settle are a shared pathology. Neither is in the Medium note.
+- A settle that throws lets the session end (`catch { return undefined }` in `settleMediated`).
+  This is a hole in "unweakenable": a hung or crashing pytest ends the gate silently. It cannot be
+  ruled out as what ended base-r02's phase 4.
+- The frozen-test exception aside, "the model cannot read the test" now holds (fixed screens:
+  0 hunts, 0 path mentions), but the hand-over copy named in `MELLUM_MEDIATED_TEST` remains
+  readable, as the settle-fixes note says.
+
+## 3. Tweaks, ranked by expected effect
+
+All counterfactual savings are upper bounds computed by removing segments wholesale from the
+count's traces; a session cut short might have spent differently, and its outcome at the cut is
+read from the failing set at that settle, not from the grader. None of these can be proven
+without a new run. Every tweak below names no suite file, route or expected value.
+
+**T1. Start the send-back on a fresh context (or a model-free compaction at settle).**
+Mechanism: in `agent_before_settle`, before returning `continue: true`, call `ctx.compact()` with
+a `session_before_compact` handler that supplies a ready summary built without a model call (the
+task prompt, the list of files the session wrote, the send-back message), or equivalently drop
+the pre-settle history the way the worker's mode-integrity drop does. Pi exposes both
+(`compact(options)` on the context, `session_before_compact` with `cancel`/custom compaction).
+Saving (counterfactual): the 228,160 proxy-only tokens after the first settle, 21% of Base's
+charged output; the proxy median falls toward the trace median, 33,994 to about 26,000 (4.47x to
+about 3.4x); the trace median is untouched. Risk: the A12 ablation (2026-10-09) found that
+stripping replayed thinking raised output tokens 73% because the replayed thinking is working
+memory; a fresh context at settle keeps the thinking inside a segment and drops it only across the
+settle boundary, which is a narrower cut, but the risk is the same kind. Smallest screen: Base vs
+Base plus unit, n = 6 interleaved, reading compaction count and the proxy-trace gap per session,
+not the median. Also test `context/trim-tool-output` in the same screen (tool results are 29% of
+the payload at re-dispatch; a trim at 8,000 characters would cut the long `ps`/server-log reads
+that dominate the port-hunting segments).
+
+**T2. Stop the session's own processes before the re-run (shipped in `settle-fixes`).**
+Saving (counterfactual from the count): the 6 port-only send-backs, 48,174 trace / 68,385 proxy
+(5.7% / 6.2%); trace median 26,028 to 21,568 (2.84x), proxy 33,994 to 30,976 (4.08x) because the
+median sessions are compacting title-fixers, not port-hunters. Pass risk: none; those segments
+fixed nothing. The fixed screens show 0 held ports but at n = 6 cannot say what it does to a
+32-session median, and the cleanup's "were stopped" line never appeared, so whether it was the
+cleanup or chance that removed them is open. Smallest confirmation: a Base count at n = 32 with
+the fixes, reading held-port send-backs (expect 0) and the proxy median.
+
+**T3. Lower the send-back cap only after T2, and not below 2.** MAX = 2 on the count's traces:
+trace median 23,067 (3.04x), proxy 31,614 (4.16x), 5 sessions cut, 4 of which passed strictly as
+run; 3 of the 5 cuts were at a port-only send-back that T2 removes, leaving 2 cuts (r08 strict,
+r12 not). So after T2, MAX = 2 is nearly free and nearly useless at the median. MAX = 1: proxy
+23,876 (3.14x) but 10 sessions cut, 8 of them strict as run, and 7 of the 10 were cut on a real
+code failure. I would not adopt MAX = 1. The n = 6 MAX 2 screen (1.82x, one fewer strict pass)
+is consistent with this: a small saving and a pass at risk.
+
+**T4. Make the send-back cheaper to act on.** After the first settle the model made 452
+server-class calls (launch, curl, kill, ps, sleep) against 91 before it, 90 hunting calls (now
+addressed by the hidden path and "this test is not in the project"), and 103 bounded timeouts in
+19 sessions (about 51 minutes of waiting at 30 s each). The title fix is one block in one
+template; a title-only send-back still costs a median 8,899 trace tokens, more than a whole
+Vanilla session, mostly re-reading templates and relaunching the server. Agnostic options:
+(a) the fixed message already says the test is not in the project; add that the acceptance run
+starts the app itself, so the model need not (persuasion, cheap to try); (b) `MELLUM_BOUND_SECONDS`
+10 instead of 30 saves wall time only, 103 x 20 s; (c) pair with `context/trim-tool-output` as in
+T1. Screen: count server-class calls and timeouts per send-back at n = 6.
+
+**T5. Thinking on the send-back segments.** 97 to 98% of generated characters are thinking in
+both arms; the send-back segments are 98%. Lowering the thinking level for re-dispatch segments
+only (`ctx.setThinkingLevel`) is the largest multiplier on the table and the least understood.
+It is an ablation of the model's setting, not a remedy, and the 2026-10-20 ablation and A12 both
+warn. Screen only after T1 and T2, and record it as an ablation.
+
+**T6. Pairings not to make, from the traces.** Do not pair the re-run with the shown test (T7 in
+the overview's terms: more build cost, lint failures, no checks). Do not pair the
+foreground-server guard with anything that drives server launches unless its refusal text stops
+proposing a log file, or `guard/foreground-log-follow` is on beside it (its screen could not judge
+it at n = 3 because nothing launched; with the mediated test on, 5 of 24 sessions did `tail -f`,
+so a pairing screen of fg-server plus log-follow plus settle-only would see the hook act).
+
+**T7. Medium: calibrate the blind test against the roadmap's acceptance, and cap the phases that
+never settle.** 25% of Base's Medium trace went to phase-1 send-backs on two requirements the
+oracle does not test. The agnostic fix is in the hand-over discipline, not the code: a mediated
+test asserts only what the roadmap states as acceptance, at the roadmap's strictness. The
+no-settle phases (base-r01 phases 3 and 4; vanilla-r03 phase 4) are where the biggest single
+costs sit in both arms; `guard/turn-cap` (dormant, unmeasured) is the existing agnostic unit for
+"calls tools with no end". Screen: Medium Base vs Base plus turn-cap at n = 3, reading whether the
+phase settles. Also close the `catch { return undefined }` hole: a settle whose test run errors
+should send the error back (bounded by the cap), not end the session.
+
+**Work after the test is green.** By construction, none: a green settle ends the session. Work
+after the *hidden grader* would have been green cannot be measured without re-grading each
+settle, but its lower bound is the 6 port-only send-backs (5.7% of trace), and no other send-back
+in the count named a test without a hidden counterpart. On Medium, the two phase-1 cases above
+are the same kind of waste at 25%.
+
+## 4. Cost per strict pass as the bar
+
+Figures over the count's 32 sessions per arm (measured; intervals by bootstrap over sessions).
+
+| Measure | Vanilla | Base | Base / Vanilla |
+|---|---|---|---|
+| Proxy tokens per strict pass (all sessions' tokens / passes) | 302,732 / 2 = 151,366 | 1,098,978 / 25 = 43,959 [31,681, 62,282] | 0.29 [0.00, 0.82]; in 12% of resamples Vanilla has no pass |
+| Trace tokens per strict pass | 145,568 | 33,858 [25,613, 46,155] | 0.23 |
+| Requests per strict pass | 390 | 81 [59, 111] | 0.21 [0.00, 0.58] |
+| Proxy tokens per full pass | 151,366 | 36,633 | 0.24 |
+| Proxy tokens per near-miss (12+) | 15,137 (20 passes) | 35,451 (31) | 2.34 [1.50, 3.47] |
+| Requests per near-miss | 39 | 65 | 1.67 [1.07, 2.41] |
+| Median proxy tokens among strict passes | 8,315 (n = 2) | 21,552 (n = 25) | 2.59, no estimate at n = 2 |
+| Median requests among strict passes | 17.5 (n = 2) | 43 | 2.46 |
+| Base sessions above k x Vanilla's median proxy tokens | | 2x: 24 of 32; 3x: 18; 5x: 14; 6x: 8; 8x: 6 | |
+| Expected tokens to the first strict pass, retrying failed sessions | 151,366 | 43,959 | 0.29 |
+
+**What it gets right.** Per strict pass is the only measure here that prices what Paul said he
+wanted to buy: a finished spec. The 3x median rule compares a Base session that finishes (25 of
+32) with a Vanilla session that does not (2 of 32), and it rises exactly because Base does the
+work Vanilla skips. Per pass, Base is a third of Vanilla's cost with a comfortable interval, and
+the same ordering holds on trace tokens and requests.
+
+**What it gets wrong or hides.**
+
+- *Vanilla's denominator is 2.* 151,366 is not an estimate; 12% of bootstrap resamples have no
+  Vanilla pass and the ratio is undefined. The bar must not depend on Vanilla's per-pass figure
+  when Vanilla has fewer than, say, 5 passes. Use an absolute ceiling instead in that case.
+- *Zero passes (Medium) gives infinity for both arms* and says nothing. The companion is cost per
+  hidden check gained over Vanilla, or per near-miss; on Medium Base buys checks at about the
+  same unit price as Vanilla (18,834 vs 16,305 proxy a check) and no finished result.
+- *It hides the tail.* The average over sessions is indifferent to whether the spend is spread
+  evenly or concentrated in runaways. 8 of 32 Base sessions cost more than 6 times Vanilla's
+  median (14 of them more than 5 times); 10 ended on the budget cap and would have gone further.
+  An unattended user pays for each of those; a reviewer sees each one. The companion is a
+  per-session ceiling: a 90th percentile, or a share of sessions over k times Vanilla's median.
+- *It is gameable in two ways.* A unit that ends failing sessions early lowers cost per pass
+  without changing passes (an efficiency, but one to watch when a unit's effect is only on the
+  failures). A unit that raises passes by naming the suite's content raises passes cheaply; the
+  agnosticism rule, not the metric, is the guard. The near-miss companion catches a third abuse:
+  an arm that trades many 12-of-13 sessions for a few 13s looks good per strict pass and bad per
+  near-miss, which is what Base does here (2.34x per near-miss).
+- *Reviewed or unattended changes which measure is primary.* If a person reviews each session's
+  output, Vanilla's 20 near-misses at 15,137 a piece are useful work and per near-miss is the
+  fair price (Base 2.34x). If the output must be finished unattended, only strict passes count and
+  per strict pass is fair (Base 0.29x). The bar should say which setting it prices.
+- *It is post-hoc.* The count was decided under a 3x median rule fixed beforehand; adopting
+  per-pass after seeing the result is a new decision and has to be recorded as one, dated, with
+  the count's verdict left standing and the per-pass numbers given as "what the new bar would
+  have said". The rule note already has the shape for this (its 2026-11-09 correction).
+
+**The bar I would write down.** For a counted Easy run of n = 32 per arm: Base passes if (1) it
+has at least 8 more strict passes than Vanilla; (2) its proxy output tokens per strict pass, over
+all 32 sessions, are at most Vanilla's, or at most 50,000 when Vanilla has fewer than 5 strict
+passes; and (3) at most 10% of its sessions exceed 5 times Vanilla's median proxy tokens. State
+whether the run prices unattended finishing (this bar) or reviewed output (replace strict with
+near-miss in 2 and set the ceiling at 2x).
+
+On the count, Base meets (1) 25 vs 2, meets (2) 43,959 against both 151,366 and 50,000, and
+**fails (3)**: 14 of 32 sessions (44%) exceed 37,992, and the 90th percentile is about 66,000,
+8.7 times Vanilla's median. That is the honest shape of the result: Base is cheap per finished
+spec and has a fat tail of sessions that run to the cap. The tail is exactly where T1 and T2 act,
+so a count with those in place is the run that would decide it; the per-pass figure should be
+reported with its interval, and the tail clause with the count of sessions over the ceiling.
+
+## What I think the overview got wrong or understated, in one list
+
+1. The 4.47x is quoted without its interval [2.55, 5.77], and three same-code screens at
+   1.8x to 2.1x are not reconciled with it. The count's conditions differed from the screens' in
+   some way not yet identified; the held-port send-backs (count only) are the one candidate.
+2. The compaction cost (23% of the charge) is caused by continuing the context into the
+   send-back and is addressable without touching the test or the model.
+3. Only half the held-port send-backs were pure environment; 5.7% of Base's trace, not 14%.
+4. "Bounded is cost-neutral" is true alone and unshown in the pairing; paired with the re-run it
+   keeps alive sessions that would have stalled.
+5. "Show plus settle does worse than settle" is within noise and partly cap censoring; "show
+   buys nothing and fails lint" is the supported statement.
+6. The fg-server stall with the mediated test has a mechanism (its own suggested log file
+   followed with `tail -f`) and was only ever measured beside the shown test.
+7. Medium: 25% of Base's spend went to phase-1 send-backs on requirements the oracle lacks;
+   phase 4's misses were never reached by a settle or not caught by the test; both arms have
+   phases that never settle. The blind test's calibration is the finding, not just the cost.
+8. A settle whose test run throws ends the session silently.
+9. Bounded's 5 vs 0 full passes (p = 0.05) was a lead the preregistered rule did not see and
+   nobody followed.

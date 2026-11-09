@@ -72,3 +72,10 @@ the re-dispatches (29 of 32 Base sessions, up to 3) are the second.
 - The mediated test covers the roadmap as written; a gap there is a gap in it too.
 - A 4.47 ratio at n = 32 is well clear of 3, but a median over a spread this wide is not a tight
   estimate. Base's output ran from about 7,800 to 67,800 tokens.
+
+**Dated correction, 2026-11-09:** the five hidden-full/nonstrict Base sessions all
+changed the supplied test; four still passed project pytest. "Failed the project's
+own tests" above includes integrity failure, not just red test execution. The count
+requests Easy Phase 1 only. Its verdict and scores stand; the
+[combined review](2026-11-09-phase-worker-review.md) records the economic reading,
+uncertainty and next work without retrospectively accepting Base.
