@@ -22,7 +22,7 @@ Rules:
 | T4 | Caching the stable system prompt and appending only changing context lowers cost with no accuracy loss | measure tokens + pass rate, cached-prefix vs spliced-context, same rung | untested |
 | T5 | A skeptical "rethink" extension that pushes back on human claims contradicting ground truth lowers the wrong-answer rate | plant a false premise in a rung's user sentence; compare pass/escalation with and without `mellum-rethink` | untested |
 | T6 | A small vision model lets the worker act on pdf / excel / word / screenshots it otherwise cannot read | a rung whose spec ships a requirement only inside a pdf/xlsx; pass needs `mellum-files` + `mellum-vision` | untested |
-| T7 | The NCM verify gate cannot supply capability a model lacks — it only converts a near-miss into a pass | already hinted by 3-bit 3/8 and 1.5B 0/8; needs a preregistered gate×size run to confirm | screening |
+| T7 | The verify gate cannot supply capability a model lacks — it only converts a near-miss into a pass | already hinted by 3-bit 3/8 and 1.5B 0/8; needs a preregistered gate×size run to confirm | screening |
 | T8 | A mediated acceptance test rescues rungs 4 and 5 for the 6-bit: it self-exits on an incomplete multi-file refactor when nothing re-dispatches it | re-run rungs 4-5 with `scripts/screen.sh` mediated (frozen test + redispatch) vs the un-mediated 0/3 baseline | untested |
 
 ## T1 — Chronological context ordering
@@ -78,5 +78,5 @@ the wild on the two simplest-looking rungs.
 ## T7 — The gate cannot supply capability
 The mediated verify gate turns a near-miss into a pass on a capable model, but it
 cannot lift a model that never gets close. Early signal: the 3-bit halved model
-reached 3/8 and the 1.5B 0/8, and the NCM gate fired zero times on the capable
+reached 3/8 and the 1.5B 0/8, and the verify gate fired zero times on the capable
 6-bit. A preregistered gate × model-size run would confirm or refute it.
