@@ -1,0 +1,27 @@
+{
+ "author": "Andre van Zuydam",
+ "note": "Unmodified copies read as evidence; not run by the harness.",
+ "commit": "67f0138fa42386cf057ba34c5117349817b40258",
+ "paths": {
+  "test_medium.py": "ladder/fixtures/acceptance/test_medium.py",
+  "medium/": "learn/code/suites/medium/{grader,expected.json}",
+  "easy/": "learn/code/suites/easy/{grader,expected.json}"
+ },
+ "files": {
+  "easy/expected.json": "f921a54346d8cfbe26c1058050e0d0cc0a922863c0d608b644b7031c4b01a2b8",
+  "easy/grader/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "easy/grader/_contract.py": "082b3b980dff1d94e7ef75362aed0ab1e83d3189fb18244eeafc21099c53bbd6",
+  "easy/grader/canary": "18573a419ea3f9d0ac9428c349a82be03e82abbb6df8c981bea859d6ebc7fb66",
+  "easy/grader/test_phase1_home.py": "9050acf16e0cc4640fbd0384949153d7194454f4a8acaa5e5662cb3bca6fae48",
+  "medium/expected.json": "9345dc25066bf50a2ad47ffb711132ff1cfa3711eecdead86c59bdf04eb08df6",
+  "medium/grader/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "medium/grader/_contract.py": "082b3b980dff1d94e7ef75362aed0ab1e83d3189fb18244eeafc21099c53bbd6",
+  "medium/grader/_seed.py": "6b98e4d407a6df8cd77d8415073169eb8c56d1b6c285352ed2d16dbaf9f5268d",
+  "medium/grader/canary": "8d614def598a37bec1bb88f35472d5aea4921f224936e120faaa8df727137ac5",
+  "medium/grader/test_phase1_home.py": "9050acf16e0cc4640fbd0384949153d7194454f4a8acaa5e5662cb3bca6fae48",
+  "medium/grader/test_phase2_board.py": "c920963d50d790ab09d774906848983b30e235bb17015ade1f7110082d7b85a7",
+  "medium/grader/test_phase3_add.py": "6cbc07fe8b722a702d417da59afc6926a0c584c325e8ebe76d20baa043dec4ac",
+  "medium/grader/test_phase4_resolve_reopen.py": "19436f678bc03e2345113689bbaf84007e63a577421739a528f9e8f5ef248586",
+  "test_medium.py": "3d9a47fa0b2003aaeb4bf292a13467d7eb1a98c7e1fea4be707fa1201eea2200"
+ }
+}

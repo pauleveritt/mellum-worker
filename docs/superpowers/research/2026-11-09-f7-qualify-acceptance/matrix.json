@@ -1,0 +1,404 @@
+{
+ "medium": {
+  "known_good": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "caption": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "strong_caption": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "state_caption": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "post_init_counter": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "emphasised_word_after_text": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "comment_in_card": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "newest_first": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "pass",
+   "andre_grader": "reject"
+  },
+  "textual_date": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "reject",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "inline_brand": {
+   "kind": "valid",
+   "current": "pass",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "separate_route_counter": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "renumber_on_append": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "route_overwrites_with_max": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "negated_caption": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "negated_strong": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "negated_span": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "pass",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "hidden_label": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "both_labels": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "state_never_changes": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "reject"
+  },
+  "redirect_home": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "redirect_board": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "html4_doctype": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "brand_in_comment": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "no_nav": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "hidden_nav": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "seed_suffix": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "date_tokens": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "disconnected_form": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "disabled_input": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "fieldset_disabled": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "hidden_name_input": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "hidden_input": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "truncating_store": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "no_model_state": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "changes_every_complaint": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "buttons_do_not_submit": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "disabled_buttons": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "reverses_board": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "swaps_seed_order": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "pass",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "string_ids": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "reject"
+  },
+  "float_ids": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "base-r02": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "base-r03": {
+   "kind": "defect",
+   "current": "reject",
+   "original_658bbea5": "reject",
+   "andre_test_medium": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  }
+ },
+ "easy": {
+  "known_good": {
+   "kind": "valid",
+   "current": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "inline_brand": {
+   "kind": "valid",
+   "current": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "home_html_response": {
+   "kind": "valid",
+   "current": "pass",
+   "mediated": "pass",
+   "andre_grader": "pass"
+  },
+  "redirect_home": {
+   "kind": "defect",
+   "current": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "no_nav": {
+   "kind": "defect",
+   "current": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "hidden_nav": {
+   "kind": "defect",
+   "current": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "no_title": {
+   "kind": "defect",
+   "current": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "no_viewport": {
+   "kind": "defect",
+   "current": "reject",
+   "mediated": "reject",
+   "andre_grader": "pass"
+  },
+  "home_without_layout": {
+   "kind": "defect",
+   "current": "reject",
+   "mediated": "reject",
+   "andre_grader": "reject"
+  }
+ }
+}

@@ -13,6 +13,7 @@
   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+  "grader_tests/test_phase4_resolve_reopen.py::test_complaint_ids_increase_across_direct_and_route_creation",
   "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids",
   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",

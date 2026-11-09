@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 from jinja2 import nodes
 from starlette.templating import Jinja2Templates
 from starlette.testclient import TestClient
-from turbohtml import Doctype, parse
+from turbohtml import Doctype, Element, parse
 
 
 @functools.cache
@@ -31,8 +31,18 @@ def _models():
     return models
 
 
+def _on_show(element) -> bool:
+    """False for anything a browser would not show: hidden itself or inside something hidden."""
+    for node in (element, *element.ancestors):
+        if isinstance(node, Element):
+            style = re.sub(r"\s+", "", node.attr("style") or "").casefold()
+            if "hidden" in node.attrs or "display:none" in style or "visibility:hidden" in style:
+                return False
+    return True
+
+
 def _board():
-    response = _client().get("/complaints")
+    response = _client().get("/complaints", follow_redirects=False)
     assert response.status_code == 200, f"GET /complaints answered {response.status_code}"
     return response.text, parse(response.text)
 
@@ -46,11 +56,13 @@ def _cards() -> list[str]:
 
 
 def _shows_the_date(card: str, stamp: datetime) -> bool:
-    def number(value: int, width: int = 1) -> bool:
-        return re.search(rf"(?<!\d)0*{value:0{width}d}(?!\d)", card) is not None
-
-    named_month = re.search(rf"\b({stamp.strftime('%B')}|{stamp.strftime('%b')})\b", card) is not None
-    return number(stamp.year, 4) and number(stamp.day) and (number(stamp.month) or named_month)
+    """The year, month and day written together as one date, in any common order."""
+    year, month = stamp.year, rf"0?{stamp.month}"
+    day = rf"0?{stamp.day}(?:st|nd|rd|th)?"
+    named = rf"(?:{stamp.strftime('%B')}|{stamp.strftime('%b')})"
+    forms = (rf"{year}[-/.]{month}[-/.]{day}", rf"{day}[-/.]{month}[-/.]{year}", rf"{month}[-/.]{day}[-/.]{year}",
+             rf"{named}\s+{day},?\s+{year}", rf"{day}\s+{named},?\s+{year}", rf"{year},?\s+{named}\s+{day}")
+    return any(re.search(rf"(?<!\d){form}(?!\d)", card) for form in forms)
 
 
 def _link_path(href: str | None) -> str | None:
@@ -72,7 +84,7 @@ def test_board_keeps_the_shared_layout():
     assert any(isinstance(node, Doctype) and node.name.casefold() == "html" for node in document.children)
     html = document.select_one("html")
     assert html is not None and (html.attr("lang") or "").casefold() == "en"
-    navbars = document.select("nav, .navbar")
+    navbars = [navbar for navbar in document.select("nav, .navbar") if _on_show(navbar)]
     assert navbars, "the page has no navbar"
     for navbar in navbars:
         links = [(_words(a).casefold(), _link_path(a.attr("href"))) for a in navbar.select("a")]

@@ -342,6 +342,12 @@ The selected assertion revision, digest of its trusted inputs, and execution
 policy recorded with a new score. Historical briefs and grader revisions are
 separate inputs; a record without this identity has unknown grader provenance.
 
+### Requirement map
+
+A list tying each written requirement of a suite to the hidden and mediated
+checks that enforce it, or to a stated reason why none does. A test parses the
+roadmap, so a phase requirement cannot go unmapped.
+
 ### Strict pass
 
 A run that passes the independent hidden checks, the project's required tests

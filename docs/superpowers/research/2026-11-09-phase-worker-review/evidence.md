@@ -70,6 +70,8 @@ requires an element's entire text to equal `Open`/`Resolved`. Its shared
 Base r02 and r03 failed at that label; allowing the prefix in memory made all
 six executions pass, including redirect, target status and ordering assertions.
 Neither app nor grader files changed. F.7 must preserve this as a regression fixture.
+**2026-11-09, F.7:** done. The builds are kept, the original grader stays selectable, and the
+[qualification note](../2026-11-09-f7-qualify-acceptance.md) records the replay under both graders.
 
 Retained workspaces: `~/mellum-runs/f6/medium-final-screen/base-r02/20261109T061809Z-medium-6a4bed/workspace`
 and `base-r03/20261109T073743Z-medium-6de994/workspace` under the same batch.

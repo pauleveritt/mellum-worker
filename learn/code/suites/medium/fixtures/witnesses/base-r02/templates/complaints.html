@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Complaints Board</h1>
+<div class="card-list">
+{% for complaint in complaints %}
+    <div class="card">
+        <h3>{{ complaint.agent_name }}</h3>
+        <p>{{ complaint.text }}</p>
+        <p>Date: {{ complaint.timestamp.strftime('%Y-%m-%d') }}</p>
+        {% if complaint.status == "open" %}
+            <p>Status: Open</p>
+            <form action="/complaints/{{ complaint.id }}/resolve" method="post">
+                <button type="submit">Resolve</button>
+            </form>
+        {% else %}
+            <p>Status: Resolved</p>
+            <form action="/complaints/{{ complaint.id }}/reopen" method="post">
+                <button type="submit">Reopen</button>
+            </form>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+<!-- Add complaint form -->
+<form action="/complaints" method="post">
+    <label for="agent_name">Agent:</label>
+    <input type="text" id="agent_name" name="agent_name" required>
+    <label for="text">Complaint:</label>
+    <textarea id="text" name="text" required></textarea>
+    <button type="submit">Add Complaint</button>
+</form>
+{% endblock %}

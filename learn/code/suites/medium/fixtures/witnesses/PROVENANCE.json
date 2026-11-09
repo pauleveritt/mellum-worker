@@ -1,0 +1,27 @@
+{
+  "source_runs": "~/mellum-runs/f6/medium-final-screen",
+  "copied": "2026-11-09",
+  "note": "Model-written builds, copied unchanged from retained workspaces; recorded misses are in evals/2026-11-09-medium-final-screen.",
+  "builds": {
+    "base-r02": {
+      "run": "20261109T061809Z-medium-6a4bed",
+      "files": {
+        "app.py": "86e116fcca2130fa6262b113b21a0fd7eb88573ec58d66ed275091d4fb97e1d7",
+        "models.py": "537ab337891b49dc6e1a5b825a240ecac3653e47cd69e2105182566546313a75",
+        "templates/base.html": "20fb208f38d6014499c15906873c975a2d57d12fc81ab08d88594490faacf161",
+        "templates/complaints.html": "d11d0661a1212d6d2f3570bf52bfe685811621217a67a54ac81af1a8376cc140",
+        "templates/home.html": "ce7eea0af0f96ac30a1f0b8723b3fe7e397a7c996f44c35444fa016f48381090"
+      }
+    },
+    "base-r03": {
+      "run": "20261109T073743Z-medium-6de994",
+      "files": {
+        "app.py": "24eefaad6f6a7aa3b31b707695de920aa166bc4300d8b4b181b89abfd7b71253",
+        "models.py": "eb009c3355d9c4006ae8d37d1fd38ad3cd311e6741e8e06f0777f0fb399ed162",
+        "templates/base.html": "a1d11c36c54392429fd9e7973c82af56253cc0abe4b86e9ecfa27d01a0e7c4c2",
+        "templates/complaints.html": "292fc86b74d5cfa41f8584283ece46bc4c0d571c457ccfdf5ee7108e030a8f70",
+        "templates/home.html": "164fa3777637bf0947caf5adca572fcf77314c72b91f4198589c78bc2168f165"
+      }
+    }
+  }
+}

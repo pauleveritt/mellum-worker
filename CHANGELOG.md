@@ -5,6 +5,7 @@ Versions match git tags; pin one in both install lines.
 ## [Unreleased]
 
 ### Added
+- `--grader 658bbea5` selects Medium's checks as they were before the F.7 corrections, so the recorded Medium screen stays reproducible beside corrected grades; two model-written builds from that screen are kept as regression fixtures.
 - Definitions of strict passes, cost per strict pass and accepted phases, so completion and the cost of failed attempts remain explicit when planning a phase-at-a-time worker.
 - Screens of the settle fixes on Easy, with and without a send-back limit of 2, and of Vanilla against Base on Medium, with their records and note. The fixes close the path leak and kept the pass rate; they did not show a saving at n = 6, and Medium finished nothing in either arm.
 - The counted Easy run of Vanilla against Base (n = 32 each), with its record and result note. Base took 25 strict passes to Vanilla's 2 at 2.40 times the median requests, but 4.47 times the median output tokens, over the 3-times limit fixed beforehand, so `preset:base` and `preset:easy` stay empty.
@@ -28,6 +29,10 @@ Versions match git tags; pin one in both install lines.
   tried on Medium; the batch runner was fixed to Easy.
 
 ### Changed
+- **The mediated tests now reject what the hidden grader rejects on the qualification matrix.** Across 33 broken Medium builds, two of them kept from real runs, and six Easy ones, a mediated test could pass a redirect home, a hidden navbar, scattered date numbers or a disabled control. Each is fixed from the written requirement, and the Easy Phase 2 to 4 checks no longer over-reach on a template name, a card around the add form or an extra badge; `learn/code/qualify_matrix.py` records the result, beside Andre's tests on the same builds.
+- **Easy has a selectable four-phase acceptance bundle.** `--grader f7-roadmap` adds hidden and mediated checks for Easy's Phases 2 to 4, written from its own roadmap (including the exact badge, UTC timestamps and one Bootstrap card per complaint). The default Easy grade stays at its 13 Phase 1 checks.
+- **Medium checks that ids share one allocator.** A new hidden check and mediated test interleave direct construction and route creation, so a build whose two paths each count upward but apart no longer passes. Medium now has 19 hidden checks; `--grader 658bbea5` keeps the original 18.
+- **Medium accepts a captioned state.** A card showing `Status: Open` is what the roadmap asks for, so the hidden grader and the mediated test now accept it, along with the state sitting beside its form. Negated, hidden and doubled labels stay rejected, and the mediated test now rejects them too.
 
 - **Easy sessions get 128 requests and 64,000 output tokens,** so the cap cannot cut off a session sent back
   by the settle re-run.

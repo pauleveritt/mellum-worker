@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="complaints-board">
+        <h1>Complaints Board</h1>
+        {% for complaint in complaints %}
+        <div class="card">
+            <p><strong>Agent:</strong> {{ complaint.agent_name }}</p>
+            <p><strong>Complaint:</strong> {{ complaint.text }}</p>
+            <p><strong>Date:</strong> {{ complaint.timestamp.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Status:</strong> {{ complaint.status | capitalize }}</p>
+            {% if complaint.status == 'open' %}
+            <form action="/complaints/{{ complaint.id }}/resolve" method="post">
+                <button type="submit">Resolve</button>
+            </form>
+            {% else %}
+            <form action="/complaints/{{ complaint.id }}/reopen" method="post">
+                <button type="submit">Reopen</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <form action="/complaints" method="post">
+            <div class="form-group">
+                <label for="agent_name">Agent:</label>
+                <input type="text" id="agent_name" name="agent_name" required>
+            </div>
+            <div class="form-group">
+                <label for="text">Complaint:</label>
+                <textarea id="text" name="text" required></textarea>
+            </div>
+            <button type="submit">Submit Complaint</button>
+        </form>
+    </div>
+{% endblock %}

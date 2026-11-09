@@ -1,0 +1,812 @@
+[
+ {
+  "id": "easy-p1-31",
+  "phase": 1,
+  "source": "roadmap.md:31",
+  "requirement": "`app.py` holds the FastAPI application as `app`.",
+  "hidden": [],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app"
+  ],
+  "status": "mediated-only",
+  "note": "The hidden grader imports the app implicitly; only the mediated test names this requirement."
+ },
+ {
+  "id": "easy-p1-32",
+  "phase": 1,
+  "source": "roadmap.md:32",
+  "requirement": "A shared Jinja2 layout, `templates/base.html`: HTML5 with `lang=\"en\"`, a responsive viewport, Bootstrap 5 from a CDN (CSS in the head, the JS bundle at the end of the body), the favicon `https://www.python.org/static/favicon.ico`, the title \"AgentClinic\" unless a page sets its own, and a navbar with the \"AgentClinic\" brand and links to Home (`/`) and Complaints (`/complaints`).",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "mediated": [
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-33",
+  "phase": 1,
+  "source": "roadmap.md:33",
+  "requirement": "The home page at `/` uses that layout: a hero section with the tagline *\"Come in. Sit down. Tell us about your human.\"* and a short welcoming paragraph.",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph"
+  ],
+  "mediated": [
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-34",
+  "phase": 1,
+  "source": "roadmap.md:34",
+  "requirement": "`uv run --frozen python app.py` starts the app with uvicorn, with reload, from an `if __name__ == \"__main__\"` block (for a person to run, not for checking).",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving"
+  ],
+  "mediated": [
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-39",
+  "phase": 1,
+  "source": "roadmap.md:39",
+  "requirement": "`GET /` answers 200 and the page contains the tagline, word for word.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-40",
+  "phase": 1,
+  "source": "roadmap.md:40",
+  "requirement": "The page starts `<!DOCTYPE html>` and `<html lang=\"en\">`.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language"
+  ],
+  "mediated": [
+   "test_home_starts_with_the_doctype_and_html_lang_en"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-41",
+  "phase": 1,
+  "source": "roadmap.md:41",
+  "requirement": "The navbar shows `AgentClinic` and has a link reading `Home` to `/` and one reading `Complaints` to `/complaints`.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "mediated": [
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-43",
+  "phase": 1,
+  "source": "roadmap.md:43",
+  "requirement": "The home page is rendered from `templates/home.html`, which extends the shared layout `templates/base.html`.",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base"
+  ],
+  "mediated": [
+   "test_home_is_rendered_from_home_html_which_extends_base_html"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-45",
+  "phase": 1,
+  "source": "roadmap.md:45",
+  "requirement": "The layout's head has a responsive viewport, the Bootstrap 5 CSS from a CDN and the favicon `https://www.python.org/static/favicon.ico`; the Bootstrap 5 JS bundle from a CDN is the last thing in its body.",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle"
+  ],
+  "mediated": [
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-48",
+  "phase": 1,
+  "source": "roadmap.md:48",
+  "requirement": "A page's title is `AgentClinic` by default, and a page that extends the layout can set its own title instead.",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title"
+  ],
+  "mediated": [
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_a_page_that_extends_the_layout_can_set_its_own_title"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-50",
+  "phase": 1,
+  "source": "roadmap.md:50",
+  "requirement": "The home page has a hero section holding the tagline, and a short welcoming paragraph.",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph"
+  ],
+  "mediated": [
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-52",
+  "phase": 1,
+  "source": "roadmap.md:52",
+  "requirement": "`uv run --frozen python app.py` starts uvicorn from an `if __name__ == \"__main__\"` block in `app.py`, with reload on, and keeps serving `GET /` until it is stopped.",
+  "hidden": [
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving"
+  ],
+  "mediated": [
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p1-55",
+  "phase": 1,
+  "source": "roadmap.md:55",
+  "requirement": "`uv run --frozen python -m pytest tests` passes against the project's own test, `tests/test_home.py`, and any tests the phase adds.",
+  "hidden": [],
+  "mediated": [
+   "test_the_projects_own_tests_pass"
+  ],
+  "status": "mediated-only",
+  "note": "Hidden grading records this as the separate project-tests outcome that a strict pass also needs."
+ },
+ {
+  "id": "easy-p2-60",
+  "phase": 2,
+  "source": "roadmap.md:60",
+  "requirement": "A complaint, `Complaint` in `models.py`, has an agent name, its text, and a UTC creation `timestamp` set automatically for each new complaint.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_complaint_timestamps_are_utc"
+  ],
+  "mediated": [
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_a_complaints_timestamp_is_utc"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-61",
+  "phase": 2,
+  "source": "roadmap.md:61",
+  "requirement": "`models.py` keeps complaints in a module-level list, `complaints`, seeded with three to five typical AI-agent gripes, one of them exactly `Scope creep never ends.`",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-62",
+  "phase": 2,
+  "source": "roadmap.md:62",
+  "requirement": "`GET /complaints` shows a \"Complaints Board\" in the shared layout: one Bootstrap card per complaint with the agent name, the date (year, month and day) and the text.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_board_shows_one_bootstrap_card_per_complaint"
+  ],
+  "mediated": [
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-63",
+  "phase": 2,
+  "source": "roadmap.md:63",
+  "requirement": "The home page keeps working.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title",
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph",
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving"
+  ],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_a_page_that_extends_the_layout_can_set_its_own_title",
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped",
+   "test_the_projects_own_tests_pass"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-67",
+  "phase": 2,
+  "source": "roadmap.md:67",
+  "requirement": "`GET /complaints` answers 200, contains the heading `Complaints Board`, and keeps the shared layout: doctype, `lang=\"en\"`, brand and both nav links.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+  ],
+  "mediated": [
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-69",
+  "phase": 2,
+  "source": "roadmap.md:69",
+  "requirement": "Each complaint is a `.card` whose text carries the agent's name, the complaint text and a date showing year, month and day.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details"
+  ],
+  "mediated": [
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-71",
+  "phase": 2,
+  "source": "roadmap.md:71",
+  "requirement": "`models.py` defines `Complaint(agent_name, text)`: both construct positionally, and each gets its own timezone-aware `timestamp` by default.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved"
+  ],
+  "mediated": [
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-73",
+  "phase": 2,
+  "source": "roadmap.md:73",
+  "requirement": "`models.complaints` is a module-level list of three to five seeded complaints, one with the text exactly \"Scope creep never ends.\".",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p2-75",
+  "phase": 2,
+  "source": "roadmap.md:75",
+  "requirement": "Phase 1 still passes.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title",
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph",
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving"
+  ],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_a_page_that_extends_the_layout_can_set_its_own_title",
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped",
+   "test_the_projects_own_tests_pass"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-79",
+  "phase": 3,
+  "source": "roadmap.md:79",
+  "requirement": "The Complaints Board ends with a form for a new complaint (agent name and text) that posts to `/complaints`.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form"
+  ],
+  "mediated": [
+   "test_the_form_has_a_name_input_a_text_area_and_a_submit_control",
+   "test_the_board_ends_with_the_form_after_every_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-80",
+  "phase": 3,
+  "source": "roadmap.md:80",
+  "requirement": "`POST /complaints` adds the complaint and redirects to the board with status 303 and `Location: /complaints`.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_post_answers_303_to_the_board",
+   "test_post_appends_the_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-81",
+  "phase": 3,
+  "source": "roadmap.md:81",
+  "requirement": "Existing pages keep working.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title",
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph",
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+   "grader_tests/test_phase2_board.py::test_complaint_timestamps_are_utc",
+   "grader_tests/test_phase2_board.py::test_board_shows_one_bootstrap_card_per_complaint"
+  ],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_a_page_that_extends_the_layout_can_set_its_own_title",
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped",
+   "test_the_projects_own_tests_pass",
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date",
+   "test_a_complaints_timestamp_is_utc"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-85",
+  "phase": 3,
+  "source": "roadmap.md:85",
+  "requirement": "The board ends with a form that posts to `/complaints`, with an `agent_name` text input, a `text` textarea and a submit control.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form"
+  ],
+  "mediated": [
+   "test_the_form_has_a_name_input_a_text_area_and_a_submit_control",
+   "test_the_board_ends_with_the_form_after_every_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-87",
+  "phase": 3,
+  "source": "roadmap.md:87",
+  "requirement": "`POST /complaints` appends the complaint and answers 303 with `Location: /complaints`.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_post_answers_303_to_the_board",
+   "test_post_appends_the_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-89",
+  "phase": 3,
+  "source": "roadmap.md:89",
+  "requirement": "The posted complaint appears on the board at the next `GET /complaints`.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_the_posted_complaint_appears_on_the_next_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p3-90",
+  "phase": 3,
+  "source": "roadmap.md:90",
+  "requirement": "Phases 1 and 2 still pass.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title",
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph",
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+   "grader_tests/test_phase2_board.py::test_complaint_timestamps_are_utc",
+   "grader_tests/test_phase2_board.py::test_board_shows_one_bootstrap_card_per_complaint"
+  ],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_a_page_that_extends_the_layout_can_set_its_own_title",
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped",
+   "test_the_projects_own_tests_pass",
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date",
+   "test_a_complaints_timestamp_is_utc"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-94",
+  "phase": 4,
+  "source": "roadmap.md:94",
+  "requirement": "Each complaint gets a unique, stable integer `id`, assigned automatically and never reused; `Complaint(agent_name, text)` still works.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_ids_increase_across_direct_and_route_creation",
+   "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "mediated": [
+   "test_a_complaint_built_directly_gets_a_new_increasing_id_and_starts_open",
+   "test_the_seeded_complaints_have_distinct_ids",
+   "test_a_posted_complaint_gets_an_id_above_every_earlier_one",
+   "test_direct_and_posted_complaints_share_one_rising_id_sequence"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-95",
+  "phase": 4,
+  "source": "roadmap.md:95",
+  "requirement": "Each complaint has a status, `\"open\"` unless changed.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only"
+  ],
+  "mediated": [
+   "test_a_complaint_built_directly_gets_a_new_increasing_id_and_starts_open"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-96",
+  "phase": 4,
+  "source": "roadmap.md:96",
+  "requirement": "`POST /complaints/{id}/resolve` marks a complaint resolved and `POST /complaints/{id}/reopen` marks it open again; both redirect to the board with 303.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_resolve_marks_that_complaint_resolved_and_answers_303_to_the_board",
+   "test_reopen_marks_it_open_and_answers_303_to_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-97",
+  "phase": 4,
+  "source": "roadmap.md:97",
+  "requirement": "The board shows a badge reading exactly \"Open\" or \"Resolved\", and a Resolve button for an open complaint or a Reopen button for a resolved one.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_each_card_shows_its_state_and_a_button_posting_to_its_route",
+   "test_a_cards_button_follows_its_state"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-98",
+  "phase": 4,
+  "source": "roadmap.md:98",
+  "requirement": "Resolving or reopening never changes the order of the board.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+  ],
+  "mediated": [
+   "test_resolving_and_reopening_keep_the_id_and_never_reorder_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-102",
+  "phase": 4,
+  "source": "roadmap.md:102",
+  "requirement": "`Complaint` also has `id: int` and `status: str`, and `Complaint(agent_name, text)` still constructs positionally: each new complaint's `id` is unique and greater than every earlier one, `status` starts as `open`, and how that is achieved is the implementer's choice.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_ids_increase_across_direct_and_route_creation"
+  ],
+  "mediated": [
+   "test_a_complaint_built_directly_gets_a_new_increasing_id_and_starts_open",
+   "test_direct_and_posted_complaints_share_one_rising_id_sequence"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-106",
+  "phase": 4,
+  "source": "roadmap.md:106",
+  "requirement": "The seeded complaints have distinct ids.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "mediated": [
+   "test_the_seeded_complaints_have_distinct_ids"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-107",
+  "phase": 4,
+  "source": "roadmap.md:107",
+  "requirement": "Each card shows `Open` or `Resolved` and a button that posts to its route.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_each_card_shows_its_state_and_a_button_posting_to_its_route",
+   "test_a_cards_button_follows_its_state"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-108",
+  "phase": 4,
+  "source": "roadmap.md:108",
+  "requirement": "`POST /complaints/{id}/resolve` marks that complaint resolved and answers 303 with `Location: /complaints`; the board then shows `Resolved`.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects"
+  ],
+  "mediated": [
+   "test_resolve_marks_that_complaint_resolved_and_answers_303_to_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-110",
+  "phase": 4,
+  "source": "roadmap.md:110",
+  "requirement": "`POST /complaints/{id}/reopen` marks it open and answers the same way.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_reopen_marks_it_open_and_answers_303_to_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-111",
+  "phase": 4,
+  "source": "roadmap.md:111",
+  "requirement": "Resolving or reopening never changes the board's order.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+  ],
+  "mediated": [
+   "test_resolving_and_reopening_keep_the_id_and_never_reorder_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-p4-112",
+  "phase": 4,
+  "source": "roadmap.md:112",
+  "requirement": "Phases 1 to 3 still pass.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head",
+   "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon",
+   "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle",
+   "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic",
+   "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title",
+   "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph",
+   "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+   "grader_tests/test_phase2_board.py::test_complaint_timestamps_are_utc",
+   "grader_tests/test_phase2_board.py::test_board_shows_one_bootstrap_card_per_complaint",
+   "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form",
+   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_the_head_has_a_responsive_viewport",
+   "test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+   "test_the_head_has_the_favicon",
+   "test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+   "test_a_page_title_is_agentclinic_by_default",
+   "test_a_page_that_extends_the_layout_can_set_its_own_title",
+   "test_the_home_page_has_a_hero_section_holding_the_tagline",
+   "test_the_home_page_has_a_short_welcoming_paragraph",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_keeps_serving_home_until_it_is_stopped",
+   "test_the_projects_own_tests_pass",
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date",
+   "test_a_complaints_timestamp_is_utc",
+   "test_the_form_has_a_name_input_a_text_area_and_a_submit_control",
+   "test_the_board_ends_with_the_form_after_every_complaint",
+   "test_post_answers_303_to_the_board",
+   "test_post_appends_the_complaint",
+   "test_the_posted_complaint_appears_on_the_next_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-stack-1",
+  "phase": null,
+  "source": "tech-stack.md:10",
+  "requirement": "`dataclasses.dataclass` Complaint: `agent_name`, `text`, `timestamp`",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved"
+  ],
+  "mediated": [
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-stack-2",
+  "phase": null,
+  "source": "tech-stack.md:11",
+  "requirement": "Module-level in-memory `list` storage",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "easy-stack-3",
+  "phase": null,
+  "source": "tech-stack.md:5",
+  "requirement": "Pinned language, framework and test versions",
+  "hidden": [],
+  "mediated": [],
+  "status": "gap",
+  "reason": "Fixed by the starter `uv.lock`; a build cannot change them under `--frozen`."
+ }
+]

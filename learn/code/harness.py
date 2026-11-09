@@ -1587,7 +1587,7 @@ def build_parser() -> argparse.ArgumentParser:
     qualify_p = sub.add_parser("qualify", help="prove a suite's grader both ways")
     qualify_p.add_argument("--suite", required=True)
     qualify_p.add_argument("--grader", default="current")
-    run.add_argument("--grader", default="current", help="assertion bundle: current, bc5db20 or 16cf9f9^")
+    run.add_argument("--grader", default="current", help="assertion bundle: current, bc5db20, 16cf9f9^, 658bbea5 (Medium before F.7) or f7-roadmap (Easy, all four phases)")
     qualify_p.add_argument("--suites-dir", type=Path, default=SUITES)
     run.add_argument("--suite", required=True, help="a suite name, or all")
     run.add_argument("--suites-dir", type=Path, default=SUITES)

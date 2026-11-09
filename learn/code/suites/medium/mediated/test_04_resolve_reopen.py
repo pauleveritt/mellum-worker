@@ -10,7 +10,12 @@ from urllib.parse import urlsplit
 
 import pytest
 from starlette.testclient import TestClient
-from turbohtml import parse
+from turbohtml import Element, Text, parse
+
+
+# The roadmap asks each card to show the word; a caption before it is still the word on show.
+STATE = re.compile(r"(?:(?i:status|state)\s*:\s*)?(Open|Resolved)")
+CONTROLS = {"form", "button", "input", "select", "textarea"}
 
 
 @functools.cache
@@ -49,7 +54,7 @@ def _action_path(form) -> str:
 
 
 def _cards():
-    response = _client().get("/complaints")
+    response = _client().get("/complaints", follow_redirects=False)
     assert response.status_code == 200, f"GET /complaints answered {response.status_code}"
     return parse(response.text).select(".card")
 
@@ -67,14 +72,44 @@ def _change(complaint_id: int, route: str):
     return _client().post(f"/complaints/{complaint_id}/{route}", follow_redirects=False)
 
 
-def _card_text(name: str) -> str:
-    matching = [_words(card) for card in _cards() if name in _words(card)]
+def _card(name: str):
+    matching = [card for card in _cards() if name in _words(card)]
     assert len(matching) == 1, f"expected one .card for {name!r}, found {len(matching)}"
     return matching[0]
 
 
-def _says(word: str, card: str) -> bool:
-    return re.search(rf"\b{word}\b", card) is not None
+def _read(node) -> str:
+    """What a person reads in this element, leaving out buttons, forms and anything hidden."""
+    if isinstance(node, Text):
+        return node.text
+    if not isinstance(node, Element) or _out_of_sight(node) or node.tag in CONTROLS:
+        return ""
+    return "".join(_read(child) for child in node.children)
+
+
+def _out_of_sight(element) -> bool:
+    style = re.sub(r"\s+", "", element.attr("style") or "").casefold()
+    return "hidden" in element.attrs or "display:none" in style or "visibility:hidden" in style
+
+
+def _states(card) -> set[str]:
+    """The states this card shows: the word alone in an element, or after a caption such as `Status:`."""
+    found: set[str] = set()
+
+    def look_in(element) -> None:
+        shown = STATE.fullmatch(" ".join(_read(element).split()))
+        if shown:
+            found.add(shown[1])
+        before = None
+        for child in element.children:
+            if isinstance(child, Element) and not _out_of_sight(child) and child.tag not in CONTROLS:
+                if not (isinstance(before, Text) and re.search(r"\bnot\s*$", before.text, re.I)):
+                    look_in(child)
+            if not isinstance(child, Text) or child.text.strip():
+                before = child
+
+    look_in(card)
+    return found
 
 
 def _names_on_the_board(names: tuple[str, ...]) -> list[str]:
@@ -85,6 +120,8 @@ def _names_on_the_board(names: tuple[str, ...]) -> list[str]:
 def _button_labels(form) -> list[str]:
     labels = []
     for control in form.select("button, input"):
+        if "disabled" in control.attrs:
+            continue
         if control.tag == "button" and (control.attr("type") or "submit").lower() == "submit":
             labels.append(_words(control))
         elif control.tag == "input" and (control.attr("type") or "").lower() == "submit":
@@ -113,6 +150,20 @@ def test_a_posted_complaint_gets_an_id_above_every_earlier_one():
     assert _post("Id Check", "Numbered after the rest.") > earlier
 
 
+def test_direct_and_posted_complaints_share_one_rising_id_sequence():
+    models = _models()
+    stored = [complaint.id for complaint in models.complaints]
+    built_first = models.Complaint("Built First", "Made without the form.")
+    posted_first = _post("Posted First", "Made with the form.")
+    built_second = models.Complaint("Built Second", "Made after the form ran.")
+    posted_second = _post("Posted Second", "Made after both ways ran.")
+    order = [max(stored), built_first.id, posted_first, built_second.id, posted_second]
+    assert all(earlier < later for earlier, later in zip(order, order[1:])), (
+        f"each new complaint's id must exceed every earlier one, however it was made: {order}")
+    assert (built_first.id, built_second.id) == (order[1], order[3]), "an id changed after it was given"
+    assert [complaint.id for complaint in models.complaints][:len(stored)] == stored, "an earlier id changed"
+
+
 def test_each_card_shows_its_state_and_a_button_posting_to_its_route():
     cards = _cards()
     for complaint in _models().complaints:
@@ -123,7 +174,7 @@ def test_each_card_shows_its_state_and_a_button_posting_to_its_route():
         holding = [(card, form) for card in cards for form in card.select("form") if _action_path(form) == path]
         assert holding, f"no card has a form posting to {path}"
         card, form = holding[0]
-        assert _says(state, _words(card)), f"the card for complaint {complaint.id} does not show {state}"
+        assert _states(card) == {state}, f"the card for complaint {complaint.id} does not show {state}"
         assert (form.attr("method") or "").lower() == "post", f"the form for {path} does not post"
         assert any(label.casefold() in text.casefold() for text in _button_labels(form)), (
             f"the form for {path} has no {label} button")
@@ -139,10 +190,8 @@ def test_resolve_marks_that_complaint_resolved_and_answers_303_to_the_board():
     assert response.headers["location"] == "/complaints"
     assert _complaint(complaint).status.casefold() == "resolved"
     assert _complaint(bystander).status == "open"
-    card = _card_text("Resolve Check")
-    assert _says("Resolved", card) and not _says("Open", card), f"the board does not show it Resolved: {card}"
-    other = _card_text("Resolve Bystander")
-    assert _says("Open", other) and not _says("Resolved", other), f"resolving changed another card: {other}"
+    assert _states(_card("Resolve Check")) == {"Resolved"}, "the board does not show it Resolved"
+    assert _states(_card("Resolve Bystander")) == {"Open"}, "resolving changed another card"
 
 
 def test_reopen_marks_it_open_and_answers_303_to_the_board():
@@ -152,8 +201,7 @@ def test_reopen_marks_it_open_and_answers_303_to_the_board():
     assert response.status_code == 303
     assert response.headers["location"] == "/complaints"
     assert _complaint(complaint).status == "open"
-    card = _card_text("Reopen Check")
-    assert _says("Open", card) and not _says("Resolved", card), f"the board does not show it Open: {card}"
+    assert _states(_card("Reopen Check")) == {"Open"}, "the board does not show it Open"
 
 
 def test_a_cards_button_follows_its_state():

@@ -39,7 +39,7 @@ def leave_the_board_as_it_was():
 
 
 def _document():
-    response = _client().get("/complaints")
+    response = _client().get("/complaints", follow_redirects=False)
     assert response.status_code == 200, f"GET /complaints answered {response.status_code}"
     return parse(response.text)
 
@@ -65,6 +65,13 @@ def _add_form(document):
     return forms[-1]
 
 
+def _usable(control) -> bool:
+    """A control a person can fill in: not disabled, read-only or hidden, nor in a disabled fieldset."""
+    if any(word in control.attrs for word in ("disabled", "readonly", "hidden")):
+        return False
+    return not any(getattr(node, "tag", None) == "fieldset" and "disabled" in node.attrs for node in control.ancestors)
+
+
 def _post(name: str, text: str):
     return _client().post("/complaints", data={"agent_name": name, "text": text}, follow_redirects=False)
 
@@ -73,12 +80,15 @@ def test_the_form_has_a_name_input_a_text_area_and_a_submit_control():
     form = _add_form(_document())
     name = form.select_one('input[name="agent_name"]')
     assert name is not None and (name.attr("type") or "text").lower() == "text", "no agent_name text input"
-    assert form.select_one('textarea[name="text"]') is not None, "no text textarea"
+    text = form.select_one('textarea[name="text"]')
+    assert text is not None, "no text textarea"
+    assert _usable(name) and _usable(text), "the form's fields must accept input"
     assert any(
-        (control.tag == "button" and (control.attr("type") or "submit").lower() == "submit")
-        or (control.tag == "input" and (control.attr("type") or "").lower() == "submit")
+        _usable(control) and (
+            (control.tag == "button" and (control.attr("type") or "submit").lower() == "submit")
+            or (control.tag == "input" and (control.attr("type") or "").lower() == "submit"))
         for control in form.select("button, input")
-    ), "the form has no submit control"
+    ), "the form has no usable submit control"
 
 
 def test_the_board_ends_with_the_form_after_every_complaint():

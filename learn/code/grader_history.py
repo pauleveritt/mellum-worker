@@ -4,7 +4,8 @@ import hashlib
 import json
 
 EXECUTION_POLICY = 'trusted-copy-v1'
-BUNDLES = {'bc5db20': 'bc5db20', '16cf9f9^': 'pre-single-source'}
+BUNDLES = {'bc5db20': 'bc5db20', '16cf9f9^': 'pre-single-source', '658bbea5': '658bbea5',
+           'f7-roadmap': 'f7-roadmap'}
 
 
 def select_grader(suite, name='current'):

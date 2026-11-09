@@ -23,7 +23,7 @@ from jinja2 import nodes
 from starlette.requests import Request
 from starlette.templating import Jinja2Templates
 from starlette.testclient import TestClient
-from turbohtml import Doctype, parse
+from turbohtml import Doctype, Element, parse
 
 TAGLINE = "Come in. Sit down. Tell us about your human."
 BARE_PAGE = '{% extends "base.html" %}'
@@ -51,8 +51,18 @@ def _root() -> Path:
     return Path(_app().__file__).resolve().parent
 
 
+def _on_show(element) -> bool:
+    """False for anything a browser would not show: hidden itself or inside something hidden."""
+    for node in (element, *element.ancestors):
+        if isinstance(node, Element):
+            style = re.sub(r"\s+", "", node.attr("style") or "").casefold()
+            if "hidden" in node.attrs or "display:none" in style or "visibility:hidden" in style:
+                return False
+    return True
+
+
 def _home():
-    response = TestClient(_app().app).get("/")
+    response = TestClient(_app().app).get("/", follow_redirects=False)
     assert response.status_code == 200, f"GET / answered {response.status_code}"
     return response.text, parse(response.text)
 
@@ -174,7 +184,7 @@ def test_home_starts_with_the_doctype_and_html_lang_en():
 
 def test_the_navbar_shows_the_brand_and_links_home_and_complaints():
     _, document = _home()
-    navbars = document.select(NAVBAR)
+    navbars = [navbar for navbar in document.select(NAVBAR) if _on_show(navbar)]
     assert navbars, "the page has no navbar"
     for navbar in navbars:
         links = [(_words(a).casefold(), _link_path(a.attr("href"))) for a in navbar.select("a")]

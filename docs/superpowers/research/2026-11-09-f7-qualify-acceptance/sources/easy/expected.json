@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+  "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+  "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+  "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+]

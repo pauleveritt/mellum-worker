@@ -232,3 +232,17 @@ sessions did not, and per-phase Acceptance lists mattered more than the file
 layout. *Reopens when* a remedy unit can shape the task inside a Pi session
 (feeding phases one at a time, or pointing each at its own spec), so an R cycle
 can measure it.
+
+**Hard's status label and ID checks still use Medium's original predicate.** F.7 corrected Medium's
+rejection of `Status: Open` and added a direct-and-route ID check, keeping Hard out of scope. Hard's
+roadmap has the same wording and its hidden Phase 4 file is the same as Medium's was, so it shares
+the false failure and the coverage hole ([note](docs/superpowers/research/2026-11-09-f7-qualify-acceptance.md)).
+*Reopens when* R.3 is scheduled, or a Hard run misses a resolve or reopen check.
+
+**Two hidden checks can still fail a valid build.** F.7 held Medium's hidden grader to its two
+repairs. Its review found that `_post_forms` compares a form action exactly, so a `url_for` action
+rendering `http://testserver/...` fails on Medium and on Easy's `f7-roadmap` bundle, while the
+mediated tests accept it; and the board heading must equal `Complaints Board` exactly, so
+`<h1>Complaints Board <small>today</small></h1>` fails. Fix under a new grader identity.
+*Reopens when* R.2 grades Medium Phase 3 or 4, Easy's bundle is first used on Phase 3 or later, or a run
+misses one of these checks on a build that meets its roadmap.

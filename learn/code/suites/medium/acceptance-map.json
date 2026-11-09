@@ -1,0 +1,679 @@
+[
+ {
+  "id": "medium-p1-20",
+  "phase": 1,
+  "source": "roadmap.md:20",
+  "requirement": "As an agent arriving at the clinic, I want the tagline \"Come in. Sit down. Tell us about your human.\" and a short welcome, so I know where I am.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_has_a_short_welcome_beside_the_tagline"
+  ],
+  "status": "covered",
+  "note": "The hidden grader reads the tagline; the short welcome is mediated-only."
+ },
+ {
+  "id": "medium-p1-22",
+  "phase": 1,
+  "source": "roadmap.md:22",
+  "requirement": "As a visitor, I want a shared layout with a navbar to Home and Complaints, so I can move around.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "mediated": [
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p1-24",
+  "phase": 1,
+  "source": "roadmap.md:24",
+  "requirement": "As the operator, I want `uv run --frozen python app.py` to start the app with reload.",
+  "hidden": [],
+  "mediated": [
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_serves_home"
+  ],
+  "status": "mediated-only",
+  "note": "Hidden grading omits this written requirement; it stays in the mediated test."
+ },
+ {
+  "id": "medium-p1-25",
+  "phase": 1,
+  "source": "roadmap.md:25",
+  "requirement": "As the operator, I want the home page exercised in process with `TestClient`, so a change can be checked without a running server.",
+  "hidden": [],
+  "mediated": [
+   "test_the_projects_own_tests_pass"
+  ],
+  "status": "mediated-only",
+  "note": "Hidden grading records this as the separate project-tests outcome that a strict pass also needs."
+ },
+ {
+  "id": "medium-p1-30",
+  "phase": 1,
+  "source": "roadmap.md:30",
+  "requirement": "`GET /` answers 200 and the page contains the tagline, word for word.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p1-31",
+  "phase": 1,
+  "source": "roadmap.md:31",
+  "requirement": "The page starts `<!DOCTYPE html>` and `<html lang=\"en\">`.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language"
+  ],
+  "mediated": [
+   "test_home_starts_with_the_doctype_and_html_lang_en"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p1-32",
+  "phase": 1,
+  "source": "roadmap.md:32",
+  "requirement": "The navbar shows `AgentClinic` and links Home to `/` and Complaints to `/complaints`.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "mediated": [
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p1-34",
+  "phase": 1,
+  "source": "roadmap.md:34",
+  "requirement": "`uv run --frozen python -m pytest tests` passes against the project's own test.",
+  "hidden": [],
+  "mediated": [
+   "test_the_projects_own_tests_pass"
+  ],
+  "status": "mediated-only",
+  "note": "Hidden grading records this as the separate project-tests outcome that a strict pass also needs."
+ },
+ {
+  "id": "medium-p2-39",
+  "phase": 2,
+  "source": "roadmap.md:39",
+  "requirement": "As an agent, I want a Complaints Board where each complaint is a card with the agent's name, the date and the text, so I can read other agents' gripes.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details"
+  ],
+  "mediated": [
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-41",
+  "phase": 2,
+  "source": "roadmap.md:41",
+  "requirement": "As the clinic, I want three to five seeded complaints, one exactly \"Scope creep never ends.\", so the board is never empty.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-43",
+  "phase": 2,
+  "source": "roadmap.md:43",
+  "requirement": "As a visitor, I want the home page to keep working.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_has_a_short_welcome_beside_the_tagline",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_serves_home",
+   "test_the_projects_own_tests_pass",
+   "test_app_py_holds_the_fastapi_application_as_app"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-47",
+  "phase": 2,
+  "source": "roadmap.md:47",
+  "requirement": "`GET /complaints` answers 200, contains the heading `Complaints Board`, and keeps the shared layout: doctype, `lang=\"en\"`, brand and both nav links.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+  ],
+  "mediated": [
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_board_is_rendered_from_complaints_html_which_extends_base_html"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-49",
+  "phase": 2,
+  "source": "roadmap.md:49",
+  "requirement": "Each complaint is a `.card` whose text carries the agent's name, the complaint text and a date showing year, month and day.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details"
+  ],
+  "mediated": [
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-51",
+  "phase": 2,
+  "source": "roadmap.md:51",
+  "requirement": "`models.py` defines `Complaint(agent_name, text)`: both construct positionally, and each gets its own timezone-aware `timestamp` by default.",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved"
+  ],
+  "mediated": [
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-53",
+  "phase": 2,
+  "source": "roadmap.md:53",
+  "requirement": "`models.complaints` is a module-level list of three to five seeded complaints, one with the text exactly \"Scope creep never ends.\".",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p2-55",
+  "phase": 2,
+  "source": "roadmap.md:55",
+  "requirement": "Phase 1 still passes.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_has_a_short_welcome_beside_the_tagline",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_serves_home",
+   "test_the_projects_own_tests_pass",
+   "test_app_py_holds_the_fastapi_application_as_app"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-59",
+  "phase": 3,
+  "source": "roadmap.md:59",
+  "requirement": "As an agent, I want a form at the end of the board that posts my name and complaint, so I can air a grievance.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form"
+  ],
+  "mediated": [
+   "test_the_form_has_a_name_input_a_text_area_and_a_submit_control",
+   "test_the_board_ends_with_the_form_after_every_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-61",
+  "phase": 3,
+  "source": "roadmap.md:61",
+  "requirement": "As an agent, I want submitting to redirect (303) to the board, where my complaint now appears.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_post_answers_303_to_the_board",
+   "test_the_posted_complaint_appears_on_the_next_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-63",
+  "phase": 3,
+  "source": "roadmap.md:63",
+  "requirement": "As a visitor, I want the existing pages to keep working.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_has_a_short_welcome_beside_the_tagline",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_serves_home",
+   "test_the_projects_own_tests_pass",
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_board_is_rendered_from_complaints_html_which_extends_base_html",
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-67",
+  "phase": 3,
+  "source": "roadmap.md:67",
+  "requirement": "The board ends with a form that posts to `/complaints`, with an `agent_name` text input, a `text` textarea and a submit control.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form"
+  ],
+  "mediated": [
+   "test_the_form_has_a_name_input_a_text_area_and_a_submit_control",
+   "test_the_board_ends_with_the_form_after_every_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-69",
+  "phase": 3,
+  "source": "roadmap.md:69",
+  "requirement": "`POST /complaints` appends the complaint and answers 303 with `Location: /complaints`.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_post_answers_303_to_the_board",
+   "test_post_appends_the_complaint"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-71",
+  "phase": 3,
+  "source": "roadmap.md:71",
+  "requirement": "The posted complaint appears on the board at the next `GET /complaints`.",
+  "hidden": [
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_the_posted_complaint_appears_on_the_next_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p3-72",
+  "phase": 3,
+  "source": "roadmap.md:72",
+  "requirement": "Phases 1 and 2 still pass.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_has_a_short_welcome_beside_the_tagline",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_serves_home",
+   "test_the_projects_own_tests_pass",
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_board_is_rendered_from_complaints_html_which_extends_base_html",
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-76",
+  "phase": 4,
+  "source": "roadmap.md:76",
+  "requirement": "As the clinic, I want each complaint to have a unique, stable integer id that is never reused, so I can refer to it.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_ids_increase_across_direct_and_route_creation",
+   "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "mediated": [
+   "test_a_complaint_built_directly_gets_a_new_increasing_id_and_starts_open",
+   "test_the_seeded_complaints_have_distinct_ids",
+   "test_a_posted_complaint_gets_an_id_above_every_earlier_one",
+   "test_direct_and_posted_complaints_share_one_rising_id_sequence"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-78",
+  "phase": 4,
+  "source": "roadmap.md:78",
+  "requirement": "As an agent, I want each complaint to show \"Open\" or \"Resolved\" and a Resolve or Reopen button, so I can change its state.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_each_card_shows_its_state_and_a_button_posting_to_its_route",
+   "test_a_cards_button_follows_its_state"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-80",
+  "phase": 4,
+  "source": "roadmap.md:80",
+  "requirement": "As a visitor, I want resolving and reopening to redirect (303) and never reorder the board.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+  ],
+  "mediated": [
+   "test_resolve_marks_that_complaint_resolved_and_answers_303_to_the_board",
+   "test_reopen_marks_it_open_and_answers_303_to_the_board",
+   "test_resolving_and_reopening_keep_the_id_and_never_reorder_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-85",
+  "phase": 4,
+  "source": "roadmap.md:85",
+  "requirement": "`Complaint` also has `id: int` and `status: str`, and `Complaint(agent_name, text)` still constructs positionally: each new complaint's `id` is unique and greater than every earlier one, `status` starts as `open`, and how that is achieved is the implementer's choice.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+   "grader_tests/test_phase4_resolve_reopen.py::test_complaint_ids_increase_across_direct_and_route_creation"
+  ],
+  "mediated": [
+   "test_a_complaint_built_directly_gets_a_new_increasing_id_and_starts_open",
+   "test_direct_and_posted_complaints_share_one_rising_id_sequence"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-89",
+  "phase": 4,
+  "source": "roadmap.md:89",
+  "requirement": "The seeded complaints have distinct ids.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "mediated": [
+   "test_the_seeded_complaints_have_distinct_ids"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-90",
+  "phase": 4,
+  "source": "roadmap.md:90",
+  "requirement": "Each card shows `Open` or `Resolved` and a button that posts to its route.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_each_card_shows_its_state_and_a_button_posting_to_its_route",
+   "test_a_cards_button_follows_its_state"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-91",
+  "phase": 4,
+  "source": "roadmap.md:91",
+  "requirement": "`POST /complaints/{id}/resolve` marks that complaint resolved and answers 303 with `Location: /complaints`; the board then shows `Resolved`.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects"
+  ],
+  "mediated": [
+   "test_resolve_marks_that_complaint_resolved_and_answers_303_to_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-93",
+  "phase": 4,
+  "source": "roadmap.md:93",
+  "requirement": "`POST /complaints/{id}/reopen` marks it open and answers the same way.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_reopen_marks_it_open_and_answers_303_to_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-94",
+  "phase": 4,
+  "source": "roadmap.md:94",
+  "requirement": "Resolving or reopening never changes the board's order.",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board"
+  ],
+  "mediated": [
+   "test_resolving_and_reopening_keep_the_id_and_never_reorder_the_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-p4-95",
+  "phase": 4,
+  "source": "roadmap.md:95",
+  "requirement": "Phases 1 to 3 still pass.",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+   "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form",
+   "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+   "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board"
+  ],
+  "mediated": [
+   "test_home_answers_200_with_the_tagline_word_for_word",
+   "test_home_has_a_short_welcome_beside_the_tagline",
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+   "test_running_app_py_serves_home",
+   "test_the_projects_own_tests_pass",
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_board_answers_200_with_its_heading",
+   "test_board_keeps_the_shared_layout",
+   "test_board_is_rendered_from_complaints_html_which_extends_base_html",
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+   "test_each_complaint_is_one_card_with_its_name_text_and_date",
+   "test_the_form_has_a_name_input_a_text_area_and_a_submit_control",
+   "test_the_board_ends_with_the_form_after_every_complaint",
+   "test_post_answers_303_to_the_board",
+   "test_post_appends_the_complaint",
+   "test_the_posted_complaint_appears_on_the_next_board"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-stack-1",
+  "phase": null,
+  "source": "tech-stack.md:18",
+  "requirement": "`app.py` holds the app and a `__main__` block running uvicorn with reload",
+  "hidden": [],
+  "mediated": [
+   "test_app_py_holds_the_fastapi_application_as_app",
+   "test_app_py_starts_uvicorn_with_reload_from_a_main_block"
+  ],
+  "status": "mediated-only",
+  "note": "Hidden grading omits it; kept as a written requirement."
+ },
+ {
+  "id": "medium-stack-2",
+  "phase": null,
+  "source": "tech-stack.md:19",
+  "requirement": "`models.py` holds the `Complaint` dataclass and the module-level `complaints` list",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+   "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved"
+  ],
+  "mediated": [
+   "test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+   "test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-stack-3",
+  "phase": null,
+  "source": "tech-stack.md:20",
+  "requirement": "`base.html`, `home.html` and `complaints.html`: pages extend the layout",
+  "hidden": [],
+  "mediated": [
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_board_is_rendered_from_complaints_html_which_extends_base_html"
+  ],
+  "status": "mediated-only",
+  "note": "Template inheritance is explicit in the tech stack; hidden grading omits it, and it is retained here."
+ },
+ {
+  "id": "medium-stack-4",
+  "phase": null,
+  "source": "tech-stack.md:25",
+  "requirement": "Every page starts with the doctype and `lang=\"en\"` and extends the shared layout",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+   "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+  ],
+  "mediated": [
+   "test_home_starts_with_the_doctype_and_html_lang_en",
+   "test_board_keeps_the_shared_layout",
+   "test_home_is_rendered_from_home_html_which_extends_base_html",
+   "test_board_is_rendered_from_complaints_html_which_extends_base_html"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-stack-5",
+  "phase": null,
+  "source": "tech-stack.md:27",
+  "requirement": "The navbar shows the brand and both links",
+  "hidden": [
+   "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+   "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout"
+  ],
+  "mediated": [
+   "test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+   "test_board_keeps_the_shared_layout"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-stack-6",
+  "phase": null,
+  "source": "tech-stack.md:29",
+  "requirement": "Each complaint is a `.card` with name, text and date",
+  "hidden": [
+   "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details"
+  ],
+  "mediated": [
+   "test_each_complaint_is_one_card_with_its_name_text_and_date"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-stack-7",
+  "phase": null,
+  "source": "tech-stack.md:31",
+  "requirement": "A state is shown as the word beside a form button",
+  "hidden": [
+   "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+   "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects"
+  ],
+  "mediated": [
+   "test_each_card_shows_its_state_and_a_button_posting_to_its_route"
+  ],
+  "status": "covered"
+ },
+ {
+  "id": "medium-stack-8",
+  "phase": null,
+  "source": "tech-stack.md:5",
+  "requirement": "Pinned language, framework and test versions",
+  "hidden": [],
+  "mediated": [],
+  "status": "gap",
+  "reason": "Fixed by the starter `uv.lock`; a build cannot change them under `--frozen`."
+ },
+ {
+  "id": "medium-stack-9",
+  "phase": null,
+  "source": "tech-stack.md:9",
+  "requirement": "Bootstrap 5 from a CDN",
+  "hidden": [],
+  "mediated": [],
+  "status": "gap",
+  "reason": "Named in the Medium tech stack only, not in its Acceptance lists; the board checks `.card` semantics, not the stylesheet."
+ }
+]
