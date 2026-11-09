@@ -267,6 +267,30 @@ tried to start uvicorn, the guard refused it, and the worker's own reasoning
 turned — *"the rule says not to start servers, we need to fix the route"* — to
 `TestClient` in process.
 
+## The verdict run (2026-11-09) — Arm A lands 3/3 on the real ladder; the plan arm can't run on llama.cpp yet
+
+Ran the preregistered paired verdict
+([prereg](2026-11-09-one-pass-verdict-prereg.md)) through `run_ladder`, rung 13,
+n=3. **Arm A (one pass + the ladder's native frozen exit-gate + reduced thinking
++ the measured remedies) passed 3 of 3** on the hidden oracle, every rep a clean
+stop, at **72 / 34 / 24 requests** (mean ~43) — the one-pass exit-gate reproduced
+on the shipped harness, not a scratch driver. **Arm B (`--mode plan`, the
+architect loop) could not be measured:** plan mode **hung to the full 3600 s
+deadline with zero requests** on the llama.cpp backend — the delegate/plan path's
+llama.cpp support is not landed on `main` (it is on the `remove-omlx` branch, the
+same gap as the oMLX→llama.cpp AGENTS.md contradiction). So the plan-arm cost
+stays the earlier screened baseline (300+ req, patchy pass-rate); a clean paired
+plan number waits on that branch landing. Arm A's 3/3 is a real recorded ladder
+result; the paired comparison is still a lead until the plan arm runs.
+
+**External corroboration, and why it does not overturn this.** JetBrains shipped
+the architect split as a product (Junie "Eco Mode", Oct 2026: 48–57% lower
+$/task at ~flat resolve). That is the same decomposition as Arm B — but its saving
+is the **model-tier price gap** (an expensive planner, a cheap builder), not the
+split itself. With one fixed model the gap is zero, so the split is pure overhead,
+which is exactly what Arm A vs the plan baseline shows. The split pays via a
+tier differential; with a single fixed model it is overhead.
+
 ## What would falsify this / Risks
 
 - **n=2, two tiers, a scratch driver** — a screen, not a `run_ladder` rate, and
