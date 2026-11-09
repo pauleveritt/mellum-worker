@@ -38,6 +38,10 @@ RETIRED_UNIT_NAMES = {
     "guard/stay-in-workspace": "guard/outside-workspace",
     "guard/block-foreground-server": "guard/foreground-server",
     "guard/refuse-whole-file-rewrite": "guard/whole-file-rewrite",
+    # The verify gate was recorded as `mellum-ncm` before it was renamed for what it does
+    # (it re-runs the acceptance test; "ncm" borrowed an unrelated paper's term). Fold the old
+    # extension name so the board shows `verify` while the run.json evidence stays immutable.
+    "mellum-ncm": "mellum-verify",
 }
 
 

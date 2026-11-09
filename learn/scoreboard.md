@@ -20,28 +20,28 @@ Every Mellum worker run ever measured, split by tier.
 
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `a2227186` | 6/6 | 17 | 76s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `quality` | `2d12c19f` | 1/1 | 21 | 64s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `f966018c` | 1/1 | 21 | 67s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 6/6 | 17 | 76s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | `2d12c19f` | 1/1 | 21 | 64s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `f966018c` | 1/1 | 21 | 67s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | `4700735e` | 3/3 | 62 | 229s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | `—` | 2/3 | 14 | 41s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `—` | 2/3 | 17 | 71s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `—` | 2/3 | 27 | 116s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `—` | 2/3 | 27 | 125s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `—` | 2/3 | 34 | 207s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | `a2227186` | 3/5 | 30 | 143s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | `a2227186` | 3/5 | 30 | 143s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 3/6 | 24 | 87s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | `78b5dfc1` | 1/3 | 9 | 46s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `—` | 1/3 | 16 | 67s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 2/6 | 17 | 54s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `db5dd4f0` | 1/3 | 21 | 77s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `db5dd4f0` | 1/3 | 21 | 77s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 1/3 | 23 | 76s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 1/3 | 56 | 221s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `0c0f3935` | 1/3 | 102 | 622s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | `9359a70b` | 1/3 | 125 | 702s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `0c0f3935` | 1/3 | 102 | 622s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `9359a70b` | 1/3 | 125 | 702s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `—` | 4/13 | 27 | 175s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 0/3 | — | — |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` | `3ddecccb` | 0/3 | — | — |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | `3ddecccb` | 0/3 | — | — |
 
 **All runs** — newest first.
 
@@ -89,11 +89,11 @@ Every Mellum worker run ever measured, split by tier.
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | fail | 14 | 31s | `20261031T124211Z-easy-4bacc4` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | pass | 25 | 71s | `20261031T123856Z-easy-c727cb` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | pass | 14 | 41s | `20261031T123609Z-easy-7a3848` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | pass | 43 | 214s | `20261031T121941Z-easy-9e702e` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | pass | 50 | 196s | `20261031T121620Z-easy-e1b892` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | pass | 30 | 143s | `20261031T121355Z-easy-102df8` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | fail | 40 | 117s | `20261031T121155Z-easy-870d1b` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `ncm` · `nonblock` | fail | 17 | 99s | `20261031T121011Z-easy-1b4972` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | pass | 43 | 214s | `20261031T121941Z-easy-9e702e` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | pass | 50 | 196s | `20261031T121620Z-easy-e1b892` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | pass | 30 | 143s | `20261031T121355Z-easy-102df8` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | fail | 40 | 117s | `20261031T121155Z-easy-870d1b` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | fail | 17 | 99s | `20261031T121011Z-easy-1b4972` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 40 | 241s | `20261031T112023Z-easy-c08943` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 46 | 176s | `20261031T111723Z-easy-f419da` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 28 | 102s | `20261031T111536Z-easy-f70700` |
@@ -104,29 +104,29 @@ Every Mellum worker run ever measured, split by tier.
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 49 | 165s | `20261031T101129Z-easy-ee63b0` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 42 | 208s | `20261031T100757Z-easy-6be5bf` |
 | 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 25 | 104s | `20261031T100608Z-easy-576a01` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 17 | 76s | `20261031T080429Z-easy-de64c0` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 18 | 58s | `20261031T080329Z-easy-74a7db` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 19 | 79s | `20261031T080205Z-easy-d162fe` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 19 | 77s | `20261031T075921Z-easy-380468` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 20 | 67s | `20261031T075811Z-easy-5fbdc8` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 99 | 539s | `20261031T074907Z-easy-ec96b0` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | fail | 188 | 1253s | `20261031T071251Z-easy-b27fce` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | pass | 102 | 622s | `20261031T070226Z-easy-3979a3` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | fail | 156 | 1147s | `20261031T064314Z-easy-1890ec` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` | fail | 21 | 59s | `20261031T063452Z-easy-5e5cab` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` | fail | 129 | 900s | `20261031T061949Z-easy-001917` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` | fail | 18 | 48s | `20261031T061657Z-easy-ace708` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 17 | 76s | `20261031T080429Z-easy-de64c0` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 18 | 58s | `20261031T080329Z-easy-74a7db` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 19 | 79s | `20261031T080205Z-easy-d162fe` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 19 | 77s | `20261031T075921Z-easy-380468` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 20 | 67s | `20261031T075811Z-easy-5fbdc8` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 99 | 539s | `20261031T074907Z-easy-ec96b0` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 188 | 1253s | `20261031T071251Z-easy-b27fce` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 102 | 622s | `20261031T070226Z-easy-3979a3` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 156 | 1147s | `20261031T064314Z-easy-1890ec` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | fail | 21 | 59s | `20261031T063452Z-easy-5e5cab` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | fail | 129 | 900s | `20261031T061949Z-easy-001917` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | fail | 18 | 48s | `20261031T061657Z-easy-ace708` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 17 | 47s | `easy-r2` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 23 | 76s | `easy-r1` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 16 | 63s | `easy-r0` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | fail | 296 | 1799s | `20261030T214708Z-easy-e872d0` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | pass | 125 | 702s | `20261030T213521Z-easy-11b28f` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | fail | 35 | 143s | `20261030T213053Z-easy-c38475` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | fail | 20 | 55s | `20261030T211912Z-easy-a986a4` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | fail | 17 | 46s | `20261030T211824Z-easy-964200` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | pass | 21 | 77s | `20261030T211703Z-easy-b1a126` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` · `quality` | pass | 21 | 67s | `20261030T205503Z-easy-2bd316` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `quality` | pass | 21 | 64s | `20261030T204944Z-easy-dea973` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 296 | 1799s | `20261030T214708Z-easy-e872d0` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | pass | 125 | 702s | `20261030T213521Z-easy-11b28f` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 35 | 143s | `20261030T213053Z-easy-c38475` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 20 | 55s | `20261030T211912Z-easy-a986a4` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 17 | 46s | `20261030T211824Z-easy-964200` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | pass | 21 | 77s | `20261030T211703Z-easy-b1a126` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | pass | 21 | 67s | `20261030T205503Z-easy-2bd316` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | pass | 21 | 64s | `20261030T204944Z-easy-dea973` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | pass | 9 | 46s | `20261030T203042Z-easy-411fa7` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | fail | 19 | 56s | `20261030T202942Z-easy-0eb2b4` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | fail | 38 | 97s | `20261030T202801Z-easy-7924a7` |
@@ -139,7 +139,7 @@ Every Mellum worker run ever measured, split by tier.
 
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | `a5560e1f` | 3/3 | 51 | 471s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | `a5560e1f` | 3/3 | 51 | 471s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `—` | 2/3 | 47 | 347s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `—` | 2/3 | 71 | 522s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `—` | 1/3 | 52 | 269s |
@@ -150,7 +150,7 @@ Every Mellum worker run ever measured, split by tier.
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `—` | 0/3 | — | — |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `—` | 0/3 | — | — |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `—` | 0/3 | — | — |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | `a2227186` | 0/3 | — | — |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 0/3 | — | — |
 
 **All runs** — newest first.
 
@@ -189,12 +189,12 @@ Every Mellum worker run ever measured, split by tier.
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 76 | 364s | `20261031T151831Z-medium-e068ec` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 85 | 380s | `20261031T151204Z-medium-f56b19` |
 | 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 93 | 546s | `20261031T150255Z-medium-90bb94` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | pass | 102 | 1460s | `20261031T134320Z-medium-5d5e38` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | pass | 51 | 471s | `20261031T133525Z-medium-5e01e9` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `ncm` · `nonblock` | pass | 76 | 489s | `20261031T132711Z-medium-673535` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | fail | 194 | 1483s | `20261031T093813Z-medium-297f01` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | fail | 267 | 3001s | `20261031T084807Z-medium-c0ea2a` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `ncm` · `nonblock` | fail | 157 | 1372s | `20261031T082511Z-medium-74b050` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | pass | 102 | 1460s | `20261031T134320Z-medium-5d5e38` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | pass | 51 | 471s | `20261031T133525Z-medium-5e01e9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | pass | 76 | 489s | `20261031T132711Z-medium-673535` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 194 | 1483s | `20261031T093813Z-medium-297f01` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 267 | 3001s | `20261031T084807Z-medium-c0ea2a` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 157 | 1372s | `20261031T082511Z-medium-74b050` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 103 | 899s | `medium-r2` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 71 | 522s | `medium-r1` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 45 | 303s | `medium-r0` |

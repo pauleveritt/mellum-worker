@@ -48,6 +48,7 @@ entries below.
 | 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
 | 16 | A skipped rule | none — a fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
 | 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
+| 18 | The live-server spiral | `guard/no-live-server` — any server start plus a loopback curl, stricter than `guard/foreground-server` |
 
 ## It says it is done and it is not
 
@@ -108,7 +109,7 @@ entries below.
    deadline waiting. **Seen:** three `no-facts` sessions that went silent for
    143–460 s, two of three `bare` Easy sessions, LC.19's first two attempts,
    and, on the local 6-bit MLX host, two of three bare `build-a-harness` sessions
-   (2026-10-29 smoke), and two of three easy `acceptance + ncm` reps on local Q4
+   (2026-10-29 smoke), and two of three easy `acceptance + verify` reps on local Q4
    that were killed at the 120 s stall on a foreground `python main.py`, before
    the settle gate could ever fire (2026-10-31)
    ([screen](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-project-facts-screen.md),
@@ -130,7 +131,7 @@ entries below.
    that should refuse a premature "done" was switched off the whole session, so
    the worker self-exited with the work incomplete and nothing sent it back — a
    harness fault that reads from the outside as the model stopping early.
-   **Seen:** the 2026-10-30 easy remedy screen, where `mellum-verify` read `NCM_TEST`
+   **Seen:** the 2026-10-30 easy remedy screen, where `mellum-verify` read `VERIFY_TEST`
    at extension-load — before `mellum-acceptance` set it at `session_start` — so
    `[mellum-verify]` fired zero times and a 17-turn session settled with the app
    built as `main.py` and the Phase-1 home checks unmet
@@ -217,9 +218,29 @@ entries below.
     `guard/foreground-server` removes the server-start that stands in for a check,
     forcing a different verification, and a verify lever is being measured.
 
+## It chases a live server
+
+18. **The live-server spiral.** A redirect reads as the wrong number — a `303`
+    the model wanted to be `200`, a `TestClient` `422` its own route signature
+    causes — and it doesn't believe it, so it starts a live server and curls
+    `localhost` to see for itself. The server it starts is a stranger: it forks a
+    process that disagrees with the in-process test client, so the curl settles
+    nothing, so it starts another, thrashing to the stall before it ever settles.
+    Distinct from a server nobody can stop (8): there a foreground server hangs
+    the run; here a *background* one, which `guard/foreground-server` waves
+    through, is the spiral's fuel. **Seen:** gated one-pass medium, where 2 of 3
+    reps never reached the exit-gate — 28 to 55 server starts each, the model
+    slipping past `guard/foreground-server` with `nohup … &` and
+    `.venv/bin/python app.py`
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
+    **Answer:** `guard/no-live-server` refuses any server start — foreground or
+    background — and any loopback curl, and points the worker at
+    `TestClient(app, follow_redirects=False)`; with it, 3 of 3 reached the gate
+    and passed.
+
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–16 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–18 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
