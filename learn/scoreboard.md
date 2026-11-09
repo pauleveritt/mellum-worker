@@ -10,49 +10,157 @@ Every Mellum worker run ever measured, split by tier.
 
 ## Overview
 
-125 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
+197 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
 
-## Easy
+## Records
 
-83 runs, 40 passed.
+The fastest pass per stack and version, ranked by pass rate, then fewest turns, then least wall. A code change to an extension is a new **version** of the same stack.
 
-**Records**, the fastest pass per stack and version.
+### Easy
+
+148 runs, 82 passed.
 
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 6/6 | 17 | 76s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `6d37c90f` | 3/3 | 19 | 85s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | `2d12c19f` | 1/1 | 21 | 64s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `f966018c` | 1/1 | 21 | 67s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | `4700735e` | 3/3 | 62 | 229s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `6d37c90f` | 6/6 | 22 | 81s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | `4700735e` | 3/3 | 62 | 229s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | `ae25158c` | 5/6 | 13 | 50s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `dc7bf1be` | 5/6 | 14 | 61s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | `1bb0d1be` | 7/9 | 14 | 59s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | `865e3699` | 2/3 | 12 | 52s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | `n/a` | 2/3 | 14 | 41s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | `243fb1f9` | 2/3 | 15 | 95s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `n/a` | 2/3 | 17 | 71s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `n/a` | 2/3 | 27 | 116s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `n/a` | 2/3 | 27 | 125s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `n/a` | 2/3 | 34 | 207s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | `a2227186` | 3/5 | 30 | 143s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 3/6 | 24 | 87s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `n/a` | 12/25 | 15 | 61s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | `n/a` | 3/7 | 19 | 55s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | `78b5dfc1` | 1/3 | 9 | 46s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `n/a` | 1/3 | 16 | 67s |
 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 2/6 | 17 | 54s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `db5dd4f0` | 1/3 | 21 | 77s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | `402725ca` | 1/3 | 22 | 64s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | `799c864e` | 1/3 | 22 | 572s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/3 | 23 | 76s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | `3f014ed7` | 1/3 | 30 | 127s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 1/3 | 56 | 221s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `0c0f3935` | 1/3 | 102 | 622s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `9359a70b` | 1/3 | 125 | 702s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `n/a` | 4/13 | 27 | 175s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 0/3 | n/a | n/a |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | `3ddecccb` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, server-guard arm | `n/a` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | `5bba9fec` | 0/3 | n/a | n/a |
 
-**All runs**, newest first.
+### Medium
+
+43 runs, 13 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | `a5560e1f` | 3/3 | 51 | 471s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `6d37c90f` | 1/1 | 91 | 1283s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `n/a` | 2/3 | 47 | 347s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 2/3 | 71 | 522s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `n/a` | 1/3 | 52 | 269s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/3 | 73 | 585s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `n/a` | 1/3 | 111 | 1193s |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 1/5 | 80 | 547s |
+| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/6 | 76 | 667s |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 0/3 | n/a | n/a |
+| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `n/a` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `n/a` | 0/4 | n/a | n/a |
+
+### Hard
+
+No runs recorded yet.
+
+
+## Full records
+
+Every run, newest first.
+
+### Easy
 
 | date | model | stack | result | turns | wall | run |
 |---|---|---|---|---|---|---|
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | pass | 27 | 116s | `20261031T220809Z-easy-ebf6d9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 25 | 100s | `20261031T220624Z-easy-495b50` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | pass | 57 | 211s | `20261031T220249Z-easy-8b6aea` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 19 | 85s | `20261103T153234Z-easy-f9761c` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 24 | 146s | `20261103T135146Z-easy-911e69` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 38 | 133s | `20261103T134929Z-easy-53779c` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | pass | 22 | 64s | `20261103T134502Z-easy-4b65cc` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | fail | 30 | 98s | `20261103T134020Z-easy-49026f` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | fail | 15 | 61s | `20261103T133615Z-easy-e8b32e` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | fail | 11 | 34s | `20261103T133537Z-easy-ef195d` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | fail | 32 | 92s | `20261103T133401Z-easy-f18226` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | pass | 30 | 127s | `20261103T133151Z-easy-7a63ce` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | pass | 22 | 572s | `20261103T132146Z-easy-3baed1` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | fail | 11 | 33s | `20261103T132109Z-easy-8fd60c` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | fail | 28 | 59s | `20261103T132006Z-easy-7be520` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 15 | 61s | `20261103T122548Z-easy-14bd62` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 19 | 76s | `20261103T122429Z-easy-3884f7` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 18 | 44s | `20261103T122341Z-easy-745bb4` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 17 | 43s | `20261103T121953Z-easy-b9684e` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 12 | 40s | `20261103T121910Z-easy-ffabd5` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 41 | 145s | `20261103T121341Z-easy-0933b0` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | pass | 28 | 115s | `20261103T121141Z-easy-81e381` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | pass | 22 | 82s | `20261103T121016Z-easy-3801ab` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 12 | 34s | `20261103T120637Z-easy-d0587f` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | pass | 19 | 55s | `20261103T120237Z-easy-750d0b` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 19 | 58s | `20261103T115836Z-easy-ef0aa9` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 22 | 84s | `20261103T115407Z-easy-20af58` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | fail | 66 | 578s | `20261102T182002Z-easy-3b3820` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 22 | 75s | `20261102T181845Z-easy-03f21d` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 14 | 61s | `20261102T181740Z-easy-d3c521` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 17 | 90s | `20261102T181607Z-easy-e075d0` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 18 | 115s | `20261102T181409Z-easy-49c241` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 23 | 96s | `20261102T181228Z-easy-6d7fcd` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 44 | 187s | `20261102T175736Z-easy-79283e` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 25 | 91s | `20261102T175600Z-easy-99a562` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 23 | 83s | `20261102T175434Z-easy-ca0641` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 25 | 100s | `20261102T175251Z-easy-01fe60` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 35 | 175s | `20261102T174953Z-easy-a48c2a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 22 | 81s | `20261102T174828Z-easy-410996` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 36 | 157s | `20261102T171328Z-easy-8f7d17` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 23 | 100s | `20261102T171144Z-easy-95018a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 18 | 90s | `20261102T171011Z-easy-07d255` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 19 | 51s | `20261102T170916Z-easy-6a4e69` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 13 | 50s | `20261102T170823Z-easy-c435ac` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | fail | 24 | 39s | `20261102T170739Z-easy-c05e80` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 19 | 61s | `20261102T165803Z-easy-0c061a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | fail | 13 | 84s | `20261102T165636Z-easy-2a928f` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 28 | 90s | `20261102T164631Z-easy-3b1d13` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 15 | 73s | `20261102T164514Z-easy-8d8e28` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | fail | 14 | 44s | `20261102T163504Z-easy-9f259f` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 17 | 77s | `20261102T163343Z-easy-46379a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 14 | 59s | `20261102T162554Z-easy-704f8e` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 19 | 84s | `20261102T162427Z-easy-5fdfb6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 20 | 143s | `20261102T162200Z-easy-c41ba1` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | pass | 47 | 237s | `20261102T161213Z-easy-c41246` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | pass | 12 | 52s | `20261102T161116Z-easy-a22726` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | fail | 12 | 84s | `20261102T160948Z-easy-42a4ff` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | pass | 15 | 95s | `20261102T160324Z-easy-0a3ec6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | pass | 24 | 94s | `20261102T160146Z-easy-746528` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | fail | 43 | 199s | `20261102T155823Z-easy-a4ce88` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | fail | 23 | 94s | `20261102T154855Z-easy-099974` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | fail | 19 | 31s | `20261102T154821Z-easy-e361aa` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | fail | 22 | 46s | `20261102T154732Z-easy-7a99ef` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 20 | 54s | `20261102T154519Z-easy-990749` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, server-guard arm | fail | 45 | 541s | `20261102T151749Z-easy-0b2db6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 31 | 592s | `20261102T150727Z-easy-9dfcdc` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 64 | 486s | `20261102T145918Z-easy-6760a0` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 53 | 300s | `20261102T145414Z-easy-f7ed4b` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 27 | 116s | `20261031T220809Z-easy-ebf6d9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 25 | 100s | `20261031T220624Z-easy-495b50` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 57 | 211s | `20261031T220249Z-easy-8b6aea` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 34 | 122s | `20261031T211232Z-easy-fd845e` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 76 | 232s | `20261031T210837Z-easy-29b98a` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 35 | 214s | `20261031T210459Z-easy-7cc4d4` |
@@ -131,35 +239,15 @@ Every Mellum worker run ever measured, split by tier.
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | fail | 19 | 56s | `20261030T202942Z-easy-0eb2b4` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | fail | 38 | 97s | `20261030T202801Z-easy-7924a7` |
 
-## Medium
-
-42 runs, 12 passed.
-
-**Records**, the fastest pass per stack and version.
-
-| model | stack | version | pass | best turns | best wall |
-|---|---|---|---|---|---|
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | `a5560e1f` | 3/3 | 51 | 471s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `n/a` | 2/3 | 47 | 347s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 2/3 | 71 | 522s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `n/a` | 1/3 | 52 | 269s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/3 | 73 | 585s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `n/a` | 1/3 | 111 | 1193s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/6 | 76 | 667s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 1/6 | 80 | 547s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 0/3 | n/a | n/a |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `n/a` | 0/3 | n/a | n/a |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | `n/a` | 0/3 | n/a | n/a |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 0/3 | n/a | n/a |
-
-**All runs**, newest first.
+### Medium
 
 | date | model | stack | result | turns | wall | run |
 |---|---|---|---|---|---|---|
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 46 | 265s | `20261031T222316Z-medium-25b0c9` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 74 | 294s | `20261031T221819Z-medium-d3286c` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt` | Baseline Worker | fail | 69 | 484s | `20261031T221009Z-medium-560ee1` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 82 | 402s | `20261031T215543Z-medium-2bbe0b` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 91 | 1283s | `20261102T182331Z-medium-b4682d` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 46 | 265s | `20261031T222316Z-medium-25b0c9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 74 | 294s | `20261031T221819Z-medium-d3286c` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 69 | 484s | `20261031T221009Z-medium-560ee1` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 82 | 402s | `20261031T215543Z-medium-2bbe0b` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 79 | 310s | `20261031T214829Z-medium-37c465` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 69 | 247s | `20261031T214218Z-medium-01af08` |
 | 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 58 | 417s | `20261031T213316Z-medium-c3253e` |
@@ -199,7 +287,7 @@ Every Mellum worker run ever measured, split by tier.
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 71 | 522s | `medium-r1` |
 | 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 45 | 303s | `medium-r0` |
 
-## Hard
+### Hard
 
 No runs recorded yet.
 

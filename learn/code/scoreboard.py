@@ -269,9 +269,17 @@ def render_page(entries) -> str:
         "pass. A code change to an extension is a new **version** of the same stack, so an "
         "improvement shows as a new row that can beat the old one.",
     ]
+    # Summaries first: the records (the fastest pass per stack) for every tier, Easy to Hard.
+    lines += [
+        "",
+        "## Records",
+        "",
+        "The fastest pass per stack and version, ranked by pass rate, then fewest turns, then "
+        "least wall. A code change to an extension is a new **version** of the same stack.",
+    ]
     for suite in suites:
         sub = [e for e in entries if e.get("suite") == suite]
-        lines += ["", f"## {suite.capitalize()}", ""]
+        lines += ["", f"### {suite.capitalize()}", ""]
         if not sub:
             lines += ["No runs recorded yet.", ""]
             continue
@@ -279,14 +287,19 @@ def render_page(entries) -> str:
         lines += [
             f"{len(sub)} runs, {passes} passed.",
             "",
-            "**Records**, the fastest pass per stack and version.",
-            "",
             "| model | stack | version | pass | best turns | best wall |",
             "|---|---|---|---|---|---|",
             *_record_rows(sub),
-            "",
-            "**All runs**, newest first.",
-            "",
+        ]
+    # Then the full records: every run, newest first, for every tier.
+    lines += ["", "## Full records", "", "Every run, newest first."]
+    for suite in suites:
+        sub = [e for e in entries if e.get("suite") == suite]
+        lines += ["", f"### {suite.capitalize()}", ""]
+        if not sub:
+            lines += ["No runs recorded yet.", ""]
+            continue
+        lines += [
             "| date | model | stack | result | turns | wall | run |",
             "|---|---|---|---|---|---|---|",
             *_run_rows(sub),

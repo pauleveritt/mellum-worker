@@ -4,17 +4,17 @@
   "id": "20261031T222905Z-easy-30ca85",
   "machine": "Apple M3 Max, 48 GiB",
   "missing": 0,
-  "model": "M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
   "passed": true,
   "stack": [
     "arm:worker",
     "context/narrow-tools",
     "context/repair-think-tags",
     "context/trim-tool-output",
-    "guard/block-foreground-server",
-    "guard/break-repeat-loops",
-    "guard/refuse-whole-file-rewrite",
-    "guard/stay-in-workspace"
+    "guard/foreground-server",
+    "guard/outside-workspace",
+    "guard/repeat-loops",
+    "guard/whole-file-rewrite"
   ],
   "suite": "easy",
   "tool_calls": 61,

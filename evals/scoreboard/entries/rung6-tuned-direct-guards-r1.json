@@ -1,0 +1,15 @@
+{
+  "arm": null,
+  "date": "2026-11-01",
+  "id": "rung6-tuned-direct-guards-r1",
+  "machine": null,
+  "missing": 0,
+  "model": null,
+  "passed": false,
+  "stack": [],
+  "suite": null,
+  "tool_calls": null,
+  "turns": null,
+  "version": "n/a",
+  "wall": null
+}

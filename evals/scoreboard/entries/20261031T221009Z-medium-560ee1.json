@@ -4,7 +4,7 @@
   "id": "20261031T221009Z-medium-560ee1",
   "machine": "Apple M3 Max, 48 GiB",
   "missing": 4,
-  "model": "M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M caveman-prompt",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
   "passed": false,
   "stack": [
     "arm:worker"
@@ -12,6 +12,6 @@
   "suite": "medium",
   "tool_calls": 65,
   "turns": 69,
-  "version": "\u2014",
+  "version": "n/a",
   "wall": 483.67
 }
