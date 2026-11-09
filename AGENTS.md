@@ -28,8 +28,13 @@ is this. The friction, historically, was the agent, not the work.
   time from the floor and measured, reading the model's feed — make that tier
   pass; not a stack inherited from the worker. `baseline-worker` is just the
   explicit units that equal the old bundle, inspectable like any other preset.
-- **No magic, no coding to the eval.** A remedy must be agnostic: no suite path,
-  file, route or expected value (a unit that names `app.py` is void as evidence).
+- **No magic, no coding to the eval.** A remedy must be agnostic: it encodes no
+  suite-specific answer — no suite path, route, column, count or expected string
+  (a unit that hard-codes the suite's `/complaints` route or its seed text is void
+  as evidence). A generic developer token in a general pattern is fine — a guard
+  may match a conventional server entrypoint (`app.py`, `main.py`, `wsgi.py`) or a
+  tool name; it is the suite's own values, not shared dev vocabulary, that are
+  forbidden.
   State as fact only what a run measured — a screen at n is a lead; a theory goes
   in a dated research note until it is run. The hidden grader is the oracle.
 
@@ -79,7 +84,12 @@ and evidence with dated corrections; never edit archived plans.
 - **Run standard — use the two scripts, don't hand-assemble flags.**
   `scripts/screen.sh <rung> <model-id>` is the measurement rig (direct, mediated:
   `tuned`, repeat 3, redispatch 5, effort-ramp, thinking off, **guards on**, the
-  default prompt, the mediated tool set, `--model omlx/<model-id>`).
+  default prompt, the mediated tool set). The measured backend is the local
+  **llama.cpp** server on `127.0.0.1:8001` (`--model llamacpp/<model-id>`), not
+  oMLX. The oMLX install path and the scripts' oMLX defaults are being retired on
+  the `remove-omlx` branch; until it lands, a run passes `--provider llamacpp
+  --base-url http://127.0.0.1:8001/v1` explicitly, and `--mode plan` does not yet
+  work on llama.cpp (the delegate backend support is on that branch).
   `scripts/product.sh <rung>` is the shipped worker (`--mode mode`, guards and
   facts on). Both write to `runs/` (git-ignored) and want
   `ladder/scripts/watch_ladder.py` alongside; promote a kept run to
