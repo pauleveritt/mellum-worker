@@ -36,7 +36,7 @@ Steps 1–5 each carry an [evidence badge](./evidence.md#badges). The Interpreta
 
 ## What an Interpretation is and is not
 
-- It names the weakest badge among steps 1–5 that its conclusion relies on, and states nothing stronger than that badge supports.
+- It names the weakest badge amongst steps 1–5 that its conclusion relies on, and states nothing stronger than that badge supports.
 - It says which backend the evidence came from when that differs from yours (llama.cpp).
 - It ends with what is still open: the run that would upgrade the weakest badge, or the question the evidence cannot answer.
 - It contains no new numbers. All data lives in steps 1–5.

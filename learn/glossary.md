@@ -382,7 +382,7 @@ the `delegate/collapse-handoffs` remedy.
 
 ### Agent
 
-A system that uses a model to choose and carry out actions toward a goal.
+A system that uses a model to choose and carry out actions towards a goal.
 
 ### Agent loop
 
@@ -410,11 +410,11 @@ A numerical representation that captures useful features and relationships in da
 
 ### Eval
 
-Evaluation, or eval: a test used to measure a model’s or agent’s quality, accuracy, or behavior.
+Evaluation, or eval: a test used to measure a model’s or agent’s quality, accuracy, or behaviour.
 
 ### Fine-tuning
 
-Additional training that adjusts a model’s weights for particular tasks, styles, or behaviors.
+Additional training that adjusts a model’s weights for particular tasks, styles, or behaviours.
 
 ### Grounding
 
@@ -476,7 +476,7 @@ Retrieval-augmented generation: retrieving relevant information and adding it to
 
 ### System instructions
 
-Instructions that define the model’s role, boundaries, and behavior.
+Instructions that define the model’s role, boundaries, and behaviour.
 
 ### Temperature
 

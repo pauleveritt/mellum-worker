@@ -119,7 +119,7 @@ Run the test suite and the static analysis that show the change holds (`ruff`, `
 
 A short narrative covering:
 
-- What the evidence means, naming the weakest badge among steps 1–5 that the conclusion relies on.
+- What the evidence means, naming the weakest badge amongst steps 1–5 that the conclusion relies on.
 - Which backend the evidence came from when it differs from the learner's (llama.cpp).
 - What is still open: the run that would upgrade the weakest badge, or the question the evidence cannot answer.
 - No new numbers. All data belongs in steps 1–5.

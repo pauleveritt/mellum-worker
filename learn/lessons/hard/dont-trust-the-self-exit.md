@@ -149,7 +149,7 @@ The weakest badge is `screen`. A mechanism proof on one converged rep, plus the
 was really for, kept even in a single pass: the architect's one durable
 contribution is a complete, frozen test, and the gate uses it to define "done" so
 the worker can't talk its way past. The honest caution: handing a confused small
-model "these tests still fail" can nudge it toward live-server debugging itself,
+model "these tests still fail" can nudge it towards live-server debugging itself,
 which is why M1's guard rides along. The evidence is llama.cpp; a preregistered
 `--mode one-pass` run against the plan loop at larger n is what turns this lead into
 a rate.

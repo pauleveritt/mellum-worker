@@ -38,4 +38,4 @@ Each lesson whose steps 3 or 5 are below `reference-run` gets a roadmap item for
 
 ## Why a screen is a lead, not a rate
 
-The project follows the rule: [evals are screens first, preregistered runs to decide](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/sdd.md). A `screen` badge means someone ran a few targeted tests and saw something worth pursuing. It is not a rate you can trust; it is a lead. Fix the arms, sample size, scoring, and the rule before runs that decide a change or claim.
+The project follows the rule: [evals are screens first, preregistered runs to decide](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/sdd.md). A `screen` badge means somebody ran a few targeted tests and saw something worth pursuing. It is not a rate you can trust; it is a lead. Fix the arms, sample size, scoring, and the rule before runs that decide a change or claim.

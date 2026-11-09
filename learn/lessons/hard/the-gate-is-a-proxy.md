@@ -149,13 +149,13 @@ oMLX host these first runs used.
 ## Interpretation
 
 The weakest badge is `screen`. This is the orchestration H1 and H2 were building
-toward: H1 split the work across agents, H2 gated a single pass, and here the gate
+towards: H1 split the work across agents, H2 gated a single pass, and here the gate
 becomes a line of gates, one per phase, with git holding the last good floor beneath
 them. The checkpoints make the *build* safe. A broken phase reverts instead of
 poisoning the rest. The deeper lesson is the limit of any gate the model writes for
 itself: it's a proxy, and a proxy can be too weak. The oracle is the hidden grade,
 and a run isn't done because its own examiner says so. It's done when the grader
-nobody can edit says so.
+no one can edit says so.
 
 ### What to try next
 

@@ -55,7 +55,7 @@ mini harness, on the same task, with the same profile.
 **Badge:** `screen`
 
 [The ditch session](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-the-ditch-session.md) is a run with no harness: one session, n = 1,
-in a directory nobody reset, with tests the model wrote itself and no bound on
+in a directory no one reset, with tests the model wrote itself and no bound on
 time. Its report claimed four passing tests that were never run, and the
 first attempt ran fifteen minutes and took Node's heap with it. Nothing about
 that session could be repeated or compared.

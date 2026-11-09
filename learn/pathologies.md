@@ -16,7 +16,7 @@ scoreboard.
   count measures what got written down.
 - **Some entries are not the model's fault.** A harness or spec fault that reads
   as a model fault belongs here too, marked as such, because from the outside
-  the two are indistinguishable until someone checks, and misfiling one is the
+  the two are indistinguishable until somebody checks, and misfiling one is the
   mistake worth remembering.
 - **`Answer:` means the shape that answers it, not a proven cure.** Where
   nothing answers it yet, the line says so.
@@ -38,7 +38,7 @@ entries below.
 | 5 | An empty final | `nudge/empty-turn` |
 | 6 | A loop | `guard/repeat-loops` (and `guard/turn-cap` for an unbounded budget) |
 | 7 | A runaway search | `guard/outside-workspace` |
-| 8 | A server nobody can stop | `guard/foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
+| 8 | A server no one can stop | `guard/foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
 | 9 | Thinking spends the answer budget | none. An output cap with room for the answer, a sampling-settings fix |
 | 10 | An inert gate | none. A harness fix (read the gate's config at settle time) |
 | 11 | A stop-cap and a gate deadlock | none. A harness fix (reconcile the cap and the gate) |
@@ -104,7 +104,7 @@ entries below.
    ([harvest](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-pr-harvest-index.md)).
    **Answer:** a spec that names the workspace and the files, and a tool set
    that does not invite wandering.
-8. **A server nobody can stop.** The model starts `uvicorn` in the foreground to
+8. **A server no one can stop.** The model starts `uvicorn` in the foreground to
    check its work, the call never returns, and the session burns its whole
    deadline waiting. **Seen:** three `no-facts` sessions that went silent for
    143–460 s, two of three `bare` Easy sessions, LC.19's first two attempts,
@@ -226,7 +226,7 @@ entries below.
     `localhost` to see for itself. The server it starts is a stranger: it forks a
     process that disagrees with the in-process test client, so the curl settles
     nothing, so it starts another, thrashing to the stall before it ever settles.
-    Distinct from a server nobody can stop (8): there a foreground server hangs
+    Distinct from a server no one can stop (8): there a foreground server hangs
     the run; here a *background* one, which `guard/foreground-server` waves
     through, is the spiral's fuel. **Seen:** gated one-pass medium, where 2 of 3
     reps never reached the exit-gate. 28 to 55 server starts each, the model

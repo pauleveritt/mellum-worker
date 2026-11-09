@@ -11,11 +11,11 @@ If you have an idea for a lesson, follow this process:
 
 ## Consent rule
 
-No lesson attributed to someone is published without their written yes. A PR comment or issue is enough; it is linked from the phase's Status cell in the roadmap. This applies especially to lessons about Andre's work.
+No lesson attributed to somebody is published without their written yes. A PR comment or issue is enough; it is linked from the phase's Status cell in the roadmap. This applies especially to lessons about Andre's work.
 
 ## How to write an Interpretation
 
-- Name the weakest badge among steps 1–5 that your conclusion relies on.
+- Name the weakest badge amongst steps 1–5 that your conclusion relies on.
 - State nothing stronger than that badge supports.
 - Say which backend the evidence came from when it differs from the learner's (llama.cpp).
 - End with what is still open: the run that would upgrade the weakest badge, or the question the evidence cannot answer.
