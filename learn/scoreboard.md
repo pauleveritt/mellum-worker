@@ -12,9 +12,9 @@ Every Mellum worker run ever measured, split by tier.
 
 197 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
 
-## Records
+## Top 5
 
-The fastest pass per stack and version, ranked by pass rate, then fewest turns, then least wall. A code change to an extension is a new **version** of the same stack.
+The five best stacks per tier, ranked by pass rate, then fewest turns, then least wall. A code change to an extension is a new **version** of the same stack. Every run is in Full records below.
 
 ### Easy
 
@@ -27,35 +27,6 @@ The fastest pass per stack and version, ranked by pass rate, then fewest turns, 
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | `2d12c19f` | 1/1 | 21 | 64s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `f966018c` | 1/1 | 21 | 67s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `6d37c90f` | 6/6 | 22 | 81s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | `4700735e` | 3/3 | 62 | 229s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | `ae25158c` | 5/6 | 13 | 50s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `dc7bf1be` | 5/6 | 14 | 61s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | `1bb0d1be` | 7/9 | 14 | 59s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | `865e3699` | 2/3 | 12 | 52s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | `n/a` | 2/3 | 14 | 41s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | `243fb1f9` | 2/3 | 15 | 95s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `n/a` | 2/3 | 17 | 71s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `n/a` | 2/3 | 27 | 125s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `n/a` | 2/3 | 34 | 207s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | `a2227186` | 3/5 | 30 | 143s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 3/6 | 24 | 87s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `n/a` | 12/25 | 15 | 61s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | `n/a` | 3/7 | 19 | 55s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | `78b5dfc1` | 1/3 | 9 | 46s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `n/a` | 1/3 | 16 | 67s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 2/6 | 17 | 54s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `db5dd4f0` | 1/3 | 21 | 77s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | `402725ca` | 1/3 | 22 | 64s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | `799c864e` | 1/3 | 22 | 572s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/3 | 23 | 76s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | `3f014ed7` | 1/3 | 30 | 127s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 1/3 | 56 | 221s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `0c0f3935` | 1/3 | 102 | 622s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `9359a70b` | 1/3 | 125 | 702s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 0/3 | n/a | n/a |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | `3ddecccb` | 0/3 | n/a | n/a |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, server-guard arm | `n/a` | 0/1 | n/a | n/a |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | `5bba9fec` | 0/3 | n/a | n/a |
 
 ### Medium
 
@@ -68,14 +39,6 @@ The fastest pass per stack and version, ranked by pass rate, then fewest turns, 
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | `n/a` | 2/3 | 47 | 347s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 2/3 | 71 | 522s |
 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | `n/a` | 1/3 | 52 | 269s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/3 | 73 | 585s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | `n/a` | 1/3 | 111 | 1193s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 1/5 | 80 | 547s |
-| `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | `n/a` | 1/6 | 76 | 667s |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | `n/a` | 0/3 | n/a | n/a |
-| `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | `n/a` | 0/3 | n/a | n/a |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 0/3 | n/a | n/a |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | `n/a` | 0/4 | n/a | n/a |
 
 ### Hard
 

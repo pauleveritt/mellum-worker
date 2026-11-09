@@ -269,13 +269,15 @@ def render_page(entries) -> str:
         "pass. A code change to an extension is a new **version** of the same stack, so an "
         "improvement shows as a new row that can beat the old one.",
     ]
-    # Summaries first: the records (the fastest pass per stack) for every tier, Easy to Hard.
+    # Summary first: the top 5 stacks per tier, Easy to Hard. The full leaderboard and
+    # every run are in the sections below.
     lines += [
         "",
-        "## Records",
+        "## Top 5",
         "",
-        "The fastest pass per stack and version, ranked by pass rate, then fewest turns, then "
-        "least wall. A code change to an extension is a new **version** of the same stack.",
+        "The five best stacks per tier, ranked by pass rate, then fewest turns, then least "
+        "wall. A code change to an extension is a new **version** of the same stack. Every "
+        "run is in Full records below.",
     ]
     for suite in suites:
         sub = [e for e in entries if e.get("suite") == suite]
@@ -289,7 +291,7 @@ def render_page(entries) -> str:
             "",
             "| model | stack | version | pass | best turns | best wall |",
             "|---|---|---|---|---|---|",
-            *_record_rows(sub),
+            *_record_rows(sub)[:5],
         ]
     # Then the full records: every run, newest first, for every tier.
     lines += ["", "## Full records", "", "Every run, newest first."]
