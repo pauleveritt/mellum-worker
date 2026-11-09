@@ -242,6 +242,64 @@ export const serverGuard: Guard = (call) => {
 	};
 };
 
+/** A server start in ANY form — foreground OR backgrounded. The foreground guard lets the
+ * background form through (and even suggests it), but a detached server is itself the spiral's
+ * fuel: it forks a process that disagrees with the in-process test client, which the worker then
+ * curls. So this one does not exempt `nohup … &` / `… &`. */
+export function isServerStart(command: string | undefined): boolean {
+	if (!command) return false;
+	if (READONLY_FIRST.test(command)) return false; // `grep uvicorn`, `cat app.py` — naming is not a start
+	return SERVER_START.test(command);
+}
+
+/** An HTTP client (curl, wget, httpie, xh) in command position — at a segment start or after a
+ * run-wrapper — so merely NAMING a url (`grep localhost`, `cat notes_about_localhost`) is not a probe. */
+const HTTP_CLIENT_LEAD =
+	/(?:^|[|;&(]|\b(?:nohup|time|exec|env|watch|sudo|xargs)\s+)\s*(?:curl|wget|xh|https?)\b/;
+/** A loopback address a probe would hit: localhost, 127.0.0.1, 0.0.0.0, or ::1 (bare or bracketed). */
+const LOCAL_HOST = /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b|\[::1\]|(?:^|[^:\w])::1\b/;
+
+/** A command that probes a local HTTP server — the other half of the live-server spiral. It runs an
+ * HTTP client against a loopback address; a remote fetch (`curl https://pypi.org/…`) is not one. */
+export function isLocalHttpProbe(command: string | undefined): boolean {
+	if (!command) return false;
+	if (READONLY_FIRST.test(command)) return false; // an echo/grep that mentions a url is not a probe
+	return HTTP_CLIENT_LEAD.test(command) && LOCAL_HOST.test(command);
+}
+
+/** Refuse the live-server debugging spiral: any server start (foreground OR background) and any
+ * loopback HTTP probe. The recorded pathology (2026-11-08 one-pass note): a worker confused by an
+ * HTTP behaviour spins up uvicorn / app.py and curls localhost, forking a server that disagrees with
+ * the in-process test client, and thrashes to the deadline before it ever settles. Keep it in
+ * process — the tests already do. */
+export const liveServerGuard: Guard = (call) => {
+	if (call.toolName !== "bash") return undefined;
+	const command = commandOf(call.input);
+	if (isServerStart(command)) {
+		return {
+			block: true,
+			reason:
+				"Do not start a server to test this. A live server — foreground or background — forks a process " +
+				"that disagrees with the in-process test client and sends the run into a debugging spiral it never " +
+				"exits. Exercise the app the way the tests do, in process: " +
+				'`from starlette.testclient import TestClient; client = TestClient(app)`. ' +
+				"To read a redirect's status code instead of the page it lands on, build the client with " +
+				"`TestClient(app, follow_redirects=False)` and check `response.status_code`.",
+		};
+	}
+	if (isLocalHttpProbe(command)) {
+		return {
+			block: true,
+			reason:
+				"Do not curl a local server. Probing a live server is the debugging spiral that hangs the run; the " +
+				"server you would curl disagrees with the in-process test client anyway. Exercise the endpoint in " +
+				'process instead: `from starlette.testclient import TestClient; TestClient(app).get("/...")`, and ' +
+				"`TestClient(app, follow_redirects=False)` to read a redirect's status code.",
+		};
+	}
+	return undefined;
+};
+
 /** Whether a bash command walks a directory tree: find, ripgrep (recursive by
  * default), recursive grep (-r/-R/--recursive), or `ls -R`. */
 export function isTreeWalk(command: string): boolean {

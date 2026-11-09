@@ -6,6 +6,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **A live-server guard remedy (`/remedy on guard/no-live-server`).** A worker
+  confused by an HTTP behaviour sometimes debugs it by starting a live server
+  and curling `localhost`, which forks a server that disagrees with the
+  in-process test client and sends the run into a spiral it never exits. The new
+  guard refuses both halves — any server start (foreground **or** background,
+  where the foreground-server guard lets the background form through) and any
+  loopback HTTP probe (`curl`/`wget`/`httpie` to `localhost`/`127.0.0.1`/
+  `0.0.0.0`/`::1`) — and points the worker at the in-process client
+  (`TestClient(app, follow_redirects=False)`). Agnostic; unmeasured as a remedy.
+
 - **The ladder can now measure the plan-delegation loop directly
   (`run_ladder --mode plan`).** Until now every plan-loop result was a scratch
   screen; the ladder's modes drove the single worker or the flow, never the

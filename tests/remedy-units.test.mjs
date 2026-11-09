@@ -21,6 +21,7 @@ function fakePi() {
 
 const GUARDS = [
 	"foreground-server",
+	"no-live-server",
 	"repeat-loops",
 	"outside-workspace",
 	"whole-file-rewrite",
