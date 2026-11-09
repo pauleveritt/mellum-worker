@@ -163,6 +163,68 @@ check with a small turn afterwards. Gated one-pass medium, n=3:
   `uvicorn` / `python app.py` / a background server plus `curl` and points the
   agent at `TestClient` would keep it in-process, let it settle, and let the gate
   finish the job. That is the measured next step toward a reliable one-pass pass.
+  *(Built and measured below — it converts the coin-flip into 3 of 3.)*
+
+## The live-server guard, measured — it stops the spiral, and 3 of 3 reach the gate and pass
+
+Built the guard the section above called for: `remedies/guard/no-live-server.ts`
+(`liveServerGuard`), an agnostic unit that refuses **any** server start —
+foreground *or* background, where `foreground-server` lets the background form
+through — and **any** loopback HTTP probe (`curl` / `wget` / `httpie` to
+`localhost` / `127.0.0.1` / `0.0.0.0` / `::1`), and points the worker at the
+in-process client (`TestClient(app, follow_redirects=False)`). Shown red first,
+then green; the node suite stays at 714 pass. Added to the gated one-pass stack
+(exit-gate + the same lean preamble, nothing else changed), medium n=3:
+
+| rep | score | req | gate fired | server starts blocked | curls blocked | wall | guard |
+|-----|-------|-----|-----------|----------------------|---------------|------|-------|
+| 1 | **18/18** | 95 | 0 | 5 | 0 | 821s | ok |
+| 2 | **18/18** | 123 | 1 | 1 | 0 | 1335s | STALL |
+| 3 | **18/18** | 91 | 0 | 8 | 2 | 847s | ok |
+
+Mean 18.0/18, mean 103 requests, mean 1001s.
+
+1. **The spiral is gone and every rep reached the gate.** Gated, no guard, reached
+   the gate on 1 of 3 — the other two thrashed in the live-server spiral to the
+   stall before settle. With the guard, **3 of 3 reached settle and scored
+   18/18.** The guard refused every live-server reach — 5, 1 and 8 server starts
+   and 0, 0 and 2 curls — and each rep stayed in process and converged. Rep 3 is
+   the sharp case: the model reached for a live server ten times (8 starts, 2
+   curls), was refused every time, and still passed cleanly at 91 requests with
+   `guard=ok`. The failure mode the guard targets did not recur.
+
+2. **The gate still earns its place.** Rep 2 settled short and the gate fired one
+   redispatch that carried it to 18/18 — the Phase-4 contract closed by the
+   harness, not the prose, exactly as the gate section showed. Guard and gate are
+   complementary: the guard keeps the run alive to the gate, the gate closes the
+   last contract.
+
+3. **One wrinkle: rep 2 reached 18/18 but tailed into the stall guard.** Its build
+   is complete and correct on the hidden grader (the gate confirmed it), yet the
+   run idled into the 240s stall guard at the tail rather than exiting clean — not
+   a spiral (one blocked start, no curl), a clean-exit miss. So the guard makes the
+   *pass* reliable (3 of 3) but not yet the clean *exit* (2 of 3 `ok`).
+
+4. **Cost rose, as expected, and stays well under the architect loop.** Mean 103
+   requests against the single converged baseline rep's 61 — the guard removes the
+   live-server shortcut, so the worker does more of the work in process. That is
+   still roughly a third of the architect loop's 300+, for a full pass on every
+   rep rather than one in three.
+
+## Decision (live-server guard)
+
+- **One pass + exit-gate + live-server guard is the paradigm's full-pass route, as
+  a lead.** 3 of 3 at 18/18 answers what the gate alone could not: the run reaches
+  the gate, and the gate closes Phase 4. The guard ships as an agnostic remedy
+  (`guard/no-live-server`), test-first, suite green.
+- **The clean-exit wrinkle is the next small lever, not a blocker.** One rep in
+  three reached the correct build and then idled into the stall guard. A finish
+  nudge once the gate goes green — settle now, the test passes — is the candidate;
+  it is a clean-exit fix, the pass itself is already reliable.
+- **A `run_ladder` verdict is still owed before this changes a default.** This is a
+  scratch n=3, a lead. The ladder's `--mode one-pass` (with `--acceptance-test`
+  and the guard in its preset) is how the 3 of 3 becomes a rate, paired against the
+  architect loop at larger n, with a rung past four phases.
 
 ## What would falsify this / Risks
 
@@ -190,8 +252,14 @@ check with a small turn afterwards. Gated one-pass medium, n=3:
   request budget — while the plan loop holds, then the loop earns its cost
   exactly where this screen could not see it, and "one pass wins" is true only
   up to a size this run never reached.
-
----
+- **The guard's 3 of 3 is a scratch n=3, and one rep did not exit clean.** A
+  decisive lead on the spiral — every server and curl attempt was refused and no
+  rep thrashed — but three reps is a mechanism rate, not a reliability rate, and
+  rep 2's tail stall shows a clean-exit gap the pass rate hides. The guard could
+  also, in principle, refuse a legitimate local probe; it runs only in the build
+  child, where the worker should use `TestClient`, and the node suite pins the
+  read/search/remote-fetch cases it must leave alone. A preregistered
+  `--mode one-pass` run settles both the rate and the exit.
 
 **The one-pass preamble (verbatim):**
 
