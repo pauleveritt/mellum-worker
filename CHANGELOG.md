@@ -217,6 +217,15 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **The `guard/outside-workspace` unit now blocks a bare-root crawl (`find /`).**
+  It refused a tree-walk that named an absolute path outside the workspace
+  (`grep -rl x /Users /var`) but let a bare `/` through — the broadest reach of
+  all — because the path matcher required at least one character after the slash.
+  A worker hunting a file it could not see ran `find / -name …` and crawled the
+  whole machine to the stall guard. The matcher now catches a lone `/` (the
+  Windows spelling already did), so the widest outside-workspace walk is refused
+  with the rest.
+
 - **The `guard/foreground-server` unit now blocks the *act*, not the *word*.** It
   matched a server binary (`uvicorn`, `gunicorn`, …) anywhere on the line, so
   harmless checks that merely named one — `python -c "import uvicorn"`,

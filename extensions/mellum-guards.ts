@@ -315,8 +315,10 @@ export function isTreeWalk(command: string): boolean {
 const WINDOWS = process.platform === "win32";
 
 export function absolutePathArgs(command: string): string[] {
-	// On Windows a drive path (C:\x or C:/x) is absolute too.
-	const pattern = WINDOWS ? /(?:^|\s)((?:\/|[A-Za-z]:[\\/])[^\s'";|&]*)/g : /(?:^|\s)(\/[^\s'";|&]+)/g;
+	// On Windows a drive path (C:\x or C:/x) is absolute too. A bare root token — `/` on its own,
+	// as in `find / -name x` — is the broadest reach outside any workspace, so match zero-or-more
+	// trailing chars (`*`, not `+`) to catch it; the Windows pattern already does.
+	const pattern = WINDOWS ? /(?:^|\s)((?:\/|[A-Za-z]:[\\/])[^\s'";|&]*)/g : /(?:^|\s)(\/[^\s'";|&]*)/g;
 	return (command.match(pattern) ?? []).map((s) => s.trim());
 }
 

@@ -60,6 +60,16 @@ test("confineSearch blocks a recursive search that reaches outside the workspace
 	assert.match(d.reason, /\/Users/);
 });
 
+test("confineSearch blocks a bare-root crawl — `find /` is the broadest outside-workspace walk", () => {
+	// The one-pass gated run (2026-11-08): the worker, hunting an external test file the gate
+	// named, ran `find / -name "test_medium.py"` — a whole-machine crawl that ate the time to the
+	// stall guard. A bare `/` is the widest possible reach outside the workspace and must block.
+	const guard = confineSearch("/work/ws");
+	assert.deepEqual(absolutePathArgs("find / -name test_medium.py"), ["/"]);
+	assert.equal(guard({ toolName: "bash", input: { command: 'find / -name "test_medium.py" 2>/dev/null' } })?.block, true);
+	assert.equal(guard({ toolName: "bash", input: { command: "grep -rl pattern /" } })?.block, true);
+});
+
 test("confineSearch allows a tree-walk confined to the workspace", () => {
 	const guard = confineSearch("/work/ws");
 	assert.equal(guard({ toolName: "bash", input: { command: "grep -rl pattern ." } }), undefined); // relative
