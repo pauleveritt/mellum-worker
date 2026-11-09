@@ -26,9 +26,9 @@ its place.
 
 ## Medium
 
-The Medium tier is about how the model spends its session — the turns, the
-thinking, the shape of the task. Each lesson shows the exact change you make in
-Pi and reads the result in a trace.
+The Medium tier is guards and context errors — the ways a model spends a session
+badly, and the small units that catch them. Each lesson shows the exact change you
+make in Pi and reads the result in a trace.
 
 - **[M1 · The Live-Server Spiral](medium/live-server-spiral.md)** — a confused
   model starts a server and curls it instead of testing in process;
@@ -36,6 +36,17 @@ Pi and reads the result in a trace.
 - **[M2 · Think Briefly](medium/think-briefly.md)** — a turn cap that bounds easy
   starves medium; `prompt/think-briefly` cuts the thinking so the cap fits.
   median 10 → 16.
+- **[M3 · The Loop](medium/the-loop.md)** — the model re-runs an unchanged call as
+  a tic; `guard/repeat-loops` refuses the sixth and forgets after any write.
+- **[M4 · The Runaway Search](medium/the-runaway-search.md)** — told to find a file
+  it can't see, the model crawls the whole disk; `guard/outside-workspace` fences
+  the search to the workspace.
+- **[M5 · Thinking in the Content Channel](medium/thinking-in-the-content-channel.md)**
+  — a serving stack mislabels reasoning as speech; `context/repair-think-tags` moves
+  it back. 236 of 244 turns leaked on one host, 0 of 136 on a correct one.
+- **[M6 · A Tool Result Too Big](medium/a-tool-result-too-big.md)** — an oversized
+  read fills the context and forces a re-read; `context/trim-tool-output` caps it and
+  leaves a pointer to the rest.
 
 ## Hard
 

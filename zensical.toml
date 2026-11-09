@@ -20,7 +20,9 @@ nav = [
   { "Lessons" = ["lessons/index.md",
     { "Easy" = ["lessons/easy/name-the-layout.md", "lessons/easy/developer-frame.md",
       "lessons/easy/verify-the-spec.md", "lessons/easy/guards-you-didnt-need.md"] },
-    { "Medium" = ["lessons/medium/live-server-spiral.md", "lessons/medium/think-briefly.md"] },
+    { "Medium" = ["lessons/medium/live-server-spiral.md", "lessons/medium/think-briefly.md",
+      "lessons/medium/the-loop.md", "lessons/medium/the-runaway-search.md",
+      "lessons/medium/thinking-in-the-content-channel.md", "lessons/medium/a-tool-result-too-big.md"] },
     { "Hard" = ["lessons/hard/architect-split.md", "lessons/hard/dont-trust-the-self-exit.md"] },
   ] },
   { "The Challenge" = [

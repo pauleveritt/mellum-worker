@@ -6,15 +6,19 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
-- **Medium and Hard lesson tiers on the learning site, code-first.** Four new
-  lessons that show the exact Pi change inline — the `/remedy` command, the real
-  remedy or gate code (pinned to a commit so the page cannot drift), and what the
-  model receives. Medium covers how the model spends a session: **M1 · The
-  Live-Server Spiral** (`guard/no-live-server`) and **M2 · Think Briefly**
-  (`prompt/think-briefly`). Hard covers orchestration: **H1 · The Architect
-  Split** (delegating a spec, and why one pass is cheaper with a single fixed
-  model) and **H2 · Don't Trust the Self-Exit** (the verify-gate re-dispatch
-  loop). The four Easy lessons gain the same inline `The code` section.
+- **Medium and Hard lesson tiers on the learning site, code-first.** Each lesson
+  shows the exact Pi change inline — the `/remedy` command, the real remedy or gate
+  code (pinned to a commit so the page cannot drift), and what the model receives.
+  Medium is guards and context errors: **M1 · The Live-Server Spiral**
+  (`guard/no-live-server`), **M2 · Think Briefly** (`prompt/think-briefly`),
+  **M3 · The Loop** (`guard/repeat-loops`), **M4 · The Runaway Search**
+  (`guard/outside-workspace`), **M5 · Thinking in the Content Channel**
+  (`context/repair-think-tags`) and **M6 · A Tool Result Too Big**
+  (`context/trim-tool-output`). Hard is orchestration: **H1 · The Architect Split**
+  (delegating a spec, and why one pass is cheaper with a single fixed model) and
+  **H2 · Don't Trust the Self-Exit** (the verify-gate re-dispatch loop). The four
+  Easy lessons gain the same inline `The code` section. Lesson prose is in the
+  author's voice; every page labels its evidence as a lead, not a rate.
 
 - **A reduced-thinking remedy (`/remedy on prompt/think-briefly`).** The model
   exposes no reasoning-effort dial, so the only lever on per-turn thinking is the

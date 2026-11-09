@@ -12,10 +12,10 @@ backends: [llamacpp]
 
 # H2 · Don't Trust the Self-Exit
 
-The worker decides when it is done, and it will declare done over a quiet,
-self-authored test that never exercised the hard contract. The orchestration fix
-is a gate: re-run an external, frozen test at settle and hand the failure back
-until it is green.
+The worker decides when it's done, and it'll call done over a quiet, self-authored
+test that never touched the hard contract. The orchestration fix is a gate:
+re-run an external, frozen test at settle, and hand the failure back until it's
+green.
 
 !!! abstract "Overview"
 
@@ -35,14 +35,14 @@ until it is green.
 
 **Badge:** `screen`
 
-In a single pass the worker is its own orchestrator — it judges when the work is
+In a single pass the worker is its own gatekeeper — it decides when the work is
 finished. On medium it leaks the same two points every time: Phase 4. The hidden
-oracle constructs the complaint object **directly** and asserts its id is an
-automatic, unique default *on the type*. The worker takes the easy side — it
-assigns the id in the one route the happy path exercises — which passes that route
-and fails direct construction. Its own test only ever called the route, so its
-green run says nothing about the contract it missed. A better sentence does not
-fix this: a stronger prose rule reached the full pass on only half the reps.
+oracle builds the complaint object **directly** and asserts its id is an
+automatic, unique default *on the type*. The worker takes the easy road — it
+assigns the id in the one route the happy path walks — which passes that route and
+fails direct construction. Its own test only ever called the route, so its green
+run says nothing about the contract it skipped. A better sentence won't fix this:
+a stronger prose rule reached the full pass on only half the reps.
 
 ## Eval case
 
@@ -63,10 +63,9 @@ Ungated, the one-pass medium run landed 16/18 on both converged reps and 18/18 o
 only half of a five-rep screen — the Phase-4 id shape leaking exactly as above
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 The floor stayed at 15–16: when the first draft happened to get the invariant
-right it finished clean, and when it did not, no amount of prose reliably rescued
-it. The miss is not visible to the worker because the worker never wrote a test
-that constructs the object directly — the exact check it needed is the one it left
-out.
+right it finished clean, and when it didn't, no prose reliably rescued it. The miss
+is invisible to the worker because the worker never wrote a test that builds the
+object directly — the one check it needed is the one it left out.
 
 ## Solution
 
@@ -74,11 +73,11 @@ out.
 
 The fix is a harness guarantee, not a prompt. The verify gate hooks
 `agent_before_settle`: when the worker tries to finish, the gate re-runs a frozen
-acceptance test and, while it is red, refuses the settle and hands back only the
-failing test functions — the unmet concepts — for a short corrective turn, up to
-a limit. The test is **external** (the worker did not write it), **complete** (a
-superset of the hidden oracle, including the direct-construction check), and
-**held out** beside the workspace so the worker cannot read or weaken it.
+acceptance test and, while it's red, refuses the settle and hands back only the
+failing test functions — the unmet concepts — for a short corrective turn, up to a
+limit. The test is **external** (the worker didn't write it), **complete** (a
+superset of the hidden oracle, with the direct-construction check in it), and
+**held out** beside the workspace, where the worker can't read or weaken it.
 
 ### The code
 
@@ -103,9 +102,9 @@ export default function (pi) {
 ```
 
 The message it hands back names the failing tests and says the test is held out —
-*do not search for it; each name is a behaviour to satisfy, checked with your own
-tests in this directory*. The test itself pins the contract the worker missed,
-written from the spec, not the grader
+*don't go looking for it; each name is a behaviour to satisfy, checked with your
+own tests in this directory*. The test itself pins the contract the worker
+skipped, written from the spec, never from the grader
 ([`ladder/fixtures/acceptance/test_medium.py`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/ladder/fixtures/acceptance/test_medium.py)):
 
 ```python
@@ -135,31 +134,31 @@ uv run python -m ladder.run_ladder --mode direct \
 In the gated one-pass medium run, the rep that settled short had the gate re-run
 the frozen test, name the unmet concept, and one small corrective turn carried it
 to a clean 18/18 — the deep Phase-4 contract closed by a harness guarantee, not a
-prose rule
+sentence
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
-On the real ladder, the one-pass arm with this native gate passed **3 of 3** on
-the hidden oracle at a mean of ~43 requests. The gate only runs at settle, though,
-so it needs the live-server guard from M1 to keep the run alive long enough to
-reach it — guard and gate are complementary: the guard gets the run to settle, the
-gate closes the last contract.
+On the real ladder, the one-pass arm with this native gate passed **3 of 3** on the
+hidden oracle at a mean of ~43 requests. The gate only runs at settle, though, so
+it leans on the live-server guard from M1 to keep the run alive long enough to
+reach it. Guard and gate pull together: the guard gets the run to settle, the gate
+closes the last contract.
 
 ## Interpretation
 
 The weakest badge is `screen` — a mechanism proof on one converged rep, plus the
-3-of-3 ladder arm; a lead, not a settled rate. This is the orchestration that
-H1's split was really for, kept even in a single pass: the architect's one durable
+3-of-3 ladder arm; a lead, not a settled rate. This is the orchestration H1's split
+was really for, kept even in a single pass: the architect's one durable
 contribution is a complete, frozen test, and the gate uses it to define "done" so
-the worker cannot talk its way past. The honest caution: handing a confused small
-model "these tests still fail" can itself nudge it toward live-server debugging,
-which is why M1's guard rides with it. The evidence is llama.cpp; a preregistered
-`--mode one-pass` run against the plan loop at larger n is what turns this lead
-into a rate.
+the worker can't talk its way past. The honest caution: handing a confused small
+model "these tests still fail" can nudge it toward live-server debugging itself,
+which is why M1's guard rides along. The evidence is llama.cpp; a preregistered
+`--mode one-pass` run against the plan loop at larger n is what turns this lead into
+a rate.
 
 ### What to try next
 
 A run where the gate fires *red* on a would-be stall is the integration proof the
 clean-exit fixes still want — the re-dispatch path that hunts for a held-out file
-and stalls, now exiting clean instead; it is variance-dependent, so it needs reps
+and stalls, now exiting clean instead. It's variance-dependent, so it needs reps
 until the gate bites
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 
@@ -173,6 +172,6 @@ uv run python learn/code/harness.py run --suite medium --arm worker --remedy gua
 
 !!! success "Key points"
 
-    - A single-pass worker is its own orchestrator; its "done" can be wrong on the hard contract.
+    - A single-pass worker is its own gatekeeper; its "done" can be wrong on the hard contract.
     - The verify gate re-runs an external, frozen, held-out test at settle and re-dispatches the failure.
     - One re-dispatch closed the Phase-4 miss a prose rule only coin-flipped — a harness guarantee, not a sentence.
