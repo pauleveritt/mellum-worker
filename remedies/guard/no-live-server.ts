@@ -10,7 +10,7 @@ export const meta: UnitMeta = {
 	does: "Blocks any server start (foreground or background) and any loopback HTTP probe, and points at the in-process test client (TestClient, follow_redirects=False)",
 	lesson: "",
 	evidence:
-		"screen: 2 of 3 gated one-pass medium reps never reached the exit-gate — they stalled in this spiral before settle (docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md); unmeasured as a remedy",
+		"screen: 2 of 3 gated one-pass medium reps never reached the exit-gate, they stalled in this spiral before settle (docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md); unmeasured as a remedy",
 };
 
 export function install(pi: PiLike): void {

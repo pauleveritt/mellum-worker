@@ -21,7 +21,7 @@ export const meta: UnitMeta = {
 	pathology: "Builds each file to completion in turn, so the layout drifts and earlier parts break",
 	does: "Sketch every file first (signatures and stubs), then fill the bodies one at a time",
 	lesson: "",
-	evidence: "new unit (prose v1); unmeasured — a lead, see the next-concept research note",
+	evidence: "new unit (prose v1); unmeasured, a lead, see the next-concept research note",
 };
 
 /** Append `line` to a user message's content, whether it is a plain string or content blocks. */

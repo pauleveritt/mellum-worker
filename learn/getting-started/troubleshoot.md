@@ -290,8 +290,8 @@ This starts a local CPU test with a limited context size. Leave the terminal ope
 ### Choose a llama.cpp build, or force GPU offload
 
 `install.sh` picks a prebuilt llama.cpp for your hardware. To choose one
-yourself, set `MELLUM_LLAMA_FLAVOR` — `cuda-13.4`, `cuda-12.8`, `vulkan` or
-`cpu` — before the install or the server start.
+yourself, set `MELLUM_LLAMA_FLAVOR`. `cuda-13.4`, `cuda-12.8`, `vulkan` or
+`cpu`. Before the install or the server start.
 
 By default the server runs with llama.cpp's `--fit`, which splits the model
 across GPU and CPU to fit free memory, so it stays portable to a small machine.
@@ -303,7 +303,7 @@ GPU offload.
 - `uv run scripts/backend.py verify` checks the downloaded weights against
   Hugging Face's sha256.
 - `uv run scripts/backend.py kill` ends every `llama-server` process, not just
-  the one in the pidfile — use it when a stale server is holding the port.
+  the one in the pidfile. Use it when a stale server is holding the port.
 
 ## 7. Test the connection
 
@@ -327,7 +327,7 @@ curl http://127.0.0.1:8000/v1/models
 | --- | --- |
 | Connection refused | Confirm the server is still running and listening on port 8000. Read its startup error. |
 | Health endpoint returns 503 | The model may still be loading. Check progress in the server terminal. |
-| Address already in use | Choose another port, such as `--port 8090` (not 8001 — the course's own server uses that), and update your client URL. |
+| Address already in use | Choose another port, such as `--port 8090` (not 8001. The course's own server uses that), and update your client URL. |
 | 401 response | If API-key authentication is enabled, configure the client with the same key. |
 | 404 response | Check the endpoint. An OpenAI-compatible client usually needs a base URL ending in `/v1`. |
 | Browser works but your app fails | Check the app's base URL, model ID, authentication, and any tool-calling requirements. |

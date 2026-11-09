@@ -158,7 +158,7 @@ prints a score line:
 easy: PASS (n=1; run /var/folders/...; 1 request, 3 tool calls, 0 tool errors)
 ```
 
-The `run` path sits under your temp dir — `/var/folders/...` on macOS,
+The `run` path sits under your temp dir. `/var/folders/...` on macOS,
 `/tmp/mellum-eval-runs/` on Linux.
 
 `n=1` is one session: one workspace, one trace, one score. That is the

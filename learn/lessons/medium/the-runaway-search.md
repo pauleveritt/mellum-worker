@@ -12,8 +12,8 @@ backends: [llamacpp]
 
 # The Runaway Search
 
-Told to find a file it can't see, the model searches the whole machine — `find /`,
-`grep -r /Users` — and the crawl hangs the run. A guard pins the search inside the
+Told to find a file it can't see, the model searches the whole machine. `find /`,
+`grep -r /Users`. And the crawl hangs the run. A guard pins the search inside the
 workspace, where the file actually lives.
 
 !!! abstract "Overview"
@@ -35,7 +35,7 @@ workspace, where the file actually lives.
 **Badge:** `screen`
 
 The model is handed a name and can't find it in the workspace, so it widens the
-net the only way it knows — it points `find` at the root of the disk and sets off.
+net the only way it knows. It points `find` at the root of the disk and sets off.
 The whole machine is a lot of floor to cover. The crawl doesn't error; it just
 walks, directory after directory, until the stall guard pulls the plug. One gated
 run showed it plainly: the gate named a held-out test, the worker went looking for
@@ -48,7 +48,7 @@ stall.
 
 **The condition:** a session where the model runs a tree walk (`find`, recursive
 `grep`, `ls -R`) against a path outside its working folder. **Before:** no confine
-guard — the crawl runs against whatever path the model names. **After:**
+guard. The crawl runs against whatever path the model names. **After:**
 `guard/outside-workspace`, which refuses a tree walk whose target sits outside the
 workspace. It is the guard this session widened to catch a bare `/` as well as
 `/Users` and `/var`.
@@ -58,8 +58,8 @@ workspace. It is the guard this session widened to catch a bare `/` as well as
 **Badge:** `screen`
 
 The crawl showed up in the wild on the exit-gate run: a correct build settled
-short, the gate re-dispatched naming a held-out test, and the worker — the test
-living beside the workspace, not in it — hunted the whole machine for the file and
+short, the gate re-dispatched naming a held-out test, and the worker. The test
+living beside the workspace, not in it. Hunted the whole machine for the file and
 stalled there
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 The matcher had a gap, too: it refused `grep -rl x /Users /var` but let a lone `/`
@@ -70,8 +70,8 @@ through, so `find /` ran unguarded until one character fixed it.
 **Badge:** `screen`
 
 One remedy unit, `guard/outside-workspace`, refuses a tree walk that reaches past
-the working folder. It only fires on a command that actually walks a tree — a
-`find`, a recursive `grep`, an `ls -R` — and only when the path it walks sits
+the working folder. It only fires on a command that actually walks a tree. A
+`find`, a recursive `grep`, an `ls -R`. And only when the path it walks sits
 outside the workspace. A search with relative paths, or paths under the working
 folder, passes untouched; the guard is after the crawl that escapes, not the honest
 local search.
@@ -95,7 +95,7 @@ export function confineSearch(root) {
 	return (call) => {
 		if (call.toolName !== "bash") return undefined;
 		const command = commandOf(call.input);
-		if (!command || !isTreeWalk(command)) return undefined;              // not a crawl — let it be
+		if (!command || !isTreeWalk(command)) return undefined;              // not a crawl, let it be
 		const outside = absolutePathArgs(command).filter((p) => !isUnder(p));
 		if (outside.length === 0) return undefined;                          // every path is inside
 		return { block: true, reason:
@@ -106,13 +106,13 @@ export function confineSearch(root) {
 }
 ```
 
-`isTreeWalk` is what keeps it narrow — a `cat` or a single-file `grep` is not a
+`isTreeWalk` is what keeps it narrow. A `cat` or a single-file `grep` is not a
 crawl, so it passes. `absolutePathArgs` reads the paths the command names, and the
 bare `/` that once slipped through now resolves to the root and is caught. To screen
 it on a graded run, name it: `--remedy guard/outside-workspace`.
 
 **Lesson check:** `grep -rl x /Users /var` and `find /` are refused; `grep -rl x .`
-passes — proven at the unit grain
+passes. Proven at the unit grain
 ([test](https://github.com/andrevanzuydam/mellum-worker/blob/main/tests/remedy-units.test.mjs)).
 
 ## Validation
@@ -121,7 +121,7 @@ passes — proven at the unit grain
 
 The unit test pins both sides: a walk across `/Users /var` is blocked, a walk of
 `.` passes, and after this session's fix a bare `/` is blocked too. The crawl it
-targets was seen live, stalling a run that had already built correctly — a presence
+targets was seen live, stalling a run that had already built correctly. A presence
 claim at n=1, the clearest kind of evidence a guard can carry. What stays open is
 whether a run that *now* gets refused the crawl goes on to exit clean instead of
 stalling; that wants a run where the gate fires red, which is variance-dependent
@@ -129,11 +129,11 @@ stalling; that wants a run where the gate fires red, which is variance-dependent
 
 ## Interpretation
 
-The weakest badge is `screen` — a live sighting plus the unit test, not a rate. The
+The weakest badge is `screen`. A live sighting plus the unit test, not a rate. The
 guard pairs with the exit-gate from H2: the gate is what sends the worker looking
 for a held-out test, so the gate needs this guard beside it to keep the search from
-running off the bench. It's a context error dressed as a search — the model is
-looking in the wrong place because the thing it wants isn't where it expects — and
+running off the bench. It's a context error dressed as a search. The model is
+looking in the wrong place because the thing it wants isn't where it expects. And
 the cheapest fix is a fence around the floor it's allowed to walk.
 
 ### Run it yourself

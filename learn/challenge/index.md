@@ -12,14 +12,14 @@ on, and see how far it gets.
 
 ## Understanding the Challenge
 
-### AgentClinic — the app
+### AgentClinic. The app
 
-Every level builds the same app, **AgentClinic** — a FastAPI and Jinja2 site,
+Every level builds the same app, **AgentClinic**. A FastAPI and Jinja2 site,
 styled with Bootstrap, where AI agents air their grievances about the humans
 they work with. It starts as a near-empty workspace: a `pyproject.toml`, an
 `AGENTS.md` of house rules (the test command, and "do not start servers"), and a
 `specs/roadmap.md` that lays out the phases in order. No framework scaffolding is
-handed over — the model writes `app.py`, the templates and the data model itself,
+handed over. The model writes `app.py`, the templates and the data model itself,
 from the spec.
 
 ### How a run is scored
@@ -36,7 +36,7 @@ plus three more phases and a real database.
 ## The three levels
 
 The levels stack. Each adds phases to the one before, and the hidden grader runs
-every phase that should exist by then — so the check count climbs as the app
+every phase that should exist by then. So the check count climbs as the app
 grows.
 
 | Phase the model builds | Easy | Medium | Hard |
@@ -51,7 +51,7 @@ grows.
 | 8 · Schema migrations | | | ● |
 | **Hidden checks** | **4** | **18** | **34** |
 
-Each level has its own page — what to build, the trap to clear and the checks:
+Each level has its own page. What to build, the trap to clear and the checks:
 **[Easy](easy.md)** (4 checks) · **[Medium](medium.md)** (18) ·
 **[Hard](hard.md)** (34). No setup measured here has passed Hard yet.
 
@@ -93,7 +93,7 @@ From a trusted checkout, run a level in Pi with `/challenge`. It runs on the
 /challenge easy
 ```
 
-The first line runs Easy on the Baseline Worker with nothing extra — your
+The first line runs Easy on the Baseline Worker with nothing extra. Your
 baseline. The next two switch on the whole Easy stack on top and run it again, so
 you can watch the score move. For Vanilla Pi with no worker, add `:vanilla`
 (`/challenge easy:vanilla`). `/challenge easy n=3` runs three times; `/challenge
@@ -102,7 +102,7 @@ turns stream so you see what it is doing, and the result reports the passes, the
 turns and the wall-clock. See [Working With
 Pi](../getting-started/working-with-pi.md#challenge-score-a-tier-on-the-baseline-worker-with-the-remedies-you-have-on).
 
-Change one thing at a time, run the same level again, and compare — that is
+Change one thing at a time, run the same level again, and compare. That is
 exactly how every [lesson](../lessons/index.md) is built.
 
 **From the command line**, the same runs go through the harness directly:

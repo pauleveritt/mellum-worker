@@ -23,32 +23,32 @@ scoreboard.
 
 ## Pathology and remedy
 
-Each pathology is tied here to the remedy unit that answers it — the `/remedy`
-unit you switch on, listed in [Remedies you can try](challenge/remedies.md) — or
+Each pathology is tied here to the remedy unit that answers it. The `/remedy`
+unit you switch on, listed in [Remedies you can try](challenge/remedies.md). Or
 marked where there is **no loadable remedy**, because the answer lives in the
 harness, the spec or the sampling settings instead. The numbers match the
 entries below.
 
 | # | Pathology | Remedy |
 | --- | --- | --- |
-| 1 | False success | none — the harness runs the command and scores it |
-| 2 | Fabricated evidence | none — the harness runs the command after the child exits |
-| 3 | A dropped requirement | none as a unit — cumulative grading is a harness guarantee; `workflow/spec-driven-flow`'s per-phase gates come closest |
-| 4 | A narrowed test | none — hidden graders are copied in after the run |
+| 1 | False success | none. The harness runs the command and scores it |
+| 2 | Fabricated evidence | none. The harness runs the command after the child exits |
+| 3 | A dropped requirement | none as a unit. Cumulative grading is a harness guarantee; `workflow/spec-driven-flow`'s per-phase gates come closest |
+| 4 | A narrowed test | none. Hidden graders are copied in after the run |
 | 5 | An empty final | `nudge/empty-turn` |
 | 6 | A loop | `guard/repeat-loops` (and `guard/turn-cap` for an unbounded budget) |
 | 7 | A runaway search | `guard/outside-workspace` |
 | 8 | A server nobody can stop | `guard/foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
-| 9 | Thinking spends the answer budget | none — an output cap with room for the answer, a sampling-settings fix |
-| 10 | An inert gate | none — a harness fix (read the gate's config at settle time) |
-| 11 | A stop-cap and a gate deadlock | none — a harness fix (reconcile the cap and the gate) |
-| 12 | Writes outside the layout | none yet — a write-confining guard is planned; `guard/outside-workspace` covers searches only |
-| 13 | A lost id | none as a unit — the acceptance list carries the contract; `workflow/spec-driven-flow`'s frozen gates come closest |
-| 14 | The project stops importing | none as a unit — a seeded test and the test command in the brief give the signal; the harness records `checks_ran` |
-| 15 | Builds it somewhere else | none as a unit — the project layout belongs in the spec |
-| 16 | A skipped rule | none — a fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
-| 17 | Ships without running its own code | under test — `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
-| 18 | The live-server spiral | `guard/no-live-server` — any server start plus a loopback curl, stricter than `guard/foreground-server` |
+| 9 | Thinking spends the answer budget | none. An output cap with room for the answer, a sampling-settings fix |
+| 10 | An inert gate | none. A harness fix (read the gate's config at settle time) |
+| 11 | A stop-cap and a gate deadlock | none. A harness fix (reconcile the cap and the gate) |
+| 12 | Writes outside the layout | none yet. A write-confining guard is planned; `guard/outside-workspace` covers searches only |
+| 13 | A lost id | none as a unit. The acceptance list carries the contract; `workflow/spec-driven-flow`'s frozen gates come closest |
+| 14 | The project stops importing | none as a unit. A seeded test and the test command in the brief give the signal; the harness records `checks_ran` |
+| 15 | Builds it somewhere else | none as a unit. The project layout belongs in the spec |
+| 16 | A skipped rule | none. A fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
+| 17 | Ships without running its own code | under test. `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
+| 18 | The live-server spiral | `guard/no-live-server`. Any server start plus a loopback curl, stricter than `guard/foreground-server` |
 
 ## It says it is done and it is not
 
@@ -129,10 +129,10 @@ entries below.
    stripping earlier reasoning does not give the turn its budget back.
 10. **An inert gate (not the model's fault).** The verify-and-redispatch gate
    that should refuse a premature "done" was switched off the whole session, so
-   the worker self-exited with the work incomplete and nothing sent it back — a
+   the worker self-exited with the work incomplete and nothing sent it back. A
    harness fault that reads from the outside as the model stopping early.
    **Seen:** the 2026-10-30 easy remedy screen, where `mellum-verify` read `VERIFY_TEST`
-   at extension-load — before `mellum-acceptance` set it at `session_start` — so
+   at extension-load, before `mellum-acceptance` set it at `session_start`, so
    `[mellum-verify]` fired zero times and a 17-turn session settled with the app
    built as `main.py` and the Phase-1 home checks unmet
    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-30-acceptance-gate-inert.md)).
@@ -141,8 +141,8 @@ entries below.
    actually redispatches would have caught it.
 11. **A stop-cap and a gate deadlock (not the model's fault).** Two remedies own
    opposite halves of the stop/go decision and neither yields: a tool-call cap
-   refuses the next call ("budget reached — stop") while a verify gate refuses
-   the settle ("tests still fail — keep going"), so the worker can neither act
+   refuses the next call ("budget reached. Stop") while a verify gate refuses
+   the settle ("tests still fail. Keep going"), so the worker can neither act
    nor finish and churns text turns to the deadline. **Seen:** the 2026-10-31
    easy screen, a `turn-cap(120)` + `mellum-verify` rep that ran 296 turns to the
    1800 s wall with `tool_calls` pinned at 120, `agent_settled` zero times, 349
@@ -150,7 +150,7 @@ entries below.
    (5 blocks) passed at 125 turns
    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
    **Answer:** do not run a hard stop-cap and a refuse-to-settle gate together
-   without reconciling them — the gate stands down once the budget is exhausted,
+   without reconciling them. The gate stands down once the budget is exhausted,
    letting the run settle on its real (incomplete) state rather than timing out.
 
 ## It damages the project while finishing
@@ -204,8 +204,8 @@ entries below.
 ## It ships a defect it never ran
 
 17. **Ships without running its own code.** The run declares done after an
-    ineffective self-check — it starts a foreground server, or only re-reads the
-    files, instead of exercising the real route or test — so a genuine defect
+    ineffective self-check. It starts a foreground server, or only re-reads the
+    files, instead of exercising the real route or test. So a genuine defect
     ships even though nothing was fabricated. Unlike false success (1), the model
     is not inventing a result; it is verifying by the wrong means. **Seen:** the
     Easy ladder at n = 6 (4/6) on `vanilla + name-the-layout + python-developer`,
@@ -214,27 +214,27 @@ entries below.
     route, and rep 5 had the route right but a different defect and only re-read
     the files before stopping
     ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-    **Answer:** verification — run the real route or test before finishing;
+    **Answer:** verification. Run the real route or test before finishing;
     `guard/foreground-server` removes the server-start that stands in for a check,
     forcing a different verification, and a verify lever is being measured.
 
 ## It chases a live server
 
-18. **The live-server spiral.** A redirect reads as the wrong number — a `303`
+18. **The live-server spiral.** A redirect reads as the wrong number. A `303`
     the model wanted to be `200`, a `TestClient` `422` its own route signature
-    causes — and it doesn't believe it, so it starts a live server and curls
+    causes. And it doesn't believe it, so it starts a live server and curls
     `localhost` to see for itself. The server it starts is a stranger: it forks a
     process that disagrees with the in-process test client, so the curl settles
     nothing, so it starts another, thrashing to the stall before it ever settles.
     Distinct from a server nobody can stop (8): there a foreground server hangs
     the run; here a *background* one, which `guard/foreground-server` waves
     through, is the spiral's fuel. **Seen:** gated one-pass medium, where 2 of 3
-    reps never reached the exit-gate — 28 to 55 server starts each, the model
+    reps never reached the exit-gate. 28 to 55 server starts each, the model
     slipping past `guard/foreground-server` with `nohup … &` and
     `.venv/bin/python app.py`
     ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
-    **Answer:** `guard/no-live-server` refuses any server start — foreground or
-    background — and any loopback curl, and points the worker at
+    **Answer:** `guard/no-live-server` refuses any server start. Foreground or
+    background. And any loopback curl, and points the worker at
     `TestClient(app, follow_redirects=False)`; with it, 3 of 3 reached the gate
     and passed.
 

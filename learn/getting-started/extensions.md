@@ -112,7 +112,7 @@ A preset is a named list of units in `remedies/presets/<name>.json`.
 
 | Preset | Units | What it is |
 | --- | --- | --- |
-| `easy` | 4 | Three prompt fragments — name the layout, the Python-developer frame, verify the whole spec — and the foreground-server guard |
+| `easy` | 4 | Three prompt fragments, name the layout, the Python-developer frame, verify the whole spec, and the foreground-server guard |
 | `medium` | 4 | The same four units as `easy` today |
 | `hard` | 4 | The same four units as `easy` today |
 | `baseline-worker` | 5 | The worker's own set: narrow tools, the empty-turn nudge, and three guards (repeat loops, outside the workspace, foreground servers) |
@@ -139,7 +139,7 @@ shows. Use it to watch a unit act; use `--remedy` when you want a score.
 The Mellum worker, `extensions/mellum-worker.ts`, is only the `/mellum` command
 and the mode machinery. It switches the model to Mellum for a span, drops the
 pre-marker history so Mellum never sees the parent's turns, counts the span and
-writes the run record — and swaps **nothing** into the request: not the prompt,
+writes the run record. And swaps **nothing** into the request: not the prompt,
 not the tools, no project facts, no guards. The prompt, the narrowed tool set
 and every guard are remedy units you add explicitly; `baseline-worker` above is
 the set that equals the old bundle, inspectable like any other preset.
@@ -148,7 +148,7 @@ the set that equals the old bundle, inspectable like any other preset.
 | --- | --- | --- |
 | Command | `registerCommand("mellum")` | One-shot `/mellum <task>`, or `/mellum on` / `off`. |
 | History | `before_provider_request` | Keeps the system prompt and tools; drops the pre-marker turns (mode-integrity), so Mellum sees only the span. |
-| Span | `tool_call`, `turn_end` | Counts calls and output tokens for the `/mellum off` summary and the run record — it does not block. |
+| Span | `tool_call`, `turn_end` | Counts calls and output tokens for the `/mellum off` summary and the run record. It does not block. |
 | Context | `context` | Collapses the worker span into one handoff block for the parent. |
 | Restore | `agent_settled` | Notification-only boundary: the span has ended, so the extension restores the previous model and tools. |
 
@@ -162,7 +162,7 @@ learn/code/clinic "/mellum Reply with the single word: ready."
 
 ## Prompts, tools and guards are mechanisms
 
-Those are three separate levers, and each is a remedy unit — the worker pulls
+Those are three separate levers, and each is a remedy unit. The worker pulls
 none of them:
 
 - the **prompt** is text the extension installs;

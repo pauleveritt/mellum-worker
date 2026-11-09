@@ -12,7 +12,7 @@ backends: [llamacpp]
 
 # E4 · Guards You Didn't Need
 
-The temptation on a hard problem is to add machinery — a guard, an enforcement
+The temptation on a hard problem is to add machinery. A guard, an enforcement
 gate. The scientific move is to measure whether it fires. On Easy, the machinery
 sat silent and the prompts did the work.
 
@@ -27,7 +27,7 @@ sat silent and the prompts did the work.
 
     - Switch on `guard/foreground-server`, then read `guard_blocks` in `run.json`
       and find the guard that fired 0 times.
-    - Stack the verify gate on the 6/6 set and watch it add nothing — and cost a rep.
+    - Stack the verify gate on the 6/6 set and watch it add nothing. And cost a rep.
 
 ![A small robot watching a row of alarm bells that never ring while it works](../../assets/illustrations/evidence.webp){ .illustration }
 
@@ -45,7 +45,7 @@ credit the prompts earned.
 
 **Badge:** `screen`
 
-**The condition:** the Easy set that passes 6/6 — `preset:easy`. **The guard:**
+**The condition:** the Easy set that passes 6/6. `preset:easy`. **The guard:**
 `guard/foreground-server`, in the set, refusing a foreground server start. **The
 gate:** the mediated acceptance gate (`mellum-acceptance` derives a structural test
 from the spec; `mellum-verify` re-runs it at settle and re-dispatches a red one),
@@ -56,12 +56,12 @@ records `guard_blocks` and each gate firing.
 
 **Badge:** `screen`
 
-Across every n=6 run, `guard/foreground-server` fired **0 times** — the model never
+Across every n=6 run, `guard/foreground-server` fired **0 times**. The model never
 tried the foreground server the guard refuses, so the guard sat silent while the
 prompts carried the pass. Stacking the verify gate on the 6/6 set gave **5/6**, not
 better: the gate fired **0 times** too, because the prompts already met its
 contract before it checked. The one loss spun **66 turns to the deadline with no
-settle attempt**, so the gate — which acts only at finish — never got a turn, and
+settle attempt**, so the gate, which acts only at finish, never got a turn, and
 the run shipped without the HTML5 doctype its own contract checks for.
 
 ## Solution
@@ -89,7 +89,7 @@ run, and the reason points the model back in process
 export const serverGuard = (call) => {
 	if (call.toolName !== "bash") return undefined;
 	const command = commandOf(call.input);
-	if (!isForegroundServer(command)) return undefined; // not a server start — step aside
+	if (!isForegroundServer(command)) return undefined; // not a server start, step aside
 	return {
 		block: true,
 		reason:
@@ -99,7 +99,7 @@ export const serverGuard = (call) => {
 };
 ```
 
-Every block it returns is counted in the run record. After a run, read it — a guard
+Every block it returns is counted in the run record. After a run, read it. A guard
 that reads `0` did nothing this run:
 
 ```bash
@@ -123,7 +123,7 @@ around them is inert. `guard/foreground-server` blocked nothing in either; the
 verify gate re-dispatched nothing and read 5/6, its one loss a run it structurally
 couldn't touch
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-The verify gate is a finish-time gate, not a watchdog — blind to the failure mode
+The verify gate is a finish-time gate, not a watchdog. Blind to the failure mode
 that never settles. Its payoff is a harder tier, where the prompts don't already
 pass and a settled "done" hides a real miss.
 
@@ -133,7 +133,7 @@ The weakest badge is `screen`. The cheapest thing that passes is the right thing
 On Easy that's three prompt lines; the guard and the gate add nothing you can
 measure, and a gate can even trap a struggling rep in a loop it can't finish. The
 habit the code teaches is to read `guard_blocks` before you believe a guard helped.
-This is the method, not a verdict against guards — a guard earns its place on the
+This is the method, not a verdict against guards. A guard earns its place on the
 tier where its pathology actually appears. The Medium and Hard lessons are exactly
 that: a guard and a gate read on the tier where they finally bite.
 

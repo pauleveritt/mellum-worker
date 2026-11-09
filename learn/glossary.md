@@ -99,7 +99,7 @@ Vanilla Pi's failures and naming what went wrong; the worker is a preset, not a 
 ### Baseline Worker
 
 The `/mellum` worker in Mellum mode (`MELLUM_MODE=1`): only the command tool and
-the mode machinery — switch to Mellum, drop the pre-marker history, track the
+the mode machinery. Switch to Mellum, drop the pre-marker history, track the
 span, write the run record. It bundles nothing: no prompt swap, no tool
 narrowing, no facts, no guards. Those are all remedy units now, and the
 `baseline-worker` preset is the explicit set that reconstructs the worker's old
@@ -117,11 +117,11 @@ built-in tools and no worker guards or facts. The `vanilla` arm, and what
 One configuration in an experiment. The arms are `vanilla` (no worker
 extension, the floor), `bare` (the worker loaded but mode off), `worker`
 (Mellum mode on) and `strip-thinking`. To remove one remediation you drop a
-`--remedy` unit from the stack — that is the ablation now, not a per-arm knob.
+`--remedy` unit from the stack. That is the ablation now, not a per-arm knob.
 
 ### Floor
 
-The simplest arm: Vanilla Pi with no worker extension and no remedies — the
+The simplest arm: Vanilla Pi with no worker extension and no remedies. The
 baseline every remedy is measured against. The `vanilla` arm.
 
 ### Ablation
@@ -165,8 +165,8 @@ pathology on the host it ran on.
 
 ### Tool
 
-A capability the model can call. Pi enables four by default — `read`, `bash`,
-`edit`, `write` — with `find`, `grep`, `ls`, `glob` and `codemode` in the
+A capability the model can call. Pi enables four by default. `read`, `bash`,
+`edit`, `write`. With `find`, `grep`, `ls`, `glob` and `codemode` in the
 registry but off unless switched on; our tool units add `lookup` and others. A
 remedy changes behaviour; a tool adds a capability.
 
@@ -210,8 +210,8 @@ deadline. `guard/no-live-server` refuses both the start and the probe.
 
 ### Reduced thinking
 
-Cutting the model's per-turn reasoning with a prompt line — reason in one short
-sentence per action — because the model exposes no reasoning-effort dial. A
+Cutting the model's per-turn reasoning with a prompt line. Reason in one short
+sentence per action. Because the model exposes no reasoning-effort dial. A
 denser turn carries more work, so a per-step turn cap covers the step instead of
 cutting it off. The unit is `prompt/think-briefly`; measured as a lead on medium.
 
@@ -226,7 +226,7 @@ own final message. Wired by the verify gate (`mellum-verify`).
 ### Architect split
 
 The delegation shape where an architect decomposes a spec into ordered steps,
-writes a brief and a frozen test per step, and a fresh worker builds each — driven
+writes a brief and a frozen test per step, and a fresh worker builds each. Driven
 by `--mode plan` and the `delegate` tool. It pays on a model-tier price gap (a
 costly planner, a cheap builder) or a spec too large for one context; with a
 single fixed model it is overhead, and one pass is cheaper.
@@ -264,7 +264,7 @@ here.
 
 ### Rung
 
-One stage of the ladder — a single task at a fixed difficulty the model is
+One stage of the ladder. A single task at a fixed difficulty the model is
 scored on.
 
 ### Eval suite

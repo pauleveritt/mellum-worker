@@ -35,11 +35,11 @@ green.
 
 **Badge:** `screen`
 
-In a single pass the worker is its own gatekeeper — it decides when the work is
+In a single pass the worker is its own gatekeeper. It decides when the work is
 finished. On medium it leaks the same two points every time: Phase 4. The hidden
 oracle builds the complaint object **directly** and asserts its id is an
-automatic, unique default *on the type*. The worker takes the easy road — it
-assigns the id in the one route the happy path walks — which passes that route and
+automatic, unique default *on the type*. The worker takes the easy road. It
+assigns the id in the one route the happy path walks. Which passes that route and
 fails direct construction. Its own test only ever called the route, so its green
 run says nothing about the contract it skipped. A better sentence won't fix this:
 a stronger prose rule reached the full pass on only half the reps.
@@ -49,7 +49,7 @@ a stronger prose rule reached the full pass on only half the reps.
 **Badge:** `screen`
 
 **The condition:** the medium suite in a single pass (the H1 one-pass shape), with
-the live-server guard from M1 keeping it in process. **Before:** no gate — the
+the live-server guard from M1 keeping it in process. **Before:** no gate. The
 worker settles on its own. **After:** the verify gate re-runs a complete, external,
 frozen acceptance test at settle and re-dispatches the failing concept. The grader
 is the hidden oracle, summed to 18
@@ -60,12 +60,12 @@ is the hidden oracle, summed to 18
 **Badge:** `screen`
 
 Ungated, the one-pass medium run landed 16/18 on both converged reps and 18/18 on
-only half of a five-rep screen — the Phase-4 id shape leaking exactly as above
+only half of a five-rep screen. The Phase-4 id shape leaking exactly as above
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 The floor stayed at 15–16: when the first draft happened to get the invariant
 right it finished clean, and when it didn't, no prose reliably rescued it. The miss
 is invisible to the worker because the worker never wrote a test that builds the
-object directly — the one check it needed is the one it left out.
+object directly. The one check it needed is the one it left out.
 
 ## Solution
 
@@ -74,7 +74,7 @@ object directly — the one check it needed is the one it left out.
 The fix is a harness guarantee, not a prompt. The verify gate hooks
 `agent_before_settle`: when the worker tries to finish, the gate re-runs a frozen
 acceptance test and, while it's red, refuses the settle and hands back only the
-failing test functions — the unmet concepts — for a short corrective turn, up to a
+failing test functions, the unmet concepts, for a short corrective turn, up to a
 limit. The test is **external** (the worker didn't write it), **complete** (a
 superset of the hidden oracle, with the direct-construction check in it), and
 **held out** beside the workspace, where the worker can't read or weaken it.
@@ -91,7 +91,7 @@ export default function (pi) {
 		const { test, max, pytest } = gateConfig();          // VERIFY_TEST, VERIFY_MAX
 		if (test === "" || !(used < max)) return undefined;
 		const v = runTest(test, pytest, ctx.cwd);            // re-run the frozen test
-		if (v.passed) return undefined;                      // every concept met — let it settle
+		if (v.passed) return undefined;                      // every concept met, let it settle
 		used += 1;
 		return {                                             // refuse settle, name the unmet concepts
 			entries: [{ type: "custom_message", customType: "mellum-verify", content: gateMessage(v), display: true }],
@@ -101,7 +101,7 @@ export default function (pi) {
 }
 ```
 
-The message it hands back names the failing tests and says the test is held out —
+The message it hands back names the failing tests and says the test is held out.
 *don't go looking for it; each name is a behaviour to satisfy, checked with your
 own tests in this directory*. The test itself pins the contract the worker
 skipped, written from the spec, never from the grader
@@ -114,7 +114,7 @@ def test_two_direct_constructions_get_distinct_ids():
     assert a.id != b.id                          # the id must default ON the type, not in the route
 ```
 
-The ladder drives this natively — it copies the test into the workspace baseline,
+The ladder drives this natively. It copies the test into the workspace baseline,
 freezes it, and re-dispatches the failure:
 
 ```bash
@@ -133,7 +133,7 @@ uv run python -m ladder.run_ladder --mode direct \
 
 In the gated one-pass medium run, the rep that settled short had the gate re-run
 the frozen test, name the unmet concept, and one small corrective turn carried it
-to a clean 18/18 — the deep Phase-4 contract closed by a harness guarantee, not a
+to a clean 18/18. The deep Phase-4 contract closed by a harness guarantee, not a
 sentence
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 On the real ladder, the one-pass arm with this native gate passed **3 of 3** on the
@@ -144,7 +144,7 @@ closes the last contract.
 
 ## Interpretation
 
-The weakest badge is `screen` — a mechanism proof on one converged rep, plus the
+The weakest badge is `screen`. A mechanism proof on one converged rep, plus the
 3-of-3 ladder arm; a lead, not a settled rate. This is the orchestration H1's split
 was really for, kept even in a single pass: the architect's one durable
 contribution is a complete, frozen test, and the gate uses it to define "done" so
@@ -157,7 +157,7 @@ a rate.
 ### What to try next
 
 A run where the gate fires *red* on a would-be stall is the integration proof the
-clean-exit fixes still want — the re-dispatch path that hunts for a held-out file
+clean-exit fixes still want. The re-dispatch path that hunts for a held-out file
 and stalls, now exiting clean instead. It's variance-dependent, so it needs reps
 until the gate bites
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
@@ -174,4 +174,4 @@ uv run python learn/code/harness.py run --suite medium --arm worker --remedy gua
 
     - A single-pass worker is its own gatekeeper; its "done" can be wrong on the hard contract.
     - The verify gate re-runs an external, frozen, held-out test at settle and re-dispatches the failure.
-    - One re-dispatch closed the Phase-4 miss a prose rule only coin-flipped — a harness guarantee, not a sentence.
+    - One re-dispatch closed the Phase-4 miss a prose rule only coin-flipped. A harness guarantee, not a sentence.

@@ -6,8 +6,8 @@ title: Remedies
 
 ![A small robot fitting a new part onto itself](../assets/illustrations/build-a-remedy.webp){ .illustration }
 
-You do not need to read all of these. Start from a preset — `/remedy
-preset:easy` switches on the whole Easy stack at once — run the tier, and reach
+You do not need to read all of these. Start from a preset. `/remedy
+preset:easy` switches on the whole Easy stack at once. Run the tier, and reach
 for a single unit only when the trace shows a problem the preset missed. Each
 row is one problem and the unit that answers it; the last column is the
 `/remedy` command that switches it on in a live Pi.
@@ -20,7 +20,7 @@ row is one problem and the unit that answers it; the last column is the
 | --- | --- | --- | --- |
 | Reruns commands against files or directories that do not exist | `guard/exists`: Blocks a read/edit of a missing file, or a command that only opens a missing path | screen: recorded a 100+ call thrash rerunning tests against a missing dir; unmeasured on the ladder | `/remedy on guard/exists` |
 | Starts a foreground server and hangs to the deadline | `guard/foreground-server`: Blocks a foreground server start and shows the background form | screen: the hang recurs in the vLLM baseline's web-app rungs; unmeasured as a remedy | `/remedy on guard/foreground-server` |
-| Debugs an HTTP behaviour by starting a live server and curling localhost, forking a server that disagrees with the in-process test client and thrashing to the deadline before settle | `guard/no-live-server`: Blocks any server start (foreground or background) and any loopback HTTP probe, and points at the in-process test client (TestClient, follow_redirects=False) | screen: 2 of 3 gated one-pass medium reps never reached the exit-gate — they stalled in this spiral before settle (docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md); unmeasured as a remedy | `/remedy on guard/no-live-server` |
+| Debugs an HTTP behaviour by starting a live server and curling localhost, forking a server that disagrees with the in-process test client and thrashing to the deadline before settle | `guard/no-live-server`: Blocks any server start (foreground or background) and any loopback HTTP probe, and points at the in-process test client (TestClient, follow_redirects=False) | screen: 2 of 3 gated one-pass medium reps never reached the exit-gate, they stalled in this spiral before settle (docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md); unmeasured as a remedy | `/remedy on guard/no-live-server` |
 | Searches the whole machine and hangs the run | `guard/outside-workspace`: Blocks a recursive search outside the workspace | screen: recorded hangs; searches only, writes are not covered | `/remedy on guard/outside-workspace` |
 | Repeats the same call with nothing changed | `guard/repeat-loops`: Blocks a call made 5 times in a row unchanged | ladder: part of the guard set behind phase 2b's 15/15 | `/remedy on guard/repeat-loops` |
 | Calls tools with no end | `guard/turn-cap`: Blocks calls past a budget (default 200) and asks for a summary | dormant in the worker; unmeasured | `/remedy on guard/turn-cap` |
@@ -45,7 +45,7 @@ row is one problem and the unit that answers it; the last column is the
 
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
-| Builds each file to completion in turn, so the layout drifts and earlier parts break | `prompt/concept-sketch`: Sketch every file first (signatures and stubs), then fill the bodies one at a time | new unit (prose v1); unmeasured — a lead, see the next-concept research note | `/remedy on prompt/concept-sketch` |
+| Builds each file to completion in turn, so the layout drifts and earlier parts break | `prompt/concept-sketch`: Sketch every file first (signatures and stubs), then fill the bodies one at a time | new unit (prose v1); unmeasured, a lead, see the next-concept research note | `/remedy on prompt/concept-sketch` |
 | Invents its own file layout instead of the one the spec names | `prompt/name-the-layout`: Tells the model to take the file layout from the spec | new unit; unmeasured | `/remedy on prompt/name-the-layout` |
 | Works without a focused, careful developer frame (ships typos, declares done unchecked) | `prompt/python-developer`: Prepends a meticulous experienced-Python-developer, spec-driven role to the system prompt | theory; unmeasured (easy-ladder, 2026-11-02) | `/remedy on prompt/python-developer` |
 | Spends many turns thinking per step, so a turn cap starves the bigger steps | `prompt/think-briefly`: Tells the model to reason in one short sentence per action, so each step costs fewer turns | screen: medium median 10 -> 16, floor 8 -> 15 under a turn cap (docs/superpowers/research/2026-11-06-medium-cap-thinking-digest.md); a lead, off by default | `/remedy on prompt/think-briefly` |

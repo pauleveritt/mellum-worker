@@ -13,7 +13,7 @@ backends: [llamacpp]
 # E3 · Verify the Whole Spec
 
 A model declares itself done and quietly leaves a requirement behind. The fix
-isn't a better test — it's telling the model to account for every requirement, and
+isn't a better test. It's telling the model to account for every requirement, and
 to run the tests, before it finishes.
 
 !!! abstract "Overview"
@@ -35,7 +35,7 @@ to run the tests, before it finishes.
 
 **Badge:** `screen`
 
-The model builds the home page, the tagline's there, the page returns 200 — and
+The model builds the home page, the tagline's there, the page returns 200. And
 the navbar links the spec asked for are gone. Not a faked check and not the wrong
 place: a *dropped requirement*. The model verified the one thing it thought to
 test and finished on the rest. A requirement it never implemented is a requirement
@@ -56,7 +56,7 @@ each requirement the spec names.
 **Badge:** `screen`
 
 At n=6 the three-unit stack read 5 of 6. The one loss, rep `c05e80`, passed the
-tagline check and failed `test_home_still_has_navigation_links` — one check, Phase
+tagline check and failed `test_home_still_has_navigation_links`. One check, Phase
 1. No guard fired, nothing landed outside the layout. The model built a working
 route and simply left out a piece the spec named, then declared done. Reading
 files isn't verification; starting a server isn't verification; the model did one
@@ -87,7 +87,7 @@ a commit
 ```ts
 const LINE =
 	"Before you finish, check that every requirement the spec lists is present in your code, and " +
-	"run the project's own tests to confirm — do not finish while a requirement is unimplemented " +
+	"run the project's own tests to confirm, do not finish while a requirement is unimplemented " +
 	"or a test you can run is failing. Reading the files is not verification; run them.";
 
 // Append LINE to each user message on its way to the model.
@@ -101,8 +101,8 @@ pi.on("before_provider_request", (event) => {
 });
 ```
 
-It's the same append mechanism as E1 — a `before_provider_request` hook on each
-user message — carrying a different instruction. Stack the three prompt units and
+It's the same append mechanism as E1. A `before_provider_request` hook on each
+user message. Carrying a different instruction. Stack the three prompt units and
 the guard with the course preset: `--remedy preset:easy`.
 
 **Lesson check:** 5/6 rose to **6/6** at n=6 on the local host, every rep with 0
@@ -114,7 +114,7 @@ failed checks
 **Badge:** `reference-run`
 
 Adding the line took the stack from **5/6 to 6/6** at n=6, every rep green with 0
-failed checks, median 25 turns — a touch more deliberate than before, which is the
+failed checks, median 25 turns. A touch more deliberate than before, which is the
 verification step doing its work. The result replicated: a second n=6 run of the
 same stack with an enforcement gate stacked on top also passed its prompt share,
 and the gate fired 0 times because the prompts already met its contract
@@ -123,11 +123,11 @@ n=6 at 6/6 is a strong, replicated lead, not a one-host certainty.
 
 ## Interpretation
 
-The weakest badge is `screen`. The reliability lever on Easy is verification — run
+The weakest badge is `screen`. The reliability lever on Easy is verification. Run
 the real route or test before finishing, and account for every requirement the
 spec names. The code is a single appended line; that it closes the dropped
 requirement on this tier, where enforcement doesn't, is the lesson. The deeper rule
-carries to any tier — a model's own "done" is a claim, not a check, and the spec is
+carries to any tier. A model's own "done" is a claim, not a check, and the spec is
 the list it has to clear in full. On a harder tier the same claim needs a gate
 behind it, which the Hard lessons build.
 
@@ -144,4 +144,4 @@ uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy pres
 
     - A run can pass most checks and still ship a requirement it never implemented.
     - A model's own "done" is a claim; the spec is the list it must clear in full.
-    - `/remedy on prompt/verify-the-spec` appends one check-everything line — 5/6 → 6/6.
+    - `/remedy on prompt/verify-the-spec` appends one check-everything line. 5/6 → 6/6.

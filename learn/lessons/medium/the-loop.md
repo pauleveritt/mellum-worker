@@ -12,7 +12,7 @@ backends: [llamacpp]
 
 # The Loop
 
-The model reads the same file, gets the same answer, and reads it again — and
+The model reads the same file, gets the same answer, and reads it again. And
 again, learning nothing each time. A guard that counts the repeats stops the sixth
 and tells it to act on what it already knows.
 
@@ -36,7 +36,7 @@ and tells it to act on what it already knows.
 
 A small model loses the thread and reaches for the thing it knows how to do: it
 reads a file. The file hasn't changed, so the answer is the same, so it reads it
-again — the call becomes a nervous tic. One run shelled the same `ls -R` 245 times,
+again. The call becomes a nervous tic. One run shelled the same `ls -R` 245 times,
 every one of them a success and none of them new. The budget drains into a groove
 the model wears into the floor, and nothing gets built while it paces.
 
@@ -45,7 +45,7 @@ the model wears into the floor, and nothing gets built while it paces.
 **Badge:** `conjecture`
 
 **The condition:** any session where the model repeats an identical tool call with
-nothing changed in between. **Before:** no loop guard — the repeat runs as often as
+nothing changed in between. **Before:** no loop guard. The repeat runs as often as
 the model asks. **After:** `guard/repeat-loops`, which watches the recent calls and
 refuses the sixth identical one. It is part of the shipped guard set behind a
 phase-2b 15/15, and tested on its own at the unit grain.
@@ -56,7 +56,7 @@ phase-2b 15/15, and tested on its own at the unit grain.
 
 The tic is easy to read once you know its shape: the same `read`, `ls` or `grep`,
 back to back, each returning what the last one did. It is not a wrong answer and
-not a crash — it is a request spent to learn nothing, and on a bounded budget a
+not a crash. It is a request spent to learn nothing, and on a bounded budget a
 handful of them is a phase the model never gets to. The pathology is logged in the
 [pathologies page](../../pathologies.md) as *a loop*.
 
@@ -68,7 +68,7 @@ One remedy unit, `guard/repeat-loops`, keeps a short memory of recent calls and
 refuses a call it has already seen five times unchanged. The memory is the trick:
 an edit, a write or a bash command may change what the next read returns, so any of
 those forgets the repeats. Only an *unbroken* run of the same call trips the
-breaker — an edit-then-re-read is never mistaken for a loop.
+breaker. An edit-then-re-read is never mistaken for a loop.
 
 ### The code
 
@@ -101,12 +101,12 @@ export function createLoopBreaker(window = 20, threshold = 5) {
 }
 ```
 
-`MUTATING_TOOLS` is the set that clears the memory — `edit`, `write`, `bash` —
+`MUTATING_TOOLS` is the set that clears the memory, `edit`, `write`, `bash`, 
 because after any of those the same read can honestly return something new. To
 screen it on a graded run, name it: `--remedy guard/repeat-loops`.
 
 **Lesson check:** the sixth identical call is refused and the memory clears after a
-write — proven at the unit grain
+write. Proven at the unit grain
 ([test](https://github.com/andrevanzuydam/mellum-worker/blob/main/tests/remedy-units.test.mjs)).
 
 ## Validation
@@ -115,14 +115,14 @@ write — proven at the unit grain
 
 The unit test pins the behaviour: five identical `ls` calls pass, the sixth is
 blocked, and a `write` in between clears the count so the next `ls` passes again.
-That is a presence claim settled at n=1 — the guard fires when it should and steps
+That is a presence claim settled at n=1. The guard fires when it should and steps
 aside when a mutation could have changed the answer. What it is not yet is a rate:
 the guard ships in the set behind a phase-2b 15/15, so its standalone effect on the
 score is owed a preregistered run, not read off a bundled pass.
 
 ## Interpretation
 
-The weakest badge is `conjecture` — this rests on the unit test and the logged
+The weakest badge is `conjecture`. This rests on the unit test and the logged
 pathology, not a run that isolates the guard. The lesson is the method as much as
 the guard: a loop is one of the clearest things to read in a trace, and a cheap
 guard that counts repeats buys the budget back that the tic would drain. It is a

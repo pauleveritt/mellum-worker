@@ -8,7 +8,7 @@ progressed rapidly, but the truth remains: small models need agents that help th
 ## For the impatient
 
 Clone the repo and run the installer from its root. On macOS/Linux it then
-takes over — the weights, the server and your first answer. On Windows
+takes over. The weights, the server and your first answer. On Windows
 `install.bat` only checks the prerequisites (llama-server and Node); you fetch
 the weights and start the server yourself:
 

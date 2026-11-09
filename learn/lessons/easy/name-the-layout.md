@@ -35,7 +35,7 @@ fast pass.
 
 **Badge:** `screen`
 
-The spec names where each file belongs — `app.py` at the root, templates under
+The spec names where each file belongs. `app.py` at the root, templates under
 `templates/`. The model doesn't read it for that. Left to itself it reaches for
 `find` and `ls`, wanders the empty workspace, and settles on a layout it made up,
 `main.py` with the home page inside it. Every hidden check then imports the
@@ -46,7 +46,7 @@ done in the wrong house.
 
 **Badge:** `screen`
 
-**The condition:** Easy Phase 1 — the home page of a small FastAPI app, whose
+**The condition:** Easy Phase 1. The home page of a small FastAPI app, whose
 file layout the spec states in the open. **Before:** the bare floor, Vanilla Pi
 with only the recorder (`--arm vanilla`). **After:** the same floor plus one
 unit, `prompt/name-the-layout`. The grader is the Easy suite's own hidden tests,
@@ -57,7 +57,7 @@ which import the project at the paths the spec names.
 **Badge:** `screen`
 
 From the floor the model flailed about fifteen turns, shelling `find` and `ls`
-through bash — there's no search tool on Easy — then invented the layout and
+through bash, there's no search tool on Easy, then invented the layout and
 shipped `main.py` with no templates. The plain worker, the old bundle of six
 guards with no prompt, did the same thing and scored 0 of 3. The guards stop bad
 actions; they don't tell the model where a file goes.
@@ -69,12 +69,12 @@ actions; they don't tell the model where a file goes.
 One remedy unit, `prompt/name-the-layout`, appends a single agnostic line to
 every message the model receives: read the project's own spec for where each file
 belongs, and build there. It names no path, file or route of any suite, so the
-model reads the layout from the spec itself — the line between a remedy and coding
+model reads the layout from the spec itself. The line between a remedy and coding
 to the eval.
 
 ### The code
 
-In a live Pi session you switch it on with one command. Nothing else changes —
+In a live Pi session you switch it on with one command. Nothing else changes.
 the floor is still Vanilla Pi plus the recorder:
 
 ```text
@@ -82,14 +82,14 @@ the floor is still Vanilla Pi plus the recorder:
 ```
 
 That loads one small file. The part that does the work is the line it adds and
-the hook that attaches it to each turn — quoted here from the unit, frozen at a
+the hook that attaches it to each turn. Quoted here from the unit, frozen at a
 commit so the page can't drift
 ([`remedies/prompt/name-the-layout.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/remedies/prompt/name-the-layout.ts#L6-L33)):
 
 ```ts
 const LINE =
 	"Read the project's own spec or notes for where each file and route belongs, and create " +
-	"files at exactly those paths — do not invent your own layout.";
+	"files at exactly those paths, do not invent your own layout.";
 
 // On every request to the model, append LINE to each user message.
 pi.on("before_provider_request", (event) => {
@@ -110,7 +110,7 @@ layout instruction as one message. The worker's own task now ends like this:
 Build the home page described in specs/phase1.md.
 
 Read the project's own spec or notes for where each file and route belongs, and
-create files at exactly those paths — do not invent your own layout.
+create files at exactly those paths, do not invent your own layout.
 ```
 
 To pass it to a graded run instead of a live session, name the same unit:
@@ -135,10 +135,10 @@ settled rate.
 
 The weakest badge is `screen`. The lever on Easy is guidance, not guards. Six
 guards and a facts block earned nothing; one line that points the model at the
-spec earned the pass. The change is small enough to read in full — a constant and
-a hook — and that's the point of showing it: you can see exactly what reached the
+spec earned the pass. The change is small enough to read in full. A constant and
+a hook. And that's the point of showing it: you can see exactly what reached the
 model, and that it carries no answer to the exam. A real codebase has the same
-shape as this task — a convention for where things live, written down somewhere
+shape as this task. A convention for where things live, written down somewhere
 the model has to be told to read. The habit the unit teaches is the one to keep:
 take the layout from the spec, never from the model's imagination.
 
@@ -155,5 +155,5 @@ uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy prom
 
     - A small model invents a file layout unless the task points it at the spec's.
     - `/remedy on prompt/name-the-layout` adds one line through a
-      `before_provider_request` hook — the whole change is a constant and that hook.
+      `before_provider_request` hook. The whole change is a constant and that hook.
     - One agnostic line took Easy from 0/3 to 2/3, and beat the six-guard worker on speed.

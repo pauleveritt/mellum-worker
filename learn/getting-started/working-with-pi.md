@@ -12,7 +12,7 @@ backends: [llamacpp]
 The last step ran Pi once, with `-p`, and exited. This one opens Pi's
 interactive terminal: where you type, what the model can touch, how to see
 what it did, and how to pick up a session later. It ends with the command the
-whole recipe is built on — the worker's `/mellum` — and the course commands
+whole recipe is built on, the worker's `/mellum`, and the course commands
 `/remedy` and `/lesson` that build on it.
 
 Everything here is from Pi's own documentation for the version this repo
@@ -130,7 +130,7 @@ can reach.
 
 ## 6. The worker: `/mellum`
 
-The worker is the core — everything in this course builds on it. `/mellum`
+The worker is the core. Everything in this course builds on it. `/mellum`
 comes from the installed `mellum-worker` package (the `pi install` line from the
 README, the same recipe this course teaches), so it is there in any project
 where you install it, not only this checkout. With it you hand bounded work to
@@ -138,7 +138,7 @@ the small local model and read how each run went.
 
 | Command | What it does |
 | --- | --- |
-| `/mellum on` | Switch the session to Mellum — model, the worker tool set, the worker prompt — and stay on across turns; it marks the span start |
+| `/mellum on` | Switch the session to Mellum, model, the worker tool set, the worker prompt, and stay on across turns; it marks the span start |
 | `/mellum off` | Restore the model and tools you had before, and print a one-line summary of the span |
 | `/mellum <task>` | One-shot: switch to Mellum, run the one task, and switch back when it settles; your model gets one handoff block for the span |
 | `/mellum check` | Compare the model server and Pi's provider entry with the measured settings; it fails on a per-request mismatch and only reads |
@@ -191,8 +191,8 @@ the wall-clock.
 
 `n` sets how many runs and defaults to 1, so `/challenge easy` on its own is the
 quick single run you test with. A full suite on the real model takes a while, so
-the command runs in the background and streams what the model does — each tool
-call as it makes it (`easy · bash python app.py`) — with a live turn count in the
+the command runs in the background and streams what the model does. Each tool
+call as it makes it (`easy · bash python app.py`). With a live turn count in the
 footer, so the screen never looks dead. When it is done it reports passes out of
 the runs, the turns and the wall-clock, with each run's own turns and wall when
 `n` is more than 1.
@@ -207,23 +207,23 @@ repository's own harness and git.
 ### `/lesson`: the course inside Pi
 
 `/start` opens your next lesson, and on the first run of a fresh checkout it
-offers a pick-a-mode menu — **Standard** (code with Mellum, every remediation
+offers a pick-a-mode menu. **Standard** (code with Mellum, every remediation
 on), **Lesson** (the course), or **Challenge** (the graded run).
 
 `/lesson` opens a lesson hands-on: it moves Pi into the lesson's `project/<id>/`
-folder with a panel pinned above the prompt — the lesson, step by step, and its
-run results — while the prompt below stays yours. Page the panel with `←`/`→`
+folder with a panel pinned above the prompt. The lesson, step by step, and its
+run results. While the prompt below stays yours. Page the panel with `←`/`→`
 (while the prompt is empty), and run the lesson's arms with `/lesson before` and
 `/lesson after`. `/lesson` with no argument picks a lesson, `/lesson S0` opens
 one directly, `/lesson read` shows the prose, and `/lesson back` leaves the
-folder. (The findings lessons are being rebuilt — see
+folder. (The findings lessons are being rebuilt. See
 [Lessons](../lessons/index.md).)
 
 ## What you have
 
 Pi running interactively on the local Mellum, the keys to steer and stop it,
 the tools it can call, the commands to resume or branch a session, the worker's
-`/mellum` — the core the recipe is built on — and the course's `/remedy`,
+`/mellum`, the core the recipe is built on, and the course's `/remedy`,
 `/challenge` and `/lesson` loaded from a trusted checkout. Next,
 [Eval suites and the telemetry](eval-suites.md) runs whole projects through the
 provided harness and grades them.

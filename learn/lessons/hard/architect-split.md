@@ -14,7 +14,7 @@ backends: [llamacpp]
 
 The orchestration move everyone reaches for is to split the spec: an architect
 plans the steps, a fresh worker builds each. With one fixed model that split is
-overhead — one agent in a single pass is about five times cheaper at the same
+overhead. One agent in a single pass is about five times cheaper at the same
 score.
 
 !!! abstract "Overview"
@@ -38,7 +38,7 @@ score.
 Delegation is the obvious answer to a task too big to hold. One agent can't keep
 the whole spec in its head, so an architect carves it into ordered steps, writes a
 brief and a frozen test for each, and hands them to fresh workers one at a time.
-It's real orchestration — who drives, who builds, how a finished step passes to
+It's real orchestration. Who drives, who builds, how a finished step passes to
 the next. The question this lesson asks isn't whether it works. It's what it
 costs, and whether one fixed model needs the split at all.
 
@@ -47,9 +47,9 @@ costs, and whether one fixed model needs the split at all.
 **Badge:** `screen`
 
 **The condition:** easy (home page, oracle /4) and medium (four phases, oracle
-/18). **Arm A:** one agent builds the whole section in a single pass —
+/18). **Arm A:** one agent builds the whole section in a single pass.
 `--mode direct`, no architect, no step docs, no delegation. **Arm B:** the shipped
-plan-delegation loop — `--mode plan`, the architect splits the spec and a fresh
+plan-delegation loop. `--mode plan`, the architect splits the spec and a fresh
 worker builds each step. The primary outcome is **total requests**; the score is a
 guardrail
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
@@ -66,7 +66,7 @@ guardrail
 One pass reached the same score for about a fifth of the requests. The delegation
 the loop adds is dead weight on these tiers: a page the architect never needed to
 carve, and workers each paying to read a spec the one agent already had in hand.
-On the real ladder a one-pass arm with the exit-gate reproduced it — 3 of 3 on the
+On the real ladder a one-pass arm with the exit-gate reproduced it. 3 of 3 on the
 hidden oracle at a mean of ~43 requests
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 
@@ -75,10 +75,10 @@ hidden oracle at a mean of ~43 requests
 **Badge:** `screen`
 
 The solution here is a judgement, not a switch: delegate only when it pays. The
-split earns its keep on a **model-tier price gap** — an expensive planner, a cheap
+split earns its keep on a **model-tier price gap**. An expensive planner, a cheap
 builder, which is exactly what JetBrains shipped as Junie "Eco Mode" (48–57% lower
 cost at flat resolve). With one fixed model that gap is zero, so the split is just
-overhead. The other case it pays is a spec too large for one context — the case
+overhead. The other case it pays is a spec too large for one context. The case
 these tiers don't test. The code below is how you drive each shape, so you can
 measure the gap yourself.
 
@@ -92,7 +92,7 @@ implementation rather than write it
 ```ts
 const DELEGATE_NUDGE =
 	"You are the primary. Explore, decide the layout, and pin the goal with a check or a failing " +
-	"test yourself — but hand the implementation to the `delegate` tool, do not write it. … " +
+	"test yourself, but hand the implementation to the `delegate` tool, do not write it. … " +
 	"Then read the worker's report and verify by running that command; delegate a fix if it is not done yet.";
 
 // A PRIMARY-side tool. The spawned worker child sets MELLUM_WORKER_CHILD=1 and
@@ -107,19 +107,19 @@ pi.registerTool({
 });
 ```
 
-You don't wire this by hand to compare the shapes — the ladder drives both. Pick
+You don't wire this by hand to compare the shapes. The ladder drives both. Pick
 the orchestration with one flag:
 
 ```bash
-# Arm A — one pass: one agent builds the whole section, no delegation
+# Arm A, one pass: one agent builds the whole section, no delegation
 uv run python -m ladder.run_ladder --mode direct  --provider llamacpp --base-url http://127.0.0.1:8001/v1 ...
 
-# Arm B — the architect loop: split the spec, delegate each step
+# Arm B, the architect loop: split the spec, delegate each step
 uv run python -m ladder.run_ladder --mode plan    --provider llamacpp --base-url http://127.0.0.1:8001/v1 ...
 ```
 
 One caveat the record is honest about: `--mode plan` doesn't yet run on the
-course's llama.cpp backend — the delegate path's backend support is on an unlanded
+course's llama.cpp backend. The delegate path's backend support is on an unlanded
 branch, and in the verdict run the plan arm hung to the deadline with zero
 requests. So Arm A is a measured ladder result, and Arm B's cost stays the
 screened baseline until that branch lands.
@@ -132,30 +132,30 @@ score, easy and medium
 
 **Badge:** `screen`
 
-Both one-pass tiers came home inside a tight band — easy 11 and 12 requests,
-medium 62 and 78 — and finished clean, where the plan loop's medium runs swung
+Both one-pass tiers came home inside a tight band. Easy 11 and 12 requests,
+medium 62 and 78. And finished clean, where the plan loop's medium runs swung
 wide and sometimes never converged
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
 The quality column (the oracle score) held while the budget column (requests)
-dropped about fivefold — the split bought nothing here and cost four workers'
+dropped about fivefold. The split bought nothing here and cost four workers'
 worth of re-reads. The one thing the screen can't settle is the size at which one
 agent runs out of room; that's where the loop was always meant to earn its cost,
 and this run never reached it.
 
 ## Interpretation
 
-The weakest badge is `screen` — a scratch n=2 per tier, plus one real ladder arm;
+The weakest badge is `screen`. A scratch n=2 per tier, plus one real ladder arm;
 a lead, not a rate, and the plan arm is still unmeasured on this backend. The
 honest reading isn't "delegation is never worth it." It's "with a single fixed
 model, the split is overhead at this size." The orchestration knowledge still
 matters: you have to know how the split works to know when it doesn't pay, and to
 spot the tier gap or the oversized spec where it does. The next lesson keeps the
-one piece of the loop that pays even in a single pass — the architect's frozen
+one piece of the loop that pays even in a single pass. The architect's frozen
 acceptance test, turned into an exit-gate.
 
 ### What to try next
 
-A rung past four phases — a spec one agent can't hold — is the test that would
+A rung past four phases, a spec one agent can't hold, is the test that would
 flip the verdict; if one pass degrades there while the plan loop holds, the loop
 earns its cost exactly where this screen couldn't see it. It needs the plan arm
 running on llama.cpp first, which the unlanded delegate-backend branch provides.
@@ -171,6 +171,6 @@ uv run python learn/code/harness.py run --suite medium --arm worker --grade --re
 
 !!! success "Key points"
 
-    - Delegation splits a spec across an architect and fresh workers — real orchestration, real cost.
+    - Delegation splits a spec across an architect and fresh workers. Real orchestration, real cost.
     - With one fixed model the split is overhead: one pass was ~5× cheaper at equal or better score.
-    - It pays on a model-tier price gap (Junie Eco) or a spec too large for one context — not here.
+    - It pays on a model-tier price gap (Junie Eco) or a spec too large for one context. Not here.
