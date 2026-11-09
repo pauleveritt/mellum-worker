@@ -556,10 +556,10 @@ test("doTaskSteps runs a final spec-coverage pass before freezing and feeds the 
 
 test("resolveRemedyFiles turns a preset into existing remedy unit files and skips unknown names", async () => {
 	const { resolveRemedyFiles } = await load();
-	const files = resolveRemedyFiles("preset:medium");
-	assert.ok(files.length >= 1, "the medium preset resolves to at least one unit file");
+	const files = resolveRemedyFiles("preset:baseline-worker");
+	assert.ok(files.length >= 1, "the baseline-worker preset resolves to at least one unit file");
 	assert.ok(files.every((f) => f.endsWith(".ts")), "each resolved unit is a .ts file");
-	assert.ok(files.some((f) => /prompt\/python-developer\.ts$/.test(f)), "the medium preset includes prompt/python-developer");
+	assert.deepEqual(resolveRemedyFiles("preset:medium"), [], "a tier preset is empty until a cycle measures units for it");
 	assert.deepEqual(resolveRemedyFiles("guard/does-not-exist"), [], "an unknown unit is skipped, not fatal");
 	assert.deepEqual(resolveRemedyFiles(""), [], "no spec means no remedies");
 	assert.deepEqual(resolveRemedyFiles(undefined), []);

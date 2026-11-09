@@ -1,0 +1,3 @@
+{
+  "base-fixed": ["--arm", "vanilla", "--remedy", "tool/bounded-commands,check/mediated-test-settle"]
+}

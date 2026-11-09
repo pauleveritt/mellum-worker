@@ -44,6 +44,8 @@ ARMS = ("vanilla", "bare", "worker", "strip-thinking")
 # worker reads only these two; the old guards/prompt/facts env vars are gone with
 # the ablation arms that set them — ablation is a `--remedy` now, not an `--arm`.
 ARM_ENV_KEYS = ("MELLUM_MODE", "MELLUM_STRIP_THINKING")
+# Settings a unit reads from the environment; a session inherits them, so a record names them.
+RECORDED_ENV = ("MELLUM_BOUND_SECONDS", "MELLUM_MEDIATED_MAX", "VERIFY_PYTEST")
 FLAGS = [
     "-p", "--no-approve", "--no-extensions", "--no-skills",
     "--no-prompt-templates", "--no-themes", "--no-context-files",
@@ -337,6 +339,7 @@ def host_gate(card_path: Path, endpoint: str, pins: dict) -> dict:
     except the ones that may vary between restarts (conformance.VARIABLE_FLAGS)."""
     import conformance
     card = json.loads(Path(card_path).read_text())
+    pins = conformance.card_pins(card) if "pins_file" in card else pins
     problems = []
     if card.get("schema") != conformance.SCHEMA or card.get("passed") is not True:
         problems.append("the host card did not pass")
@@ -358,6 +361,65 @@ def host_gate(card_path: Path, endpoint: str, pins: dict) -> dict:
         raise SystemExit("not a counted run: " + "; ".join(problems) +
                          ". Rerun conformance.py for this server, or run without --host-card (uncounted).")
     return {"path": str(card_path), "sha256": conformance.sha256_file(card_path), "passed": True}
+
+
+def session_user_env(base: dict, *, home: str, user: str) -> dict:
+    """A session user's whole environment: an allowlist, because a pod's root environment holds API keys."""
+    keep = {key: base[key] for key in ("PATH", "LANG", "LC_ALL", "TERM", "UV_PYTHON_INSTALL_DIR", *RECORDED_ENV)
+            if key in base}
+    return {"LANG": "C.UTF-8", **keep, "HOME": home, "USER": user, "LOGNAME": user,
+            "UV_CACHE_DIR": f"{home}/.cache/uv", "UV_PYTHON_DOWNLOADS": "never"}
+
+
+def chown_tree(path: Path, user: str) -> None:
+    """Give a tree to a session user without following a symlink, so a planted link cannot redirect it."""
+    import pwd  # POSIX only; the harness also runs on Windows, where there is no session user
+    account = pwd.getpwnam(user)
+    for target in [Path(path), *Path(path).rglob("*")]:
+        os.chown(target, account.pw_uid, account.pw_gid, follow_symlinks=False)
+
+
+def drop_privileges(user: str) -> dict:
+    """Popen keywords that run as user with its primary group only (no inherited supplementary groups)."""
+    import pwd
+    return {"user": user, "group": pwd.getpwnam(user).pw_gid, "extra_groups": []}
+
+
+def readable_tree(run: Path, extras: list[Path], extension: Path | None) -> tuple[Path, list[Path], Path | None]:
+    """A copy of the units and the worker in the run, for a session user: the checkout is locked.
+
+    Units import their siblings and ../extensions; the worker reads ../templates and ../package.json."""
+    source = REMEDIES.parent
+    root = Path(run) / "tree"
+    files = [*sorted(REMEDIES.rglob("*.ts")), *sorted((source / "extensions").glob("*.ts")),
+             source / "templates/llama-model-settings.json", source / "package.json"]
+    for path in files:
+        target = root / path.relative_to(source)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, target)
+        target.chmod(0o644)
+    for folder in [root, *(p for p in root.rglob("*") if p.is_dir())]:
+        folder.chmod(0o755)
+
+    def moved(path: Path) -> Path:
+        if not Path(path).resolve().is_relative_to(source):
+            raise SystemExit(f"a session user cannot load {path}: it is outside the checkout's units")
+        return root / Path(path).resolve().relative_to(source)
+    return root, [moved(path) for path in extras], moved(extension) if extension is not None else None
+
+
+def hand_over(files: list[Path], place: Path) -> list[Path]:
+    """Copies of the mediated tests a session user can read but not list: the directory is traverse-only."""
+    place = Path(place)
+    place.mkdir(exist_ok=True)
+    place.chmod(0o711)
+    copies = []
+    for path in files:
+        copy = place / Path(path).name
+        shutil.copyfile(path, copy)
+        copy.chmod(0o644)
+        copies.append(copy)
+    return copies
 
 
 def session_path(path: str, virtual_env: str | None) -> str:
@@ -602,8 +664,34 @@ def sweep_workspace(workspace: Path, grace: float = 1.0) -> list[tuple[int, str]
     return found
 
 
+def sweep_user(user: str, grace: float = 1.0) -> list[tuple[int, str]]:
+    """End everything a session user still runs: a server started with setsid from /tmp escapes the
+    group and workspace sweeps and would hold port 8000 against the next session. Never raises."""
+    def members() -> list[tuple[int, str]]:
+        try:
+            out = subprocess.run(["ps", "-u", user, "-o", "pid=,comm="], capture_output=True, text=True,
+                                 check=False).stdout
+        except OSError:
+            return []
+        rows = (line.split(None, 1) for line in out.splitlines())
+        return [(int(row[0]), row[1].strip()) for row in rows if len(row) == 2 and row[0].isdigit()]
+    found = members()
+    for signal_number in KILL_SIGNALS if found else ():
+        for pid, _ in members():
+            try:
+                os.kill(pid, signal_number)
+            except OSError:
+                pass
+        deadline = time.monotonic() + grace
+        while time.monotonic() < deadline:
+            if not members():
+                return found
+            time.sleep(0.05)
+    return found
+
+
 def machine_label() -> str:
-    """What this run ran on: enough to tell an M1 Pro from an M5 Max.
+    """What this run ran on: enough to tell an M1 Pro from an M5 Max, or a pod's GPU.
 
     Peak token counts travel between machines; walls do not.
     """
@@ -617,6 +705,13 @@ def machine_label() -> str:
         pass
     if not brand:
         brand = f"{platform.system()} {platform.machine()}"
+        try:
+            gpu = subprocess.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+                                 capture_output=True, text=True, check=False).stdout.strip().splitlines()
+        except OSError:
+            gpu = []
+        if gpu:
+            brand = f"{gpu[0]} ({brand})"
     ram = f", {int(memory) // (1024 ** 3)} GiB" if memory.isdigit() else ""
     return f"{brand}{ram}"
 
@@ -700,7 +795,8 @@ def resolve_extras(remedy: str | None, extensions: list[Path]) -> tuple[list[str
     return names, paths
 
 
-MEDIATED_UNIT = "mediated-test.ts"
+# A unit that hands a mediated test over: both halves, or either alone.
+MEDIATED_UNITS = {"mediated-test.ts", "mediated-test-show.ts", "mediated-test-settle.ts"}
 
 
 def mediated_tests(suite: Suite, prompt_number: int | None) -> list[Path]:
@@ -810,15 +906,16 @@ def run_suite(
     extras: list[Path] = (),
     context_files: bool = False,
     budget: dict | None = None,
+    session_user: str | None = None,
 ) -> Path:
     taken = guarded_listeners(GUARDED_PORTS)
     if taken:
         named = ", ".join(f"port {row['port']} (pid {row['pid']}, {row['command']})" for row in taken)
         raise SystemExit(f"a server is already listening on {named}; stop it and rerun "
                          "(no session was started)")
-    mediated = any(Path(path).name == MEDIATED_UNIT for path in extras)
+    mediated = any(Path(path).name in MEDIATED_UNITS for path in extras)
     if mediated and (suite.root is None or not (suite.root / "mediated").is_dir()):
-        raise SystemExit(f"check/mediated-test needs the suite's mediated/ tests; {suite.name} has none")
+        raise SystemExit(f"a check/mediated-test unit needs the suite's mediated/ tests; {suite.name} has none")
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
     workspace.mkdir()
@@ -862,8 +959,19 @@ def run_suite(
     (run / "model.txt").write_text(f"{provider}/{model}\n")
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
+    handed_dir, source_env = None, os.environ
+    if session_user is not None:
+        # F.6: the run root stays root's; the session owns only what Pi writes, and loads a copy of the units.
+        _, extras, worker = readable_tree(run, list(extras), settings["extension"])
+        settings = {**settings, "extension": worker}
+        recorder.chmod(0o644)
+        handed_dir = Path(tempfile.mkdtemp(prefix="mellum-handed-"))
+        for name in ("workspace", "profile", "sessions", "trace.jsonl"):
+            chown_tree(run / name, session_user)
+        import pwd
+        source_env = session_user_env(os.environ, home=pwd.getpwnam(session_user).pw_dir, user=session_user)
     env = {
-        **os.environ,
+        **source_env,
         "PI_CODING_AGENT_DIR": str(run / "profile"),
         "MELLUM_TRACE_FILE": str(trace),
     }
@@ -923,8 +1031,10 @@ def run_suite(
             if mediated:
                 # Read from the suite, never the workspace: the unit freezes them when Pi loads it.
                 files = mediated_tests(suite, None if single_prompt else number)
-                env["MELLUM_MEDIATED_TEST"] = os.pathsep.join(str(path) for path in files)
-                handed.append([path.name for path in files])
+                paths = files if handed_dir is None else hand_over(files, handed_dir)
+                env["MELLUM_MEDIATED_TEST"] = os.pathsep.join(str(path) for path in paths)
+                handed.append([{"name": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                               for path in files])
                 (run / "mediated.json").write_text(json.dumps(handed) + "\n")
             argv = pi_argv(
                 pi_binary, run / "profile", recorder, provider, model, prompt,
@@ -935,7 +1045,8 @@ def run_suite(
             try:
                 # No stdin: Pi with -p appends piped stdin to its prompt.
                 child_started = time.monotonic()
-                child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
+                child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL,
+                                    **(drop_privileges(session_user) if session_user else {}))
                 groups.append(child.pid)
             except FileNotFoundError:
                 raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
@@ -956,6 +1067,12 @@ def run_suite(
         swept = {entry["pid"] for entry in leaked}
         leaked.extend({"pid": pid, "pgid": None, "command": command}
                       for pid, command in sweep_workspace(workspace) if pid not in swept)
+        if session_user is not None:
+            swept = {entry["pid"] for entry in leaked}
+            leaked.extend({"pid": pid, "pgid": None, "command": command}
+                          for pid, command in sweep_user(session_user) if pid not in swept)
+        if handed_dir is not None:
+            shutil.rmtree(handed_dir, ignore_errors=True)
         (run / "execution.json").write_text(json.dumps({
             "elapsed_seconds": round(elapsed, 3),
             "exit_code": child.poll() if child is not None else None,
@@ -1269,6 +1386,8 @@ def _run_sessions(
     context_files: bool = False,
     budget: dict | None = None,
     host_card: dict | None = None,
+    session_user: str | None = None,
+    grade_user: str | None = None,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
@@ -1276,10 +1395,10 @@ def _run_sessions(
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
-                            context_files=context_files, budget=budget)
+                            context_files=context_files, budget=budget, session_user=session_user)
         grades = grade(run_dir / "workspace", suite=suite) if grade_run else []
         from grading import evaluate
-        evaluation = evaluate(run_dir / 'workspace', suite, variant=specs)
+        evaluation = evaluate(run_dir / 'workspace', suite, variant=specs, grade_user=grade_user)
         tests_passed = evaluation['hidden_passed']
         tail, missing, checks_ran = (evaluation['tail'], evaluation['missing'], evaluation['checks_ran'])
         project_tests = evaluation['project_tests']
@@ -1306,6 +1425,7 @@ def _run_sessions(
             "model": model_file.read_text().strip() if model_file.is_file() else None,
             "remedies": list(remedies),
             "extensions": extension_record(list(extras)),
+            "recorded_env": {key: os.environ.get(key) for key in RECORDED_ENV},
             "single_prompt": single_prompt,
             "specs": specs,
             "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
@@ -1488,6 +1608,9 @@ def build_parser() -> argparse.ArgumentParser:
                           "(guard/repeat-loops) or preset:<name>")
     run.add_argument("--extension", type=Path, action="append", default=[], metavar="PATH",
                      help="a Pi extension of your own to load (repeatable)")
+    run.add_argument("--grade-user", default=None, metavar="NAME", help="run the graded submission as this user")
+    run.add_argument("--session-user", default=None, metavar="NAME",
+                     help="on a pod, as root: run each session as this unprivileged user")
     run.add_argument("--stall", type=float, default=None, metavar="SECONDS",
                      help="end a session as stalled when one tool call has run this long "
                           "with no result (a foreground server); off by default")
@@ -1532,6 +1655,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
+    if args.session_user is not None and (args.suite == "all" or os.geteuid() != 0):
+        parser.error("--session-user needs one suite and a run as root")
+    if args.grade_user is not None and os.geteuid() != 0:
+        parser.error("--grade-user needs a run as root")
     # A run is counted exactly when it has a host card (F.5); run.json says which it was.
     counted = args.host_card is not None
     if counted and (args.deadline is not None or args.budget is not None):
@@ -1594,7 +1721,7 @@ def main(argv: list[str] | None = None) -> int:
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
         profile=args.profile, stall=args.stall,
         remedies=remedies, extras=extras, context_files=args.context_files,
-        budget=budget, host_card=gate,
+        budget=budget, host_card=gate, session_user=args.session_user, grade_user=args.grade_user,
     )
     _print_task(suite, results, args.repeat)
     return 0

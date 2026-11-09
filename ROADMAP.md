@@ -7,8 +7,8 @@ tangents go to the backlog, never into the current cycle.
 
 ## Now
 
-**Active:** none; R.1 closed 2026-11-08 ([note](docs/superpowers/research/2026-11-07-r1-easy-remedies.md)).
-**Next:** F.6, parallel runs on pods.
+**Active:** none; Base's cost bar is Paul's call ([count](docs/superpowers/research/2026-11-09-easy-count-result.md)).
+**Next:** R.2.
 **After:** R.2, R.3, then A.1, Andre's architect as an opt-in unit.
 **Parked:** everything in [`BACKLOG.md`](BACKLOG.md), each with a reopen condition.
 
@@ -35,7 +35,7 @@ by default, so every later unit's effect can be credited to it.
 | **F.3** | Housekeeping, the instrument: the single-source suites from the old branch, keeping the `original` variant, and budget measured honestly in `run.json`: process elapsed time, `completion` and turns apart from requests. Proven by a Vanilla smoke on Easy. | A Vanilla baseline (Vanilla runs as R.1's interleaved control arm instead); any remedy; settle-layer timeouts and additive `entries` (with the first `check/*` arm); a stronger `qualify` (owed before any grader is cited as qualified). | closed 2026-11-07 — [plan](docs/superpowers/plans/archive/2026-11-07-f3-instrument.md), [review](docs/superpowers/research/2026-11-07-instrument-review.md), [smoke](evals/2026-11-07-f3-smoke/table.md). New fields landed; smoke n = 3, one ending on its deadline. |
 | **F.4** | Infrastructure: trusted grading independent of workspace configuration; suite assertions aligned with Acceptance; complete Easy Phase 1 checks; explicit grader identity and preserved historical assertions. Deterministic positive builds and failing mutation witnesses establish repairs. | Remedies or model-rate claims; the acceptance-package port; stronger qualify; settle changes; port preflight; Pi-version recording; arbitrary hostile-code sandboxing. | closed 2026-11-07 — [plan](docs/superpowers/plans/archive/2026-11-07-suite-oracle-repairs.md), [evidence](docs/superpowers/research/2026-11-07-suite-oracle-repairs.md). Easy/Medium/Hard: 13/18/34 current checks; review findings fixed. No model-rate claim. |
 | **F.5** | Infrastructure: runs we can trust on the M5 Max, ported from `lc40-thin-worker`. A per-session budget of requests and output tokens (from LC.39; Andre's `33e0b92` informs it), with wall time a censoring hang-guard; a conformance check and host card per run; the Pi version, a venv-free `PATH`, the port-8000 guard, runs outside the repo. | Remedies and the settle fix (R.1); pods, rentals and the session user (F.6); Medium/Hard baselines; model, sampling or oracle changes. | closed 2026-11-07 — [plan](docs/superpowers/plans/archive/2026-11-07-f5-run-trust.md), [note](docs/superpowers/research/2026-11-07-f5-run-trust.md), [smoke](evals/2026-11-07-f5-smoke/table.md). b12110 passes numerics (0.57%), so F.6 stays after R.1; a run counts only with `--host-card`. |
-| **F.6** | Infrastructure: parallel runs on rented pods under F.5's budgets and host cards. LC.39's session user and rental flow; several pods, one session each at a time; pooled only where the conformance rule allows. | Concurrent sessions on one host; renting without the user's yes per rental; remedies. | candidate — before R.2, where Medium and Hard batches take hours on one host. |
+| **F.6** | Infrastructure: one held Runpod pod under F.5's budgets and its own host card (2026-11-08: narrowed from several parallel pods). LC.39's session user and rental flow, ported. Its proof is one Easy run, four arms at n = 24 on `--arm vanilla`: Vanilla, the mediated test, and each of its halves. | Parallel pods, pooling, concurrent sessions on one host; renting without the user's yes per rental; pooling pod numbers with the Mac's; new scoring. | done 2026-11-09; pod terminated — [note](docs/superpowers/research/2026-11-08-f6-held-pod.md), [count](docs/superpowers/research/2026-11-09-easy-count-result.md), [fixes](docs/superpowers/research/2026-11-09-settle-fixes-screen.md). |
 
 ### Remedies (R)
 

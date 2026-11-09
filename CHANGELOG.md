@@ -4,7 +4,48 @@ Versions match git tags; pin one in both install lines.
 
 ## [Unreleased]
 
+### Added
+- Screens of the settle fixes on Easy, with and without a send-back limit of 2, and of Vanilla against Base on Medium, with their records and note. The fixes close the path leak and kept the pass rate; they did not show a saving at n = 6, and Medium finished nothing in either arm.
+- The counted Easy run of Vanilla against Base (n = 32 each), with its record and result note. Base took 25 strict passes to Vanilla's 2 at 2.40 times the median requests, but 4.47 times the median output tokens, over the 3-times limit fixed beforehand, so `preset:base` and `preset:easy` stay empty.
+
+- **A pod run can grade as its own user.** `--grade-user` runs the graded submission unprivileged, with an
+  allowlisted environment, so a model's code never runs as root or sees the pod's API key.
+
+- **`r1_batch report` counts strict passes.** Beside all-checks passes, a strict pass also needs the project's
+  own tests and the lint gate.
+
+- **Easy's and Medium's mediated tests are rewritten from the spec alone.** Easy's had been mapped check for
+  check to the hidden grader, so a result using it was partly by construction. Every tier's launch test now
+  says so plainly when a server left running holds the port, rather than failing as a broken app.
+
+- **Hard has mediated tests.** Eleven files, one per phase, written from the roadmap without opening the
+  hidden grader; green on the complete build and red on the broken one, so the settle re-run can be tried
+  on Hard.
+
+- **Medium has mediated tests, and `scripts/r1_batch.py` takes `--suite`.** The four tests come from
+  the old branch, green on the complete build and red on the broken one, so the settle re-run can be
+  tried on Medium; the batch runner was fixed to Easy.
+
 ### Changed
+
+- **Easy sessions get 128 requests and 64,000 output tokens,** so the cap cannot cut off a session sent back
+  by the settle re-run.
+
+- **Medium and Hard sessions get far more budget.** 400 requests, 300,000 output tokens and an hour: the old
+  120 and 64,000 were ending sessions before they finished, so a run measured the cap. Final caps come
+  from what the sessions then use.
+
+- **F.6's Easy run and its screen are recorded.** `evals/2026-11-08-f6-easy` holds the four arms at
+  n = 24 on one held A40 pod, and `evals/2026-11-08-f6-screen-settle-bounded` a six-session lead;
+  `scripts/pod/easy-settle-bounded-arms.json` is that screen's arm.
+
+- **The suites' notes now say what their roadmaps mean about servers.** `AGENTS.md` said flatly
+  "Do not: start servers", while each roadmap requires `app.py` to launch and says only not to check
+  the work by starting one. The line is now "Do not start a server to check your work; run the
+  tests." It adds no technique, but a run after it is not comparable with R.1's on the launch check.
+
+- **`preset:medium` and `preset:hard` are empty until they are measured.** They carried four units
+  no run had earned, so they now match `preset:base` and `preset:easy`: `[]` is plain Vanilla.
 
 - **`prompt/name-the-layout` is shown once per task.** It appended its line to every user
   message; it is now one visible injected message per task, kept across tool requests and
@@ -82,6 +123,21 @@ Versions match git tags; pin one in both install lines.
   prefix included: it had read 1,703 for an 11,438-token prompt.
 
 ### Added
+
+- **A held Runpod pod can run counted sessions.** `scripts/pod/push.sh HOST PORT` copies the
+  checkout up and builds it from `learn/code/host/pod-pins.json` (the Mac's weights and b12110,
+  built for the A40 and the L40S). `conformance.py --pins` writes the pod's own host card, whose
+  numbers do not pool with the Mac's, and `harness.py run --session-user` runs each session as an
+  unprivileged user, so the model cannot read the hidden grader. `r1_batch.py` passes it through.
+
+- **The mediated test's two halves are units of their own.** `check/mediated-test-show` shows the
+  request's acceptance test and never reruns it; `check/mediated-test-settle` never shows it and
+  reruns a frozen copy before finishing, sending failures back. `check/mediated-test` stays both
+  halves, unchanged, so a run can now say which half pays for its cost.
+
+- **A record says which mediated tests and settings a session had.** `mediated.json` carries each
+  test file's sha256, and `run.json` has `recorded_env`, naming `MELLUM_BOUND_SECONDS`,
+  `MELLUM_MEDIATED_MAX` and `VERIFY_PYTEST` as the session saw them.
 
 - **`tool/bounded-commands`, a remedy for the foreground stall.** It gives every bash call Pi's
   own timeout (30 s, or `MELLUM_BOUND_SECONDS`) when the model set none, and caps a chosen one at
@@ -2423,6 +2479,10 @@ Versions match git tags; pin one in both install lines.
 - Mellum Mode's undocumented `MELLUM_MODE_PROVIDER` and `MELLUM_MODE_MODEL`
   overrides, and the `MELLUM_MODE_DEBUG` file writer. Mode runs the one
   measured model entry; `/mellum check` says when the provider entry differs.
+
+### Fixed
+
+- **The mediated test's settle re-run no longer leaks its copy or trips on the model's own server.** The temporary copy is deleted when each run ends, the send-back message no longer names its location, and anything this session left running in the background is stopped before the run. Only processes the session started are touched, so a developer's own server is safe.
 
 ## [0.1.8] - 2026-10-13
 

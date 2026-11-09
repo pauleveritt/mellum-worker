@@ -24,7 +24,7 @@ committed. This screen decides only which units enter step two
 
 ## Decision (screen filter)
 
-`compile-import` is dropped: its hook never acted (and it is 3.33 checks below Vanilla, mostly the
+`compile-import` is dropped (2026-11-08 correction: it could not be judged at n = 3): its hook never acted (and it is 3.33 checks below Vanilla, mostly the
 one unrelated session). `mediated-test` enters step two, against Vanilla.
 
 A lead, not a finding: the shown test launches the app with `uv run --offline python app.py`, the

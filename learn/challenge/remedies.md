@@ -66,6 +66,8 @@ row is one problem and the unit that answers it; the last column is the
 | --- | --- | --- | --- |
 | Finishes with lint or type errors | `check/code-quality`: Runs the quality checks before finishing | unit-tested; not measured on the suites | `/remedy on check/code-quality` |
 | Settles on code that does not compile or import | `check/compile-import`: Fails a .py write that does not compile; at settle, imports each module written and sends failures back (at most 3) | unit-tested; R.1 measures it on Base | `/remedy on check/compile-import` |
+| Declares done while a spec requirement it never tested is unmet | `check/mediated-test-settle`: Reruns the request's own acceptance test before finishing and sends the failures back; never shows it first | split from check/mediated-test to learn which half pays its cost; screen in F.6 | `/remedy on check/mediated-test-settle` |
+| Declares done while a spec requirement it never tested is unmet | `check/mediated-test-show`: Shows the request's own acceptance test at the start of the task; never reruns it | split from check/mediated-test to learn which half pays its cost; screen in F.6 | `/remedy on check/mediated-test-show` |
 | Declares done while a spec requirement it never tested is unmet | `check/mediated-test`: Shows the request's own acceptance test, reruns a frozen copy before finishing and sends the failures back | dry-run: red on the Phase 4 id miss in 6 of 6 Base sessions, green on the complete build; screen pending | `/remedy on check/mediated-test` |
 
 ### Workflows

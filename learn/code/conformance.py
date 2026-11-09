@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""The Mac's conformance check (F.5, ported from LC.39's per-rental check): may this host's sessions count?
+"""The conformance check (F.5, ported from LC.39's per-rental check): may this host's sessions count?
 
-It checks the live llama-server against the pin card (`host/pins.json`) and writes a host card.
-A counted harness session needs a card that passed, for the server that is live
-(`harness.host_gate`). Pods, GPU allowlists and session users are not part of it.
+It checks the live llama-server against a pin card (`host/pins.json` for the Mac, `host/pod-pins.json`
+for a pod) and writes a host card. A counted harness session needs a card that passed, for the server
+that is live (`harness.host_gate`). A pod's card has its own digest: its numbers do not pool with the Mac's.
 
     uv run python learn/code/conformance.py --out <runs-dir>/host-card.json --pi-binary ~/.local/bin/pi
 """
@@ -24,6 +24,7 @@ from pathlib import Path
 
 HOST = Path(__file__).resolve().parent / "host"
 PINS = HOST / "pins.json"
+POD_PINS = HOST / "pod-pins.json"
 SCHEMA = "mellum-host-card/1"
 # Parts of the server command that may differ between restarts of the same configuration.
 VARIABLE_FLAGS = {"-m", "--port", "-t", "-tb", "--log-file"}
@@ -37,6 +38,14 @@ def load_pins(path: Path = PINS) -> dict:
     if pins["server"]["flash_attention"] != "on":
         raise ValueError("pin card must set server.flash_attention to on; auto may resolve differently")
     return pins
+
+
+def card_pins(card: dict) -> dict:
+    """The pin card a host card was made for: one file in `host/`; a card that names none is the Mac's."""
+    name = card.get("pins_file", PINS.name)
+    if Path(name).name != name or not (HOST / name).is_file():
+        raise ValueError(f"host card names an unknown pin card {name!r}")
+    return load_pins(HOST / name)
 
 
 def pins_digest(pins: dict) -> str:
@@ -146,13 +155,13 @@ def _reading(text: str) -> dict:
                 "error": str(error)}
 
 
-def numerics_item(metal_text: str, cpu_text: str, tolerance: float) -> dict:
-    """Metal against CPU on the same build and weights: both finite, within tolerance (F.5)."""
-    metal, cpu = _reading(metal_text), _reading(cpu_text)
-    if metal["perplexity"] is None or cpu["perplexity"] is None:
-        return _item(False, {"metal": metal, "cpu": cpu, "tolerance": tolerance})
-    drift = abs(metal["perplexity"] - cpu["perplexity"]) / cpu["perplexity"]
-    return _item(drift <= tolerance, {"metal": metal, "cpu": cpu, "relative_drift": round(drift, 6),
+def numerics_item(gpu_text: str, cpu_text: str, tolerance: float) -> dict:
+    """The GPU against the CPU on the same build and weights: both finite, within tolerance (F.5)."""
+    gpu, cpu = _reading(gpu_text), _reading(cpu_text)
+    if gpu["perplexity"] is None or cpu["perplexity"] is None:
+        return _item(False, {"gpu": gpu, "cpu": cpu, "tolerance": tolerance})
+    drift = abs(gpu["perplexity"] - cpu["perplexity"]) / cpu["perplexity"]
+    return _item(drift <= tolerance, {"gpu": gpu, "cpu": cpu, "relative_drift": round(drift, 6),
                                       "tolerance": tolerance})
 
 
@@ -232,7 +241,7 @@ def tool_build(binary) -> str | None:
     return f"b{match[1]}-{match[2]}" if match else None
 
 
-def _numerics(pins, perplexity_binary, model):
+def _numerics(pins, perplexity_binary, model, threads=None):
     n = pins["numerics"]
     text = HOST / n["text"]
     if sha256_file(text) != n["text_sha256"]:
@@ -241,14 +250,16 @@ def _numerics(pins, perplexity_binary, model):
     if build != pins["build"]["build_info"]:
         return _item(False, {"error": f"llama-perplexity is {build}, not the server's {pins['build']['build_info']}"})
     outputs = {}
-    for name, layers in (("metal", "999"), ("cpu", "0")):
+    for name, layers in (("gpu", "999"), ("cpu", "0")):
         argv = [str(perplexity_binary), "-m", str(model), "-f", str(text), "-c", str(n["context"]), "-ngl", layers]
+        if threads:
+            argv += ["-t", str(threads), "-tb", str(threads)]
         try:
             out = subprocess.run(argv, capture_output=True, text=True, timeout=3600)
             outputs[name] = out.stdout + out.stderr
         except (OSError, subprocess.TimeoutExpired) as error:
             outputs[name] = str(error)
-    return numerics_item(outputs["metal"], outputs["cpu"], n["tolerance"])
+    return numerics_item(outputs["gpu"], outputs["cpu"], n["tolerance"])
 
 
 def tool_versions(pi_binary: str, path: str | None = None) -> dict[str, str | None]:
@@ -286,7 +297,8 @@ def machine_label() -> str:
 
 
 def check(pins: dict, endpoint: str, *, model: Path, perplexity_binary: Path, server_command: list[str],
-          pi_binary: str, out: Path, tool_path: str | None = None) -> dict:
+          pi_binary: str, out: Path, tool_path: str | None = None, pins_file: str = PINS.name,
+          threads: int | None = None) -> dict:
     started = time.monotonic()
     props, slots = _get(endpoint, "/props"), _get(endpoint, "/slots")
     items = {"identity": _identity(pins, props, slots, model, server_command), "capacity": _capacity(pins, endpoint)}
@@ -295,11 +307,11 @@ def check(pins: dict, endpoint: str, *, model: Path, perplexity_binary: Path, se
     items["throughput"] = _item(True, {"prompt_per_second": timings.get("prompt_per_second"),
                                        "predicted_per_second": timings.get("predicted_per_second")})
     items["stability"] = _stability(endpoint)
-    items["numerics"] = _numerics(pins, perplexity_binary, model)
+    items["numerics"] = _numerics(pins, perplexity_binary, model, threads)
     found = tool_versions(pi_binary, tool_path)
     items["tooling"] = _item(found == pins["tooling"], {"expected": pins["tooling"], "found": found})
     card = {"schema": SCHEMA, "passed": all(item["passed"] for item in items.values()),
-            "pins_digest": pins_digest(pins), "items": items, "endpoint": endpoint,
+            "pins_digest": pins_digest(pins), "pins_file": pins_file, "items": items, "endpoint": endpoint,
             "build_info": props.get("build_info"), "model_path": props.get("model_path"),
             "slots": [slot.get("n_ctx") for slot in slots], "server_command": list(server_command),
             "machine": machine_label(),
@@ -315,15 +327,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--endpoint", default="http://127.0.0.1:8001")
     parser.add_argument("--pi-binary", default="pi")
     parser.add_argument("--perplexity-binary", default=shutil.which("llama-perplexity") or "llama-perplexity")
+    parser.add_argument("--pins", type=Path, default=PINS, help="the pin card in host/ (default: the Mac's)")
+    parser.add_argument("--threads", type=int, default=None,
+                        help="llama-perplexity's threads; on a pod, the cgroup's CPUs, not nproc")
     args = parser.parse_args(argv)
     port = int(args.endpoint.rsplit(":", 1)[1].split("/")[0])
     command = server_command(port)
     if command is None or "-m" not in command:
         raise SystemExit(f"no llama-server command found listening on port {port}")
     pi = shutil.which(str(Path(args.pi_binary).expanduser())) or str(Path(args.pi_binary).expanduser())
-    card = check(load_pins(), args.endpoint, model=Path(command[command.index("-m") + 1]),
+    card = check(load_pins(args.pins), args.endpoint, model=Path(command[command.index("-m") + 1]),
                  perplexity_binary=Path(args.perplexity_binary), server_command=command, pi_binary=pi,
-                 out=args.out)
+                 out=args.out, pins_file=Path(args.pins).name, threads=args.threads)
     for name, item in card["items"].items():
         print(f"{name}: {'PASS' if item['passed'] else 'FAIL'}")
     print(f"host card {'PASSED' if card['passed'] else 'FAILED'}: {args.out}")

@@ -144,3 +144,64 @@ def test_optional_quality_ignores_submission_policy_and_keeps_source_unchanged(t
     results = {name: ok for name, ok, _ in harness.grade(app)}
     assert not results['ruff']
     assert harness.file_hashes(app) == before
+
+
+def _grading():
+    return importlib.import_module('grading')
+
+
+def test_a_grading_user_gets_its_own_copy_of_the_worker_and_no_secrets(tmp_path, monkeypatch):
+    grading = _grading()
+    monkeypatch.setenv('RUNPOD_API_KEY', 'not-for-the-submission')
+    base = tmp_path / 'base'
+    base.mkdir()
+    (base / 'pyproject.toml').write_text('[project]\nname = "x"\nversion = "0"\n')
+    trusted = tmp_path / 'trusted'
+    trusted.mkdir()
+    command, env = grading._command(trusted, base)
+    command, env = grading.as_grade_user(command, env, trusted, user='mellum-grade', home='/home/mellum-grade')
+    assert 'RUNPOD_API_KEY' not in env
+    assert env['HOME'] == '/home/mellum-grade' and env['USER'] == 'mellum-grade'
+    assert env['UV_PROJECT_ENVIRONMENT'].startswith('/home/mellum-grade/')
+    assert env['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] == '1'
+    assert command[-1] == str(trusted / 'grading_worker.py') and Path(command[-1]).is_file()
+
+
+class _Finished:
+    pid, returncode = 4242, 0
+
+    def communicate(self, timeout=None):
+        return '', ''
+
+    def poll(self):
+        return 0
+
+
+def test_a_grading_user_owns_the_copies_and_runs_the_submission(tmp_path, monkeypatch):
+    grading = _grading()
+    started, owned, opened = {}, [], []
+    monkeypatch.setattr(harness, 'start_child', lambda argv, **kwargs: started.update(kwargs) or _Finished())
+    monkeypatch.setattr(harness, 'sweep_group', lambda pid: None)
+    monkeypatch.setattr(harness, 'drop_privileges', lambda user: {'user': user})
+    monkeypatch.setattr(harness, 'chown_tree', lambda path, user: owned.append((path, user)))
+    monkeypatch.setattr(grading, '_own_directory', lambda path, user: opened.append((path, user)))
+    app, trusted = tmp_path / 'app', tmp_path / 'trusted'
+    grading._run(['x'], {}, 'collect', app, trusted, tmp_path / 'out.json', user='mellum-grade')
+    assert started['user'] == 'mellum-grade'
+    assert (app, 'mellum-grade') in owned and (trusted, 'mellum-grade') in owned
+    assert opened == [(tmp_path, 'mellum-grade')], 'the worker must be able to write its result'
+
+
+def test_grading_runs_as_the_harness_itself_without_a_grading_user(tmp_path, monkeypatch):
+    grading = _grading()
+    started = {}
+    monkeypatch.setattr(harness, 'start_child', lambda argv, **kwargs: started.update(kwargs) or _Finished())
+    monkeypatch.setattr(harness, 'sweep_group', lambda pid: None)
+    grading._run(['x'], {}, 'collect', tmp_path / 'app', tmp_path / 'trusted', tmp_path / 'out.json')
+    assert 'user' not in started
+
+
+def test_a_grading_user_needs_a_run_as_root(capsys):
+    with pytest.raises(SystemExit):
+        harness.main(['run', '--suite', 'easy', '--grade-user', 'mellum-grade'])
+    assert '--grade-user needs a run as root' in capsys.readouterr().err

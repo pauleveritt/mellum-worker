@@ -155,7 +155,11 @@ earlier rung 9 plan and Andre's `--acceptance-test` are in
 [`ARCHIVE.md`](ARCHIVE.md#the-m-series-closed-2026-10-20) and the
 [digest](docs/superpowers/research/2026-10-20-pr-digest.md). *Reopens when* a
 variant that stops at green, re-dispatches less, or tracks the oracle more
-closely is ready for a preregistered Easy batch against Vanilla.
+closely is ready for an Easy batch against Vanilla. 2026-11-08 correction: re-dispatch never
+exceeded 2 of the cap of 5, and 13 of the 23 sessions never sent back still ran to the budget, so
+re-dispatching less cannot help; the tests that sent sessions back most, the title override and
+the launch, are in the hidden grader too. [F.6](docs/superpowers/research/2026-11-08-f6-held-pod.md):
+the re-run alone, 16 of 24.
 
 **Stall handlers judged on stalls.** In R.1 step three (n = 24) Vanilla stalled
 in 4 sessions; `guard/foreground-server` and `tool/bounded-commands` in none.
@@ -164,11 +168,11 @@ quality, and they missed it
 ([table](evals/2026-11-07-r1-step-three/table.md)). *Reopens when* a cycle
 builds a tier's Base (R.2's Medium, or Easy again): preregister a batch that
 judges each handler on stalls at n = 24. Screen `guard/foreground-log-follow`
-again too: Screen 1 dropped it at n = 3, and mediated+fg-server then stalled on
+again too: Screen 1 could not judge it at n = 3, and mediated+fg-server then stalled on
 `tail -f` in 5 of 24.
 
-**`check/compile-import` needs a failure to guard.** It never acted in R.1's
-Screen 2: no write failed to compile or import in three sessions, and a
+**`check/compile-import` needs a failure to guard.** R.1's Screen 2 could not
+judge it at n = 3: it never acted, as no write failed to compile or import in three sessions, and a
 `SyntaxError` showed in 1 of Screen 1's 15. *Reopens when* a tier's traces
 show a compile or import failure in 2 or more of 12 sessions.
 

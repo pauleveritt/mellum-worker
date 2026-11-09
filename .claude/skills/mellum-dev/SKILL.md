@@ -81,6 +81,10 @@ it and re-dispatching the failure. This is M.11 + the freeze-the-oracle guard,
 **unmeasured until M.11's rung-9 screen** — a lead, not a rule. See the
 [exit-gate note](../../../docs/superpowers/research/2026-10-18-harness-exit-gate.md).
 
+**2026-11-08 correction (Paul):** a suite's mediated tests are now written from the
+spec **without opening the hidden grader**, so a result is not partly by
+construction. The superset rule below describes the older rung tests.
+
 **Making "complete" real.** "Complete" is the load-bearing word, so verify it
 before trusting a mediated acceptance test. The test must be a **superset of the
 rung's hidden oracle** (`ladder/fixtures/agentclinic-hidden/_hidden_pN.py`): it

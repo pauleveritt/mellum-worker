@@ -1,0 +1,4 @@
+{
+  "vanilla": ["--arm", "vanilla"],
+  "settle-only+bounded": ["--arm", "vanilla", "--remedy", "tool/bounded-commands,check/mediated-test-settle"]
+}

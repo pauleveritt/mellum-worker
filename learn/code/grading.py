@@ -3,6 +3,7 @@
 This boundary prevents project configuration from deciding a hidden grade. It is
 not an operating-system sandbox for arbitrary hostile application Python.
 """
+from functools import partial
 import hashlib
 import json
 import os
@@ -57,13 +58,39 @@ def _command(trusted, base):
     return [*argv, 'python', '-I', str(WORKER)], env
 
 
-def _run(command, env, mode, app, trusted, destination, node=None):
+def as_grade_user(command, env, trusted, *, user, home):
+    """What running a submission as an unprivileged user needs: the worker where it can read it, and
+    an allowlisted environment, because a pod's root environment holds API keys."""
+    from harness import session_user_env
+    worker = trusted / WORKER.name
+    shutil.copyfile(WORKER, worker)
+    result = session_user_env(os.environ, home=home, user=user)
+    result |= {key: env[key] for key in ('PYTHONUTF8', 'PYTEST_DISABLE_PLUGIN_AUTOLOAD')}
+    if 'UV_PROJECT_ENVIRONMENT' in env:
+        result['UV_PROJECT_ENVIRONMENT'] = f"{home}/grading-envs/{Path(env['UV_PROJECT_ENVIRONMENT']).name}"
+    return [*command[:-1], str(worker)], result
+
+
+def _own_directory(path, user):
+    """Give one directory, not its contents, to a user: the worker writes its result file there."""
+    import pwd  # POSIX only; only a pod's root run has a grading user
+    account = pwd.getpwnam(user)
+    os.chown(path, account.pw_uid, account.pw_gid)
+
+
+def _run(command, env, mode, app, trusted, destination, node=None, user=None):
     argv = [*command, mode, str(app), str(trusted), str(destination)]
     if node:
         argv.append(node)
     try:
-        from harness import start_child, kill_tree, sweep_group
-        process = start_child(argv, cwd=trusted, env=env, text=True,
+        from harness import chown_tree, drop_privileges, start_child, kill_tree, sweep_group
+        privileges = {}
+        if user:
+            chown_tree(app, user)
+            chown_tree(trusted, user)
+            _own_directory(destination.parent, user)
+            privileges = drop_privileges(user)
+        process = start_child(argv, cwd=trusted, env=env, text=True, **privileges,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
             stdout, stderr = process.communicate(timeout=120)
@@ -102,7 +129,7 @@ def _prepared_tests(suite, variant):
     return files
 
 
-def _project(workspace, suite, root, command, env, trusted, variant):
+def _project(workspace, suite, root, command, env, trusted, variant, run=_run):
     base = _base(suite)
     required = _prepared_tests(suite, variant)
     violations = [name for name, content in required.items()
@@ -115,9 +142,9 @@ def _project(workspace, suite, root, command, env, trusted, variant):
     _application(workspace, app, base)
     inventory_app = root / 'project-inventory'
     _application(workspace, inventory_app, base)
-    inventory, inventory_log = _run(command, env, 'project-collect', inventory_app,
+    inventory, inventory_log = run(command, env, 'project-collect', inventory_app,
                                     trusted, root / 'project-inventory.json')
-    result, output = _run(command, env, 'project', app, trusted, root / 'project.json')
+    result, output = run(command, env, 'project', app, trusted, root / 'project.json')
     missing = [key for key, count in inventory.get('inventory', {}).items()
                if result.get('inventory', {}).get(key, 0) < count]
     result['unexecuted_tests'] = missing
@@ -140,7 +167,7 @@ def _project(workspace, suite, root, command, env, trusted, variant):
             target = required_app / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(content)
-        starter, log = _run(command, env, 'required', required_app, trusted, root / 'required.json')
+        starter, log = run(command, env, 'required', required_app, trusted, root / 'required.json')
         starter_ok = (starter['exit_code'] == 0 and bool(starter['collected'])
                       and set(starter['collected']) == set(starter['passed']))
         result['required_passed'] = starter_ok
@@ -149,7 +176,7 @@ def _project(workspace, suite, root, command, env, trusted, variant):
     return result, inventory_log + '\n' + output
 
 
-def evaluate(workspace, suite, *, variant=None) -> dict:
+def evaluate(workspace, suite, *, variant=None, grade_user=None) -> dict:
     workspace = Path(workspace).resolve()
     base = _base(suite)
     with tempfile.TemporaryDirectory(prefix='mellum-grade-') as scratch:
@@ -159,9 +186,14 @@ def evaluate(workspace, suite, *, variant=None) -> dict:
         (trusted / 'pytest.ini').write_text('[pytest]\n')
         shutil.copytree(suite.tests, trusted / 'grader_tests', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
         command, env = _command(trusted, base)
+        run = partial(_run, user=grade_user)
+        if grade_user:
+            import pwd  # POSIX only; only a pod's root run has a grading user
+            command, env = as_grade_user(command, env, trusted, user=grade_user,
+                                         home=pwd.getpwnam(grade_user).pw_dir)
         collect_app = root / 'collect'
         _application(workspace, collect_app, base)
-        collection, output = _run(command, env, 'collect', collect_app, trusted, root / 'collection.json')
+        collection, output = run(command, env, 'collect', collect_app, trusted, root / 'collection.json')
         nodes = collection['collected']
         reports, passed = {}, set()
         checks_ran = collection['exit_code'] == 0 and not collection['collection_errors'] and bool(nodes)
@@ -170,7 +202,7 @@ def evaluate(workspace, suite, *, variant=None) -> dict:
             for index, node in enumerate(nodes):
                 app = root / f'check-{index}'
                 _application(workspace, app, base)
-                result, log = _run(command, env, 'hidden', app, trusted, root / f'check-{index}.json', node)
+                result, log = run(command, env, 'hidden', app, trusted, root / f'check-{index}.json', node)
                 output += '\n' + log
                 reports.update(result['reports'])
                 passed.update(result['passed'])
@@ -178,7 +210,7 @@ def evaluate(workspace, suite, *, variant=None) -> dict:
                 shutil.rmtree(app)
         missing = sorted(set(suite.expected) - passed)
         hidden_ok = bool(hidden_ok and not missing)
-        project, log = _project(workspace, suite, root, command, env, trusted, variant)
+        project, log = _project(workspace, suite, root, command, env, trusted, variant, run)
         output += '\n' + log
         lines = output.strip().splitlines()[-20:]
         if missing:

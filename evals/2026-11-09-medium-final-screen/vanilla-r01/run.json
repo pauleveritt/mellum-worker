@@ -1,0 +1,258 @@
+{
+  "grader": {
+    "revision": "current",
+    "assertion_digest": "bb62e770424152f7ec2cac47158224a6cf1378ebda73536924158b68e3f77788",
+    "execution_policy": "trusted-copy-v1"
+  },
+  "suite": "medium",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "recorded_env": {
+    "MELLUM_BOUND_SECONDS": null,
+    "MELLUM_MEDIATED_MAX": null,
+    "VERIFY_PYTEST": null
+  },
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "NVIDIA A40 (Linux x86_64)",
+  "pi_version": "1.4.0",
+  "counted": true,
+  "host_card": {
+    "path": "/opt/mellum/runs/host-card.json",
+    "sha256": "6d2634fc7ce7d09ec33371f832fa52d2e54496ff35a52d198c2e02aea22591fe",
+    "passed": true
+  },
+  "deadline": 3600,
+  "budget": {
+    "limits": {
+      "max_requests": 400,
+      "max_output_tokens": 300000,
+      "unknown_usage_charge": 16384,
+      "wall_safety_seconds": 3600
+    },
+    "spent": {
+      "requests": 123,
+      "output_tokens": 77518
+    }
+  },
+  "stall": 180.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "project_tests": {
+    "exit_code": 0,
+    "collected": [
+      "tests/test_complaints.py::test_add_complaint_redirects_and_appears",
+      "tests/test_complaints.py::test_board_has_form",
+      "tests/test_home.py::test_home_returns_the_tagline",
+      "tests/test_home.py::test_home_has_the_shared_navigation",
+      "tests/test_resolve.py::test_resolve_complaint_redirects",
+      "tests/test_resolve.py::test_reopen_complaint_redirects",
+      "tests/test_resolve.py::test_resolve_updates_status",
+      "tests/test_resolve.py::test_reopen_updates_status"
+    ],
+    "reports": {
+      "tests/test_complaints.py::test_add_complaint_redirects_and_appears": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_complaints.py::test_board_has_form": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_home.py::test_home_returns_the_tagline": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_home.py::test_home_has_the_shared_navigation": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_resolve.py::test_resolve_complaint_redirects": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_resolve.py::test_reopen_complaint_redirects": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_resolve.py::test_resolve_updates_status": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_resolve.py::test_reopen_updates_status": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      }
+    },
+    "passed": true,
+    "collection_errors": [],
+    "inventory": {
+      "tests/test_complaints.py::test_add_complaint_redirects_and_appears": 1,
+      "tests/test_complaints.py::test_board_has_form": 1,
+      "tests/test_home.py::test_home_returns_the_tagline": 1,
+      "tests/test_home.py::test_home_has_the_shared_navigation": 1,
+      "tests/test_resolve.py::test_resolve_complaint_redirects": 1,
+      "tests/test_resolve.py::test_reopen_complaint_redirects": 1,
+      "tests/test_resolve.py::test_resolve_updates_status": 1,
+      "tests/test_resolve.py::test_reopen_updates_status": 1
+    },
+    "execution_overrides": [],
+    "unexecuted_tests": [],
+    "integrity_ok": true,
+    "integrity_violations": [],
+    "required_passed": true
+  },
+  "hidden_reports": {
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    }
+  },
+  "contaminated": false,
+  "failed_checks": 6,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 1,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 5,
+      "total": 5
+    }
+  },
+  "record_failures": [],
+  "requests": 118,
+  "turns": 118,
+  "tool_calls": 114,
+  "tool_errors": 16,
+  "context": 33877,
+  "output_tokens": 60080,
+  "wall": 662.42,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 4,
+  "leaked": [],
+  "out_of_layout": [],
+  "completion": "settled",
+  "censored": false,
+  "exit_code": 0,
+  "cleanup_ok": true
+}

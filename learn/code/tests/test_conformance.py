@@ -124,12 +124,12 @@ def test_flags_problems():
     assert conformance.flags_problems([a for a in argv if a != "--no-kv-unified"], pins)
 
 
-def test_numerics_compares_metal_with_cpu_on_the_same_build():
+def test_numerics_compares_gpu_with_cpu_on_the_same_build():
     ppl = "Final estimate: PPL = {} +/- 0.8"
     assert conformance.numerics_item(ppl.format(16.0085), ppl.format(15.9176), 0.01)["passed"] is True
     assert conformance.numerics_item(ppl.format(16.3), ppl.format(15.9176), 0.01)["passed"] is False
     nan = conformance.numerics_item("[1]14.4634,[2]nan,[3]nan,[4]nan,", ppl.format(15.9176), 0.01)
-    assert nan["passed"] is False and nan["detail"]["metal"]["nan_chunks"] == 3
+    assert nan["passed"] is False and nan["detail"]["gpu"]["nan_chunks"] == 3
 
 
 def test_check_against_a_fake_server_writes_a_passing_card(server, host):
@@ -144,7 +144,7 @@ def test_check_against_a_fake_server_writes_a_passing_card(server, host):
     assert json.loads(host["out"].read_text()) == card
 
 
-def test_nan_on_metal_fails_the_card(server, host):
+def test_nan_on_gpu_fails_the_card(server, host):
     stub(host["perplexity"], '#!/bin/sh\ncase "$*" in\n  *"-ngl 0"*) echo "Final estimate: PPL = 15.9" ;;\n'
          '  *) echo "[1]14.4634,[2]nan,[3]nan," ;;\nesac\n')
     card = run_check(server, host)
@@ -216,3 +216,34 @@ def test_numerics_needs_llama_perplexity_from_the_servers_build(server, host):
     stub(host["perplexity"], text)
     item = run_check(server, host)["items"]["numerics"]
     assert item["passed"] is False and "b11669-620d2225c" in item["detail"]["error"]
+
+
+def test_a_card_names_the_pin_card_it_was_made_for(server, host):
+    assert run_check(server, host, pins_file="pod-pins.json")["pins_file"] == "pod-pins.json"
+
+
+def test_a_card_loads_the_pin_card_it_names():
+    assert conformance.card_pins({"pins_file": "pod-pins.json"}) == conformance.load_pins(conformance.POD_PINS)
+    assert conformance.card_pins({}) == conformance.load_pins(), "a card from before F.6 is the Mac's"
+
+
+def test_a_card_cannot_name_a_pin_card_outside_host():
+    with pytest.raises(ValueError, match="pin card"):
+        conformance.card_pins({"pins_file": "../../secrets.json"})
+
+
+def test_the_numerics_tools_get_the_thread_count(tmp_path):
+    log = tmp_path / "args.txt"
+    tool = tmp_path / "llama-perplexity"
+    tool.write_text(f"""#!/bin/sh
+if [ "$1" = "--version" ]; then echo 'version: 12110 (cd959bae9)'; echo 'build 12110, commit cd959bae9' ; exit 0; fi
+echo "$@" >> {log}
+echo 'Final estimate: PPL = 14.0'
+""")
+    tool.chmod(0o755)
+    pins = conformance.load_pins()
+    model = tmp_path / "m.gguf"; model.write_text("")
+    item = conformance._numerics(pins, tool, model, threads=7)
+    assert item["passed"], item
+    for line in log.read_text().splitlines():
+        assert "-t 7" in line and "-tb 7" in line

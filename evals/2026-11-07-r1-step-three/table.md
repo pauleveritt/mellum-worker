@@ -20,6 +20,9 @@ Per-session records: `<arm>-rNN/run.json`; the generated table is `sessions.md`.
 
 ## The rule applied
 
+2026-11-08 correction: this rule was written after steps one and two had been read, so those steps
+informed it.
+
 - **Base.** The bar is +1 mean check or 6 more full passes than Vanilla, with median requests at most 25.2
   and median output tokens at most 9,410. `fg-server`: +0.05 checks, +2 full passes; it fails.
   `bounded`: +0.71 checks, +5 full passes; it fails by one full pass. Both are inside the budget.
@@ -45,6 +48,10 @@ bounds every call, and mediated+bounded stalled in none.
   hidden grade, and 26 final workspaces pass the mediated test.
 - The test is a superset of the oracle. Its extra checks are what sent sessions back most often:
   a page's own `<title>` block, the `app.py` launch with reload, and the project's own tests.
+  **2026-11-08 correction:** counted from the traces, the tests that sent sessions back most were the
+  title override (17) and the launch (16). Both are in the hidden grader; they are not the test's
+  extras. Re-dispatch never exceeded 2 of the cap of 5. 23 of 48 sessions were never sent back, and
+  13 of those still ran to the budget, so showing the test is what makes runs long.
 - **A defect in our test, now fixed.** When the model's own server already held the port, `python
   app.py` died at once and the launch check reported an empty log: it raised with log text read
   before the exit. Ten sessions hit it at least once (bounded r01, r06, r08, r11, r17, r23;

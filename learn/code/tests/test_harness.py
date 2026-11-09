@@ -1,3 +1,4 @@
+import hashlib
 import json
 import time
 from datetime import datetime
@@ -536,7 +537,7 @@ def test_active_variant_notes_name_the_verification_loop():
             notes = suite.root / "base/AGENTS.md"
         text = " ".join(notes.read_text().split())
         assert "python -m pytest tests" in text
-        assert "Do not: start servers" in text
+        assert "Do not start a server to check your work; run the tests." in text
 
 
 def test_medium_base_ships_a_phase1_smoke_test():
@@ -996,6 +997,18 @@ def test_a_record_says_which_machine_and_deadline_it_ran_on(tmp_path):
     assert record["deadline"] == 600
     assert record["machine"] == harness.machine_label()
     assert record["machine"], "machine label is empty"
+
+
+def test_a_record_names_the_environment_settings_a_run_used(tmp_path, monkeypatch):
+    # Nothing else in a record says these were set, and each changes what a session did.
+    monkeypatch.setenv("MELLUM_MEDIATED_MAX", "2")
+    monkeypatch.delenv("MELLUM_BOUND_SECONDS", raising=False)
+    monkeypatch.setenv("VERIFY_PYTEST", "pytest -x")
+    harness._run_sessions(harness.load_suite(SUITES, "add"), runs_dir=tmp_path / "runs",
+                          pi_binary=str(FIX / "fake-pi.sh"), repeat=1, grade_run=False, deadline=60, arm="worker")
+    record = json.loads((next((tmp_path / "runs").iterdir()) / "run.json").read_text())
+    assert record["recorded_env"] == {"MELLUM_BOUND_SECONDS": None, "MELLUM_MEDIATED_MAX": "2",
+                                      "VERIFY_PYTEST": "pytest -x"}
 
 
 def test_a_run_sweeps_the_processes_it_leaves_behind():
@@ -1479,10 +1492,10 @@ def test_pi_version_is_none_when_pi_cannot_say(tmp_path):
 
 def test_each_tier_carries_its_budget():
     easy, medium, hard = (harness.load_suite(harness.SUITES, name).budget for name in ("easy", "medium", "hard"))
-    assert easy == {"max_requests": 64, "max_output_tokens": 32000, "unknown_usage_charge": 16384,
+    assert easy == {"max_requests": 128, "max_output_tokens": 64000, "unknown_usage_charge": 16384,
                     "wall_safety_seconds": 1200}
-    assert medium == hard == {"max_requests": 120, "max_output_tokens": 64000, "unknown_usage_charge": 16384,
-                              "wall_safety_seconds": 1200}
+    assert medium == hard == {"max_requests": 400, "max_output_tokens": 300000, "unknown_usage_charge": 16384,
+                              "wall_safety_seconds": 3600}
     assert harness.load_suite(SUITES, "add").budget is None
 
 
@@ -1833,8 +1846,18 @@ def test_each_prompt_gets_its_mediated_tests_from_outside_the_workspace(tmp_path
     assert first.split(os.pathsep) == [str(mediated / "test_01_one.py")]
     assert second.split(os.pathsep) == [str(mediated / "test_01_one.py"), str(mediated / "test_02_two.py")]
     assert not (run_dir / "workspace" / "mediated").exists()
-    assert json.loads((run_dir / "mediated.json").read_text()) == [["test_01_one.py"],
-                                                                   ["test_01_one.py", "test_02_two.py"]]
+    digest = hashlib.sha256(b"def test_it():\n    pass\n").hexdigest()
+    assert json.loads((run_dir / "mediated.json").read_text()) == [
+        [{"name": "test_01_one.py", "sha256": digest}],
+        [{"name": "test_01_one.py", "sha256": digest}, {"name": "test_02_two.py", "sha256": digest}]]
+
+
+@pytest.mark.parametrize("unit", ["mediated-test-show.ts", "mediated-test-settle.ts"])
+def test_each_half_of_the_mediated_test_gets_the_suites_tests(tmp_path, unit):
+    suite = _mediated_suite(tmp_path)
+    run_dir = harness.run_suite(suite, runs_dir=tmp_path / "runs", pi_binary=str(FIX / "fake-pi-mediated.sh"),
+                                extras=[harness.REMEDIES / "check" / unit])
+    assert (run_dir / "workspace" / "mediated.txt").read_text().splitlines()[0].endswith("test_01_one.py")
 
 
 def test_a_session_without_the_unit_gets_no_mediated_tests(tmp_path, monkeypatch):
@@ -1849,3 +1872,95 @@ def test_the_unit_needs_the_suites_mediated_tests(tmp_path):
     with pytest.raises(SystemExit, match="mediated"):
         harness.run_suite(harness.load_suite(SUITES, "steps"), runs_dir=tmp_path / "runs", profile=PROFILE,
                           pi_binary=str(FIX / "fake-pi-mediated.sh"), extras=[MEDIATED_UNIT])
+
+
+# F.6: on a pod a session runs as an unprivileged user, so the checkout (and the hidden grader) stay root's.
+
+def test_a_session_user_env_keeps_only_what_a_session_needs():
+    env = harness.session_user_env({"PATH": "/p:/q", "RUNPOD_API_KEY": "secret", "HF_TOKEN": "secret",
+                                    "UV_PYTHON_INSTALL_DIR": "/x/python", "VERIFY_PYTEST": "pytest -x"},
+                                   home="/home/s", user="s")
+    assert env["PATH"] == "/p:/q" and env["HOME"] == "/home/s" and env["USER"] == "s"
+    assert env["UV_CACHE_DIR"] == "/home/s/.cache/uv" and env["UV_PYTHON_INSTALL_DIR"] == "/x/python"
+    assert env["UV_PYTHON_DOWNLOADS"] == "never" and env["VERIFY_PYTEST"] == "pytest -x"
+    assert "RUNPOD_API_KEY" not in env and "HF_TOKEN" not in env
+
+
+def test_chown_tree_never_follows_a_symlink(tmp_path, monkeypatch):
+    (tmp_path / "tree").mkdir()
+    (tmp_path / "tree" / "link").symlink_to("/etc/passwd")
+    calls = []
+    monkeypatch.setattr(harness.os, "chown", lambda path, uid, gid, follow_symlinks=True: calls.append((str(path), follow_symlinks)))
+    import pwd
+    harness.chown_tree(tmp_path / "tree", pwd.getpwuid(os.getuid()).pw_name)
+    assert len(calls) == 2 and all(flag is False for _, flag in calls)
+
+
+def test_dropping_privileges_clears_root_s_supplementary_groups():
+    import pwd
+    me = pwd.getpwuid(os.getuid())
+    assert harness.drop_privileges(me.pw_name) == {"user": me.pw_name, "group": me.pw_gid, "extra_groups": []}
+
+
+def test_a_session_users_tree_copies_the_units_and_their_imports(tmp_path):
+    run = tmp_path / "run"; run.mkdir()
+    unit = harness.REMEDIES / "check" / "mediated-test-settle.ts"
+    root, extras, extension = harness.readable_tree(run, [unit], harness.EXTENSION)
+    assert extras == [root / "remedies" / "check" / "mediated-test-settle.ts"]
+    assert extension == root / "extensions" / harness.EXTENSION.name
+    for name in ("remedies/mediated-test.ts", "remedies/task-prompt.ts", "remedies/install.ts",
+                 "extensions/mellum-verify.ts", "extensions/bounded.ts", "extensions/mellum-task.ts",
+                 "templates/llama-model-settings.json", "package.json"):
+        assert (root / name).stat().st_mode & 0o444 == 0o444, name
+    assert (root / "remedies").stat().st_mode & 0o555 == 0o555
+
+
+def test_a_session_users_tree_refuses_a_unit_from_elsewhere(tmp_path):
+    outside = tmp_path / "mine.ts"; outside.write_text("")
+    with pytest.raises(SystemExit, match="session user"):
+        harness.readable_tree(tmp_path, [outside], None)
+
+
+def test_handed_tests_are_copied_where_a_session_user_can_read_but_not_list(tmp_path):
+    source = tmp_path / "test_01_one.py"; source.write_text("x = 1\n")
+    source.chmod(0o600)
+    place = tmp_path / "handed"
+    copied = harness.hand_over([source], place)
+    assert copied == [place / "test_01_one.py"] and copied[0].read_text() == "x = 1\n"
+    assert copied[0].stat().st_mode & 0o777 == 0o644
+    assert place.stat().st_mode & 0o777 == 0o711
+
+
+def test_the_user_sweep_ends_what_the_user_left(tmp_path, monkeypatch):
+    child = subprocess.Popen(["sleep", "30"])
+    fake = tmp_path / "ps"
+    fake.write_text(f"#!/bin/sh\nif kill -0 {child.pid} 2>/dev/null; then echo '{child.pid} sleep'; fi\n")
+    fake.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{tmp_path}{os.pathsep}{os.environ['PATH']}")
+    import threading
+    reaper = threading.Thread(target=child.wait); reaper.start()
+    assert harness.sweep_user("someone", grace=0.2) == [(child.pid, "sleep")]
+    reaper.join(timeout=5)
+    assert child.poll() is not None
+
+
+def test_the_machine_label_names_a_pods_gpu(tmp_path, monkeypatch):
+    for name, text in (("sysctl", ""), ("nvidia-smi", "NVIDIA A40-48Q")):
+        tool = tmp_path / name
+        tool.write_text(f"#!/bin/sh\necho '{text}'\n")
+        tool.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{tmp_path}{os.pathsep}{os.environ['PATH']}")
+    assert harness.machine_label().startswith("NVIDIA A40-48Q")
+
+
+def test_a_counted_gate_reads_the_pin_card_its_host_card_names(monkeypatch, tmp_path):
+    import conformance as conf
+    pins = conf.load_pins(conf.POD_PINS)
+    card = tmp_path / "card.json"
+    card.write_text(json.dumps({"schema": conf.SCHEMA, "passed": True, "pins_digest": conf.pins_digest(pins),
+                                "pins_file": "pod-pins.json", "build_info": "b", "model_path": "m", "slots": [1],
+                                "server_command": ["x"]}))
+    monkeypatch.setattr(conf, "_get", lambda endpoint, route: {"build_info": "b", "model_path": "m"}
+                        if route == "/props" else [{"n_ctx": 1}])
+    monkeypatch.setattr(conf, "server_command", lambda port: ["x"])
+    assert harness.host_gate(card, "http://127.0.0.1:8001", conf.load_pins())["passed"] is True

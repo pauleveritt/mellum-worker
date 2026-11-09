@@ -25,6 +25,26 @@ def test_a_session_runs_the_real_harness_with_the_counted_flags(tmp_path):
         assert any(argv[i:i + len(flag)] == flag for i in range(len(argv))), flag
 
 
+def test_a_batch_runs_the_suite_it_is_given(tmp_path):
+    argv = r1_batch.harness_argv(ARMS["vanilla"], tmp_path / "r", host_card=Path("/c.json"), pi_binary="/pi",
+                                 suite="medium")
+    assert argv[argv.index("--suite") + 1] == "medium"
+
+
+def test_a_batch_can_run_each_session_as_a_session_user(tmp_path):
+    argv = r1_batch.harness_argv(ARMS["vanilla"], tmp_path / "r", host_card=Path("/c.json"), pi_binary="/pi",
+                                 session_user="mellum-session")
+    assert argv[argv.index("--session-user") + 1] == "mellum-session"
+    assert "--session-user" not in r1_batch.harness_argv(ARMS["vanilla"], tmp_path / "r",
+                                                         host_card=Path("/c.json"), pi_binary="/pi")
+
+
+def test_a_batch_can_grade_as_its_own_user(tmp_path):
+    argv = r1_batch.harness_argv(ARMS["vanilla"], tmp_path / "r", host_card=Path("/c.json"), pi_binary="/pi",
+                                 grade_user="mellum-grade")
+    assert argv[argv.index("--grade-user") + 1] == "mellum-grade"
+
+
 def test_a_finished_session_is_not_run_again(tmp_path):
     done = tmp_path / "vanilla-r01" / "2026-x-easy-abc"
     done.mkdir(parents=True)
@@ -58,6 +78,18 @@ def test_the_report_leaves_stalled_and_censored_sessions_out_of_the_budget_media
     assert (stats["stalled"], stats["censored"], stats["budget_endings"]) == (1, 1, 1)
     assert stats["median_requests"] == 20      # of 10, 20, 64: stalled and censored left out
     assert stats["median_output_tokens"] == 3000
+
+
+def test_the_report_counts_strict_passes_apart_from_full_passes(tmp_path):
+    for name, passed in (("vanilla-r01", True), ("vanilla-r02", False)):
+        run = tmp_path / name / "2026-x-easy-abc"
+        run.mkdir(parents=True)
+        (run / "run.json").write_text(json.dumps({
+            "checks_ran": True, "failed_checks": 0, "completion": "settled", "passed": passed,
+            "budget": {"spent": {"requests": 10, "output_tokens": 1000}}}))
+    stats = r1_batch.summarize(tmp_path, checks=13)
+    assert (stats["vanilla"]["full_passes"], stats["vanilla"]["strict_passes"]) == (2, 1)
+    assert "| Strict passes |" in r1_batch.table(stats)
 
 
 def test_the_report_writes_a_table_row_per_arm(tmp_path):

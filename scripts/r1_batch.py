@@ -31,9 +31,13 @@ def session_dir(out: Path, arm: str, k: int) -> Path:
     return out / f"{arm}-r{k:02d}"
 
 
-def harness_argv(flags: list[str], runs_dir: Path, *, host_card: Path, pi_binary: str) -> list[str]:
-    return ["uv", "run", "python", str(HARNESS), "run", "--suite", "easy", "--grade", "--stall", "180",
-            "--host-card", str(host_card), "--pi-binary", pi_binary, "--runs-dir", str(runs_dir), *flags]
+def harness_argv(flags: list[str], runs_dir: Path, *, host_card: Path, pi_binary: str,
+                 session_user: str | None = None, suite: str = "easy",
+                 grade_user: str | None = None) -> list[str]:
+    user = ["--session-user", session_user] if session_user else []
+    user += ["--grade-user", grade_user] if grade_user else []
+    return ["uv", "run", "python", str(HARNESS), "run", "--suite", suite, "--grade", "--stall", "180",
+            "--host-card", str(host_card), "--pi-binary", pi_binary, "--runs-dir", str(runs_dir), *user, *flags]
 
 
 def finished(runs_dir: Path) -> bool:
@@ -71,6 +75,7 @@ def summarize(out: Path, *, checks: int) -> dict[str, dict]:
             "misses": Counter(str(m).rsplit("::", 1)[-1] for r in graded for m in r.get("missing_checks") or []),
             "mean_checks": sum(passed) / len(runs),
             "full_passes": sum(1 for p in passed if p == checks),
+            "strict_passes": sum(1 for r in runs if r.get("passed")),
             "stalled": sum(1 for r in runs if r.get("completion") == "stalled"),
             "censored": sum(1 for r in runs if r.get("censored")),
             "budget_endings": sum(1 for r in runs if r.get("completion") == "budget"),
@@ -81,11 +86,11 @@ def summarize(out: Path, *, checks: int) -> dict[str, dict]:
 
 
 def table(stats: dict[str, dict]) -> str:
-    head = ("| Arm | n | Mean checks | Full passes | Stalled | Censored | Budget endings "
-            "| Median requests | Median output tokens |\n|---|---|---|---|---|---|---|---|---|\n")
+    head = ("| Arm | n | Mean checks | Full passes | Strict passes | Stalled | Censored | Budget endings "
+            "| Median requests | Median output tokens |\n|---|---|---|---|---|---|---|---|---|---|\n")
     fmt = lambda v: "—" if v is None else (f"{v:.2f}" if isinstance(v, float) and not v.is_integer() else f"{v:g}")
     return head + "".join(
-        f"| {arm} | {s['n']} | {fmt(s['mean_checks'])} | {s['full_passes']} | {s['stalled']} | {s['censored']} "
+        f"| {arm} | {s['n']} | {fmt(s['mean_checks'])} | {s['full_passes']} | {s['strict_passes']} | {s['stalled']} | {s['censored']} "
         f"| {s['budget_endings']} | {fmt(s['median_requests'])} | {fmt(s['median_output_tokens'])} |\n"
         for arm, s in stats.items())
 
@@ -113,6 +118,9 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("out", type=Path)
     run.add_argument("--host-card", type=Path, required=True)
     run.add_argument("--pi-binary", default=str(Path.home() / ".local" / "bin" / "pi"))
+    run.add_argument("--session-user", default=None, help="on a pod: run each session as this user")
+    run.add_argument("--suite", default="easy", choices=("easy", "medium", "hard"))
+    run.add_argument("--grade-user", default=None, help="on a pod: run the graded submission as this user")
     report = sub.add_parser("report")
     report.add_argument("out", type=Path)
     report.add_argument("--checks", type=int, default=13)
@@ -121,7 +129,8 @@ def main(argv: list[str] | None = None) -> int:
         arms = json.loads(args.arms.read_text())
         run_batch(plan_sessions(arms, args.n), args.out,
                   lambda arm, target: harness_argv(arms[arm], target, host_card=args.host_card,
-                                                   pi_binary=args.pi_binary))
+                                                   pi_binary=args.pi_binary, session_user=args.session_user,
+                                                   suite=args.suite, grade_user=args.grade_user))
     else:
         stats = summarize(args.out, checks=args.checks)
         text = f"{table(stats)}\n## Misses per check\n\n{check_table(stats)}"

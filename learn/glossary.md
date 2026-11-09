@@ -256,7 +256,20 @@ An acceptance test the model did not write: written from the spec by whoever han
 the work over, shown to the model once per task, and rerun from a frozen copy
 outside the project before the model may finish. Editing or deleting the copy the
 model saw changes nothing. The `check/mediated-test` unit; a suite's tests live in
-`mediated/`.
+`mediated/`. Its two halves are also units of their own: `check/mediated-test-show`
+only shows the test, and `check/mediated-test-settle` only reruns it at settle.
+
+### Held pod
+
+One rented GPU machine kept running for a whole batch, so its weights and build are
+set up once. Its numbers carry its own host card and do not pool with another
+machine's.
+
+### Session user
+
+The unprivileged account a held pod runs each session as. It owns the session's
+workspace and nothing else, and cannot read the checkout, the grader or the
+acceptance tests it is about to be judged on.
 
 ### Compile/import check
 

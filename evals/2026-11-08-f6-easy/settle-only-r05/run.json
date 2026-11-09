@@ -1,0 +1,210 @@
+{
+  "grader": {
+    "revision": "current",
+    "assertion_digest": "337644606cd9d203a25b456dfb495fdc50f3ecc516c0096a6904cb78cbe629b5",
+    "execution_policy": "trusted-copy-v1"
+  },
+  "suite": "easy",
+  "arm": "vanilla",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [
+    "check/mediated-test-settle"
+  ],
+  "extensions": [
+    {
+      "path": "/opt/mellum/repo/remedies/check/mediated-test-settle.ts",
+      "sha256": "ec25b687cd0cff268c4239f2862546039e42de091553a542eea4aafa4acfde39"
+    }
+  ],
+  "recorded_env": {
+    "MELLUM_BOUND_SECONDS": null,
+    "MELLUM_MEDIATED_MAX": null,
+    "VERIFY_PYTEST": null
+  },
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "NVIDIA A40 (Linux x86_64)",
+  "pi_version": "1.4.0",
+  "counted": true,
+  "host_card": {
+    "path": "/opt/mellum/runs/host-card.json",
+    "sha256": "6d2634fc7ce7d09ec33371f832fa52d2e54496ff35a52d198c2e02aea22591fe",
+    "passed": true
+  },
+  "deadline": 1200,
+  "budget": {
+    "limits": {
+      "max_requests": 64,
+      "max_output_tokens": 32000,
+      "unknown_usage_charge": 16384,
+      "wall_safety_seconds": 1200
+    },
+    "spent": {
+      "requests": 17,
+      "output_tokens": 7160
+    }
+  },
+  "stall": 180.0,
+  "stalled": {
+    "seconds": 180.2,
+    "limit": 180.0,
+    "command": "uv run --frozen python app.py"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "project_tests": {
+    "exit_code": 0,
+    "collected": [
+      "tests/test_home.py::test_home_returns_the_tagline",
+      "tests/test_home.py::test_home_has_the_shared_navigation"
+    ],
+    "reports": {
+      "tests/test_home.py::test_home_returns_the_tagline": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      },
+      "tests/test_home.py::test_home_has_the_shared_navigation": {
+        "setup": "passed",
+        "call": "passed",
+        "teardown": "passed"
+      }
+    },
+    "passed": true,
+    "collection_errors": [],
+    "inventory": {
+      "tests/test_home.py::test_home_returns_the_tagline": 1,
+      "tests/test_home.py::test_home_has_the_shared_navigation": 1
+    },
+    "execution_overrides": [],
+    "unexecuted_tests": [],
+    "integrity_ok": true,
+    "integrity_violations": [],
+    "required_passed": true
+  },
+  "hidden_reports": {
+    "grader_tests/test_phase1_acceptance.py::test_home_renders_home_template_extending_shared_base": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_responsive_viewport": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_bootstrap5_cdn_stylesheet_in_head": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_has_python_favicon": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_ends_body_with_bootstrap5_cdn_bundle": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_layout_title_defaults_to_agentclinic": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title": {
+      "setup": "passed",
+      "call": "failed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_home_has_hero_and_welcoming_paragraph": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_acceptance.py::test_main_guard_launches_uvicorn_with_reload_and_keeps_serving": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    },
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links": {
+      "setup": "passed",
+      "call": "passed",
+      "teardown": "passed"
+    }
+  },
+  "contaminated": false,
+  "failed_checks": 1,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase1_acceptance.py::test_extending_page_can_override_layout_title"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase1_acceptance.py": {
+      "missing": 1,
+      "total": 9
+    }
+  },
+  "record_failures": [],
+  "requests": 17,
+  "turns": 17,
+  "tool_calls": 17,
+  "tool_errors": 3,
+  "context": 11933,
+  "output_tokens": 7160,
+  "wall": 236.332,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [
+    {
+      "pid": 16740,
+      "pgid": null,
+      "command": "uv"
+    },
+    {
+      "pid": 16743,
+      "pgid": null,
+      "command": "python3"
+    },
+    {
+      "pid": 16744,
+      "pgid": null,
+      "command": "python3"
+    },
+    {
+      "pid": 16745,
+      "pgid": null,
+      "command": "python3"
+    }
+  ],
+  "out_of_layout": [],
+  "completion": "stalled",
+  "censored": false,
+  "exit_code": -9,
+  "cleanup_ok": true
+}

@@ -1,0 +1,151 @@
+{
+  "schema": "mellum-host-card/1",
+  "passed": true,
+  "pins_digest": "866d9804b607422c89b83dead9db40e41c2e19b9c37563c6652927b8f65fb7f6",
+  "pins_file": "pod-pins.json",
+  "items": {
+    "identity": {
+      "passed": true,
+      "detail": {
+        "problems": [],
+        "build_info": "b12110-cd959bae9",
+        "chat_template_sha256": "4593a34d52f3364ac13ce57f4bea5688924e8942da6df8201e411db17e729f48"
+      }
+    },
+    "capacity": {
+      "passed": true,
+      "detail": [
+        {
+          "slot": 0,
+          "status": 200,
+          "prompt_tokens": 42658
+        },
+        {
+          "slot": 1,
+          "status": 200,
+          "prompt_tokens": 42658
+        }
+      ]
+    },
+    "protocol": {
+      "passed": true,
+      "detail": {
+        "tool_call": true,
+        "reasoning_split": true,
+        "max_tokens_honoured": true
+      }
+    },
+    "throughput": {
+      "passed": true,
+      "detail": {
+        "prompt_per_second": 324.3293332715563,
+        "predicted_per_second": 153.9314081645219
+      }
+    },
+    "stability": {
+      "passed": true,
+      "detail": {
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    "numerics": {
+      "passed": true,
+      "detail": {
+        "gpu": {
+          "perplexity": 16.1264,
+          "chunks": [
+            14.7878,
+            13.3105,
+            14.838,
+            16.1264
+          ]
+        },
+        "cpu": {
+          "perplexity": 16.0872,
+          "chunks": [
+            14.5315,
+            13.143,
+            14.7875,
+            16.0872
+          ]
+        },
+        "relative_drift": 0.002437,
+        "tolerance": 0.01
+      }
+    },
+    "tooling": {
+      "passed": true,
+      "detail": {
+        "expected": {
+          "pi": "1.4.0",
+          "node": "25.8.1",
+          "uv": "0.11.6"
+        },
+        "found": {
+          "pi": "1.4.0",
+          "node": "25.8.1",
+          "uv": "0.11.6"
+        }
+      }
+    }
+  },
+  "endpoint": "http://127.0.0.1:8001",
+  "build_info": "b12110-cd959bae9",
+  "model_path": "/workspace/mellum/models/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+  "slots": [
+    50176,
+    50176
+  ],
+  "server_command": [
+    "/opt/mellum/bin/llama-server",
+    "-m",
+    "/workspace/mellum/models/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+    "-a",
+    "Mellum2.1-12B-A2.5B-Thinking",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "8001",
+    "-c",
+    "100000",
+    "-np",
+    "2",
+    "--no-kv-unified",
+    "--jinja",
+    "-fa",
+    "on",
+    "--cont-batching",
+    "-t",
+    "7",
+    "-tb",
+    "7",
+    "-b",
+    "512",
+    "-ub",
+    "512",
+    "-ctk",
+    "q8_0",
+    "-ctv",
+    "q8_0",
+    "-ngl",
+    "999",
+    "-lv",
+    "4",
+    "--log-file",
+    "/tmp/llama-server.log"
+  ],
+  "machine": "NVIDIA A40 (Linux x86_64)",
+  "checked_at": "2026-11-08T14:11:15.291293+00:00",
+  "check_seconds": 45.628
+}

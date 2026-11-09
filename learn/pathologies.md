@@ -230,6 +230,26 @@ entries below.
     **Answer:** none yet; a check that ends the run once the test is green is
     the open question.
 
+23. **Searches the whole disk for the test that failed.** Sent back with a failing
+    test's name, the model runs `grep -R` for that name over `/`, and the command
+    never returns. **Seen:** F.6's Easy batch, 2 of the 44 stalls, each after one
+    re-dispatch
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-08-f6-easy/table.md)).
+    **Answer:** the session user cannot read the grader, and
+    `tool/bounded-commands` would end the search; neither session had that bound.
+
+24. **Goes and reads the test it was told it could not change.** Sent back with a
+    failure whose output names the frozen test's temporary path, the model opens that file.
+    **Seen:** the Easy count, 1 of 32 Base sessions read it, one more listed the folder
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-08-easy-final-count/table.md)).
+    **Answer:** the copy is deleted after each run and its path is not sent back.
+
+25. **Its own background server fails the re-run.** The model leaves a server holding
+    the port, and the external test cannot start its own. **Seen:** the Easy count, 12 of 44
+    send-backs, 120,560 tokens, with no code at fault
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-08-easy-final-count/table.md)).
+    **Answer:** the settle re-run now stops what the session left running; not yet shown to fire.
+
 ## It ships a defect it never ran
 
 17. **Ships without running its own code.** The run declares done after an

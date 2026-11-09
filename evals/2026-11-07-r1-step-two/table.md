@@ -2,8 +2,8 @@
 
 Same host, card and settings as [step one](../2026-11-07-r1-step-one/table.md). Step one left Base
 as Vanilla, so the Vanilla arm is both the anchor and Base, and the unit runs as
-`--arm vanilla --remedy check/mediated-test`. `check/compile-import` was dropped by
-[Screen 2](../2026-11-07-r1-screen2/table.md). Runs under `~/mellum-runs/r1/step2`, raw traces not
+`--arm vanilla --remedy check/mediated-test`. `check/compile-import` could not be judged at n = 3 in
+[Screen 2](../2026-11-07-r1-screen2/table.md), so it did not go on (corrected 2026-11-08). Runs under `~/mellum-runs/r1/step2`, raw traces not
 committed; rule in the [preregistration](../../docs/superpowers/research/2026-11-07-r1-preregistration.md).
 
 | Arm | n | Mean checks | Full passes | Stalled | Censored | Budget endings | Median requests | Median output tokens |

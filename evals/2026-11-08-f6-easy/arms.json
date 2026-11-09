@@ -1,0 +1,6 @@
+{
+  "vanilla": ["--arm", "vanilla"],
+  "mediated": ["--arm", "vanilla", "--remedy", "check/mediated-test"],
+  "show-only": ["--arm", "vanilla", "--remedy", "check/mediated-test-show"],
+  "settle-only": ["--arm", "vanilla", "--remedy", "check/mediated-test-settle"]
+}

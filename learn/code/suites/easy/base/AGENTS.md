@@ -10,4 +10,4 @@ specs/roadmap.md.
 - Use existing dependencies and test configuration.
 - Keep changes scoped to the task; do not weaken existing tests.
 - Before reporting completion, run the test command and report its result.
-- Do not: start servers
+- Do not start a server to check your work; run the tests.

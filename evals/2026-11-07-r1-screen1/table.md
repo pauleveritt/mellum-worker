@@ -38,5 +38,5 @@ sessions. Per-session records: `<arm>-r0k/run.json`; the generated table is `ses
 
 ## Decision (screen filter)
 
-`log-follow` is dropped: its hook never acted in three sessions. `bounded`, `fg-server` and
+`log-follow` is dropped: its hook never acted in three sessions (2026-11-08 correction: it could not be judged at n = 3; it was left out of the next batch, not shown worthless). `bounded`, `fg-server` and
 `layout` enter step one; each acted, and none is 2 or more checks below Vanilla.

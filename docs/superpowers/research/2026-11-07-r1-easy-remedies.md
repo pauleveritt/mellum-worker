@@ -32,11 +32,16 @@ the arms of the counted batch that followed it.
 
 | Step | Arms | Decision |
 |---|---|---|
-| Screen 1 | vanilla, bounded, fg-server, log-follow, layout | log-follow dropped: its guard never fired |
+| Screen 1 | vanilla, bounded, fg-server, log-follow, layout | log-follow could not be judged at n = 3: its guard never fired |
 | Step one (n = 12) | vanilla, bounded, fg-server, layout | nothing wins; `preset:base` is `[]` |
-| Screen 2 | vanilla, compile-import, mediated-test | compile-import dropped: its hook never fired |
+| Screen 2 | vanilla, compile-import, mediated-test | compile-import could not be judged at n = 3: its hook never fired |
 | Step two (n = 12) | vanilla, mediated-test | the mediated test loses on budget |
 | Step three (n = 24) | vanilla, fg-server, bounded, mediated + each | nothing wins; `preset:easy` is `[]` |
+
+2026-11-08 corrections to this table: the two screens could not judge `log-follow` or
+`compile-import` at n = 3 (the hook never acted), so each was left out of the next batch, not
+shown worthless. Step three's rule was written after steps one and two had been read, so those
+steps informed it; it is not independent of them.
 
 **Step one:**
 
@@ -74,7 +79,7 @@ arms cleared quality and failed budget, at 47 and 61 median requests against a 2
   each arm stalled in none of 24 sessions against Vanilla's 4, but the step-three rule did not
   judge stalls. `bounded` bounds every call, so it guarantees no stall. `fg-server` refuses only a
   foreground server start: with the mediated test on, it stalled 7 times, 5 on `tail -f` (the
-  log-follow pathology Screen 1 dropped at n = 3) and 2 on `find /`.
+  log-follow pathology Screen 1 could not judge at n = 3) and 2 on `find /`.
 - `name-the-layout` is persuasion. Shown once per task, it did not beat Vanilla.
 - `compile-import` (`tool_result`, settle) never fired in its screen: a `SyntaxError` occurred in
   1 of 15 Screen 1 sessions and none of its three.
@@ -87,11 +92,17 @@ arms cleared quality and failed budget, at 47 and 61 median requests against a 2
 - The test is a superset of the oracle. Its extra checks are what most often sent the model
   back: a page's own `<title>` block, the `app.py` launch with reload, and the project's own tests.
   26 of 48 final workspaces pass the mediated test; the other 22 ended red, on budget or a stall.
+  **2026-11-08 correction:** counted from the traces, the tests that sent sessions back most were the
+  title override (17 times) and the launch (16). Both are in the hidden grader; they are not the
+  mediated test's extras.
 - **Our defect, fixed (`eaf48a3d`).** When the model's own server already held the port, the
   launch check reported an empty log, and the model went hunting for running servers. It hit 10
   of 48 sessions. It cannot carry the budget result alone.
 - Sessions that re-dispatched zero times still reached 64 requests: showing a 13-test file at the
   start seems to set a higher bar for "done" on its own. That is a reading, not a measurement.
+  **2026-11-08 correction:** re-dispatch never exceeded 2 of the cap of 5, and 23 of 48 sessions
+  were never sent back, 13 of those still running to the budget. Showing the test is what makes
+  the runs long; re-dispatch does not.
 
 ## Leads (not results)
 
@@ -100,11 +111,11 @@ arms cleared quality and failed budget, at 47 and 61 median requests against a 2
   would settle it.
 - **A cheaper mediated test.** The budget, not quality, decided against it. Tests that track the
   oracle more closely, a lower re-dispatch cap, or ending at green may keep the full passes for
-  less.
+  less. **2026-11-08 correction:** a lower cap cannot help, since re-dispatch never exceeded 2 of 5.
 - **The shown test as a hint.** Step two's foreground launches followed a test that launches the
   app the same way.
-- **Log-follow, again.** Screen 1 dropped `guard/foreground-log-follow` because its guard never
-  fired in three sessions; step three's mediated+fg-server arm stalled on `tail -f` in 5 of 24.
+- **Log-follow, again.** Screen 1 could not judge `guard/foreground-log-follow` at n = 3: its guard
+  never fired; step three's mediated+fg-server arm stalled on `tail -f` in 5 of 24.
 
 ## What would falsify this
 
