@@ -200,6 +200,37 @@ backend the prefix cache absorbs repeated reasoning, and removing it made runs
 60% slower (A12). The worker's `MELLUM_STRIP_THINKING=1` opens the seam so the
 claim can be measured, and the harness arm is `--arm strip-thinking`.
 
+### Live-server spiral
+
+The failure where a model, confused by an HTTP behaviour, starts a live server
+(`uvicorn`, `app.py`) and `curl`s `localhost` to debug it, instead of exercising
+the app in process. The server it starts disagrees with the in-process test
+client, so the probe confirms nothing and it starts another, thrashing to the
+deadline. `guard/no-live-server` refuses both the start and the probe.
+
+### Reduced thinking
+
+Cutting the model's per-turn reasoning with a prompt line — reason in one short
+sentence per action — because the model exposes no reasoning-effort dial. A
+denser turn carries more work, so a per-step turn cap covers the step instead of
+cutting it off. The unit is `prompt/think-briefly`; measured as a lead on medium.
+
+### Exit-gate
+
+An orchestration pattern that re-runs an external, complete, frozen acceptance
+test when the worker tries to settle and, while it is red, refuses the settle and
+hands back the failing test functions for a short corrective turn. It defines
+"done" by a test the worker did not write and cannot weaken, not by the worker's
+own final message. Wired by the verify gate (`mellum-verify`).
+
+### Architect split
+
+The delegation shape where an architect decomposes a spec into ordered steps,
+writes a brief and a frozen test per step, and a fresh worker builds each — driven
+by `--mode plan` and the `delegate` tool. It pays on a model-tier price gap (a
+costly planner, a cheap builder) or a spec too large for one context; with a
+single fixed model it is overhead, and one pass is cheaper.
+
 ### Spec variant
 
 An alternative layout of a suite's project and the prompts that go with it,

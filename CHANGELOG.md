@@ -6,6 +6,23 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **Medium and Hard lesson tiers on the learning site, code-first.** Four new
+  lessons that show the exact Pi change inline — the `/remedy` command, the real
+  remedy or gate code (pinned to a commit so the page cannot drift), and what the
+  model receives. Medium covers how the model spends a session: **M1 · The
+  Live-Server Spiral** (`guard/no-live-server`) and **M2 · Think Briefly**
+  (`prompt/think-briefly`). Hard covers orchestration: **H1 · The Architect
+  Split** (delegating a spec, and why one pass is cheaper with a single fixed
+  model) and **H2 · Don't Trust the Self-Exit** (the verify-gate re-dispatch
+  loop). The four Easy lessons gain the same inline `The code` section.
+
+- **A reduced-thinking remedy (`/remedy on prompt/think-briefly`).** The model
+  exposes no reasoning-effort dial, so the only lever on per-turn thinking is the
+  prompt. The new unit appends one line — reason in one short sentence per action
+  — so a denser turn carries more work and a per-step turn cap covers the step
+  instead of cutting it off. Off by default (in no preset); measured as a lead on
+  medium (median 10 → 16 under a turn cap).
+
 - **A live-server guard remedy (`/remedy on guard/no-live-server`).** A worker
   confused by an HTTP behaviour sometimes debugs it by starting a live server
   and curling `localhost`, which forks a server that disagrees with the

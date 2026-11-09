@@ -20,12 +20,13 @@ role — a meticulous developer working to a spec — steadies the hand.
     **Questions**
 
     - Why does a model that gets the layout right still fail on small mistakes?
-    - Can a role prompt cut careless failures without changing the task?
+    - What does a role prompt put in front of the model, and where?
 
     **Objectives**
 
     - Run Easy with the layout line and watch a run trip on an unchecked typo.
-    - Add `prompt/python-developer` and see the careful version of the same run.
+    - Switch on `prompt/python-developer`, read the role it prepends, and see the
+      careful version of the same run.
 
 ![A small robot in overalls reading a spec sheet with a careful, measured eye](../../assets/illustrations/a-short-prompt.webp){ .illustration }
 
@@ -60,17 +61,47 @@ run. The gap is not where the file goes, it is how the work is done.
 
 **Badge:** `screen`
 
-**Remedy unit:** `prompt/python-developer`; switch it on live in Pi with `/remedy on prompt/python-developer`, or pass `--remedy prompt/python-developer` to a graded run.
+One remedy unit, `prompt/python-developer`, prepends a single role to the system
+prompt. Where `name-the-layout` appends a line to each turn, this one reaches
+the front of the whole session — the model works as a careful developer from the
+first token. It names no suite, file or route; a role changes how the model
+works, never what the task is.
 
-**Remedy code:** [`remedies/prompt/python-developer.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/prompt/python-developer.ts) — the few lines that make the fix. In Pi the `/lesson` panel shows the file inline under this step.
+### The code
+
+In a live Pi session you switch it on with one command, on top of the layout
+line from E1:
+
+```text
+/remedy on prompt/python-developer
+```
+
+The unit is one sentence and the hook that puts it at the head of the system
+prompt, quoted from the file frozen at a commit
+([`remedies/prompt/python-developer.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/remedies/prompt/python-developer.ts#L6-L31)):
+
+```ts
+const ROLE =
+	"You are an experienced, meticulous python developer working in a spec driven paradigm.";
+
+// Prepend ROLE to the system message (or add one if there is none).
+pi.on("before_provider_request", (event) => {
+	const payload = event.payload;
+	const messages = [...payload.messages];
+	const i = messages.findIndex((m) => m.role === "system");
+	if (i >= 0) messages[i] = { ...messages[i], content: `${ROLE}\n\n${messages[i].content}` };
+	else messages.unshift({ role: "system", content: ROLE });
+	return { ...payload, messages };
+});
+```
+
+The role rides in front of Pi's own system prompt. The model reads it first,
+before the task, so every turn is coloured by the frame rather than reminded of
+it. To pass it to a graded run instead, name both units:
+`--remedy prompt/name-the-layout,prompt/python-developer`.
 
 **Lesson check:** 2/3 rose to 3/3 at n=3 on the local host, a screen
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-
-The unit prepends one line to the system prompt: you are an experienced,
-meticulous python developer working in a spec driven paradigm. It names no
-suite, file or route. A role is cheap and it is agnostic — it changes how the
-model works, never what the task is.
 
 ## Validation
 
@@ -88,9 +119,10 @@ a rate, and a strong lead at small n is still a lead.
 The weakest badge is `screen`. A role prompt makes the model *attempt* care, but
 care comes out as reading files or launching a server, not always as running the
 real check. That is the limit of a frame: it points the model at diligence
-without defining what diligence does. The next lesson names that — verify every
-requirement, and run the test — which is what carries the stack the rest of the
-way. The role is the posture; verification is the act.
+without defining what diligence does. The code shows why — one sentence at the
+head of the prompt, nothing that enforces anything. The next lesson names the
+act — verify every requirement, and run the test — which is what carries the
+stack the rest of the way. The role is the posture; verification is the act.
 
 ### Run it yourself
 
@@ -104,5 +136,6 @@ uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy prom
 !!! success "Key points"
 
     - The right layout can still ship a careless, unchecked mistake.
-    - `prompt/python-developer` frames the model as a meticulous, spec-driven developer.
+    - `/remedy on prompt/python-developer` prepends one role sentence to the
+      system prompt — a posture, not an enforcement.
     - It lifted the screen 2/3 → 3/3, but n=6 read 4/6 — a lead, not a settled rate.

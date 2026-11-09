@@ -24,4 +24,31 @@ its place.
   whether a unit fires; on Easy the guard and the enforcement gate both fired 0×,
   and the gate made a passing stack worse.
 
-Medium and Hard are next; their lessons land as the ladder reaches them.
+## Medium
+
+The Medium tier is about how the model spends its session — the turns, the
+thinking, the shape of the task. Each lesson shows the exact change you make in
+Pi and reads the result in a trace.
+
+- **[M1 · The Live-Server Spiral](medium/live-server-spiral.md)** — a confused
+  model starts a server and curls it instead of testing in process;
+  `guard/no-live-server` keeps it in process. 1/3 → 3/3 reach the gate.
+- **[M2 · Think Briefly](medium/think-briefly.md)** — a turn cap that bounds easy
+  starves medium; `prompt/think-briefly` cuts the thinking so the cap fits.
+  median 10 → 16.
+
+## Hard
+
+The Hard tier is orchestration — who drives the model, how work is split across
+agents, and how "done" is decided. Each lesson shows the loop and the gate in
+code.
+
+- **[H1 · The Architect Split](hard/architect-split.md)** — delegating a spec
+  across an architect and fresh workers; with one fixed model the split is
+  overhead, and one pass is ~5× cheaper at equal score.
+- **[H2 · Don't Trust the Self-Exit](hard/dont-trust-the-self-exit.md)** — the
+  worker's own "done" can be wrong on the hard contract; a verify gate re-runs an
+  external frozen test and re-dispatches the failure until it is green.
+
+Every screen on these pages is a lead on llama.cpp, not a settled rate; each page
+says so and links the record.

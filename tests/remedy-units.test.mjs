@@ -159,7 +159,7 @@ test("context/narrow-tools keeps the seven worker tools, as the worker does", as
 });
 
 // Prompt units: each adds a small instruction fragment to the outgoing request and nothing else.
-for (const name of ["name-the-layout", "python-developer", "verify-the-spec", "concept-sketch"]) {
+for (const name of ["name-the-layout", "python-developer", "verify-the-spec", "concept-sketch", "think-briefly"]) {
 	test(`prompt/${name} installs one before_provider_request hook and carries metadata`, async () => {
 		const mod = await import(`../remedies/prompt/${name}.ts`);
 		const pi = fakePi();

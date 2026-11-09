@@ -21,12 +21,13 @@ to run the tests, before it finishes.
     **Questions**
 
     - How does a run pass most checks and still drop one requirement?
-    - What makes a model verify the whole spec instead of the test it wrote?
+    - What line makes a model verify the whole spec instead of the test it wrote?
 
     **Objectives**
 
     - Run the three-unit stack and find the rep that shipped without its navbar links.
-    - Add `prompt/verify-the-spec` and watch the dropped requirement close, 5/6 → 6/6.
+    - Switch on `prompt/verify-the-spec`, read the line it adds, and watch the
+      dropped requirement close, 5/6 → 6/6.
 
 ![A small robot ticking off every item on a checklist before closing the lid on its work](../../assets/illustrations/check-before-finishing.webp){ .illustration }
 
@@ -65,21 +66,48 @@ model did one of those and called it checked.
 
 **Badge:** `screen`
 
-**Remedy unit:** `prompt/verify-the-spec`; switch it on live in Pi with `/remedy on prompt/verify-the-spec`, or pass `--remedy prompt/verify-the-spec` to a graded run.
+One remedy unit, `prompt/verify-the-spec`, appends a line to every turn that
+names the act the role in E2 only gestured at: account for every requirement, and
+run the project's own tests, before finishing. It names no requirement, route or
+value; the model reads them from the spec. It catches the dropped requirement by
+making the model clear the whole list, not only the test it chose to write.
 
-**Remedy code:** [`remedies/prompt/verify-the-spec.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/prompt/verify-the-spec.ts) — the few lines that make the fix. In Pi the `/lesson` panel shows the file inline under this step.
+### The code
+
+In a live Pi session you switch it on alongside the earlier units:
+
+```text
+/remedy on prompt/verify-the-spec
+```
+
+The line and the hook that appends it to each turn, quoted from the file frozen
+at a commit
+([`remedies/prompt/verify-the-spec.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/remedies/prompt/verify-the-spec.ts#L8-L35)):
+
+```ts
+const LINE =
+	"Before you finish, check that every requirement the spec lists is present in your code, and " +
+	"run the project's own tests to confirm — do not finish while a requirement is unimplemented " +
+	"or a test you can run is failing. Reading the files is not verification; run them.";
+
+// Append LINE to each user message on its way to the model.
+pi.on("before_provider_request", (event) => {
+	const payload = event.payload;
+	return {
+		...payload,
+		messages: payload.messages.map((m) =>
+			m.role === "user" ? { ...m, content: `${m.content}\n\n${LINE}` } : m),
+	};
+});
+```
+
+It is the same append mechanism as E1 — a `before_provider_request` hook on each
+user message — carrying a different instruction. Stack the three prompt units and
+the guard with the course preset: `--remedy preset:easy`.
 
 **Lesson check:** 5/6 rose to **6/6** at n=6 on the local host, every rep with 0
 failed checks
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-
-The unit appends one agnostic line to each turn: before you finish, check that
-every requirement the spec lists is present in your code, and run the project's
-own tests to confirm — do not finish while a requirement is unimplemented or a
-test you can run is failing, and reading the files is not verification. It names
-no requirement, route or value; the model reads them from the spec. It catches
-the dropped requirement by making the model account for each one, not only the
-test it chose to write.
 
 ## Validation
 
@@ -97,10 +125,11 @@ n=6 at 6/6 is a strong, replicated lead, not a one-host certainty.
 
 The weakest badge is `screen`. The reliability lever on Easy is verification —
 run the real route or test before finishing, and account for every requirement
-the spec names. A prompt line is the cheap way to get it, and on Easy it is
-enough: it closes the dropped requirement that the layout and the role left
-behind. The deeper rule carries to any tier — a model's own "done" is a claim,
-not a check, and the spec is the list it has to clear in full.
+the spec names. The code is a single appended line; that it closes the dropped
+requirement on this tier, where enforcement does not, is the lesson. The deeper
+rule carries to any tier — a model's own "done" is a claim, not a check, and the
+spec is the list it has to clear in full. On a harder tier the same claim needs a
+gate behind it, which the Hard lessons build.
 
 ### Run it yourself
 
@@ -115,4 +144,4 @@ uv run python learn/code/harness.py run --suite easy --arm vanilla --remedy pres
 
     - A run can pass most checks and still ship a requirement it never implemented.
     - A model's own "done" is a claim; the spec is the list it must clear in full.
-    - `prompt/verify-the-spec` makes it check every requirement and run the tests — 5/6 → 6/6.
+    - `/remedy on prompt/verify-the-spec` appends one check-everything line — 5/6 → 6/6.

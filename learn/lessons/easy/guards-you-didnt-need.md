@@ -21,11 +21,12 @@ sat silent and the prompts did the work.
     **Questions**
 
     - How do I tell a guard is earning its place and not just riding along?
-    - Why did an enforcement gate make a passing stack worse, not better?
+    - Where in the run record do I read whether a guard fired at all?
 
     **Objectives**
 
-    - Read `guard_blocks` in `run.json` and find the guard that fired 0 times.
+    - Switch on `guard/foreground-server`, then read `guard_blocks` in `run.json`
+      and find the guard that fired 0 times.
     - Stack the verify gate on the 6/6 set and watch it add nothing — and cost a rep.
 
 ![A small robot watching a row of alarm bells that never ring while it works](../../assets/illustrations/evidence.webp){ .illustration }
@@ -67,18 +68,51 @@ turn, and the run shipped without the HTML5 doctype its own contract checks for.
 
 **Badge:** `screen`
 
-**Remedy unit:** `guard/foreground-server`; switch it on live in Pi with `/remedy on guard/foreground-server`, then read its firing in the run record — `--remedy preset:easy` versus the same with the gate's two extensions.
+The method is not to trust a guard but to read whether it bit. The guard itself
+is a short function: it looks at a bash command, decides whether it starts a
+foreground server, and either returns a block with a reason or steps aside. The
+run record counts every block it returns, and that count is the evidence.
 
-**Remedy code:** [`remedies/guard/foreground-server.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/remedies/guard/foreground-server.ts) — the unit wires the guard; the block itself is `serverGuard` in [`extensions/mellum-guards.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/main/extensions/mellum-guards.ts). In Pi the `/lesson` panel shows the unit file inline under this step.
+### The code
+
+Switch the guard on live:
+
+```text
+/remedy on guard/foreground-server
+```
+
+The guard is one function. It returns a block only when the command would hang
+the run, and the reason points the model back in process
+([`extensions/mellum-guards.ts`](https://github.com/andrevanzuydam/mellum-worker/blob/eba20ef/extensions/mellum-guards.ts#L229-L243)):
+
+```ts
+export const serverGuard = (call) => {
+	if (call.toolName !== "bash") return undefined;
+	const command = commandOf(call.input);
+	if (!isForegroundServer(command)) return undefined; // not a server start — step aside
+	return {
+		block: true,
+		reason:
+			"That starts a server in the foreground; it blocks forever and burns your whole time budget. " +
+			"Exercise an endpoint in process the way the tests do: TestClient(app).get('/...').",
+	};
+};
+```
+
+Every block it returns is counted in the run record. After a run, read it —
+a guard that reads `0` did nothing this run:
+
+```bash
+# how many times each guard blocked a call, this run
+cat runs/<run-id>/run.json | python -m json.tool | grep -A6 guard_blocks
+```
+
+The gate is loaded the same way, as two extensions on top of the preset, and the
+record logs each time it fires. Both numbers come from the same place: the run
+record, not a hunch.
 
 **Lesson check:** guard 0× across six reps; the verify gate 5/6, firing 0×
 ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
-
-The move is not to add machinery and hope. It is to add one unit, measure
-whether it fires and whether it moves the rate, and keep only what earns its
-place. A guard that never speaks and a gate that never bites are not safety —
-they are weight, and on the spinning rep the gate was weight that could not even
-reach the failure.
 
 ## Validation
 
@@ -98,9 +132,11 @@ settled "done" hides a real miss.
 The weakest badge is `screen`. The cheapest thing that passes is the right thing.
 On Easy that is three prompt lines; the guard and the gate add nothing you can
 measure, and a gate can even trap a struggling rep in a loop it cannot finish.
-This is the method, not a verdict against guards — a guard earns its place on the
-tier where its pathology actually appears. Measure the firing, read the rate, and
-reach for enforcement only where guidance stops being enough.
+The habit the code teaches is to read `guard_blocks` before you believe a guard
+helped. This is the method, not a verdict against guards — a guard earns its
+place on the tier where its pathology actually appears. The Medium and Hard
+lessons are exactly that: a guard and a gate read on the tier where they finally
+bite.
 
 ### Run it yourself
 
