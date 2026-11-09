@@ -1,3 +1,4 @@
+import json
 import re
 import signal
 import sys
@@ -52,6 +53,40 @@ def test_reap_group_signals_the_group_on_the_happy_path(monkeypatch):
     monkeypatch.setattr(flow_run.os, "killpg", lambda pid, sig: calls.append((pid, sig)))
     flow_run.reap_group(999)
     assert calls == [(999, signal.SIGKILL)]
+
+
+def test_board_record_writes_a_scoreboard_shaped_run_json(tmp_path):
+    # RECORDING ONLY: a flow run must leave a run.json the scoreboard can read, with the
+    # HIDDEN-grader verdict as `passed`, turns + tool_calls summed across every pi trace, and
+    # the flow extensions so the stack reads `mellum-flow`, not vanilla Pi.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import scoreboard
+    run = tmp_path / "20261110T120000Z-flow-hard-abc123"
+    run.mkdir()
+    (run / "trace-orient.jsonl").write_text(
+        '{"type": "provider_request"}\n{"type": "tool_call"}\n')
+    (run / "trace-p1-0.jsonl").write_text(
+        '{"type": "provider_request"}\n{"type": "provider_request"}\n{"type": "tool_call"}\n')
+    (run / "feed.log").write_text('{"type": "provider_request"}\n')  # NOT a trace file — ignored
+    ext = tmp_path / "mellum-flow.ts"
+    ext.write_text("export const x = 1\n")
+
+    path = flow_run.board_record(
+        run, suite_name="hard", model_id="Mellum2.1-12B-A2.5B-Thinking",
+        graded=False, missing=["a", "b", "c"],
+        started="2026-11-10T12:00:00Z", finished="2026-11-10T12:30:40Z",
+        extensions=[ext])
+
+    assert path == run / "run.json"
+    rec = json.loads(path.read_text())
+    assert rec["suite"] == "hard"
+    assert rec["passed"] is False  # hidden verdict, not the visible gate
+    assert rec["turns"] == 3 and rec["tool_calls"] == 2  # only trace*.jsonl, not feed.log
+    assert rec["wall"] == 1840.0  # 30m40s
+    assert rec["model"] == "Mellum2.1-12B-A2.5B-Thinking"
+    entry = scoreboard.entry_from_run(run)  # must be board-compatible end to end
+    assert entry["suite"] == "hard" and entry["passed"] is False
+    assert entry["missing"] == 3 and "mellum-flow" in entry["stack"]
 
 
 def test_restore_gate_materialises_every_phase_and_clears_stale(tmp_path):
@@ -408,7 +443,9 @@ def test_hidden_grade_counts_passed_checks_on_a_partial_build(tmp_path):
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     (workspace / "add.py").write_text("def add(a, b):\n    return 0\n")
-    assert flow_run.hidden_grade(workspace, suite) == (False, 1, 2)
+    graded, passed, total, missing = flow_run.hidden_grade(workspace, suite)
+    assert (graded, passed, total) == (False, 1, 2)
+    assert len(missing) == 1  # the one failing check, carried through for the board's missing count
 
 
 def test_hidden_grade_passes_a_complete_build(tmp_path):
@@ -416,7 +453,7 @@ def test_hidden_grade_passes_a_complete_build(tmp_path):
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     (workspace / "add.py").write_text("def add(a, b):\n    return a + b\n")
-    assert flow_run.hidden_grade(workspace, suite) == (True, 2, 2)
+    assert flow_run.hidden_grade(workspace, suite) == (True, 2, 2, [])
 
 
 def test_main_hands_loop_an_absolute_runs_dir(tmp_path, monkeypatch):

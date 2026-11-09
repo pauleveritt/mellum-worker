@@ -840,7 +840,7 @@ def loop(suite_name: str, *, runs_dir: Path, timeout: float, base_url: str, mode
             lr.emit(f"  restored fixture data before grading: {', '.join(restored)}")
     # Granular hidden grade: full pass (bool) is almost always False on hard (the 31/34 ceiling), so
     # record the COUNT of hidden tests passed — that's what discriminates one run/arm from another.
-    graded, hidden_passed, hidden_total = hidden_grade(workspace, suite)
+    graded, hidden_passed, hidden_total, missing = hidden_grade(workspace, suite)
     todo = (workspace / "plan" / "TODO.md").exists()
     result = {
         "suite": suite_name, "flow_mode": flow_mode,
@@ -854,6 +854,10 @@ def loop(suite_name: str, *, runs_dir: Path, timeout: float, base_url: str, mode
         "finished": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
     (run / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+    # RECORDING ONLY: also leave a scoreboard-shaped run.json so this run lands on the board. The
+    # board's `passed` is the HIDDEN grade (the oracle), not the flow's visible gate.
+    board_record(run, suite_name=suite_name, model_id=model_id, graded=graded, missing=missing,
+                 started=started, finished=result["finished"], extensions=[FLOW, harness.THINK_TAGS])
     lr.emit(f"{suite_name}: visible={'PASS' if passed else 'FAIL'} "
             f"hidden={hidden_passed}/{hidden_total} ({'PASS' if graded else 'partial'}) "
             f"TODO.md={'yes' if todo else 'NO'} bundle={run}")
@@ -861,11 +865,69 @@ def loop(suite_name: str, *, runs_dir: Path, timeout: float, base_url: str, mode
     return result
 
 
-def hidden_grade(workspace: Path, suite) -> tuple[bool, int, int]:
-    """The suite's hidden grade as (full pass, checks passed, checks expected)."""
+def hidden_grade(workspace: Path, suite) -> tuple[bool, int, int, list[str]]:
+    """The suite's hidden grade as (full pass, checks passed, checks expected, missing checks)."""
     graded, _, missing, _ = harness.score_workspace_details(workspace, suite)
     total = len(suite.expected)
-    return graded, total - len(missing), total
+    return graded, total - len(missing), total, missing
+
+
+def _trace_counts(run_dir: Path) -> tuple[int, int]:
+    """Total provider requests (turns) and tool calls across EVERY pi trace a flow run wrote.
+
+    A flow run spawns many pi children — orient, per-phase examiner/coder, best-of-N forks — each to
+    its own ``trace*.jsonl``; summing them is the flow analogue of the harness's single-trace count.
+    Only ``trace*.jsonl`` files count, never the feed logs."""
+    turns = tool_calls = 0
+    for tf in sorted(run_dir.glob("trace*.jsonl")):
+        for line in tf.read_text(errors="ignore").splitlines():
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            kind = row.get("type")
+            if kind == "provider_request":
+                turns += 1
+            elif kind == "tool_call":
+                tool_calls += 1
+    return turns, tool_calls
+
+
+def board_record(run_dir: Path, *, suite_name: str, model_id: str, graded: bool,
+                 missing: list[str], started: str, finished: str,
+                 extensions: list[Path]) -> Path:
+    """Write a scoreboard-shaped ``run.json`` so a flow run lands on the board like any harness run.
+
+    RECORDING ONLY: it reads the finished run and records it; it changes nothing that is measured.
+    ``passed`` is the suite's HIDDEN grader full-pass verdict (the oracle), never the flow's own
+    visible gate (a self-authored proxy). ``extensions`` names the flow extensions, so the board's
+    stack reads ``mellum-flow`` instead of vanilla Pi. Mirrors the fields ``scoreboard.py`` reads."""
+    turns, tool_calls = _trace_counts(run_dir)
+    wall: float | None = None
+    try:
+        t0 = time.strptime(started, "%Y-%m-%dT%H:%M:%SZ")
+        t1 = time.strptime(finished, "%Y-%m-%dT%H:%M:%SZ")
+        wall = round(time.mktime(t1) - time.mktime(t0), 1)
+    except (ValueError, TypeError):
+        wall = None
+    record = {
+        "suite": suite_name,
+        "passed": bool(graded),
+        "turns": turns,
+        "tool_calls": tool_calls,
+        "wall": wall,
+        "model": model_id,
+        "arm": None,
+        "remedies": [],
+        "extensions": harness.extension_record(list(extensions)),
+        "missing_checks": list(missing),
+        "machine": harness.machine_label(),
+    }
+    path = run_dir / "run.json"
+    path.write_text(json.dumps(record, indent=2) + "\n")
+    return path
 
 
 def main(argv: list[str] | None = None) -> int:

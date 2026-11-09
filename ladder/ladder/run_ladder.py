@@ -10,6 +10,7 @@ bundle's record extension capturing every provider request and tool event.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import os
@@ -238,6 +239,52 @@ def mode_env(
     if not facts:
         env["MELLUM_MODE_FACTS"] = "0"
     return env
+
+
+# The scoreboard groups runs by tier (easy/medium/hard); map the rungs that carry one. Rung 13 is
+# the four-phase whole-spec agentclinic — the "medium" tier the one-pass/plan arms are measured on.
+# A rung not here is left off the board (suite None), never guessed into a tier.
+BOARD_SUITE = {13: "medium"}
+
+
+def _remedy_name(path: Path) -> str | None:
+    """The remedy unit name (``kind/name``) for a loaded extension under ``remedies/``, else None."""
+    parts = Path(path).with_suffix("").parts
+    if "remedies" in parts:
+        tail = parts[parts.index("remedies") + 1:]
+        if len(tail) >= 2:
+            return "/".join(tail[-2:])
+    return None
+
+
+def board_fields(record: dict, extra_extensions=()) -> dict:
+    """Scoreboard-shaped fields derived from a finished ladder record. RECORDING ONLY: every value is
+    read from the record already built (check/score/wall/backend) or the extensions actually loaded;
+    it adds the flat keys ``learn/code/scoreboard.py`` reads and changes nothing measured. ``passed``
+    is the rung's hidden-oracle verdict (``check.passed``). The remedy units name the stack so an
+    Arm-A run reads as its guards + prompts, not vanilla Pi; a rung with no known tier is left off
+    the board (``suite`` None)."""
+    score = record.get("score") or {}
+    check = record.get("check") or {}
+    backend = record.get("backend") or {}
+    exts = [Path(p) for p in extra_extensions]
+    by_name = score.get("tool_calls_by_name") or {}
+    return {
+        "suite": BOARD_SUITE.get(record.get("rung")),
+        "passed": bool(check.get("passed")),
+        "turns": score.get("requests"),
+        "tool_calls": sum(by_name.values()) if by_name else None,
+        "wall": record.get("wall_seconds_untrusted"),
+        "model": backend.get("model"),
+        "arm": None,
+        "remedies": [r for r in (_remedy_name(p) for p in exts) if r],
+        "extensions": [
+            {"path": str(p), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+            for p in exts if p.is_file()
+        ],
+        "machine": None,
+        "missing_checks": [],
+    }
 
 
 def worker_provenance(root: Path = REPO_ROOT) -> dict:
@@ -938,6 +985,9 @@ def run_once(
         "workspace": str(ws),
         **worker_provenance(),
     }
+    # RECORDING ONLY: add the flat fields the scoreboard reads so a ladder run lands on the board;
+    # additive keys, nothing measured changes. The existing check/score blocks stay for other readers.
+    record.update(board_fields(record, extra_extensions))
     variant = f"{'-guards' if guards else ''}{'-plain' if plain else ''}"
     run_dir = out / f"rung{rung.number}-{prof}-{mode}{variant}-r{repeat}"
     run_dir.mkdir(parents=True, exist_ok=True)

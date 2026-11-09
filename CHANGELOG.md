@@ -6,6 +6,15 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **Flow and ladder runs now leave a scoreboard-shaped `run.json`.** The flow
+  runner (`learn/code/flow_run.py`) and the ladder (`ladder/ladder/run_ladder.py`)
+  each emit, alongside their own records, the flat fields
+  `learn/code/scoreboard.py` reads — `suite`, `passed`, `turns`, `tool_calls`,
+  `wall`, `model`, the loaded extensions/remedies — so a flow or ladder run can be
+  recorded onto the scoreboard with `scoreboard.py record`. Recording only: the
+  flow's `passed` is the suite's hidden-grader verdict (the oracle), never its own
+  visible gate, and nothing measured changes.
+
 - **Medium and Hard lesson tiers on the learning site, code-first.** Each lesson
   shows the exact Pi change inline — the `/remedy` command, the real remedy or gate
   code (pinned to a commit so the page cannot drift), and what the model receives.
