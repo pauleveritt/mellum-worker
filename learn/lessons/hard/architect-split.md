@@ -29,7 +29,7 @@ score.
     - Read the two orchestration shapes side by side: the plan loop and one pass.
     - Run `--mode plan` against `--mode direct` and see the request count, not just the score.
 
-![A small robot foreman handing numbered work-orders to a row of identical workers, each at its own bench](../../assets/illustrations/lessons.webp){ .illustration }
+![Two robots joined by a paper tape growing into a big pile between them, beside a single small card passed hand to hand](../../assets/illustrations/the-handoff.webp){ .illustration }
 
 ## Problem
 

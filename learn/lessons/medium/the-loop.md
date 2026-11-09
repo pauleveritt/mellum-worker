@@ -28,7 +28,7 @@ and tells it to act on what it already knows.
     - Spot the loop in a trace: the same `ls` or `read`, five times over, nothing between.
     - Switch on `guard/repeat-loops`, read how it counts, and watch the sixth call refused.
 
-![A small robot stuck walking the same three tiles of floor, wearing a groove into them](../../assets/illustrations/pathologies.webp){ .illustration }
+![A small robot walking a tight circle that has worn a groove into the floor tiles, passing the same signpost again and again](../../assets/illustrations/the-loop.webp){ .illustration }
 
 ## Problem
 

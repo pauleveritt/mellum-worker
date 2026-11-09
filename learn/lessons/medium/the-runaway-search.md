@@ -28,7 +28,7 @@ workspace, where the file actually lives.
     - Read a run that stalls on `find / -name test_medium.py` eating the clock.
     - Switch on `guard/outside-workspace`, read how it measures "outside", and watch the crawl refused.
 
-![A small robot wandering off the edge of its own workbench into a vast dark warehouse, torch in hand](../../assets/illustrations/pathologies.webp){ .illustration }
+![A small robot with a torch peering into an enormous dark warehouse of shelves, a tidy room with one open drawer right behind it](../../assets/illustrations/searching.webp){ .illustration }
 
 ## Problem
 

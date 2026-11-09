@@ -28,7 +28,7 @@ costs fewer, denser turns and the cap fits.
     - Read a medium run where a turn cap fires and leaves `POST /complaints` answering 405.
     - Switch on `prompt/think-briefly`, read the one line it adds, and watch the median climb 10 → 16.
 
-![A small robot writing one short note per step instead of a long essay before each move](../../assets/illustrations/a-short-prompt.webp){ .illustration }
+![A small robot jotting one short note beside a large hourglass, a long essay scroll pushed aside on the floor](../../assets/illustrations/think-briefly.webp){ .illustration }
 
 ## Problem
 

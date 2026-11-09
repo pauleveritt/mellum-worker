@@ -29,7 +29,7 @@ back where it belongs.
     - Recognise a turn that opens with a literal `<think>` tag in the content.
     - Switch on `context/repair-think-tags`, read what it moves, and see the turn read clean again.
 
-![A small robot whose private thought-bubble has leaked out of its mouth as spoken words, confusing the one listening](../../assets/illustrations/a-short-prompt.webp){ .illustration }
+![A small robot sorting a tangled ribbon of thought bubbles and speech bubbles into two separate trays](../../assets/illustrations/reasoning-as-text.webp){ .illustration }
 
 ## Problem
 

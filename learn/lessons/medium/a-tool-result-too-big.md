@@ -28,7 +28,7 @@ result and tells the model how to fetch only the part it needs.
     - Follow a context that fills, compacts, and re-reads the same notes it just lost.
     - Switch on `context/trim-tool-output`, read the cap and the note it leaves, and watch the re-reads stop.
 
-![A small robot buried under a toppling stack of printouts, hunting for the one line it needed](../../assets/illustrations/a-short-prompt.webp){ .illustration }
+![A small robot trying to stuff an armful of thick books into a small backpack while pages spill out](../../assets/illustrations/context-overflow.webp){ .illustration }
 
 ## Problem
 

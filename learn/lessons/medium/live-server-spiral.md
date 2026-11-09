@@ -28,7 +28,7 @@ thrashes to the deadline. One guard keeps it in process.
     - Read a medium trace where the worker starts a server 28 to 55 times and never settles.
     - Switch on `guard/no-live-server`, read the two commands it refuses, and watch 3 of 3 reach the gate.
 
-![A small robot chasing its own tail around a server tower while the test bench sits unused beside it](../../assets/illustrations/pathologies.webp){ .illustration }
+![A small robot running in a frantic circle around a humming server tower, chasing a looping cable, the test bench beside it untouched](../../assets/illustrations/live-server-spiral.webp){ .illustration }
 
 ## Problem
 

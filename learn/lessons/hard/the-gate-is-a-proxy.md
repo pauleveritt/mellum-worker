@@ -28,7 +28,7 @@ its own gate is only a proxy for the real grade.
     - Follow the flow's phases — plan, examine, code, test — as tools the agent calls in order.
     - Read a hard run where every gate says PASS and the hidden grader says FAIL, and see why.
 
-![A small robot foreman walking a line of finished rooms, stamping each door before it moves on, a ledger under its arm](../../assets/illustrations/lessons.webp){ .illustration }
+![A small robot walking a path through a series of gates, each one behind it padlocked, a flag planted at the last gate it passed](../../assets/illustrations/frozen-gates-and-checkpoints.webp){ .illustration }
 
 ## Problem
 

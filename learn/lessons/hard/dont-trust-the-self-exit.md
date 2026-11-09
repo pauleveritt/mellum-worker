@@ -29,7 +29,7 @@ green.
     - Read the Phase-4 contract a self-authored test passes and the oracle fails.
     - Switch on the verify gate with a frozen acceptance test, and watch one re-dispatch close the gap.
 
-![A small robot reaching for the exit while a gatekeeper robot holds up a checklist and points back to the bench](../../assets/illustrations/check-before-finishing.webp){ .illustration }
+![A small robot proudly holding a paper checkmark at a finish line while a larger robot there holds up a clipboard to check it](../../assets/illustrations/dont-trust-the-self-exit.webp){ .illustration }
 
 ## Problem
 

@@ -234,6 +234,18 @@ subject = "the small robot sorting a tangled ribbon of thought bubbles and speec
 seed = 8026
 subject = "the small robot trying to stuff an armful of thick books into a small backpack while pages spill out"
 
+[live-server-spiral]
+seed = 8050
+subject = "the small robot running in a frantic circle around a tall humming server tower, chasing a tangled cable that loops back on itself, while a tidy test bench with a magnifying glass sits unused beside it"
+
+[think-briefly]
+seed = 8051
+subject = "the small robot jotting a single short note beside a large hourglass, one small neat thought bubble above its head, a long unrolled essay scroll pushed aside on the floor"
+
+[the-loop]
+seed = 8052
+subject = "the small robot walking in a tight circle that has worn a visible curved groove into the floor tiles, passing the very same small signpost again and again"
+
 [scoreboard]
 seed = 8041
 subject = "the small robot standing beside a tall leaderboard board filled with coloured horizontal ranking bars of different lengths, a gold star pinned at the top bar, a stopwatch in one hand, no text and no numbers anywhere"
