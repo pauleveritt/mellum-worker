@@ -8,6 +8,40 @@ is explicit — a screen is a lead; a comparative claim is decided by a
 preregistered run through the real harness (`ladder/`), not a scratch driver.
 This fixes the arms, n, scoring and rule before that run.
 
+## Correction (2026-11-09) — the faithful arm, after two config missteps
+
+The first draft of Arm A below was wrong twice, both caught on a single smoke rep
+before any verdict rep was scored. Recorded here, not deleted, per the SDD rule.
+
+1. **Stripped too much.** The first draft ran the shipped prompt at
+   `--thinking high` with the scratch's prompt-remedies removed as "scaffolding".
+   Rep 1 FAILed: the worker over-reasoned and its final turn truncated
+   (`stop_reason=length`) at 91 requests, even though the held-out gate fired 9
+   times. Reduced thinking and those remedies are a **measured lever**, not
+   scaffolding — the 18/18 depended on them.
+2. **The held-out gate fought the shipped prompt.** The second draft added back
+   reduced thinking and the remedies but kept the test *held out* (via
+   `mellum-verify`, no visible test). The shipped worker prompt (v11) says "you
+   make one failing test pass — read the failing test"; with the test held out,
+   `tests/` is empty, so the worker stopped early without building `models.py`
+   and the gate errored importing it (`No module named 'models'`).
+
+**The corrected Arm A uses the ladder's native exit-gate**, which is the
+canonical M.11 form and matches the shipped prompt: `--acceptance-test
+test_medium.py` places the complete test *visibly* in the workspace baseline and
+the `existing_tests_kept` scorer **freezes** it (the worker cannot weaken it —
+unweakenable), the task becomes "make `tests/test_medium.py` pass", and
+`--redispatch 5` re-runs the frozen test and re-hands each failure to a fresh
+worker on the same workspace (the gate). Reduced thinking (`--thinking low`) and
+the measured remedies (`no-live-server`, `name-the-layout`, `python-developer`,
+`verify-the-spec`, `exists`) ride along. Validated by one smoke rep: **PASS at 90
+requests, `stop=stop` (clean exit)**. This replaces the held-out `mellum-verify`
+wiring in the Arm A invocation below; everything else (n, rung, Arm B, cost) holds.
+
+**Scoring note.** The ladder's `result` is PASS/FAIL on the hidden oracle (all
+four phases), not a /18. The rule below reads on the **PASS-rate** across the
+three reps, not a median /18.
+
 ## What is measured
 
 Whether **one agent in a single pass, gated by a held-out acceptance test**
@@ -72,14 +106,18 @@ exploratory scaffolding. Adding those remedies back is a later arm, not this one
 
 ## The exact invocations
 
-Arm A (one pass + held-out gate + guard):
+Arm A (one pass + native frozen exit-gate + reduced thinking + measured remedies),
+as corrected above:
 
 ```
-VERIFY_TEST=$REPO/ladder/fixtures/acceptance/test_medium.py VERIFY_MAX=5 \
 uv run python -m ladder.run_ladder --mode direct --rung 13 --repeat 3 \
-  --guards --deadline 2400 \
-  --pi-extension $REPO/extensions/mellum-verify.ts \
+  --acceptance-test $REPO/ladder/fixtures/acceptance/test_medium.py --redispatch 5 \
+  --guards --thinking low --deadline 2400 \
   --pi-extension $REPO/remedies/guard/no-live-server.ts \
+  --pi-extension $REPO/remedies/prompt/name-the-layout.ts \
+  --pi-extension $REPO/remedies/prompt/python-developer.ts \
+  --pi-extension $REPO/remedies/prompt/verify-the-spec.ts \
+  --pi-extension $REPO/remedies/guard/exists.ts \
   --provider llamacpp --base-url http://127.0.0.1:8001/v1 \
   --model llamacpp/Mellum2.1-12B-A2.5B-Thinking --profile tuned \
   --out runs/2026-11-09-one-pass-verdict/A-direct-gate
