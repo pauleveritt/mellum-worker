@@ -15,8 +15,10 @@ Versions match git tags; pin one in both install lines.
   (`guard/outside-workspace`), **M5 · Thinking in the Content Channel**
   (`context/repair-think-tags`) and **M6 · A Tool Result Too Big**
   (`context/trim-tool-output`). Hard is orchestration: **H1 · The Architect Split**
-  (delegating a spec, and why one pass is cheaper with a single fixed model) and
-  **H2 · Don't Trust the Self-Exit** (the verify-gate re-dispatch loop). The four
+  (delegating a spec, and why one pass is cheaper with a single fixed model),
+  **H2 · Don't Trust the Self-Exit** (the verify-gate re-dispatch loop) and
+  **H3 · The Gate Is a Proxy** (the spec-driven flow — per-phase frozen gates, git
+  checkpoints, and the examiner's gate as a proxy for the hidden grade). The four
   Easy lessons gain the same inline `The code` section. Lesson prose is in the
   author's voice; every page labels its evidence as a lead, not a rate.
 

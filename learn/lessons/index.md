@@ -60,6 +60,10 @@ code.
 - **[H2 · Don't Trust the Self-Exit](hard/dont-trust-the-self-exit.md)** — the
   worker's own "done" can be wrong on the hard contract; a verify gate re-runs an
   external frozen test and re-dispatches the failure until it is green.
+- **[H3 · The Gate Is a Proxy](hard/the-gate-is-a-proxy.md)** — the flow builds a
+  multi-phase app phase by phase, gating and git-checkpointing each; but the
+  examiner's gate is a proxy — all seven gates passed while the hidden grader failed
+  5 of 34.
 
 Every screen on these pages is a lead on llama.cpp, not a settled rate; each page
 says so and links the record.

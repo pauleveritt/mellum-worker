@@ -23,7 +23,8 @@ nav = [
     { "Medium" = ["lessons/medium/live-server-spiral.md", "lessons/medium/think-briefly.md",
       "lessons/medium/the-loop.md", "lessons/medium/the-runaway-search.md",
       "lessons/medium/thinking-in-the-content-channel.md", "lessons/medium/a-tool-result-too-big.md"] },
-    { "Hard" = ["lessons/hard/architect-split.md", "lessons/hard/dont-trust-the-self-exit.md"] },
+    { "Hard" = ["lessons/hard/architect-split.md", "lessons/hard/dont-trust-the-self-exit.md",
+      "lessons/hard/the-gate-is-a-proxy.md"] },
   ] },
   { "The Challenge" = [
     "challenge/index.md",
