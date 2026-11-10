@@ -103,16 +103,30 @@ fails here. Completeness proven:
   route checks still pass - the exact shape the invariant guards. `models.py`
   restores clean.
 
-### 3. Wire the mediated arm into `learn/code/harness.py`
+### 3. Wire the mediated arm into `learn/code/harness.py` — DONE
 
-Add a mediated mode or `--arm mediated` that, per phase: sends the phase prompt,
-runs the matching frozen acceptance test outside the write scope, and on red
-re-dispatches the same phase on the same workspace up to the cap, then advances.
-Restore the acceptance test before each attempt. Record per phase: attempts,
-acceptance failures, hidden-grader result, turns, wall, tool errors and context.
-Keep `--repeat`, `--deadline`, `--arm` and scoring working; never copy the hidden
-grader in during the run. Shaped like the medium one-pass verify rig; reuse
-`mellum-verify.ts` where it fits rather than a second loop.
+`--mediate` with `--acceptance PHASE:PATH` (repeatable) and `--verify-max N`
+(default 5), layered on `--arm worker` so mediation is the only change from the
+Baseline Worker. Per gated phase the harness runs the frozen acceptance test
+(`run_acceptance`) from its canonical path outside the workspace, and while red
+re-dispatches the same phase on the same workspace with the failing test names
+(`corrective_prompt`), up to the cap. The test is also dropped into the
+workspace under `acceptance/` before the pristine snapshot, so the worker can
+read and run it (and `grade()` excludes that dir); the gate always runs the
+canonical copy, so editing the visible one cannot weaken it. The hidden grader
+is untouched. Each phase's attempts, pass and remaining failures land in
+`run/acceptance.json`, and `run.json` carries `mediated` and `acceptance`.
+`--repeat`, `--deadline`, `--arm` and scoring keep working.
+
+Test-first (`learn/code/tests/test_harness.py`, shown red first): `parse_failing`
+reads both pytest summary formats; `corrective_prompt` names the checks and
+protects the test; `parse_acceptance_map` pairs phase and path; `run_acceptance`
+reports green and red against a real workspace; and a fake-pi that fails then
+passes drives the full re-dispatch loop, asserting `acceptance.json` records two
+attempts, a pass, and the visible copy. 155 learn/code tests pass, 717 node.
+
+Open recording refinement for the measure step: fold per-phase turns and wall
+into `acceptance.json` (the whole-run turns and wall are already in `run.json`).
 
 ### 4. Measure — the real check
 

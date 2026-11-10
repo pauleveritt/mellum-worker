@@ -1293,3 +1293,68 @@ def test_a_killed_harness_takes_its_sessions_processes_with_it(tmp_path):
         holder.kill()
         if marker.exists():
             harness.kill_tree(int(marker.read_text()))
+
+
+# ---- the mediated acceptance-test arm (upstream #5) -----------------------
+def test_parse_failing_reads_both_pytest_summary_formats():
+    short = ("FAILED acceptance/test_phase1.py::test_lang - AssertionError\n"
+             "FAILED acceptance/test_phase1.py::test_favicon - AssertionError\n")
+    verbose = "acceptance/test_phase4.py::test_ids FAILED\n"
+    assert harness.parse_failing(short) == ["test_lang", "test_favicon"]
+    assert harness.parse_failing(verbose) == ["test_ids"]
+    assert harness.parse_failing("3 passed\n") == []
+
+
+def test_corrective_prompt_names_the_failing_checks_and_protects_the_test():
+    msg = harness.corrective_prompt(["test_lang", "test_ids"])
+    assert "test_lang" in msg and "test_ids" in msg
+    assert "without editing or weakening the test" in msg
+
+
+def test_parse_acceptance_map_pairs_phase_index_and_absolute_path(tmp_path):
+    t = tmp_path / "test_phase1.py"
+    t.write_text("def test_x():\n    assert True\n")
+    mapping = harness.parse_acceptance_map([f"1:{t}", f"4:{t}"])
+    assert set(mapping) == {1, 4}
+    assert mapping[1].is_absolute()
+
+
+def test_run_acceptance_reports_green_and_red(tmp_path):
+    workspace = tmp_path / "ws"
+    workspace.mkdir()
+    (workspace / "add.py").write_text("def add(a, b):\n    return a + b\n")
+    test = tmp_path / "accept.py"
+    test.write_text("from add import add\n\ndef test_sum():\n    assert add(2, 3) == 5\n")
+    pytest_cmd = [sys.executable, "-m", "pytest"]
+    assert harness.run_acceptance(test, workspace, pytest_cmd) == (True, [])
+    (workspace / "add.py").write_text("def add(a, b):\n    return a + b + 1\n")
+    passed, failing = harness.run_acceptance(test, workspace, pytest_cmd)
+    assert passed is False and failing == ["test_sum"]
+
+
+def test_mediate_reruns_the_phase_until_the_acceptance_test_passes(tmp_path):
+    suite_dir = tmp_path / "suites" / "seeded"
+    (suite_dir / "base").mkdir(parents=True)
+    (suite_dir / "prompts").mkdir()
+    (suite_dir / "prompts" / "01.md").write_text("Write add.py.\n")
+    (suite_dir / "tests").mkdir()
+    (suite_dir / "tests" / "test_add.py").write_text(
+        "from add import add\n\ndef test_add():\n    assert add(2, 3) == 5\n")
+    suite = harness.load_suite(tmp_path / "suites", "seeded")
+    accept = tmp_path / "accept.py"
+    accept.write_text("from add import add\n\ndef test_sum():\n    assert add(2, 3) == 5\n")
+    run_dir = harness.run_suite(
+        suite, runs_dir=tmp_path / "runs", profile=PROFILE,
+        pi_binary=str(FIX / "fake-pi-mediate.sh"),
+        mediate=True, acceptance={1: accept.resolve()}, verify_max=5,
+        pytest_cmd=[sys.executable, "-m", "pytest"],
+    )
+    # the worker's first add() was broken; the gate re-dispatched until green
+    assert "a + b + 1" not in (run_dir / "workspace" / "add.py").read_text()
+    records = json.loads((run_dir / "acceptance.json").read_text())
+    assert len(records) == 1
+    assert records[0]["phase"] == 1
+    assert records[0]["passed"] is True
+    assert records[0]["attempts"] >= 2
+    # the worker sees a copy it can read and run
+    assert (run_dir / "workspace" / "acceptance" / "test_phase1.py").is_file()

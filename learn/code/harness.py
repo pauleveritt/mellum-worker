@@ -621,7 +621,12 @@ def run_suite(
     specs: str | None = None,
     extras: list[Path] = (),
     context_files: bool = False,
+    mediate: bool = False,
+    acceptance: dict[int, Path] | None = None,
+    verify_max: int = 5,
+    pytest_cmd: list[str] | None = None,
 ) -> Path:
+    acceptance = acceptance or {}
     run = new_run(runs_dir, suite.name)
     workspace = run / "workspace"
     workspace.mkdir()
@@ -651,6 +656,15 @@ def run_suite(
                 (workspace / rel).unlink(missing_ok=True)
         prompts = [_read_prompt(path)
                    for path in sorted((variant / "prompts").glob("*.md"))]
+    # The mediated arm drops each phase's acceptance test into the workspace so
+    # the worker can read and run it; it goes in before the pristine snapshot, so
+    # it counts as baseline rather than a worker-added file. The gate still runs
+    # the canonical copy outside the workspace, so editing this one cannot weaken it.
+    accept_dir = workspace / "acceptance"
+    if mediate and acceptance:
+        accept_dir.mkdir(exist_ok=True)
+        for idx, test_path in acceptance.items():
+            shutil.copy2(test_path, accept_dir / f"test_phase{idx}.py")
     pristine = file_hashes(workspace) if suite.layout is not None else None
     prompts = (["\n\n".join(prompts)] if single_prompt else list(prompts))
     (run / "prompt.txt").write_text("\n\n".join(prompts) + "\n")
@@ -676,31 +690,58 @@ def run_suite(
     started = time.monotonic()
     groups: list[int] = []
     leaked: list[dict] = []
+    acceptance_records: list[dict] = []
+
+    def _dispatch(prompt_text: str) -> str | None:
+        """Run one Pi child on the workspace and settle it; returns "deadline" or
+        "stalled" when it was ended early, else None."""
+        remaining = None if deadline is None else deadline - (time.monotonic() - started)
+        if remaining is not None and remaining <= 0:
+            (run / "deadline").write_text("hit\n")
+            return "deadline"
+        argv = pi_argv(
+            pi_binary, run / "profile", recorder, provider, model, prompt_text,
+            extension=settings["extension"],
+            session_id=session_id, session_dir=sessions, extras=extras,
+            context_files=context_files,
+        )
+        try:
+            # No stdin: Pi with -p appends piped stdin to its prompt.
+            child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
+            groups.append(child.pid)
+        except FileNotFoundError:
+            raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
+        return wait_or_stall(child, run, trace, remaining, stall)
+
+    def _gate(idx: int) -> dict:
+        """Run the phase's frozen acceptance test and, while red, re-dispatch the
+        same phase on the same workspace with its failing names, up to verify_max."""
+        canonical = acceptance[idx]
+        passed, failing = run_acceptance(canonical, workspace, pytest_cmd)
+        attempts, ended = 1, None
+        while not passed and attempts <= verify_max:
+            shutil.copy2(canonical, accept_dir / f"test_phase{idx}.py")  # restore the visible copy
+            ended = _dispatch(corrective_prompt(failing))
+            attempts += 1
+            if ended:
+                break
+            passed, failing = run_acceptance(canonical, workspace, pytest_cmd)
+        return {"phase": idx, "test": canonical.name, "attempts": attempts,
+                "passed": passed, "failing": failing, "ended": bool(ended)}
+
     # The sweep runs however the loop ends, including a SIGTERM (main turns it
     # into SystemExit): a stopped run must still end the servers it started.
     try:
-        for prompt in prompts:
-            remaining = None if deadline is None else deadline - (time.monotonic() - started)
-            if remaining is not None and remaining <= 0:
-                (run / "deadline").write_text("hit\n")
-                break
+        for idx, prompt in enumerate(prompts, 1):
             # The spec-derived contract scopes itself to the phase this prompt names.
             env["ACCEPTANCE_PROMPT"] = prompt
-            argv = pi_argv(
-                pi_binary, run / "profile", recorder, provider, model, prompt,
-                extension=settings["extension"],
-                session_id=session_id, session_dir=sessions, extras=extras,
-                context_files=context_files,
-            )
-            try:
-                # No stdin: Pi with -p appends piped stdin to its prompt.
-                child = start_child(argv, cwd=workspace, env=env, stdin=subprocess.DEVNULL)
-                groups.append(child.pid)
-            except FileNotFoundError:
-                raise SystemExit(f"pi not found: {pi_binary}; install Pi before running a suite")
-            ended = wait_or_stall(child, run, trace, remaining, stall)
-            if ended:
+            if _dispatch(prompt):
                 break
+            if mediate and idx in acceptance:
+                record = _gate(idx)
+                acceptance_records.append(record)
+                if record["ended"]:
+                    break
     finally:
         for pgid in groups:
             leaked.extend({"pid": pid, "pgid": pgid, "command": command}
@@ -714,6 +755,8 @@ def run_suite(
             json.dumps(layout_report(workspace, pristine, suite.layout), indent=2) + "\n")
     if grader_touched(run, suite):
         (run / "contaminated").write_text("grader touched\n")
+    if acceptance_records:
+        (run / "acceptance.json").write_text(json.dumps(acceptance_records, indent=2) + "\n")
     return run
 
 
@@ -770,17 +813,19 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
     workspace = Path(workspace)
     (workspace / "pyrefly.toml").write_text(
         'project-includes = [\n    "**/*.py",\n]\n'
-        'project-excludes = [\n    "tests/**",\n]\n')
+        'project-excludes = [\n    "tests/**",\n    "acceptance/**",\n]\n')
     def tool(name: str, *args: str) -> list[str]:
         if (workspace / "pyproject.toml").is_file():
             return ["uv", "run", "--with", name, name, *args]
         return ["uvx", name, *args]
 
     commands = (
-        ("ruff", tool("ruff", "check", "--select", "F,E9", "--extend-exclude", "tests", "--extend-exclude", "grader_tests", ".")),
+        ("ruff", tool("ruff", "check", "--select", "F,E9", "--extend-exclude", "tests",
+                      "--extend-exclude", "grader_tests", "--extend-exclude", "acceptance", ".")),
         ("pyrefly", tool("pyrefly", "check", ".")),
         ("complexipy", tool("complexipy", "--max-complexity-allowed", "10",
-                            "--exclude", "tests", "--exclude", "grader_tests", ".")),
+                            "--exclude", "tests", "--exclude", "grader_tests",
+                            "--exclude", "acceptance", ".")),
     )
     results = []
     for name, command in commands:
@@ -793,6 +838,67 @@ def grade(workspace: Path) -> list[tuple[str, bool, str]]:
                   if line.strip()]
         results.append((name, result.returncode == 0, output[0] if output else ""))
     return results
+
+
+# The mediated acceptance-test arm (upstream #5): after a gated phase settles,
+# run a frozen, spec-derived acceptance test against the workspace and, while it
+# is red, re-dispatch the same phase on the same workspace with its failing test
+# names, up to a cap. The hidden grader stays the oracle and runs once at the end.
+ACCEPTANCE_PYTEST = ["uv", "run", "--offline", "--with", "pytest", "python", "-m", "pytest"]
+
+
+def parse_failing(stdout: str) -> list[str]:
+    """The test function names pytest reported failed, from either the -rfE short
+    summary ("FAILED path::name - ...") or a verbose line ("path::name FAILED").
+    De-duplicated, in order."""
+    names: list[str] = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        match = (re.match(r"FAILED\s+\S+::(\w+)", line)
+                 or re.match(r"\S+::(\w+)\s+FAILED", line))
+        if match and match.group(1) not in names:
+            names.append(match.group(1))
+    return names
+
+
+def run_acceptance(test_path: Path, workspace: Path,
+                   pytest_cmd: list[str] | None = None) -> tuple[bool, list[str]]:
+    """Run a frozen acceptance test against the workspace from the test's own
+    canonical path -- never a copy inside the workspace -- so a worker that edits
+    its visible copy cannot weaken what the gate runs. Returns (passed, failing),
+    failing being the test function names still red (PYTHONPATH is the workspace,
+    so `from app import app` resolves to the worker's build)."""
+    command = [*(pytest_cmd or ACCEPTANCE_PYTEST), str(test_path),
+               "-rfE", "--tb=no", "-q", "-p", "no:cacheprovider"]
+    result = subprocess.run(
+        command, cwd=workspace, capture_output=True, text=True, check=False,
+        encoding="utf-8", errors="replace", env=grade_env(workspace))
+    if result.returncode == 0:
+        return True, []
+    return False, parse_failing(result.stdout + result.stderr) or ["<acceptance test did not run>"]
+
+
+def corrective_prompt(failing: list[str]) -> str:
+    """The re-dispatch message: name the failing acceptance checks, leaving the
+    worker to read the visible test; never reveal the assertions and never ask it
+    to weaken them."""
+    names = ", ".join(failing)
+    return (
+        f"The frozen acceptance test for this phase is still failing: {names}. "
+        "Read the test under acceptance/, make those checks pass without editing "
+        "or weakening the test, and do not change any route or behaviour that "
+        "already passes.")
+
+
+def parse_acceptance_map(items: list[str]) -> dict[int, Path]:
+    """--acceptance PHASE:PATH pairs into {1-based phase index: absolute path}."""
+    mapping: dict[int, Path] = {}
+    for item in items:
+        phase, _, path = item.partition(":")
+        if not path:
+            raise SystemExit(f"--acceptance wants PHASE:PATH, got {item!r}")
+        mapping[int(phase)] = Path(path).resolve()
+    return mapping
 
 
 def qualify(suite: Suite) -> tuple[bool, dict[str, bool]]:
@@ -983,6 +1089,9 @@ def _run_sessions(
     remedies: list[str] = (),
     extras: list[Path] = (),
     context_files: bool = False,
+    mediate: bool = False,
+    acceptance: dict[int, Path] | None = None,
+    verify_max: int = 5,
 ) -> list[tuple]:
     results = []
     for _ in range(repeat):
@@ -990,7 +1099,11 @@ def _run_sessions(
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
-                            context_files=context_files)
+                            context_files=context_files, mediate=mediate,
+                            acceptance=acceptance, verify_max=verify_max)
+        acceptance_file = run_dir / "acceptance.json"
+        acceptance_result = (json.loads(acceptance_file.read_text())
+                             if acceptance_file.is_file() else None)
         grades = grade(run_dir / "workspace") if grade_run else []
         tests_passed, tail, missing, checks_ran = score_details(run_dir, suite)
         failed_checks = len(missing)
@@ -1016,6 +1129,8 @@ def _run_sessions(
             "extensions": extension_record(list(extras)),
             "single_prompt": single_prompt,
             "specs": specs,
+            "mediated": mediate,
+            "acceptance": acceptance_result,
             "strip_thinking": arm_settings(arm)["env"].get("MELLUM_STRIP_THINKING") == "1",
             "machine": machine_label(),
             "deadline": deadline,
@@ -1073,6 +1188,9 @@ def run_suites(
     remedies: list[str] = (),
     extras: list[Path] = (),
     context_files: bool = False,
+    mediate: bool = False,
+    acceptance: dict[int, Path] | None = None,
+    verify_max: int = 5,
 ) -> tuple[int, int]:
     # Run easiest first and hardest last, so a slow hard suite never blocks the
     # quicker ones; unknown suites keep alphabetical order after the known tiers.
@@ -1100,6 +1218,7 @@ def run_suites(
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
             single_prompt=single_prompt, specs=specs, profile=profile, stall=stall,
             remedies=remedies, extras=extras, context_files=context_files,
+            mediate=mediate, acceptance=acceptance, verify_max=verify_max,
         )
         sessions_passed += _print_task(suite, results, repeat)
         sessions_total += len(results)
@@ -1179,6 +1298,14 @@ def build_parser() -> argparse.ArgumentParser:
                           "cold (--no-context-files strips it)")
     run.add_argument("--specs", metavar="VARIANT", default=None, choices=["joined", "split"],
                      help="use the suite's spec variant: one joined roadmap, or one file per phase")
+    run.add_argument("--mediate", action="store_true",
+                     help="run a frozen acceptance test after each gated phase and re-dispatch "
+                          "its failure on the same workspace (upstream #5); needs --acceptance")
+    run.add_argument("--acceptance", action="append", default=[], metavar="PHASE:PATH",
+                     help="a frozen acceptance test for a 1-based phase index, e.g. "
+                          "1:ladder/fixtures/acceptance/test_hard_phase1.py (repeatable)")
+    run.add_argument("--verify-max", type=int, default=5, metavar="N",
+                     help="max corrective re-dispatches per gated phase (default 5)")
     return parser
 
 
@@ -1210,6 +1337,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.repeat < 1:
         parser.error("--repeat must be at least 1")
     remedies, extras = resolve_extras(args.remedy, args.extension)
+    acceptance = parse_acceptance_map(args.acceptance)
+    if args.mediate and not acceptance:
+        parser.error("--mediate needs at least one --acceptance PHASE:PATH")
     args.pi_binary = resolve_pi_binary(args.pi_binary)
     # Pi runs with the workspace as its cwd, so every path handed to it must be absolute.
     args.runs_dir = Path(args.runs_dir).resolve()
@@ -1221,7 +1351,8 @@ def main(argv: list[str] | None = None) -> int:
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
                    single_prompt=args.single_prompt, specs=args.specs,
                    profile=args.profile, stall=args.stall,
-                   remedies=remedies, extras=extras, context_files=args.context_files)
+                   remedies=remedies, extras=extras, context_files=args.context_files,
+                   mediate=args.mediate, acceptance=acceptance, verify_max=args.verify_max)
         return 0
 
     suite = load_suite(args.suites_dir, args.suite)
@@ -1244,6 +1375,7 @@ def main(argv: list[str] | None = None) -> int:
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
         profile=args.profile, stall=args.stall,
         remedies=remedies, extras=extras, context_files=args.context_files,
+        mediate=args.mediate, acceptance=acceptance, verify_max=args.verify_max,
     )
     _print_task(suite, results, args.repeat)
     return 0
