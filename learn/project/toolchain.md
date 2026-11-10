@@ -38,7 +38,7 @@ The profile lives at `learn/code/profile/`. Lessons point Pi at it with
 
 `uv run learn/code/harness.py run --suite easy` (Easy) copies the task into
 `learn/code/.runs/<id>/workspace`, starts a child `pi` with the private
-profile and the recorder in `learn/code/record-pi.mjs`, sends every prompt in
+profile and the recorder in `extensions/mellum-recorder.ts`, sends every prompt in
 `prompts/` (or `task.md`) in one session, then copies the task's tests in and
 scores once. `--repeat N` repeats the session and every line states n. Runs are kept, including failures, and `--dry-run`
 prints the child's argv. The harness's own tests run under `uvx pytest` from

@@ -220,7 +220,7 @@ test("Working With Pi covers the basics and the course's two commands", () => {
   const l = page("getting-started/working-with-pi.md");
   for (const text of ["/quit", "Ctrl+D", "Shift+Enter", "Escape", "read", "bash",
     "edit", "write", "grep", "find", "ls", "Ctrl+O", "pi --continue", "/resume",
-    "/tree", "/fork", "/model", "/trust", ".pi/extensions", "/lesson", "/lesson S0",
+    "/tree", "/fork", "/model", "/trust", ".pi/extensions", "/lesson", "/lesson E1",
     "/remedy on guard/repeat-loops", "/remedy off", "/remedy preset:easy",
     "remedies: N on"])
     assert.ok(l.includes(text), `Working With Pi lacks ${text}`);

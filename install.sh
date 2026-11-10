@@ -240,6 +240,7 @@ if has uv && [[ "$build_llama" == false ]]; then
     echo "[OK] uv and llama-server already exist."
     ensure_node
     ensure_pi
+    use_private_node_for_pi
     ensure_harness
     echo
     llama-server --version

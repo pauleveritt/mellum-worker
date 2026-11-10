@@ -80,7 +80,7 @@ current host. Finding out which combination passes is the point.
 
 When no remedy in the list fixes what you see in the trace, write one:
 
-1. Copy the smallest unit, `remedies/guard/break-repeat-loops.ts`, as a
+1. Copy the smallest unit, `remedies/guard/repeat-loops.ts`, as a
    template. A unit installs one behaviour on one of Pi's hooks and exports a
    `meta` record: the pathology, what it does, its evidence.
 2. Load it into an attempt with `--extension path/to/your-unit.ts`, alone or

@@ -163,7 +163,7 @@ uv run python learn/code/harness.py run --suite easy --arm worker --repeat 3 --g
 
 - One lesson is one Markdown file under `learn/lessons/<tier>/`, with the
   frame above: the Overview box after the opening, the six steps, then Run it
-  yourself and the Key points box last. `tests/lesson-format.test.mjs` checks
+  yourself and the Key points box last. `tests/learn-site.test.mjs` checks
   the frame, the tier, the number and the nav.
   Do not copy a production source file into the lesson; quote the smallest
   real snippet and link to the exact file, commit and line range so the page

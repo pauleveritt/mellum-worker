@@ -97,7 +97,7 @@ plausible for the first time.
 
 ## Open
 
-- Rungs 1–5 have a reference run ([record](../ladder/reference-llamacpp-rungs1-5/README.md)):
+- Rungs 1–5 have a reference run ([record](../../evals/baseline/2026-10-20-reference-llamacpp-rungs1-5/README.md)):
   14/15, one rung-4 failure on the `max_tokens` cap. Rungs 6–9 have not been
   run on llama.cpp, so nothing is comparable to the oMLX numbers yet.
 - A 16 GB machine is untested; 8.38 GB leaves room for macOS but the

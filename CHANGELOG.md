@@ -257,6 +257,21 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **The installer writes the Pi Node wrapper on the already-installed path too.**
+  When `uv` and `llama-server` were already present, `install.sh` took its early
+  exit and never ran `use_private_node_for_pi`, so anyone who already had `uv`
+  got a bare `pi` symlink that failed on an older system Node
+  (`enableCompileCache`). The early-exit branch now calls it after `ensure_pi`,
+  matching the full install path.
+- **Corrected stale file references in the docs.** The remedy-authoring page
+  named `remedies/guard/break-repeat-loops.ts` (now `repeat-loops.ts`), the
+  toolchain page named `learn/code/record-pi.mjs` as the recorder (it is
+  `extensions/mellum-recorder.ts`), the lesson template cited a
+  `tests/lesson-format.test.mjs` that does not exist (the format check is in
+  `tests/learn-site.test.mjs`), the llama.cpp backend page linked a reference run
+  at a path that moved into `evals/baseline/`, and `/lesson S0` pointed at the
+  Start tier removed on 2026-11-01 (the examples now use `/lesson E1`).
+
 - **The `guard/outside-workspace` unit now blocks a bare-root crawl (`find /`).**
   It refused a tree-walk that named an absolute path outside the workspace
   (`grep -rl x /Users /var`) but let a bare `/` through — the broadest reach of

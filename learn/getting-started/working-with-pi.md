@@ -214,7 +214,7 @@ on), **Lesson** (the course), or **Challenge** (the graded run).
 folder with a panel pinned above the prompt. The lesson, step by step, and its
 run results. While the prompt below stays yours. Page the panel with `←`/`→`
 (while the prompt is empty), and run the lesson's arms with `/lesson before` and
-`/lesson after`. `/lesson` with no argument picks a lesson, `/lesson S0` opens
+`/lesson after`. `/lesson` with no argument picks a lesson, `/lesson E1` opens
 one directly, `/lesson read` shows the prose, and `/lesson back` leaves the
 folder. (The findings lessons are being rebuilt. See
 [Lessons](../lessons/index.md).)
