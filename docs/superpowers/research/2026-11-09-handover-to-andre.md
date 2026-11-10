@@ -7,10 +7,14 @@ re-boot, F.1 to F.8, offered item by item. Take what you want and refuse the res
 refusing costs. **What is measured:** the cited run records, deterministic tests and saved-build replays.
 **What is conjecture:** anything about savings, later phases, Medium reliability or Hard.
 
-**Where the code is.** On branch `integration` (F.1–F.7, 25 commits past our common base `33e0b929`) and
-F.8's branch `f8-phase-boundary`, kept as one commit per guarantee so you can pick. **Neither is on a
-remote yet;** you see them only once Paul pushes. A text merge of F.8's branch into your `main` at
-`67f0138f` conflicts in 13 files, mostly docs, the changelog and the remedies pages.
+**Where the code is.** On branch `integration`: F.1–F.8 and R.1a, 27 commits past our common base
+`33e0b929`, with F.8 as one squashed commit (`64999fd2`). **It is not on a remote yet;** you see it only
+once Paul pushes. A text merge of the F.8 tree into your `main` at `67f0138f` conflicts in 13 files,
+mostly docs, the changelog and the remedies pages (counted before R.1a was added).
+
+*Correction, 2026-11-10:* an earlier draft offered F.8's branch `f8-phase-boundary` as one commit per
+guarantee so you could pick. Paul chose to hand over the squash only; that branch is deleted, so take or
+refuse F.8's guarantees by the rows below and their named files.
 
 ### How it fits with your direction
 
