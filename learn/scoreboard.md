@@ -10,7 +10,7 @@ Every Mellum worker run ever measured, split by tier.
 
 ## Overview
 
-220 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
+226 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
 
 ## Top 5
 
@@ -18,7 +18,7 @@ The five best stacks per tier, ranked by pass rate, then fewest turns, then leas
 
 ### Easy
 
-148 runs, 82 passed.
+154 runs, 86 passed.
 
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
@@ -56,6 +56,12 @@ Every run, newest first.
 
 | date | model | stack | result | turns | wall | run |
 |---|---|---|---|---|---|---|
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | fail | 40 | 387s | `20261110T070217Z-easy-14f2da` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 45 | 389s | `20261110T065543Z-easy-80f4b3` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 24 | 90s | `20261110T065410Z-easy-617a94` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 18 | 106s | `20261110T065221Z-easy-5c02d6` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 25 | 167s | `20261110T064931Z-easy-c65cf0` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | fail | 19 | 78s | `20261110T064807Z-easy-6c73fb` |
 | 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 19 | 85s | `20261103T153234Z-easy-f9761c` |
 | 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 24 | 146s | `20261103T135146Z-easy-911e69` |
 | 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 38 | 133s | `20261103T134929Z-easy-53779c` |
