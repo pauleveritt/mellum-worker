@@ -1,84 +1,124 @@
-# Handover to Andre: what the re-boot found, for you to take or refuse
+# Handover to Andre: an index of proposals, to take or refuse one at a time
 
 ## For Andre
 
-**Date:** 2026-11-09, for 2026-11-10. **From:** Paul. **What this is:** everything since the 2026-11-07
-re-boot, F.1 to F.8, offered item by item. Take what you want and refuse the rest; each row says what
-refusing costs. **What is measured:** the cited run records, deterministic tests and saved-build replays.
-**What is conjecture:** anything about savings, later phases, Medium reliability or Hard.
+**Date:** 2026-11-10. **From:** Paul. **What this is:** the index of everything since the 2026-11-07
+re-boot, split into proposals. Each proposal is one issue in your repo, titled `(Group) Proposal title`.
+Take or refuse each one on its own; nothing is meant to merge in one go.
+**What is measured:** the run records, deterministic tests and saved-build replays each issue links.
+**What is conjecture:** savings, later phases, Medium reliability and Hard.
 
 **Where the code is.** Branch `andre-integration` on
-[pauleveritt/mellum-worker](https://github.com/pauleveritt/mellum-worker/tree/andre-integration) (Paul has
-read-only access to yours): F.1–F.8, R.1a, R.1b, the Easy Phase 2–3 screen and the
-[cost rule](2026-11-10-cost-rule.md), past our common base `33e0b929`, with F.8 as one squashed commit
-(`64999fd2`). A text merge of the F.8 tree into your `main` at `67f0138f` conflicts in 13 files,
-mostly docs, the changelog and the remedies pages (counted before R.1a was added).
+[pauleveritt/mellum-worker](https://github.com/pauleveritt/mellum-worker/tree/andre-integration). Paul has
+read-only access to your repo, so the PR from that branch is a **reference copy**, where you can read
+everything together and CI can run. It is not a request to merge.
 
-*Correction, 2026-11-10:* an earlier draft offered F.8's branch `f8-phase-boundary` as one commit per
-guarantee so you could pick. Paul chose to hand over the squash only; that branch is deleted, so take or
-refuse F.8's guarantees by the rows below and their named files.
+**What each issue holds.** A short opening: the problem as you have seen it in your runs, your side of
+it (your commit, unit or note), and ours, with the Pi hook it uses and what that hook guarantees. Below
+that: evidence, what refusing costs, and an agent section. The agent section lets an agent try the
+proposal for you: branch from your `main`, bring over only that issue's files from `andre-integration`
+at a pinned commit, run the tests that prove it, report conflicts with your code, and stop.
 
-### How it fits with your direction
+*Rewritten 2026-11-10 as this index. The earlier version, a table of ten offers with dated updates, is
+at commit `aa885f66`; its content now lives in the issues.*
 
-You and we converged on the same core: an external test re-run at settle, a refusal for commands that
-only start a server, requests as the cost measure, and a compile/import check. The differences are in how
-much is proven: our Easy numbers are n = 32 per arm, preregistered, on repaired suites; your one-pass
-results are n = 2–3 screens with no Vanilla arm, on suites without our corrections. Neither establishes
-the other's claims. Our [review](2026-11-09-phase-worker-review.md) records where we read you differently.
+### Where we agree
 
-### Decisions for you
+We reached the same core from two directions: re-run a test the model did not write before it may stop,
+keep that test out of its sight, stop a server start from hanging the session, count requests as cost,
+and expect a prose rule to land unreliably on a fixed small model. Your preregistered rung-13 run passed
+one pass 3 of 3 at 72, 34 and 24 requests. Its plan arm did not run (it hung on llama.cpp), it has no
+Vanilla arm, and its oracle is not one our grader matrix tested. Both sides found `think-briefly` no help
+on Easy. Where our results differ, a paired run on one stack decides.
 
-| # | Offer | Evidence | Code | If you refuse |
+### What is trusted, and what is advice
+
+The decision about a build is made outside the session: hidden grading on a disposable copy, with the
+suite's own dependencies, which nothing the session writes can change. Everything inside the session,
+including the settle gate, its log and its environment, is advice: it steers the model, and a determined
+session could get around it. This is why Measurement is the first group.
+
+### Proposals
+
+Issue links are added here once filed. "Works alone" is our reading of whether the issue's files run on
+your `main` without the others; each issue's agent section checks it.
+
+**(Measurement): the evals and graders themselves**
+
+| # | Proposal | Problem | Depends on | Works alone? |
 | --- | --- | --- | --- | --- |
-| 1 | **The floor:** Vanilla Pi + recorder; the worker is a command tool; every behaviour is an explicit remedy unit; presets are results, not inputs | F.1 payload check: Pi's four tools, no `delegate`, no nudge | `extensions/mellum-worker.ts`, `remedies/` | Presets keep bundled units no run has credited |
-| 2 | **Trusted grading:** hidden checks on a disposable copy with the suite's own dependencies; supplied-test integrity; versioned graders | F.4/F.7 [matrix](2026-11-09-f7-qualify-acceptance.md): ours rejects 33/33 Medium defects and passes 10/10 valid builds; your `test_medium.py` 11/6, your `67f0138f` grader 2/9 | `learn/code/grading.py`, `grader_history.py` | A build can pass on its own config or an edited supplied test: all five hidden-full, non-strict Base attempts changed the supplied test, and four still passed the project's own pytest |
-| 3 | **Enforced budgets and host cards:** requests and charged output stopped at a proxy; a run counts only with a passing host card | F.5 [note](2026-11-07-f5-run-trust.md) | `learn/code/budget-proxy.mjs`, `conformance.py` | Cost is reported, not bounded; host differences go unrecorded |
-| 4 | **The Easy count as the reference result:** Base (bounded commands + settle re-run) 25/32 strict vs Vanilla 2/32, but 4.47× the median output tokens against a 3× rule, so presets stay empty | [count](2026-11-09-easy-count-result.md) | `evals/2026-11-08-easy-final-count/` | Your Easy guidance (6/6 on four checks) stands alone; it cannot replace a thirteen-check count |
-| 5 | **Medium diagnosis:** two real causes, not four missing features; the status label false failure fixed, the cross-path ID check added; the original grader kept as `--grader 658bbea5` | [F.7](2026-11-09-f7-qualify-acceptance.md); retained Base r02/r03 replays | `learn/code/suites/medium/` | Medium results stay confounded by a grader defect |
-| 6 | **Settle gate fixes,** applicable to your `mellum-verify`: a bounded run (yours uses `execSync` with no timeout), earlier gates' entries kept (yours replaces them), green only when every expected test passed (yours reads exit 0 as green), and the last repair after the cap checked | F.8 tests; read on your `main` at `67f0138f` | `remedies/gate-run.ts`, `remedies/mediated-test.ts`, `extensions/bounded.ts` | A hung test stalls settle; a project's own pytest or a skip can read green |
-| 7 | **Handover closed:** acceptance tests reach the session as copies it deletes before the first turn, and no path stays in the environment | F.8 tests; R.1 found one path-heuristic contamination flag | `remedies/mediated-test.ts`, `learn/code/harness.py` | The settle-only arm is not hidden; a command can read the test it should not see |
-| 8 | **`guard/supplied-tests`** (explicit, in no preset): supplied tests cannot be edited and are restored after any command that changes them | Every hidden-full, non-strict Base attempt changed the supplied test; **the unit itself is unmeasured** | `remedies/guard/supplied-tests.ts` | Nothing, until a run measures it |
-| 9 | **The bash bound holds at 120 s** under any configuration | [stall census](2026-11-09-phase-worker-review/stalls.md): bounded 0/122 stalls; F.8 fixed the configured-default bypass | `remedies/tool/bounded-commands.ts` | `MELLUM_BOUND_SECONDS=300` reopens the stall the cap was added for |
-| 10 | **One phase at a time:** `--phase N` grades phases 1..N on whatever the session left; accepted = strict pass + every mediated test; only accepted work becomes a checkpoint, and the next phase starts only from a verified one | F.8 tests; Easy `base-r02` accepted offline as a Phase-1 checkpoint; [R.1a](2026-11-09-r1a-easy-phase2.md) accepted Easy Phase 2 from it, n = 1 | `learn/code/phase_boundary.py` | Phases advance on the model's word or an exhausted send-back cap |
+| 1 | Single-source suites | Prompts and specs said a phase twice and disagreed; one prompt cued an import | none | partly: needs `--specs` in `harness.py` |
+| 2 | Hidden grading on a disposable copy | A build can pass on its own pytest config or an edited supplied test | none | partly: `grading.py` and its call in `harness.py` |
+| 3 | Graders qualified against witness builds, with versions | A grader can pass a known defect or fail a valid build | 2 | no |
+| 4 | Medium grader corrections | A captioned status fails, and direct and route ids are never checked together | 2, 3 | yes: grader files |
+| 5 | Easy at thirteen checks, and in four phases | Four checks leave most of Phase 1 ungraded | 2, 3 | no |
+| 6 | Honest budget fields in `run.json` | Wall time came from the trace, and turns equalled requests | none | partly: `harness.py` |
 
-### What a merge would change for you
+**(Run trust): runs we can count**
 
-- **Your presets would empty.** Your `easy` and `medium` presets list three prompts and
-  `guard/foreground-server`; ours are `[]` because no unit beat Vanilla within its budget. Keep yours
-  under another name if you want them.
-- **Your `--mode plan` is untested against F.1's removal of the delegate tool.** Check it before merging.
-- **Your recent docs pass** (British spelling, no em-dashes, the lessons) touches the same pages ours do;
-  most of the 13 conflicts are there.
+| # | Proposal | Problem | Depends on | Works alone? |
+| --- | --- | --- | --- | --- |
+| 7 | Budgets enforced at a proxy | Cost is reported after the fact, not bounded | 6 | partly: `budget-proxy.mjs` and harness flags |
+| 8 | Host cards and clean runs | A run on a drifted server, a shared venv or a leftover port-8000 server still counts | none | partly: `conformance.py` and harness |
+| 9 | Counted runs on a rented pod | Long batches tie up one Mac | 7, 8 | no |
+| 10 | The cost rule for phase work | A multiple of Vanilla's cost moves with an arm that rarely finishes | 7, 20 | yes: a decision |
 
-### What is trusted, and what is only advice
+**(Architecture)**
 
-The handed acceptance tests are closed: deleted at load, with their path gone from later commands. The
-in-session gate, its log and its environment are advice: a determined session could forge the log or
-plant code in the gate's environment. Only the boundary is trusted: grading on a disposable copy with the
-suite's own dependencies decides acceptance and checkpoints, and nothing the session writes changes it.
+| # | Proposal | Problem | Depends on | Works alone? |
+| --- | --- | --- | --- | --- |
+| 11 | The floor: no default `delegate` tool or nudge | A unit's effect cannot be credited when the worker bundles behaviour | none | yes, but check `--mode plan` |
+| 12 | Presets are results | Presets list units no counted run has credited | 11 | yes, but empties your presets |
+| 13 | Prompt fragments once per task | A fragment appended to every user message repeats with each prompt and never shows in the session history | none | partly: `mellum-task.ts`, `task-prompt.ts` |
+| 14 | Remove the dead extensions | Extensions outside the floor that nothing loads still carry code and tests | none | yes, after checking nothing of yours loads them |
+
+**(Stalls)**
+
+| # | Proposal | Problem | Depends on | Works alone? |
+| --- | --- | --- | --- | --- |
+| 15 | Bound every bash call with Pi's own timeout | A server started in the foreground hangs the session to its cutoff | none | yes: one file |
+
+Your side of 15 is `guard/foreground-server` and `guard/no-live-server`, and the issue sets them side by side.
+
+**(Acceptance tests): what decides "done"**
+
+| # | Proposal | Problem | Depends on | Works alone? |
+| --- | --- | --- | --- | --- |
+| 16 | Re-run a held-out test at settle | The model stops on its own word, with a test it wrote | 1, 2, 8 | no |
+| 17 | Gate-runner fixes, for your `mellum-verify` too | A hung test stalls settle, a later gate's message replaces an earlier one, exit 0 reads green | 15 (`bounded.ts`) | yes, with `bounded.ts` |
+| 18 | Keep the held-out test hidden | Feedback named the test's path, and sessions went looking for it | 16 | no |
+| 19 | `guard/supplied-tests` (a lead) | A session edits the supplied test until it passes | none | partly: restore per prompt needs harness |
+
+**(Phase work)**
+
+| # | Proposal | Problem | Depends on | Works alone? |
+| --- | --- | --- | --- | --- |
+| 20 | One phase at a time, from verified checkpoints | Phases advance on the model's word or an exhausted send-back cap | 2, 5, 16 | no |
 
 ### What we do not claim
 
-- No acceptance rate or saving from F.8: its guarantees are proven by unit and replay tests only.
-- A phase-acceptance rate. [R.1a](2026-11-09-r1a-easy-phase2.md) ran once, after F.8: Base as counted, on the Mac, built
-  Easy Phase 2 from the `base-r02` checkpoint and was accepted with 97 requests and 47,860 charged output
-  tokens. That shows it can happen, not how often.
-- Linux cleanup of leftover session processes is unexercised; it reaches CI only if CI runs on the pushed branch.
-- One known hidden-grader false failure (an exact `Complaints Board` heading) applies to Easy Phase 2.
+- No rate from a screen: the overnight Easy Phase 2–3 screen, R.1a and the F.6 settle-plus-bound
+  screen are leads (16, 20).
+- No acceptance rate or saving from the phase boundary's guarantees; they are unit and replay tested (17, 18, 20).
+- `guard/supplied-tests` is unmeasured (19). Linux cleanup of leftover session processes is unexercised (8).
+- The grader matrix counts describe the witness builds we chose, not defect rates; your `test_medium.py`
+  is a visible test written for your stack (3).
 
 ## Ladder run
 
-No new run for this handover. Each claim links its record: the counted Easy run, the F.6 screens, the
-F.7 matrix and F.8's tests. Where your results and ours differ, a paired run on one stack decides.
+No run was made for this index. Each issue links the records behind it.
 
 ## Persuasion → enforcement
 
-Everything offered above is enforcement: a Pi hook (`tool_call`, `tool_result`, `agent_before_settle`) or
-the harness outside Pi (budget proxy, trusted grading, checkpoints). No prompt text is offered; the one
-prompt-shaped change is failure feedback that reports facts.
+The proposals are enforcement: a Pi hook (`tool_call` in 15; `tool_call` and `tool_result` in 19;
+`agent_before_settle` in 16 and 17) or the harness outside Pi (1–9, 18, 20). Proposal 13 changes how
+prompt text is delivered (the `context` hook), not what it says. 10 and 12 are decisions. No prompt text
+is offered; the one prompt-shaped change is failure feedback that reports facts (17).
 
 ## What would falsify this / Risks
 
-A paired run on your stack that shows your one-pass setup passing our thirteen-check Easy grade at lower
-cost would overturn row 4's reading. A valid build that our grading rejects needs a dated correction;
-the Phase-2 heading is the known candidate. The conflict count is a text merge only; nothing was run merged.
+- A paired run on your stack that passes our thirteen-check Easy grade at lower cost would change the
+  Architecture and Acceptance readings.
+- A valid build that our grading rejects needs a dated correction. One is known: an exact
+  `Complaints Board` heading on Easy Phase 2 (5).
+- "Works alone" is a reading of imports, not a run on your `main`.
