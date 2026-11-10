@@ -1,0 +1,95 @@
+{
+  "suite": "easy",
+  "phase": 2,
+  "grader": {
+    "revision": "f7-roadmap",
+    "assertion_digest": "adaa8d281cf15f66fe59b144f8bf88feabce87faebb993874458d34848f6a42d",
+    "execution_policy": "trusted-copy-v1",
+    "phase": 2
+  },
+  "commit": "352c06df0dcf6f46b1e7def224444bd6746ccaa1",
+  "files": {
+    ".gitignore": "cf0e6f2f9a41fc2d3afb6c1a2120e3be5f0d41117b8e616f4363ca5b8f92c9c7",
+    "AGENTS.md": "901f5ebea2f0354e416afdb43fdb1e9f4fcb6c08a5d28cce8a1997cbc9a72c1a",
+    "app.py": "5c7162d0c6e91daf160a7b03de87946aecd96fa862800752201af0e7b3156f30",
+    "check.py": "fa6f9882fb15d58e89aa0498dd86950cc9d65e284f03284e6e589523f43a1f27",
+    "check_alice_card.py": "a167d59ce2386262fbd3cb5c2377936f4af499fb7d617b4d78ff9ebfe6266694",
+    "check_complaints.py": "c7bbc81020cf327b82eadff42263b0c7bc178f123e3a6c5931dda29fc7bc46cb",
+    "check_date_format.py": "d6abfa397a4e0b1b8f390875b5a568121dfbda4c6f6780ccbb5cda487c62c0d2",
+    "dump_complaints.py": "53b35f498f75fa3d3d88aa71334374492590698e61bda2194b7b454ca7e5ca54",
+    "extract_bob_card.py": "803c3c56cb77980727350f3768bd18597ea30c9451ead6752c658a3ac0cbe114",
+    "find_alice.py": "11824f945f2e6e931ebc16f77241ebf0cd0224176647f806ca188ad27791a9ac",
+    "find_bob.py": "202733dcaef7949daf9a5b480b74529e0ad2b155df6fba90b8f921cf6db190f5",
+    "inspect_complaints.py": "1feb39945e4d4e23a5311bec0cc13a880a1ab6a080bf5948f8ad1913860c74be",
+    "inspect_models.py": "91a045ecf7d0c9a03b34b32a9d2ca9112cc776d5513a8e18730fbbd5ccdf36ac",
+    "models.py": "62f730e54b5d2b0681fa0474412947ddf732c0beb65b54c5bb05e11791d88f8a",
+    "pyproject.toml": "98192982422deb78dcf6cdff25f08c1a06d57e6835d4991c8307e594d7924191",
+    "search_bob_context.py": "8d9bf97e071ff25e01778f033423ed075d2b76cbf799fd3b58d6ab79ec89c293",
+    "specs/mission.md": "df464c1f7801e38994ebc30a9e01cbc839fe7ff71c422b7c7b83a6c113a9e6fc",
+    "specs/roadmap.md": "8eb10956c85367a0ca00b7ea4db8a470e021aeaea3a37bde725ea0d6127e4da9",
+    "specs/tech-stack.md": "321ee9a48f521ad876e18599f883a539ba538c7f1e567e77871427454f0372cd",
+    "templates/base.html": "382a2f9041a3c31e0856b4ee79b0bd509e6b6d9efe165ac736c83f9be29c42c8",
+    "templates/complaints.html": "71b42b56c0738454171a52a2c9c2d94bd4c3b8f594e2eb6432a62ce40138488c",
+    "templates/home.html": "cb8f746601fb0a9f27d27c5582f0fde678f31b8cf3b9eef5152f70615ec6b60c",
+    "tests/test_home.py": "1c7385dcce5525765a7ed10084cd6a1b71726deaf928963701cc0e414dc2f0be",
+    "uv.lock": "274911a1323518019f7fb18c37d79651bc7fe8eb075fe492ebdd5169eac3b884"
+  },
+  "boundary": {
+    "phase": 2,
+    "ending": "settled",
+    "gate": {
+      "armed": true,
+      "last": "green",
+      "verdicts": 6,
+      "verified": true
+    },
+    "hidden_passed": true,
+    "project_passed": true,
+    "integrity_ok": true,
+    "quality_ok": true,
+    "contaminated": false,
+    "record_failures": [],
+    "mediated": {
+      "ran": true,
+      "passed": true,
+      "expected": [
+        "test_01_home.py::test_app_py_holds_the_fastapi_application_as_app",
+        "test_01_home.py::test_home_answers_200_with_the_tagline_word_for_word",
+        "test_01_home.py::test_home_starts_with_the_doctype_and_html_lang_en",
+        "test_01_home.py::test_the_navbar_shows_the_brand_and_links_home_and_complaints",
+        "test_01_home.py::test_home_is_rendered_from_home_html_which_extends_base_html",
+        "test_01_home.py::test_the_head_has_a_responsive_viewport",
+        "test_01_home.py::test_the_head_has_the_bootstrap_5_css_from_a_cdn",
+        "test_01_home.py::test_the_head_has_the_favicon",
+        "test_01_home.py::test_the_bootstrap_5_js_bundle_from_a_cdn_is_the_last_thing_in_the_body",
+        "test_01_home.py::test_a_page_title_is_agentclinic_by_default",
+        "test_01_home.py::test_a_page_that_extends_the_layout_can_set_its_own_title",
+        "test_01_home.py::test_the_home_page_has_a_hero_section_holding_the_tagline",
+        "test_01_home.py::test_the_home_page_has_a_short_welcoming_paragraph",
+        "test_01_home.py::test_app_py_starts_uvicorn_with_reload_from_a_main_block",
+        "test_01_home.py::test_running_app_py_keeps_serving_home_until_it_is_stopped",
+        "test_01_home.py::test_the_projects_own_tests_pass",
+        "test_02_board.py::test_board_answers_200_with_its_heading",
+        "test_02_board.py::test_board_keeps_the_shared_layout",
+        "test_02_board.py::test_complaint_constructs_positionally_with_its_own_aware_timestamp",
+        "test_02_board.py::test_the_seed_is_a_module_level_list_of_three_to_five_with_scope_creep",
+        "test_02_board.py::test_each_complaint_is_one_card_with_its_name_text_and_date",
+        "test_02_board.py::test_a_complaints_timestamp_is_utc"
+      ],
+      "missing": [],
+      "files": [
+        {
+          "name": "test_01_home.py",
+          "sha256": "cd57eff2ce73563b7a6f56f5af383e3a141c5d43cca6b0f2ab6b2065801d9724"
+        },
+        {
+          "name": "test_02_board.py",
+          "sha256": "b6b296c30886262ab8f6f1aa6f190d5abe51254834bd576a5b5cdced52bd91d2"
+        }
+      ]
+    },
+    "strict": true,
+    "accepted": true,
+    "reasons": []
+  }
+}

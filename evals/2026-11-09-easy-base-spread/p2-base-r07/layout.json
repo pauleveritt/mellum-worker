@@ -1,0 +1,15 @@
+{
+  "created": [
+    "models.py",
+    "templates/complaints.html",
+    "tests/test_complaints.py"
+  ],
+  "modified": [
+    "AGENTS.md",
+    "app.py"
+  ],
+  "deleted": [],
+  "out_of_layout": [
+    "AGENTS.md"
+  ]
+}

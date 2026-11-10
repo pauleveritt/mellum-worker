@@ -1,0 +1,22 @@
+{
+  "created": [
+    "check.py",
+    "check_alice_card.py",
+    "check_complaints.py",
+    "check_date_format.py",
+    "dump_complaints.py",
+    "extract_bob_card.py",
+    "find_alice.py",
+    "find_bob.py",
+    "inspect_complaints.py",
+    "inspect_models.py",
+    "models.py",
+    "search_bob_context.py",
+    "templates/complaints.html"
+  ],
+  "modified": [
+    "app.py"
+  ],
+  "deleted": [],
+  "out_of_layout": []
+}

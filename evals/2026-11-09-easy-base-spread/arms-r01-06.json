@@ -1,0 +1,5 @@
+{
+  "p2-base": ["--arm", "vanilla", "--remedy", "tool/bounded-commands,check/mediated-test-settle", "--grader", "f7-roadmap", "--phase", "2", "--from-checkpoint", "/Users/pauleveritt/mellum-runs/f8/easy-phase1-base-r02"],
+  "p3-base": ["--arm", "vanilla", "--remedy", "tool/bounded-commands,check/mediated-test-settle", "--grader", "f7-roadmap", "--phase", "3", "--from-checkpoint", "/Users/pauleveritt/mellum-runs/r1a/20261109T233322Z-easy-d516e3/checkpoint"],
+  "p2-vanilla": ["--arm", "vanilla", "--grader", "f7-roadmap", "--phase", "2", "--from-checkpoint", "/Users/pauleveritt/mellum-runs/f8/easy-phase1-base-r02"]
+}
