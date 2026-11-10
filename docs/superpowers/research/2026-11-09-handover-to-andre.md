@@ -7,9 +7,11 @@ re-boot, F.1 to F.8, offered item by item. Take what you want and refuse the res
 refusing costs. **What is measured:** the cited run records, deterministic tests and saved-build replays.
 **What is conjecture:** anything about savings, later phases, Medium reliability or Hard.
 
-**Where the code is.** On branch `integration`: F.1–F.8 and R.1a, 27 commits past our common base
-`33e0b929`, with F.8 as one squashed commit (`64999fd2`). **It is not on a remote yet;** you see it only
-once Paul pushes. A text merge of the F.8 tree into your `main` at `67f0138f` conflicts in 13 files,
+**Where the code is.** Branch `andre-integration` on
+[pauleveritt/mellum-worker](https://github.com/pauleveritt/mellum-worker/tree/andre-integration) (Paul has
+read-only access to yours): F.1–F.8, R.1a, R.1b, the Easy Phase 2–3 screen and the
+[cost rule](2026-11-10-cost-rule.md), past our common base `33e0b929`, with F.8 as one squashed commit
+(`64999fd2`). A text merge of the F.8 tree into your `main` at `67f0138f` conflicts in 13 files,
 mostly docs, the changelog and the remedies pages (counted before R.1a was added).
 
 *Correction, 2026-11-10:* an earlier draft offered F.8's branch `f8-phase-boundary` as one commit per
@@ -61,7 +63,7 @@ suite's own dependencies decides acceptance and checkpoints, and nothing the ses
 - A phase-acceptance rate. [R.1a](2026-11-09-r1a-easy-phase2.md) ran once, after F.8: Base as counted, on the Mac, built
   Easy Phase 2 from the `base-r02` checkpoint and was accepted with 97 requests and 47,860 charged output
   tokens. That shows it can happen, not how often.
-- Linux cleanup of leftover session processes is unexercised; it reaches CI only when the branch is pushed.
+- Linux cleanup of leftover session processes is unexercised; it reaches CI only if CI runs on the pushed branch.
 - One known hidden-grader false failure (an exact `Complaints Board` heading) applies to Easy Phase 2.
 
 ## Ladder run
