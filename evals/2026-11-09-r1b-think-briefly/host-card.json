@@ -1,0 +1,151 @@
+{
+  "schema": "mellum-host-card/1",
+  "passed": true,
+  "pins_digest": "1124746b9aeefc6343b008787867a0138f552678eb4cb0ca7b06c811951816fa",
+  "pins_file": "pins.json",
+  "items": {
+    "identity": {
+      "passed": true,
+      "detail": {
+        "problems": [],
+        "build_info": "b12110-cd959bae9",
+        "chat_template_sha256": "4593a34d52f3364ac13ce57f4bea5688924e8942da6df8201e411db17e729f48"
+      }
+    },
+    "capacity": {
+      "passed": true,
+      "detail": [
+        {
+          "slot": 0,
+          "status": 200,
+          "prompt_tokens": 42658
+        },
+        {
+          "slot": 1,
+          "status": 200,
+          "prompt_tokens": 42658
+        }
+      ]
+    },
+    "protocol": {
+      "passed": true,
+      "detail": {
+        "tool_call": true,
+        "reasoning_split": true,
+        "max_tokens_honoured": true
+      }
+    },
+    "throughput": {
+      "passed": true,
+      "detail": {
+        "prompt_per_second": 220.23521120556754,
+        "predicted_per_second": 147.04873194976813
+      }
+    },
+    "stability": {
+      "passed": true,
+      "detail": {
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    "numerics": {
+      "passed": true,
+      "detail": {
+        "gpu": {
+          "perplexity": 16.0085,
+          "chunks": [
+            14.4484,
+            13.1303,
+            14.755,
+            16.0085
+          ]
+        },
+        "cpu": {
+          "perplexity": 15.9176,
+          "chunks": [
+            14.4302,
+            13.129,
+            14.6444,
+            15.9176
+          ]
+        },
+        "relative_drift": 0.005711,
+        "tolerance": 0.01
+      }
+    },
+    "tooling": {
+      "passed": true,
+      "detail": {
+        "expected": {
+          "pi": "1.4.0",
+          "node": "25.8.1",
+          "uv": "0.11.6"
+        },
+        "found": {
+          "pi": "1.4.0",
+          "node": "25.8.1",
+          "uv": "0.11.6"
+        }
+      }
+    }
+  },
+  "endpoint": "http://127.0.0.1:8001",
+  "build_info": "b12110-cd959bae9",
+  "model_path": "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-layout3/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+  "slots": [
+    50176,
+    50176
+  ],
+  "server_command": [
+    "/opt/homebrew/bin/llama-server",
+    "-m",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-04-local-layout3/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+    "-a",
+    "Mellum2.1-12B-A2.5B-Thinking",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "8001",
+    "-c",
+    "100000",
+    "-np",
+    "2",
+    "--no-kv-unified",
+    "--jinja",
+    "-fa",
+    "on",
+    "--cont-batching",
+    "-t",
+    "16",
+    "-tb",
+    "16",
+    "-b",
+    "512",
+    "-ub",
+    "512",
+    "-ctk",
+    "q8_0",
+    "-ctv",
+    "q8_0",
+    "-ngl",
+    "999",
+    "-lv",
+    "4",
+    "--log-file",
+    "/Users/pauleveritt/projects/pauleveritt/mellum-worker/runs/2026-11-05-start-the-app/server.log"
+  ],
+  "machine": "Apple M5 Max, 128 GiB",
+  "checked_at": "2026-11-10T00:35:12.950458+00:00",
+  "check_seconds": 183.612
+}

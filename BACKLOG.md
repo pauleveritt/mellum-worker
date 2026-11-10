@@ -156,6 +156,10 @@ brief-reasoning candidates come first
 *Reopens when* a corrected, bounded phase trial still shows compaction dominating
 cost after the applicable existing candidates are screened; compare one reset
 policy against corrected Base with identical acceptance and all-attempt costs.
+**2026-11-09 addition:** in the [Easy count](evals/2026-11-08-easy-final-count/table.md),
+all six Base sessions that ended on the token ceiling had 24,549–49,343 tokens
+of their own output; compaction charges took them past 64,000. Compaction was
+23% of charged output there and 11% in R.1a, so the condition is unmet.
 
 **Stall handlers judged on stalls.** Bounded commands recorded 0/122 stalls;
 plain Vanilla 25/130 across reboot batches. These pooled totals are descriptive;

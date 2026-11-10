@@ -159,7 +159,7 @@ test("context/narrow-tools keeps the seven worker tools, as the worker does", as
 
 // Prompt units: each adds a small instruction fragment to the outgoing request and nothing else.
 // name-the-layout is injected once per task instead; see tests/task-prompt.test.mjs.
-for (const name of ["python-developer", "verify-the-spec", "concept-sketch"]) {
+for (const name of ["python-developer", "verify-the-spec", "concept-sketch", "think-briefly"]) {
 	test(`prompt/${name} installs one before_provider_request hook and carries metadata`, async () => {
 		const mod = await import(`../remedies/prompt/${name}.ts`);
 		const pi = fakePi();
@@ -182,6 +182,20 @@ test("prompt/verify-the-spec appends its check to every user message and leaves 
 	assert.deepEqual(out.messages[0], PAYLOAD().messages[0]); // system untouched
 	assert.deepEqual(out.messages[2], PAYLOAD().messages[2]); // assistant untouched
 	assert.deepEqual(out.tools, PAYLOAD().tools); // tools untouched
+});
+
+test("prompt/think-briefly appends its brevity line to every user message and leaves the rest", async () => {
+	const pi = fakePi();
+	(await import("../remedies/prompt/think-briefly.ts")).default(pi);
+	const out = pi.fire("before_provider_request", { payload: PAYLOAD() });
+	for (const m of out.messages.filter((x) => x.role === "user")) {
+		const text = typeof m.content === "string" ? m.content : m.content.map((b) => b.text).join("");
+		assert.match(text, /one short sentence/i, "asks for one short sentence of reasoning");
+	}
+	assert.deepEqual(out.messages[0], PAYLOAD().messages[0]); // system untouched
+	assert.deepEqual(out.messages[2], PAYLOAD().messages[2]); // assistant untouched
+	assert.deepEqual(out.tools, PAYLOAD().tools); // tools untouched
+	assert.equal(pi.fire("before_provider_request", { payload: {} }), undefined); // no messages: no change
 });
 
 // Opt-in units: each re-exports an existing extension unchanged, with the list's metadata.

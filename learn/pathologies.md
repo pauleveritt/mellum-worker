@@ -165,7 +165,9 @@ entries below.
    workspace is no longer the project. **Seen:** the file-set check found
    `main.py` outside the layout twice, and `pyproject.toml` once
    ([run](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson1-run.md),
-   no lesson yet). **Answer:** name the layout in the task and compare the file
+   no lesson yet). 2026-11-09: R.1b, one of six Easy Phase-2 sessions overwrote the
+   project's `AGENTS.md` with one line and was still accepted
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-09-r1b-think-briefly/table.md)). **Answer:** name the layout in the task and compare the file
    set after the run; a guard that confines writes is planned.
 13. **A lost id.** The last phase's identity contract never lands: the field is
     missing, or it is rebuilt from a position that changes when the list does.
@@ -182,6 +184,9 @@ entries below.
     'timestamp'`
     ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-27-prose-brief-run.md),
     [record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)).
+    2026-11-09: R.1b's `brief-r03` kept editing after its fifth send-back and
+    ended on budget with a dataclass field without a default after one with a
+    default, so nothing imported ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-09-r1b-think-briefly/table.md)).
     **Answer:** the test command in the brief and a seeded test give the signal
     on the first turn; the harness now records `checks_ran: false` so a full
     set of missing checks is not read as a full set of failures.
@@ -266,6 +271,10 @@ entries below.
     **Answer:** verification — run the real route or test before finishing;
     `guard/foreground-server` removes the server-start that stands in for a check,
     forcing a different verification, and a verify lever is being measured.
+    2026-11-09: the same wrong means without a shipped defect: three of six Easy
+    Phase-2 sessions in R.1b started `app.py` and curled `localhost`, each start cut
+    at 30 s by `tool/bounded-commands`, then checked in process and were accepted
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/evals/2026-11-09-r1b-think-briefly/table.md)).
 
 ## The measuring instrument goes wrong
 
