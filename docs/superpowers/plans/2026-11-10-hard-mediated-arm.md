@@ -87,15 +87,21 @@ the done reference, to confirm both pass together; that is inherent to the suite
 (the grader is authored against `agentclinic-done`) and is re-confirmed when the
 arm runs.
 
-### 2. Author the phase-4 acceptance test
+### 2. Author the phase-4 acceptance test — DONE
 
 `ladder/fixtures/acceptance/test_hard_phase4.py`, from `prompts/04.md`, a superset
-of `grader/test_phase4_resolve_reopen.py`. This is where the hard misses
-concentrate: the complaint id must be an automatic default on the dataclass, so
-two direct constructions get distinct ids; an id assigned only in the add route
-passes the happy path and fails here. Reuse the Phase-4 assertions proven in
-`test_medium.py`. Same completeness proof: green on done, red on the id-in-route
-miss.
+of `grader/test_phase4_resolve_reopen.py`, reusing the Phase-4 assertions proven
+in `test_medium.py`. This is where the hard misses concentrate: the complaint id
+must be an automatic default on the dataclass, so two direct constructions get
+distinct ids; an id assigned only in the add route passes the happy path and
+fails here. Completeness proven:
+
+- **Green:** all seven pass on `ladder/fixtures/agentclinic-done`.
+- **Red:** replacing the id's auto `default_factory` with a fixed `id: int = 0`
+  (the id-not-auto-on-dataclass miss) turns the two deep-invariant checks red
+  (distinct direct-construction ids, distinct seed ids) while the happy-path
+  route checks still pass - the exact shape the invariant guards. `models.py`
+  restores clean.
 
 ### 3. Wire the mediated arm into `learn/code/harness.py`
 
