@@ -33,7 +33,7 @@ the other's claims. Our [review](2026-11-09-phase-worker-review.md) records wher
 | 7 | **Handover closed:** acceptance tests reach the session as copies it deletes before the first turn, and no path stays in the environment | F.8 tests; R.1 found one path-heuristic contamination flag | `remedies/mediated-test.ts`, `learn/code/harness.py` | The settle-only arm is not hidden; a command can read the test it should not see |
 | 8 | **`guard/supplied-tests`** (explicit, in no preset): supplied tests cannot be edited and are restored after any command that changes them | Every hidden-full, non-strict Base attempt changed the supplied test; **the unit itself is unmeasured** | `remedies/guard/supplied-tests.ts` | Nothing, until a run measures it |
 | 9 | **The bash bound holds at 120 s** under any configuration | [stall census](2026-11-09-phase-worker-review/stalls.md): bounded 0/122 stalls; F.8 fixed the configured-default bypass | `remedies/tool/bounded-commands.ts` | `MELLUM_BOUND_SECONDS=300` reopens the stall the cap was added for |
-| 10 | **One phase at a time:** `--phase N` grades phases 1..N on whatever the session left; accepted = strict pass + every mediated test; only accepted work becomes a checkpoint, and the next phase starts only from a verified one | F.8 tests; Easy `base-r02` accepted offline as a Phase-1 checkpoint | `learn/code/phase_boundary.py` | Phases advance on the model's word or an exhausted send-back cap |
+| 10 | **One phase at a time:** `--phase N` grades phases 1..N on whatever the session left; accepted = strict pass + every mediated test; only accepted work becomes a checkpoint, and the next phase starts only from a verified one | F.8 tests; Easy `base-r02` accepted offline as a Phase-1 checkpoint; [R.1a](2026-11-09-r1a-easy-phase2.md) accepted Easy Phase 2 from it, n = 1 | `learn/code/phase_boundary.py` | Phases advance on the model's word or an exhausted send-back cap |
 
 ### What a merge would change for you
 
@@ -54,7 +54,9 @@ suite's own dependencies decides acceptance and checkpoints, and nothing the ses
 ### What we do not claim
 
 - No acceptance rate or saving from F.8: its guarantees are proven by unit and replay tests only.
-- R.1a, one watched local Easy Phase 2 from the `base-r02` checkpoint, has not run.
+- A phase-acceptance rate. [R.1a](2026-11-09-r1a-easy-phase2.md) ran once, after F.8: Base as counted, on the Mac, built
+  Easy Phase 2 from the `base-r02` checkpoint and was accepted with 97 requests and 47,860 charged output
+  tokens. That shows it can happen, not how often.
 - Linux cleanup of leftover session processes is unexercised; it reaches CI only when the branch is pushed.
 - One known hidden-grader false failure (an exact `Complaints Board` heading) applies to Easy Phase 2.
 
