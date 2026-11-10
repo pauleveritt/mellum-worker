@@ -80,6 +80,11 @@ const SECTIONS = [/^For Andre$/, /^Ladder run$/, /^Persuasion (→|->) enforceme
 const SHAPE_EXEMPT = new Set([
 	"research/2026-11-07-request-metric-and-architect-direct-on-easy.md",
 ]);
+// A longer cap for one note, by Paul's decision (2026-11-10): the handover index carries the
+// point-by-point rejoinder to Andre's summary in one place. The section checks still apply.
+const SHAPE_CAP = {
+	"research/2026-11-09-handover-to-andre.md": 250,
+};
 
 function documentSections(text) {
 	const sections = [];
@@ -107,7 +112,8 @@ test("documents from the re-boot on are short and carry For Andre, Ladder run an
 		if (!existsSync(resolve(ROOT, dir))) continue;
 		for (const f of readdirSync(resolve(ROOT, dir)).filter((f) => f.endsWith(".md") && f.slice(0, 10) >= SHAPE_FROM && !SHAPE_EXEMPT.has(`${kind}/${f}`))) {
 			const text = read(`${dir}/${f}`);
-			assert.ok(lines(text) <= cap, `${kind} ${f} is ${lines(text)} lines (cap ${cap})`);
+			const limit = SHAPE_CAP[`${kind}/${f}`] ?? cap;
+			assert.ok(lines(text) <= limit, `${kind} ${f} is ${lines(text)} lines (cap ${limit})`);
 			const sections = documentSections(text);
 			assert.equal(sections[0]?.title, "For Andre", `${kind} ${f}: first section must be For Andre`);
 			for (const pattern of kind === "plans" ? [...SECTIONS, /^Close$/] : SECTIONS) {
