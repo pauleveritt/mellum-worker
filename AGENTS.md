@@ -109,8 +109,8 @@ and evidence with dated corrections; never edit archived plans.
 - A release is a tag that matches `package.json` and both README install
   lines, with a `CHANGELOG.md` section.
 - **Git discipline.** Each feature cycle is its own branch and worktree, cut from
-  `integration`; inside it, atomic commits (one change, one reason, test shown
-  to fail first). At close the cycle is squash-merged into `integration` and its
+  `andre-integration`; inside it, atomic commits (one change, one reason, test shown
+  to fail first). At close the cycle is squash-merged into `andre-integration` and its
   worktree and branch are removed ([`docs/sdd.md`](docs/sdd.md#branches-and-worktrees)).
   Push only when asked. Tag known-good
   milestones `checkpoint-YYYY-MM-DD-<what>` (never a release tag). The flow

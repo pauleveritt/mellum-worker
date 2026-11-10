@@ -66,12 +66,12 @@ documents and recorded here, not used to bypass a failing check.
 ## Branches and worktrees
 
 - Each feature cycle runs on its own branch, in its own worktree, cut from
-  `integration`. Inside it, commits stay small and atomic (test shown failing
+  `andre-integration`. Inside it, commits stay small and atomic (test shown failing
   first).
-- At close, the cycle is **squash-merged into `integration`** as one commit whose
+- At close, the cycle is **squash-merged into `andre-integration`** as one commit whose
   message names the row, what shipped and what was measured. Then its worktree is
   removed and its branch deleted, so a cycle is reverted as a unit.
-- `integration` collects closed cycles and reaches `main` by pull request. Nothing
+- `andre-integration` (on `pauleveritt/mellum-worker`; Paul has read-only access to Andre's repo) collects closed cycles and reaches `main` by pull request. Nothing
   is pushed without asking.
 
 ## Short documents, three fixed sections
@@ -97,7 +97,7 @@ name, and our documents cite them as input rather than restating them.
 
 Each implementation plan also carries a non-empty `## Close` section. It links
 the [branch/worktree procedure](#branches-and-worktrees) and schedules the squash
-into `integration`, verifies the resulting tree, then removes the cycle worktree
+into `andre-integration`, verifies the resulting tree, then removes the cycle worktree
 and branch. Use the owning tool to clean up a managed worktree, and run cleanup
 from a retained checkout. Keep the main checkout's reference branch untouched.
 
@@ -235,7 +235,7 @@ Before closing a feature cycle or finishing its branch:
    `superseded`, and move it to `docs/superpowers/plans/archive/`.
 6. Run `node --test tests/docs-caps.test.mjs` and `npm test`, and reconcile
    `[Unreleased]` with commits since the latest release tag.
-7. Squash-merge the cycle into `integration` and verify tree equality before
+7. Squash-merge the cycle into `andre-integration` and verify tree equality before
    removing its worktree and branch, following [Branches and worktrees](#branches-and-worktrees).
 
 A feature cycle does not require a release tag to close. When releasing, the

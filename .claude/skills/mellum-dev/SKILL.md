@@ -243,7 +243,7 @@ so they are not dropped:
 
 ## 14. Git discipline (ours and the harness's)
 
-- **One branch and worktree per feature cycle, squash-merged into `integration`**
+- **One branch and worktree per feature cycle, squash-merged into `andre-integration`**
   (§15). Inside the cycle: atomic commits, one change, one reason, test shown to
   fail first. Push only when Paul asks.
 - **Checkpoint tags at known-good milestones** — `checkpoint-YYYY-MM-DD-<what>`,
@@ -274,23 +274,23 @@ The source is [`docs/sdd.md`](../../../docs/sdd.md); `tests/docs-caps.test.mjs` 
 - **Open a cycle:** a roadmap row first, then work in its own worktree:
 
   ```bash
-  git worktree add .claude/worktrees/<cycle> -b <cycle> integration
+  git worktree add .claude/worktrees/<cycle> -b <cycle> andre-integration
   ```
 
   Never switch the main checkout's branch (it holds the old `lc40-thin-worker`, a reference only).
 - **Close a cycle:** `## Result`, plan to `plans/archive/`, Status and `## Now` current, suites
-  green. Then squash onto `integration` without checking it out, and clean up:
+  green. Then squash onto `andre-integration` without checking it out, and clean up:
 
   ```bash
-  git rebase integration          # only if integration moved since the cycle began
+  git rebase andre-integration          # only if andre-integration moved since the cycle began
   git diff --quiet || exit 1      # everything committed
-  C=$(git commit-tree HEAD^{tree} -p integration -F <message-file>)
-  git update-ref refs/heads/integration $C
-  git diff --quiet integration HEAD && echo "trees equal"
+  C=$(git commit-tree HEAD^{tree} -p andre-integration -F <message-file>)
+  git update-ref refs/heads/andre-integration $C
+  git diff --quiet andre-integration HEAD && echo "trees equal"
   git -C <main checkout> worktree remove .claude/worktrees/<cycle>
   git -C <main checkout> branch -D <cycle>
   ```
 
   The squash message names the row, what shipped, what was measured, and lists the cycle's
-  commit subjects (`git log --reverse --format='- %s' integration..HEAD`).
+  commit subjects (`git log --reverse --format='- %s' andre-integration..HEAD`).
 
