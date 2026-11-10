@@ -8,8 +8,8 @@ tangents go to the backlog, never into the current cycle.
 ## Now
 
 **Active:** none; the [2026-11-09 review](docs/superpowers/research/2026-11-09-phase-worker-review.md) records the evidence and replan.
-**Next:** R.1b, one cost candidate; [R.1a](docs/superpowers/research/2026-11-09-r1a-easy-phase2.md) accepted Easy Phase 2, and the [handover](docs/superpowers/research/2026-11-09-handover-to-andre.md) goes to Andre.
-**After:** R.2, the Medium phase workflow.
+**Next:** R.2, the Medium phase workflow, judged by the [cost rule](docs/superpowers/research/2026-11-10-cost-rule.md); Easy Phases 1–3 have accepted Base work ([overnight screen](docs/superpowers/research/2026-11-09-easy-base-spread.md)).
+**After:** Medium's own per-phase ceiling, fixed by the cost rule's anchor before R.2's deciding run.
 **Parked:** R.3 and A.1 until Medium delivers useful accepted phases; other work remains in [`BACKLOG.md`](BACKLOG.md).
 
 ## Direction
@@ -24,7 +24,8 @@ reported beside pass/fail, and budget guardrails are enforced, not requested.
 **2026-11-09 direction:** implement Easy or Medium one requested phase at a
 time, from the last verified checkpoint. Keep our stronger grading and budget
 controls when reconciling Andre's work. Acceptance repairs precede a watched
-local trial; economics count all attempts per accepted phase. The failed Easy
+local trial; economics count all attempts per accepted phase under the
+[cost rule](docs/superpowers/research/2026-11-10-cost-rule.md). The failed Easy
 verdict and empty presets stand. [Decisions and evidence](docs/superpowers/research/2026-11-09-phase-worker-review.md).
 
 ## Feature cycles
@@ -54,7 +55,7 @@ guarantee through a Pi hook comes before another sentence of prompt.
 | --- | --- | --- | --- |
 | **R.1** | Easy remedy units on the M5 Max under F.5's host card and budgets, n ≥ 12, preregistered. The settle fix lands first. First, Base is earned: a stall handler and the layout fragment against plain Vanilla. Then the compile/import check and the mediated test on Base, plain Vanilla kept in the batch. [Carried detail](docs/superpowers/research/2026-11-07-roadmap-resequence.md#what-r1-carries) | Architect mode; a preset inherited from the old worker, or a Base assumed before it is measured; a rate from a screen; numbers from the ladder rig (thinking off) mixed with the harness (thinking on). | closed 2026-11-08 — [plan](docs/superpowers/plans/archive/2026-11-07-r1-easy-remedies.md), [note](docs/superpowers/research/2026-11-07-r1-easy-remedies.md), [overnight](evals/2026-11-07-r1-step-three/table.md). No unit beat Vanilla within budget: `preset:base` and `preset:easy` are `[]`. |
 | **R.1a** | One watched local Easy Phase-2 attempt from a strict-passing Phase-1 checkpoint, with an explicit bounded/settle candidate and qualified cumulative acceptance. Record cost, integrity and the accepted checkpoint under the current Easy budget. | Preset promotion; a whole-roadmap rate; an automatic batch or GPU rental; raising the budget to finish. | closed 2026-11-09 — [note](docs/superpowers/research/2026-11-09-r1a-easy-phase2.md), [record](evals/2026-11-09-r1a-easy-phase2/table.md). Base as counted, local Q4, n = 1: accepted, 97 requests / 47,860 charged output; Phase-2 checkpoint kept. Presence only. |
-| **R.1b** | One cost/interaction candidate screened against corrected Base on the same phase. Andre's no-live-server is first if the spiral recurs; think-briefly is a separate follow-up. Record accepted work, all-attempt cost and tails. | A bundle of changes; fresh-context savings assumed from trace subtraction; retroactive acceptance; default or preset promotion from a screen. | candidate — after R.1a; [economics](docs/superpowers/research/2026-11-09-phase-worker-review.md#economics-and-remedy-choices). Choose the smallest informative screen; no automatic large count. |
+| **R.1b** | One cost/interaction candidate screened against corrected Base on the same phase. Andre's no-live-server is first if the spiral recurs; think-briefly is a separate follow-up. Record accepted work, all-attempt cost and tails. | A bundle of changes; fresh-context savings assumed from trace subtraction; retroactive acceptance; default or preset promotion from a screen. | closed 2026-11-09 — [note](docs/superpowers/research/2026-11-09-r1b-think-briefly.md), [record](evals/2026-11-09-r1b-think-briefly/table.md). think-briefly: 2/3 accepted, no saving per accepted phase (48,059 vs R.1a's 47,860); no count, no preset. |
 | **R.2** | Medium requested one phase at a time, with qualified strict acceptance, cumulative regressions and accepted checkpoints. Diagnose Phase 4 from a known-good Phase 3 if needed, then test the sequence from its own work; comparative claims retain Vanilla. | Crediting seeded success as end-to-end success; transfer from Easy; deleting requirements absent from the hidden grader; architect mode. | candidate — after useful Easy phase work; [review](docs/superpowers/research/2026-11-09-phase-worker-review.md). Supersedes the automatic post-F.6 batch; original n=3 scores stand. |
 | **R.3** | Hard remedy units against their own Vanilla floor, after qualified acceptance and a useful Medium phase workflow. | Transfer of Medium rates; an automatic overnight or larger-rung architecture run. | parked — reopen when R.2 delivers accepted phases within a declared cost ceiling; [review](docs/superpowers/research/2026-11-09-phase-worker-review.md). |
 
