@@ -16,8 +16,14 @@ entirely**. On that held-out phase-4 set the tune generalised:
 | held-out loss | 1.806 | **0.613** |
 | perplexity | 6.08 | **1.85** |
 
-This is teacher-forced loss on winner traces - a strong lead, not a pass-rate. The
-harness pass-rate verdict is pending a servable tuned model (see the note).
+This is teacher-forced loss on winner traces - a proxy, not a pass-rate. **The live
+harness reversed it:** the tuned Q4 lost on both tiers (easy 1/6 vs base 4/6;
+medium 0/18 vs base 16/18). The proxy rewarded predicting winner-trace tokens -
+terseness and early exit - not capability, so this configuration over-specialised
+and does not ship. Full numbers and the lesson in the
+[research note](../../docs/superpowers/research/2026-11-10-mellum-adherence-finetune.md).
+The pipeline, the held-out discipline, and local tuning all stand; gentler settings
+and a larger winner pool are the open corrections.
 
 ## The pipeline
 

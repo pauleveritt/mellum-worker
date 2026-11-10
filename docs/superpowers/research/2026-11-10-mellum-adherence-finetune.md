@@ -164,15 +164,56 @@ requests. The real verdict is a harness run with the adapter (easy/hard suite,
 tuned vs base, scored by the hidden grader on checks-missed and requests). A lead,
 a strong one, not a rate.
 
-**Harness run attempted - blocked on serving, not the tune.** mlx-lm's server does
-Mellum tool-calling (verified by a raw request), and base/tuned share one id via
-`--adapter-path`. But the Pi agent loop against it dies at pathology #9: the model
-stops mid-thinking at `finish=length` with 0 tool calls, because mlx-lm's server
-caps the response far below the profile's 16384 max_tokens (llama.cpp honoured it
-and got easy 4/6 on the same stack). Two ways to unblock, as a focused follow-up:
-(a) make the server honour the high max_tokens, or (b) produce a tuned GGUF and
-use the proven llama.cpp path (needs a non-quantised fuse + convert, since the
-4-bit MLX weights do not convert directly). The pass-rate verdict waits on one.
+## Live harness verdict (measured) - the proxy did not transfer
+
+The held-out loss was a proxy, so we ran the real oracle. The tuned model was
+converted to a servable Q4_K_M GGUF (the conversion is its own note below) and put
+through the shipped harness against the base, same remedies both sides, on
+llama.cpp. The result reverses the proxy:
+
+| easy, n=6, `preset`-lean 3 prompts | passed | median requests | tool calls |
+| --- | --- | --- | --- |
+| base (JetBrains Q4) | **4/6** | 20 | 21, 18, 19, 32, 26, 17 |
+| tuned (DoRA Q4) | **1/6** | 14 | 10, 15, 19, 9, 14, 20 |
+
+| medium, n=1, `preset:medium` | hidden checks | requests | import ran |
+| --- | --- | --- | --- |
+| base | **16/18** | 79 | yes |
+| tuned | **0/18** | 178 | no (broke the import) |
+
+The tune is a broad loss, not a medium-specific one. On easy the tuned model runs
+**fewer** requests and **fewer** tool calls than the base and exits with content
+checks still unmet (`checks_ran` stayed true, so it is not an import break there -
+it just stops short). On medium it broke the import and churned 178 requests, 2.3x
+the base, before giving up. Two failure faces, one cause: the SFT taught the
+**shape** of a winner trace, "stop" included, and the model now stops before the
+task is actually done. The 15% general mix did not hold against 44 correlated
+traces.
+
+**The lesson about the metric.** Teacher-forced next-token loss on winner traces
+rewards predicting winner-trace tokens, which correlates with terseness and an
+early exit - not with capability. A 66% loss drop looked like a win and was a
+regression. The hidden grader is the oracle (AGENTS.md); the proxy is not, and this
+run is why. Record kept; the tune as configured does not ship.
+
+**What this does not kill.** The pipeline, the held-out discipline, and the ability
+to tune on this Mac all stand. The failure is this configuration - rank 32,
+all-attention, 500 iters, 480 traces - over-specialising. Gentler settings (lower
+rank, an earlier checkpoint, a heavier general mix) and a larger, less correlated
+winner pool are the open corrections, each a fresh measured run, not a claim yet.
+
+### Conversion (the serving path that unblocked the verdict)
+
+mlx-lm's own GGUF export rejects the `mellum` type, and its server caps max_tokens
+far below the profile's 16384 (pathology #9 - the agent loop dies mid-thinking at
+`finish=length`). So the tuned adapter was fused and converted for the proven
+llama.cpp path: `mlx_lm.fuse --dequantize` to fp16 HF, then llama.cpp's
+`convert_hf_to_gguf.py`, then `llama-quantize Q4_K_M`. The converter wants
+per-expert `mlp.experts.{0..63}.{proj}` while mlx-lm stores them pre-stacked as
+`mlp.switch_mlp.{proj}` [64, out, in]; `remap_experts.py` slices the stack into
+per-expert tensors - a pure slice, the layout already matches, no transpose. The
+Q4 output is coherent (factorial correct) and tool-calls (`bash("ls")`), so the
+regression above is the tune, not a broken conversion.
 
 ## What would falsify this / risks
 
