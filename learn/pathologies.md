@@ -49,6 +49,9 @@ entries below.
 | 16 | A skipped rule | none. A fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
 | 17 | Ships without running its own code | under test. `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
 | 18 | The live-server spiral | `guard/no-live-server`. Any server start plus a loopback curl, stricter than `guard/foreground-server` |
+| 19 | A clean build that won't exit | none yet. A finish-nudge once the gate goes green is the candidate |
+| 20 | A weak examiner gate | none. The examiner's gate is a proxy; judge by the hidden grade |
+| 21 | Reasoning returned as speech | `context/repair-think-tags`. A serving fault, repaired at the agent |
 
 ## It says it is done and it is not
 
@@ -238,9 +241,52 @@ entries below.
     `TestClient(app, follow_redirects=False)`; with it, 3 of 3 reached the gate
     and passed.
 
+## It will not stop when it is done
+
+19. **A clean build that won't exit.** The worker finishes the job. The build is
+    correct on the hidden grader, every requirement met. And then it will not
+    settle: it idles on, turn after turn, until the stall guard pulls the plug at
+    the tail. Distinct from the live-server spiral (18), which never builds a
+    correct app, and from the cap-and-gate deadlock (11), where a cap and a gate
+    disagree. Here nothing disagrees. The work is done and the worker just will
+    not down tools. **Seen:** the gated one-pass medium run, where a rep reached a
+    clean 18/18 and then idled into the 240 s stall, one blocked start and no curl
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
+    **Answer:** no unit yet. A finish-nudge once the gate goes green, settle now,
+    the test passes, is the candidate, unmeasured.
+
+## A gate that passes a wrong build
+
+20. **A weak examiner gate.** Distinct from a narrowed test (4), where the worker
+    weakens a test to pass it. Here a separate examiner writes the gate in the
+    first place, and writes it too thin. Every phase gate goes green, the worker
+    settles proud, and the hidden grader then fails the build the gates passed.
+    The examiner's test is a proxy for the real grade, and a proxy can be too
+    loose. **Seen:** the flow carried the hard suite through all seven frozen
+    per-phase gates to green, and the hidden grader read `visible=PASS,
+    hidden=FAIL`, 5 of 34 checks red
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-flow-hard-visible-pass-hidden-gap.md)).
+    **Answer:** no unit. Judge by the hidden grade, never the examiner's say-so;
+    a stronger, more exhaustive examiner narrows the gap.
+
+## It is failed by its host
+
+21. **Reasoning returned as speech.** Not the model's fault, like the inert gate
+    (10). The model reasons on its own channel, and the host is meant to hand
+    that reasoning back on a field the agent reads apart from the reply. When the
+    host's parser misses the split, the reasoning comes back as plain text in the
+    reply, so the agent shows it as the answer and feeds it back as a thing the
+    model said. Every turn after reads a little more confused. **Seen:** a LAN
+    vLLM host leaked the reasoning on 236 of 244 turns, against 0 of 136 on a
+    correctly serving host, same model
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-lan-reasoning-leak.md)).
+    **Answer:** `context/repair-think-tags` moves a leaked `<think>` reply back
+    into a thinking block; the real fix is to pin a serving stack that labels the
+    channel right.
+
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4–18 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–21 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
