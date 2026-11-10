@@ -128,14 +128,14 @@ attempts, a pass, and the visible copy. 155 learn/code tests pass, 717 node.
 Open recording refinement for the measure step: fold per-phase turns and wall
 into `acceptance.json` (the whole-run turns and wall are already in `run.json`).
 
-### 4. Measure — the real check
+### 4. Measure — the n=1 screen — DONE (lead)
 
-Hard sanity at **n=1** first (issue #5's acceptance criterion). Only if the n=1
-screen shows a signal, a preregistered n=3 against the Baseline Worker: same
-model, prompt, tools, facts; mediation the only change. Stream it in a Terminal
-tab with `watch_ladder.py` (skill §9). Report full-pass rate, attempts, turns,
-total requests, wall, and the hidden-grader passes, against the 0/3 baseline and
-the architect loop's cost.
+One hard session, worker arm, gates on phases 1 and 4, deadline 3000.
+[The note](../research/2026-11-10-hard-mediated-n1.md): both gates passed first
+try (0 re-dispatch), phases 1-6 all green, only migrations (2/6) and visits
+(1/2) missed, FAIL, hit the deadline at 2956 s / 313 turns. The arm runs end to
+end, but the loop never fired and the misses are in ungated phases, so this does
+not show mediation moving hard. A lead, not a rate.
 
 ### 5. Record and decide
 
