@@ -197,10 +197,36 @@ regression. The hidden grader is the oracle (AGENTS.md); the proxy is not, and t
 run is why. Record kept; the tune as configured does not ship.
 
 **What this does not kill.** The pipeline, the held-out discipline, and the ability
-to tune on this Mac all stand. The failure is this configuration - rank 32,
-all-attention, 500 iters, 480 traces - over-specialising. Gentler settings (lower
-rank, an earlier checkpoint, a heavier general mix) and a larger, less correlated
-winner pool are the open corrections, each a fresh measured run, not a claim yet.
+to tune on this Mac all stand. The failure is the trace-SFT as built. A larger,
+less correlated winner pool with full-length traces is the remaining open
+correction - gentler hyperparameters were tried next and failed (below), so the
+knob is not the fix, the data is.
+
+### Gentler retrain did not rescue it (measured)
+
+The first correction tried was gentler hyperparameters: rank 8 (from 32), dropout
+0.05, 200 iters (from 500), learning rate and data held constant - the minimal
+change that tests whether staying closer to base recovers capability. The nominal
+mix was left as-is, because the compacted set is already ~35% general (compaction
+dropped the long adherence traces and kept the short CodeAlpaca rows), so more
+general data would deepen the terseness, not cure it.
+
+| easy, n=6 | passed | median req | tool calls | import ran |
+| --- | --- | --- | --- | --- |
+| base | 4/6 | 20 | 21, 18, 19, 32, 26, 17 | yes |
+| tuned rank-32 | 1/6 | 14 | 10, 15, 19, 9, 14, 20 | yes (content short) |
+| tuned rank-8 gentle | **0/6** | 6 | 0, 0, 10, 38, 22, 0 | **no, all six** |
+
+Gentler regressed **further**. The adapter is coherent (a factorial probe returns
+120, so the conversion is sound) but agentically broken: three of six runs emit
+**zero tool calls** and stop, one thrashes to 38, and not one produces an importable
+build. Lower capacity did not pull the model back toward base, it collapsed the
+tool-calling format instead. Two live configs now sit far below base (rank-32 1/6,
+rank-8 0/6), so the hyperparameter lever is exhausted. The cause is the data: 44
+correlated traces, compacted to short examples, teach terseness and surface format,
+not the agentic competence the task needs. The open path is a larger, less
+correlated winner pool with full-length traces (a bigger effort, a fresh dataset),
+or dropping trace-SFT as a cost lever. Neither is a claim yet.
 
 ### Conversion (the serving path that unblocked the verdict)
 

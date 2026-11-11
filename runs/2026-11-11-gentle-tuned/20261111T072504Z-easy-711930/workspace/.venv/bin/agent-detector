@@ -1,0 +1,10 @@
+#!/Users/mac/projects/mellum-worker/runs/2026-11-11-gentle-tuned/20261111T072504Z-easy-711930/workspace/.venv/bin/python
+# -*- coding: utf-8 -*-
+import sys
+from agent_detector._cli import main
+if __name__ == "__main__":
+    if sys.argv[0].endswith("-script.pyw"):
+        sys.argv[0] = sys.argv[0][:-11]
+    elif sys.argv[0].endswith(".exe"):
+        sys.argv[0] = sys.argv[0][:-4]
+    sys.exit(main())
