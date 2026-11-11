@@ -22,11 +22,14 @@ medium 0/18 vs base 16/18). The proxy rewarded predicting winner-trace tokens -
 terseness and early exit - not capability, so this configuration over-specialised
 and does not ship. Full numbers and the lesson in the
 [research note](../../docs/superpowers/research/2026-11-10-mellum-adherence-finetune.md).
-The pipeline, the held-out discipline, and local tuning all stand. Gentler
-hyperparameters were then tried (rank 8, 200 iters) and regressed **further** -
-easy 0/6, with zero tool calls on half the runs - so the knob is not the fix. A
-larger, less correlated winner pool with full-length traces is the remaining open
-correction.
+The pipeline, the held-out discipline, and local tuning all stand. Two corrections
+were tried: gentler hyperparameters (rank 8) regressed further (easy 0/6, zero tool
+calls on half the runs), and a full-length data rebuild (rank 16, no compaction)
+**fixed the behaviour collapse but not the pass rate** (easy 1/6, still below base's
+4/6). SFT on the model's own winning traces is self-distillation - it sharpens
+format, it cannot add capability the base lacks. Three screens agree it does not
+beat base; preference optimisation (DPO) is the only lever left that targets
+capability, and the repo's measured wins come from harness remedies.
 
 ## The pipeline
 

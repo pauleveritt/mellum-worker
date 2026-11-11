@@ -197,10 +197,10 @@ regression. The hidden grader is the oracle (AGENTS.md); the proxy is not, and t
 run is why. Record kept; the tune as configured does not ship.
 
 **What this does not kill.** The pipeline, the held-out discipline, and the ability
-to tune on this Mac all stand. The failure is the trace-SFT as built. A larger,
-less correlated winner pool with full-length traces is the remaining open
-correction - gentler hyperparameters were tried next and failed (below), so the
-knob is not the fix, the data is.
+to tune on this Mac all stand. Two corrections were then tried in turn - gentler
+hyperparameters and a full-length data rebuild (both below). The rebuild fixed the
+behaviour but not the pass rate, which points past the data to a self-distillation
+ceiling, not a knob or a dataset size.
 
 ### Gentler retrain did not rescue it (measured)
 
@@ -221,12 +221,49 @@ Gentler regressed **further**. The adapter is coherent (a factorial probe return
 120, so the conversion is sound) but agentically broken: three of six runs emit
 **zero tool calls** and stop, one thrashes to 38, and not one produces an importable
 build. Lower capacity did not pull the model back toward base, it collapsed the
-tool-calling format instead. Two live configs now sit far below base (rank-32 1/6,
-rank-8 0/6), so the hyperparameter lever is exhausted. The cause is the data: 44
-correlated traces, compacted to short examples, teach terseness and surface format,
-not the agentic competence the task needs. The open path is a larger, less
-correlated winner pool with full-length traces (a bigger effort, a fresh dataset),
-or dropping trace-SFT as a cost lever. Neither is a claim yet.
+tool-calling format instead.
+
+### The data defect, and a full-length rebuild (measured)
+
+Reading the builder found the real defect. The length filter in `make_sft.py`
+(`MAX_TOKENS`) was a silent no-op: this tokenizer returns 2 tokens for ANY input
+under `apply_chat_template(tokenize=True)`, so nothing was ever dropped for length.
+Giant file-dump examples (real median 3,815 tokens, p75 13k, max 84k) therefore
+slipped through to `compact.py`, which capped each message at 800 chars. That
+truncated the **reasoning**, not the tool calls (those live in a separate key), so
+the set taught terse, early-exit behaviour; and the survivors skewed to short
+early-turn contexts, since a trace's late "verify and stop" turns carry the biggest
+contexts and were the ones cut.
+
+The v2 rebuild keeps every message whole and **drops** (never truncates) examples
+over a real token budget (measured with `tok.encode`, not the broken path): 510
+full-length adherence examples at <=4096 tokens plus a 10% general mix, rank 16,
+seq 4096, 300 iters.
+
+| easy, n=6 | passed | median req | tool calls | checks_ran |
+| --- | --- | --- | --- | --- |
+| base | 4/6 | 20 | 21,18,19,32,26,17 | all |
+| rank-32 compacted | 1/6 | 14 | 10,15,19,9,14,20 | all |
+| gentle rank-8 compacted | 0/6 | 6 | 0,0,10,38,22,0 | all |
+| v2 full-length rank-16 | 1/6 | 24 | 6,9,46,18,47,29 | 5/6 |
+
+v2 **fixed the behaviour collapse**: median back to 24 requests like base, tool
+calls plentiful, no zero-tool-call exits, two runs cleared every visible check. But
+pass rate stayed **1/6, below base's 4/6**. The compaction defect was real and
+fixing it recovered the symptom, it did not add capability. That isolates the two
+effects: compaction caused the collapse, and clean full-length SFT on 44 correlated
+self-winners still cannot exceed base.
+
+**Why this is a ceiling, not a knob.** SFT on the model's own winning traces is
+self-distillation: it can sharpen format and habit (v2 did) but cannot teach a skill
+the base lacks, because every label is an action the base already took when it won.
+Minting more winners - even diverse ones from the other ladder tasks - draws from
+the same source and faces the same ceiling, for hours of inference. The one lever
+that targets capability rather than imitation is **preference** optimisation (DPO:
+reward the cheap correct path, penalise the long wrong one), which stock mlx-lm does
+not ship (needs `mlx-lm-lora` or a custom loss). Three live screens now agree
+trace-SFT does not beat base; the measured wins in this repo come from harness
+remedies, not model surgery.
 
 ### Conversion (the serving path that unblocked the verdict)
 
