@@ -200,7 +200,8 @@ run is why. Record kept; the tune as configured does not ship.
 to tune on this Mac all stand. Two corrections were then tried in turn - gentler
 hyperparameters and a full-length data rebuild (both below). The rebuild fixed the
 behaviour but not the pass rate, which points past the data to a self-distillation
-ceiling, not a knob or a dataset size.
+ceiling, not a knob or a dataset size. *(Corrected 2026-11-11: the ceiling is
+confounded by a second data defect - see "Correction" below.)*
 
 ### Gentler retrain did not rescue it (measured)
 
@@ -264,6 +265,35 @@ reward the cheap correct path, penalise the long wrong one), which stock mlx-lm 
 not ship (needs `mlx-lm-lora` or a custom loss). Three live screens now agree
 trace-SFT does not beat base; the measured wins in this repo come from harness
 remedies, not model surgery.
+
+**Correction (2026-11-11): the ceiling is a theory, not a finding.** Auditing the
+data for the DPO build found a second defect in `make_sft.py`. The trace's
+`provider_request` payload is already OpenAI-shaped: an assistant turn carries its
+`tool_calls` at message level with `content: None`. `to_openai` only looks for tool
+calls inside content parts, finds none, sees empty text, and drops the turn. So every
+history assistant turn was deleted. Measured on the training files: of the examples
+with tool results in context, **466/466 (v2) and 920/920 (original) contain zero
+assistant tool calls** - each context is a run of tool results with no actions that
+produced them. All three SFT screens trained on that. The measured rows above stand
+(base 4/6 beats every tune), but they no longer separate "SFT cannot add capability"
+from "SFT on malformed contexts teaches the wrong conditional". The self-distillation
+ceiling is a plausible theory; it is not proven by these runs. A fair SFT verdict
+needs the native rebuild below.
+
+The same audit fixed three more things before any DPO run: (1) the native rebuild
+restores each assistant turn from its `message_end` action (reasoning plus native
+`tool_calls`; 52/52 turns align by tool name on a phase-4 winner) and masks only
+assistant tokens; (2) "rejected" is restricted to graded failures - the first DPO set
+had labelled unclean *passes* and ungraded runs as rejected; (3) upstream
+`mlx-lm-lora` 5.10.2 silently ignores `--dpo-cpo-loss-type` (runs sigmoid on summed,
+length-biased scores), truncates over-length pairs, OOMs evaluating 32k sequences, and
+cannot backprop its long-context path through 4-bit weights. The DPO run therefore
+uses its own step (`dpo_native_train.py` in the session scratchpad), reusing
+upstream's loss and chunk iterator. Its chunked backward is checked against an exact
+full-sequence gradient: cosine 0.938 at 512-token chunks, 0.926 at 256 (truncation
+through the KV cache is real but modest). Separately, 4-bit MoE log-probs shift by
+~0.1 nats/token with pass length alone (no cache involved; same length is
+bit-identical), so policy and reference are always scored by the same path.
 
 ### Conversion (the serving path that unblocked the verdict)
 

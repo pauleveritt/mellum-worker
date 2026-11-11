@@ -26,10 +26,14 @@ The pipeline, the held-out discipline, and local tuning all stand. Two correctio
 were tried: gentler hyperparameters (rank 8) regressed further (easy 0/6, zero tool
 calls on half the runs), and a full-length data rebuild (rank 16, no compaction)
 **fixed the behaviour collapse but not the pass rate** (easy 1/6, still below base's
-4/6). SFT on the model's own winning traces is self-distillation - it sharpens
-format, it cannot add capability the base lacks. Three screens agree it does not
-beat base; preference optimisation (DPO) is the only lever left that targets
-capability, and the repo's measured wins come from harness remedies.
+4/6). Three screens agree it does not beat base.
+
+**Correction (2026-11-11):** `make_sft.py` also dropped every history assistant turn
+(the payload keeps `tool_calls` at message level, which `to_openai` never reads), so
+all SFT contexts were tool results with no actions before them - 466/466 v2 examples.
+The "self-distillation ceiling" explanation is therefore a theory, not a finding.
+Details, and the native-format DPO rebuild, in the
+[research note](../../docs/superpowers/research/2026-11-10-mellum-adherence-finetune.md).
 
 ## The pipeline
 
