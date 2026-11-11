@@ -8,6 +8,10 @@ it. **Conjecture:** that the tune actually improves adherence or cuts cost
 without regressing the hidden pass rate. Nothing is trained for real yet. Every
 number below is supply and setup, not a result.
 
+**Update (2026-11-11):** every tune below was trained on Mellum2 and compared with a
+Mellum2.1 baseline. Read the "tune loses" rows with that confound in mind (see
+[the DPO screen](#the-dpo-screen-and-the-base-model-confound-measured-2026-11-11)).
+
 ## Why this exists
 
 A pivot from the harness work: instead of only fixing the worker's failures in
@@ -148,7 +152,7 @@ a plausible-but-wrong answer. Split it:
 A DoRA tune ran: all-attention keys, rank 32, lr 1e-4, 500 iters on 480 compacted
 examples (15% general mix), grad-checkpoint, max-seq 2048. The leaky val curve
 bottomed ~0.06-0.09 (train and valid share the same 44 traces, so it only shows
-the traces were learned). The honest test is the **held-out phase-4 set** - 78
+the traces were learned). The accurate test is the **held-out phase-4 set** - 78
 traces excluded from train and valid entirely:
 
 | | base | tuned |
@@ -288,12 +292,95 @@ had labelled unclean *passes* and ungraded runs as rejected; (3) upstream
 `mlx-lm-lora` 5.10.2 silently ignores `--dpo-cpo-loss-type` (runs sigmoid on summed,
 length-biased scores), truncates over-length pairs, OOMs evaluating 32k sequences, and
 cannot backprop its long-context path through 4-bit weights. The DPO run therefore
-uses its own step (`dpo_native_train.py` in the session scratchpad), reusing
+uses its own step (now [`learn/finetune/dpo_native_train.py`](../../../learn/finetune/dpo_native_train.py)), reusing
 upstream's loss and chunk iterator. Its chunked backward is checked against an exact
 full-sequence gradient: cosine 0.938 at 512-token chunks, 0.926 at 256 (truncation
 through the KV cache is real but modest). Separately, 4-bit MoE log-probs shift by
 ~0.1 nats/token with pass length alone (no cache involved; same length is
 bit-identical), so policy and reference are always scored by the same path.
+
+### The DPO screen, and the base-model confound (measured, 2026-11-11)
+
+**Setup.** The native set has 48 train pairs and 6 valid pairs. Valid is held out by
+trajectory: 2 phase-4 winners and 3 phase-4 losers that are never trained on. 35 of
+the 48 train pairs are phase-4. Sequences run 20-40k tokens, and 71% of tokens are
+scored (assistant only).
+
+The run used LoRA on the default keys (attention plus experts) at rank 8, scale 2.0,
+over 16 layers, which is 81.31M trainable parameters. Other settings: IPO β 10 (a
+per-token gap target of 0.05), lr 2e-5, 4 pairs per update, 2048-token chunks. The
+base was `mlx-community/Mellum2-12B-A2.5B-Thinking-4bit`.
+
+| update | train loss | train acc | train margin | held-out |
+| --- | --- | --- | --- | --- |
+| 0 | - | - | - | loss 0.00250, margin 0 |
+| 2 | | 0.75 | 0.026 | |
+| 4 | | 1.0 | 0.076 | |
+| 6 | 0.00071 | | 0.296 | **loss 0.00340, acc 0.667, margin -0.023** |
+| 8 | 0.00040 | | 0.663 | stopped: past the 0.5 target |
+
+The iter-1 loss of 0.0025 is (1/2β)², which confirms IPO really ran. Train margin
+rose steadily while held-out margin went slightly negative and held-out loss rose. On
+6 pairs that is a lead, not a rate, but it does not show generalisation.
+
+**Live (easy, the 4/6 baseline's remedies), update-6 checkpoint:**
+- Runs 1 and 2 failed. Run 1 used 9 requests and 8 tool calls, with 4 tool errors,
+  and its checks never ran.
+- Run 3 was stopped.
+- The traces show corrupted tokens, not a misread task:
+  - paths like `/Userls/mac`, `/Users/mapkars` and `index.1.html`
+  - a hallucinated `BookRepository`
+  - `{{% extends %}}`
+  - foreign control tokens such as `<|start|><|channel|>`
+
+**Where the damage is not.** We used perplexity on unseen code (`learn/code/harness.py`,
+17,616 tokens, 2048-token windows, scoring each window's second half):
+
+| model | path | perplexity |
+| --- | --- | --- |
+| Mellum2.1 | JetBrains Q4 GGUF | **3.798** |
+| Mellum2 | MLX 4-bit | 3.893 |
+| Mellum2 + DPO u6 | MLX 4-bit | 3.895 (+0.03%) |
+| Mellum2 | our conversion, zero adapter | 3.922 (+0.7%) |
+| Mellum2 + DPO u6 | our conversion | 3.923 |
+
+Neither the adapter nor our conversion moves language modelling by more than 1%. The
+corrupted output above would cost far more than that.
+
+A sampled tool-call probe on mlx_lm (no conversion, temperature 1.0, n=10) gave valid
+calls for base 8/10 and for DPO u6 5/10. That is a lead (p ≈ 0.35). Greedy output is
+correct for both.
+
+**The confound.** Every tune in this note was trained on **Mellum2**: the three SFT
+screens and this DPO screen. Every baseline it was compared against, base 4/6 easy and
+16/18 medium, is **Mellum2.1**, served from the JetBrains GGUF. The tunes and the
+baseline are different releases. Two consequences follow:
+
+- **The data was rendered with the wrong template.** Line 58 differs between the two
+  templates. Mellum2.1 has `{%- if reasoning_content %}`. Mellum2 has
+  `{%- if loop.last or (not loop.last and reasoning_content) %}`, which writes an empty
+  `<think></think>` into a final assistant turn that has no reasoning.
+- **Our conversion quantises twice.** We go from 4-bit MLX, dequantise to fp16, then
+  quantise to Q4_K_M. The perplexity row shows a measured cost of +0.7%.
+
+So **"every tune loses to base" is not yet a training result.** Part of the gap, or
+all of it, may be Mellum2 against Mellum2.1. The control that separates the two is
+untrained Mellum2 through our conversion (`ourbase-Q4_K_M.gguf`, already built) on
+easy n=6. That control has not been run.
+
+**Rebuilt on Mellum2.1 (2026-11-11).** No download is needed. The repo's local
+`.models/Mellum2.1-12B-A2.5B-Thinking-{6bit,8bit}` carry a chat template
+byte-identical to the served GGUF's (4,849 characters), and the tokenizer is identical
+across Mellum2 and Mellum2.1.
+
+The rebuild ran `build_dpo_native.py --budget 41000 --model .models/...-6bit`. It gave
+the same 40 trajectories and the same 54 pairs (48 train, 6 valid). All 4,929 scored
+runs open right after the assistant header, and token and mask lengths match.
+
+The only change is the final assistant turn: the empty `<think></think>` is gone,
+which makes each sequence 2-6 tokens shorter. The next DPO run trains on the 2.1 MLX
+weights with this set. The 6-bit copy still quantises twice on the way to Q4, but
+from 6 bits rather than 4.
 
 ### Conversion (the serving path that unblocked the verdict)
 
@@ -309,6 +396,11 @@ Q4 output is coherent (factorial correct) and tool-calls (`bash("ls")`), so the
 regression above is the tune, not a broken conversion.
 
 ## What would falsify this / risks
+
+- **Base-model confound (2026-11-11).** The tunes are Mellum2 and the baseline is
+  Mellum2.1. If untrained Mellum2 through our conversion also scores below 4/6 on
+  easy, the tune-loses rows measure the release, not the training. Train and serve the
+  same release from here on (`--model`).
 
 - **44 trajectories is a narrow, correlated pool.** 1134 examples come from 44
   runs; the model may learn those runs, not the behaviour. Grow the pool by
