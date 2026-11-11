@@ -46,6 +46,47 @@ Details, and the native-format DPO rebuild, in the
 4. **`train_run.sh`** + **`lora_config.yaml`** - DoRA, all attention projections,
    rank 32, lr 1e-4, grad-checkpoint, via `mlx-lm` on the 4-bit MLX base.
 
+## Preference tuning (DPO, native format)
+
+Two scripts replace the SFT path for preference work. Both use `mlx-lm` 0.32.2
+and `mlx-lm-lora` 5.10.2, run on the M3 Max.
+
+1. **`build_dpo_native.py`** - mines `runs/` and `evals/` run records and pairs,
+   per phase, a clean winner (`chosen`) with a graded failure (`rejected`).
+   - Each trajectory is re-rendered exactly as the server saw it.
+   - Every assistant turn is restored with its reasoning and native `tool_calls`.
+   - Tool results are capped (400-character head + 200-character tail).
+   - The mask scores assistant tokens only.
+   - Over-budget sequences are dropped, never truncated.
+   - Phase-4 trajectories are held out for validation (2 winners, 3 losers).
+
+   Run with no `--budget` to only measure. `--budget 41000` gave 48 train and 6
+   valid pairs.
+2. **`dpo_native_train.py`** - our own IPO-DPO step (loss normalised per token,
+   β 10).
+   - Scoring is chunked with a KV cache.
+   - The backward pass is chunked over the LoRA parameters only.
+   - `--check-grad` compares the chunked gradient against the exact one; cosine
+     was 0.938 at chunk 512.
+   - We use our own step because upstream `mlx-lm-lora` silently ignores the loss
+     type and runs sigmoid; you can tell from an iter-1 loss of 0.693 instead of
+     (1/2β)².
+   - Upstream also fails to backprop through 4-bit weights and cannot reset
+     Mellum's sliding-window cache.
+
+```bash
+uv run --with mlx-lm==0.32.2 --with mlx-lm-lora==5.10.2 python build_dpo_native.py --budget 41000 --model <mlx-model>
+```
+
+```bash
+uv run --with mlx-lm==0.32.2 --with mlx-lm-lora==5.10.2 python dpo_native_train.py --data data_dpo_native --model <mlx-model> --beta 10 --lr 2e-5 --accum 4 --step 2048
+```
+
+**`--model` must be the model you serve.** The first DPO run trained and rendered
+data on Mellum2 but was compared against a Mellum2.1 baseline. The two chat
+templates differ, so that comparison is confounded (details in the research note).
+Generated data and adapters are git-ignored.
+
 ## The data (committed)
 
 - `data/train.jsonl` - 480 adherence + general examples (compacted, ≤2k tokens).
