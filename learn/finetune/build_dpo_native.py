@@ -30,6 +30,9 @@ ap.add_argument("--head", type=int, default=400)
 ap.add_argument("--tail", type=int, default=200)
 ap.add_argument("--max-pairs-per-phase", type=int, default=60)
 ap.add_argument("--valid", type=int, default=12)
+ap.add_argument("--source", action="append",
+                help="run-record root(s) to mine, relative to the repo (default: runs/ and evals/); "
+                     "pass the on-policy sampling dir to keep the set on one model")
 ap.add_argument("--out", default=f"{REPO}/learn/finetune/data_dpo_native")
 ap.add_argument("--model", default="mlx-community/Mellum2-12B-A2.5B-Thinking-4bit",
                 help="tokenizer/template source; must be the model you train (Mellum2 != Mellum2.1)")
@@ -121,7 +124,7 @@ def build(trace):
         if si < len(spans) and spans[si][0] <= a < spans[si][1]: mask[t] = 1
     return {"ids": ids, "mask": mask, "n_scored": sum(mask), "n_ast": n_ast}, "ok"
 
-runs = glob.glob(f"{REPO}/runs/**/run.json", recursive=True) + glob.glob(f"{REPO}/evals/**/run.json", recursive=True)
+runs = [f for root in (args.source or ["runs", "evals"]) for f in glob.glob(f"{REPO}/{root}/**/run.json", recursive=True)]
 win = collections.defaultdict(list); loss = collections.defaultdict(list); why = collections.Counter()
 for f in runs:
     try: d = json.load(open(f))
