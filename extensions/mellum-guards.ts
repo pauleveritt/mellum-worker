@@ -28,7 +28,8 @@
  * dormant: their columns never went non-zero in direct mode.
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { adminBaseOf, readProvider, serverCheck, type ServerCheck } from "./mellum-check.ts";
@@ -299,6 +300,98 @@ export const liveServerGuard: Guard = (call) => {
 	}
 	return undefined;
 };
+
+/** A kill command in command position: at a segment start or after a run-wrapper, so `grep kill`
+ * or `skill.py` is not one. Segments split on ; & | and newlines. */
+const KILL_LEAD = /^(?:(?:sudo|nohup|time|exec|env|xargs)\s+(?:-\S+\s+)*)*(kill|pkill|killall|fuser)\b(.*)$/;
+
+/** The processes a shell command would kill. `pids` are the literal targets of `kill`; `indirect`
+ * is a kill whose target the guard cannot see before it runs: by name (pkill, killall), by port
+ * (fuser -k), or through a pipe or substitution (`xargs kill`, `kill $(lsof …)`, `kill $PID`). */
+export function killTargets(command: string | undefined): { pids: number[]; indirect: boolean } {
+	const out = { pids: [] as number[], indirect: false };
+	if (!command || READONLY_FIRST.test(command)) return out;
+	// A substitution's own text is not a separate segment, so spot `kill $(…)` / kill `…` first.
+	if (/\bkill\b[^;&|\n]*(?:\$\(|`|\$\{?\w)/.test(command)) out.indirect = true;
+	for (const raw of command.split(/[;&|\n]+/)) {
+		const m = raw.trim().match(KILL_LEAD);
+		if (!m) continue;
+		const [, tool, rest] = m;
+		if (tool !== "kill" || /\|\s*$/.test(raw)) {
+			if (tool !== "fuser" || /\s-\w*k/.test(rest)) out.indirect = true;
+			continue;
+		}
+		if (/^\s*$/.test(rest) && /\bxargs\b/.test(raw)) out.indirect = true;
+		const args = rest.trim().split(/\s+/).filter(Boolean);
+		for (let i = 0; i < args.length; i++) {
+			const a = args[i];
+			if (a === "-s" || a === "-n") {
+				i++; // the signal name or number that follows
+			} else if (/^\d+$/.test(a)) {
+				out.pids.push(Number(a));
+			}
+		}
+		if (/\bxargs\b/.test(raw)) out.indirect = true;
+	}
+	return out;
+}
+
+/** A process's working directory, or undefined if it is gone or unreadable (lsof; /proc on Linux). */
+export function processCwd(pid: number): string | undefined {
+	try {
+		if (process.platform === "linux") return readlinkSync(`/proc/${pid}/cwd`);
+		const out = execFileSync("lsof", ["-a", "-p", String(pid), "-d", "cwd", "-Fn"], {
+			cwd: "/",
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+			timeout: 5000,
+		});
+		const line = out.split("\n").find((l) => l.startsWith("n"));
+		return line ? line.slice(1) : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+/** Block a kill aimed at a process the worker did not start. The recorded pathology (2026-11-11
+ * on-policy sampling, rung 7 r2): the worker wanted port 8001 for its own server, found the
+ * harness's model server there and ran `kill <pid>`, ending its own run and every run after it.
+ * A process the worker started runs in its workspace, so its cwd is under `root`; anything else
+ * (the model server, the harness, another session) is off limits, and so is the harness's own pid
+ * chain. A kill whose target cannot be seen first (by name, by port, through a pipe) is refused too. */
+export function createForeignProcessGuard(
+	root: string,
+	cwdOf: (pid: number) => string | undefined = processCwd,
+	harness: ReadonlySet<number> = new Set([process.pid, process.ppid]),
+): Guard {
+	const base = resolve(root);
+	const inside = (p: string) => p === base || p.startsWith(`${base}/`);
+	const advice =
+		"Stop only a process you started, by its explicit pid: start it in the background with " +
+		'`echo "pid $!"` and kill that number. If a port is busy, it belongs to something else; use a different port.';
+	return (call) => {
+		if (call.toolName !== "bash") return undefined;
+		const { pids, indirect } = killTargets(commandOf(call.input));
+		const foreign = pids.filter((pid) => {
+			if (harness.has(pid)) return true;
+			const cwd = cwdOf(pid);
+			return cwd !== undefined && !inside(cwd);
+		});
+		if (foreign.length > 0) {
+			return {
+				block: true,
+				reason: `Process ${foreign.join(", ")} is not one you started; it runs outside your workspace and the run depends on it. ${advice}`,
+			};
+		}
+		if (indirect) {
+			return {
+				block: true,
+				reason: `That kills by name, port or a looked-up pid, which can hit a process you did not start. ${advice}`,
+			};
+		}
+		return undefined;
+	};
+}
 
 /** Whether a bash command walks a directory tree: find, ripgrep (recursive by
  * default), recursive grep (-r/-R/--recursive), or `ls -R`. */

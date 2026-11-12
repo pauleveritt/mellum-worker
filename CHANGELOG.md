@@ -6,6 +6,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **`guard/foreign-process`: the worker can no longer kill what it didn't start.**
+  During sampling, a worker found its chosen port busy and killed the model server
+  holding it, which ended its own run and broke every run queued after it. The new
+  opt-in guard refuses `kill` for any process whose working directory is outside
+  the workspace, and for the harness's own process chain. It also refuses kills by
+  name, by port or through a pipe (`pkill`, `killall`, `fuser -k`, `xargs kill`,
+  `kill $(…)`), and points at the explicit `$!` pid. Load it with
+  `--remedy guard/foreign-process`, or with `--pi-extension` on the ladder. It is
+  a safety guard, not a measured pass-rate remedy, so no preset includes it.
+
 - **Flow and ladder runs now leave a scoreboard-shaped `run.json`.** The flow
   runner (`learn/code/flow_run.py`) and the ladder (`ladder/ladder/run_ladder.py`)
   each emit, alongside their own records, the flat fields

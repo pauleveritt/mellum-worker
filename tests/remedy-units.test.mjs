@@ -26,6 +26,7 @@ const GUARDS = [
 	"outside-workspace",
 	"whole-file-rewrite",
 	"turn-cap",
+	"foreign-process",
 ];
 
 for (const name of GUARDS) {
