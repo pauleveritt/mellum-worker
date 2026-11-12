@@ -432,6 +432,44 @@ Valid so far, served Mellum2.1 (hidden pass):
 | 2 | 1/1 | 65 | 103 |
 | 4 | 5/10 | 33-110 | 246-600 |
 
+The guarded re-sample (`runs/2026-11-12-onpolicy-21`) ran with no server kills:
+phase 2 2/3, phase 3 1/4, phase 5 4/4, phase 6 3/4, phase 7 1/4.
+
+### The on-policy DPO tune (measured, 2026-11-12)
+
+`build_dpo_native.py` turned both batches into 21 pairs: 15 train, with the 6
+phase-4 pairs held out as validation. Phase 1 gave none, because its passes weren't
+clean winners. Phase 5 gave none either, because every rep passed and left no loser.
+IPO-DPO ran on the Mellum2.1 6-bit weights (β 10, lr 2e-5, accumulation 4, 8 updates,
+`adapters_dpo_onpolicy21`).
+
+The training pairs were learned and the held-out ones weren't. Train accuracy reached
+1.00 with a margin of 0.97. Validation accuracy went 0.00, then 0.33 at update 6, then
+0.33 at update 8, with the margin flat at -0.01. Fifteen pairs are enough to memorise
+and not enough to generalise.
+
+Served through the same conversion and run on easy n=6 with the same remedies as the
+controls (`runs/2026-11-12-dpo21-onpolicy-easy`):
+
+| Rep | Pass | Requests | Turns | Wall (s) |
+| --- | --- | --- | --- | --- |
+| 1 | pass | 15 | 15 | 91 |
+| 2 | FAIL (quality check) | 25 | 25 | 98 |
+| 3 | pass | 24 | 24 | 85 |
+| 4 | pass | 17 | 17 | 72 |
+| 5 | pass | 20 | 20 | 107 |
+| 6 | pass | 26 | 26 | 89 |
+
+**5/6, median 22 requests.** The untrained Mellum2.1 control scored 5/6 with a median
+of 23.5. On pass rate and requests this is a wash, so the tune is not a measured win.
+Wall halved (72-107 s against 136-258 s), but wall is informational here: the two arms
+ran hours apart on a shared machine, and requests barely moved, so a faster server
+state explains it as well as the tune does. That is a lead to recheck, not a result.
+The tune also did no harm, which matches the held-out curve.
+
+The next lever is more on-policy pairs. Sample more reps per phase so phases 1 and 5
+yield pairs too, and train again only once the held-out margin turns positive.
+
 ### Conversion (the serving path that unblocked the verdict)
 
 mlx-lm's own GGUF export rejects the `mellum` type, and its server caps max_tokens
