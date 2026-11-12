@@ -366,7 +366,8 @@ baseline are different releases. Two consequences follow:
 So **"every tune loses to base" is not yet a training result.** Part of the gap, or
 all of it, may be Mellum2 against Mellum2.1. The control that separates the two is
 untrained Mellum2 through our conversion (`ourbase-Q4_K_M.gguf`, already built) on
-easy n=6. That control has not been run.
+easy n=6. That control has not been run. *(Correction, 2026-11-11: it has. Untrained
+Mellum2 scored 0/6. See "The controls" below.)*
 
 **Rebuilt on Mellum2.1 (2026-11-11).** No download is needed. The repo's local
 `.models/Mellum2.1-12B-A2.5B-Thinking-{6bit,8bit}` carry a chat template
@@ -381,6 +382,55 @@ The only change is the final assistant turn: the empty `<think></think>` is gone
 which makes each sequence 2-6 tokens shorter. The next DPO run trains on the 2.1 MLX
 weights with this set. The 6-bit copy still quantises twice on the way to Q4, but
 from 6 bits rather than 4.
+
+### The controls (measured, 2026-11-11)
+
+Both untrained bases went through our conversion (zero adapter, fuse `--dequantize`,
+remap, f16, Q4_K_M) and ran on easy n=6, with the same serve flags and the same three
+prompt remedies as every row above.
+
+| Untrained base, our conversion | Easy pass | Median requests |
+| --- | --- | --- |
+| Mellum2 (4-bit MLX) | **0/6** | 7 |
+| Mellum2.1 (6-bit MLX) | **5/6** | 23 |
+| Mellum2.1, JetBrains GGUF (reference) | 4/6 | 24 |
+
+Per rep, Mellum2 ran 7, 6, 3, 7, 9 and 6 requests in 184-392 s, and every rep failed
+4 checks. Several hit the output token limit. Mellum2.1 ran 33, 22, 20, 16, 31 and 25
+requests in 136-258 s. Only rep 2 failed, on 1 check.
+
+Two leads follow, each a screen at n=6:
+
+- **The conversion doesn't damage Mellum2.1.** It matches the JetBrains reference
+  (5/6 against 4/6), so a Mellum2.1 tune can be served through this path.
+- **The tunes never lost to their own base.** Untrained Mellum2 scores 0/6. Against
+  that, the SFT tunes (1/6, 0/6, 1/6) and DPO update 6 (0/2) are level or ahead. The
+  4/6 gap was Mellum2 against Mellum2.1 all along. "The tune makes it worse" was
+  never measured, and it is withdrawn.
+
+### On-policy sampling, and a worker that killed the model server (2026-11-12)
+
+The old DPO pairs came from mixed runs (6-bit oMLX, mode, primary, llama.cpp), so they
+aren't the served model's own behaviour. The fix is self-distillation. The served
+JetBrains Mellum2.1 Q4_K_M runs the AgentClinic rungs as clean single episodes (direct,
+tuned, guards, thinking off, no redispatch). The hidden oracle grades every run.
+
+The first batch was half lost. In rung 7 r2, the worker wanted port 8001 for its own
+uvicorn and found llama-server already there. It ran `kill <pid>`. The model server
+shut down mid-run, so 15 later runs got only connection errors. Two more ran against
+a different server that took over the port. All 19 are set aside in
+`runs/2026-11-11-onpolicy-21-invalid/`.
+
+`guard/foreign-process` (992c877) now refuses a kill aimed at anything outside the
+workspace, and any kill by name, port or pipe. It is loaded for the re-sample.
+
+Valid so far, served Mellum2.1 (hidden pass):
+
+| Phase | Pass | Requests per rep | Wall per rep (s) |
+| --- | --- | --- | --- |
+| 1 | 3/4 | 31, 74, 106, 78 | 43-157 |
+| 2 | 1/1 | 65 | 103 |
+| 4 | 5/10 | 33-110 | 246-600 |
 
 ### Conversion (the serving path that unblocked the verdict)
 
