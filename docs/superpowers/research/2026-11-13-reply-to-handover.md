@@ -246,6 +246,41 @@ adjustments are added here, newest last.
   round, the worker searching for the held-out file) is a theory until we run
   it.
 
+### Why the loop didn't close, and the fix's screen (2026-11-13)
+
+- **The cause.** The gate handed back the last 1,200 characters of pytest output.
+  With nine tests and `-rA`, that tail was only PASSED and FAILED lines, so the
+  worker got test names and never a reason. In the rep 1 log, each round it
+  reran its own tests, saw them green and settled. Five rounds left the same four
+  tests red.
+- **The fix (`fcefc2bb`).** The gate now hands back each failing test's
+  assertion lines, capped per test. On that rep 1 build the message is 1,710
+  characters, with a reason for every failing test. It also stops naming the
+  held-out module in object reprs. Four new tests, each shown red first.
+- **The screen (Medium n=3, same rig).** Each gate round is counted from the
+  gate's own pytest runs this time:
+
+  | rep | score | requests | wall | stop | gate rounds | acceptance test at exit |
+  |---|---|---|---|---|---|---|
+  | 1 | 18/18 | 150 | 1,591 s | clean | 1, then green | 9 of 9 green |
+  | 2 | 14/18 | 172 | 1,473 s | stall | 4 | 5 of 9 red |
+  | 3 | 13/18 | 79 | 1,264 s | stall | 0 | collection error |
+
+- **What it shows.**
+  - Rep 1 is the first redispatch on record that closed: one round with reasons,
+    then green and 18/18.
+  - Reps 2 and 3 stalled with no output for 240 s. Both were mid-way through
+    debugging a POST that "returns 200, not 303": the routes return 303, but the
+    worker's own TestClient follows the redirect.
+  - Rep 3 never reached the gate, so this fix can't have touched it. Rep 2 had
+    the gate's reasons for four rounds and still stalled in the same debug.
+  - The gate's verdict agreed with the grader on all three builds.
+- **Where that leaves the loop.** Reasons let a round close, which names alone
+  never did. That is a lead at n=3, not a rate. Today's lower mean comes from two
+  first-pass stalls on the redirect confusion, and that spiral, not the gate, is
+  the next lever. Whether a redirect-aware hint or guard closes it is a theory
+  until it's screened.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
