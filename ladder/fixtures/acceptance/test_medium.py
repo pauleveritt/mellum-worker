@@ -182,23 +182,47 @@ def board_order(tree):
     return [cid for _, cid in sorted(order)]
 
 
+def _tags(nodes, limit=6):
+    """What the page actually held, for a failure message: each tag as parsed, kept short."""
+    out = []
+    for n in nodes[:limit]:
+        attrs = " ".join(f"{k}={v!r}" if v is not None else k for k, v in n.attrs.items())
+        tag = f"<{n.tag} {attrs}>" if attrs else f"<{n.tag}>"
+        out.append(tag if len(tag) <= 300 else tag[:300] + "...>")
+    more = f" (+{len(nodes) - limit} more)" if len(nodes) > limit else ""
+    return (", ".join(out) or "none") + more
+
+
+def _card_actions(tree, complaint):
+    """The forms a card offers, as (action, [submit labels]), for a failure message."""
+    card = card_for(tree, complaint)
+    return [(f.attrs.get("action"), submits(tree, f)) for f in card.walk() if f.tag == "form"]
+
+
 # ---- Phase 1: home page + base layout -------------------------------------
 def _assert_base_layout(tree):
-    assert any(d.strip().lower() == "doctype html" for d in tree.decls), f"HTML5 doctype, got {tree.decls}"
+    found = any(d.strip().lower() == "doctype html" for d in tree.decls)
+    assert found, f"HTML5 doctype, got {tree.decls}"
     html = tree.find(lambda n: n.tag == "html")
-    assert html and html[0].attrs.get("lang") == "en"
+    assert html and html[0].attrs.get("lang") == "en", f'<html lang="en">, got {_tags(html)}'
     metas = tree.find(lambda n: n.tag == "meta")
-    assert any("charset" in m.attrs or "charset" in (m.attrs.get("content") or "").lower() for m in metas), "charset meta"
-    assert any((m.attrs.get("name") or "").lower() == "viewport" for m in metas), "viewport meta"
+    found = any("charset" in m.attrs or "charset" in (m.attrs.get("content") or "").lower() for m in metas)
+    assert found, f"a charset meta; the <meta> tags parsed: {_tags(metas)}"
+    found = any((m.attrs.get("name") or "").lower() == "viewport" for m in metas)
+    assert found, f"a viewport meta; the <meta> tags parsed: {_tags(metas)}"
     links = tree.find(lambda n: n.tag == "link")
-    assert any("stylesheet" in (l.attrs.get("rel") or "").lower() and "bootstrap" in (l.attrs.get("href") or "").lower() for l in links), "Bootstrap 5 CSS"
-    assert any("icon" in (l.attrs.get("rel") or "").lower().split() and l.attrs.get("href") == "https://www.python.org/static/favicon.ico" for l in links), "favicon"
+    found = any("stylesheet" in (l.attrs.get("rel") or "").lower() and "bootstrap" in (l.attrs.get("href") or "").lower() for l in links)
+    assert found, f"Bootstrap 5 CSS: a stylesheet link to Bootstrap; the <link> tags parsed: {_tags(links)}"
+    found = any("icon" in (l.attrs.get("rel") or "").lower().split() and l.attrs.get("href") == "https://www.python.org/static/favicon.ico" for l in links)
+    assert found, f"the favicon link; the <link> tags parsed: {_tags(links)}"
     scripts = tree.find(lambda n: n.tag == "script")
-    assert any("bootstrap" in (s.attrs.get("src") or "").lower() and "bundle" in (s.attrs.get("src") or "").lower() for s in scripts), "Bootstrap JS bundle"
+    found = any("bootstrap" in (s.attrs.get("src") or "").lower() and "bundle" in (s.attrs.get("src") or "").lower() for s in scripts)
+    assert found, f"the Bootstrap JS bundle; the <script> tags parsed: {_tags(scripts)}"
     navs = [n for n in tree.find(lambda n: n.tag == "nav") if shown(n)]
     assert navs, "a visible navbar"
     nav_links = {(a.attrs.get("href"), text(a)) for nav in navs for a in nav.walk() if a.tag == "a" and shown(a)}
-    assert any(t == "AgentClinic" for _, t in nav_links), "the AgentClinic brand on show in the navbar"
+    found = any(t == "AgentClinic" for _, t in nav_links)
+    assert found, f"the AgentClinic brand on show in the navbar; visible nav links (href, text): {sorted(nav_links, key=str)}"
     hrefs = {h for h, t in nav_links if t}
     assert "/" in hrefs and "/complaints" in hrefs, f"navbar links to / and /complaints, got {hrefs}"
 
@@ -331,7 +355,9 @@ def test_resolve_then_reopen_sets_status_303_and_keeps_order():
     tree = page("/complaints")
     assert board_order(tree) == shown_before
     assert _status_shown(tree, target) == "Resolved"
-    assert _action(tree, target, "reopen") and not _action(tree, target, "resolve")
+    offers = _action(tree, target, "reopen") and not _action(tree, target, "resolve")
+    assert offers, (
+        f"a resolved card offers Reopen and not Resolve; its forms (action, buttons): {_card_actions(tree, target)}")
 
     _post(f"/complaints/{target.id}/reopen")
     assert target.status == "open"
@@ -347,4 +373,6 @@ def test_board_shows_status_badge_and_the_action_forms():
     for c in models.complaints:
         assert c.status == "open"
         assert _status_shown(tree, c) == "Open"
-        assert _action(tree, c, "resolve") and not _action(tree, c, "reopen")
+        offers = _action(tree, c, "resolve") and not _action(tree, c, "reopen")
+        assert offers, (
+            f"an open card offers Resolve and not Reopen; its forms (action, buttons): {_card_actions(tree, c)}")

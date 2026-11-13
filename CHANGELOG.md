@@ -256,6 +256,12 @@ Versions match git tags; pin one in both install lines.
   back a build the 18-check grader passes, when the build misses a spec item the
   grader doesn't check.
 
+- **The Medium acceptance test says what it found when it fails.** Its layout, navbar and
+  action-button checks used to fail with a label and `any(<generator>)`, so a worker sent back
+  by the gate couldn't see the cause. One rep spent all five gate rounds on a favicon whose open
+  quote swallowed the stylesheet link. Each failure now lists the tags or card forms the page
+  actually held. The same 43 of 43 witness builds classify as expected.
+
 - **The `mellum-verify` gate now tells the worker its acceptance test is held
   out.** When the gate sends the worker back with the failing test names, a small
   model read those names as files to open and went hunting the filesystem for
