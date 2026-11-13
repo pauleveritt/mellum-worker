@@ -153,6 +153,67 @@ Take: 11 (counting the two after n=3). Refuse: 7. Later: 2.
 5. 11 and 13: n=3 each, landing only if they show no loss.
 6. 14 and 8: cleanup and provenance.
 
+## Updates
+
+Findings and changes as the order of work lands. New verdicts, rejections and
+adjustments are added here, newest last.
+
+### 17 and 18 landed, and their n=3 screen (2026-11-13)
+
+- **Landed (`62665777`).** `bounded.ts` is yours, copied as is. The gate now stops
+  a hung test at 150 s, keeps earlier settle handlers' entries, reads green only
+  when every acceptance function shows a PASSED line, strips `PYTEST_ADDOPTS`, and
+  never names where the held-out test lives. Six new tests, each shown red first.
+- **The screen (Medium n=3, same rig as our last gated run):**
+
+  | rep | score | requests | wall | stop |
+  |---|---|---|---|---|
+  | 1 | 17/18 | 168 | 2,272 s | clean |
+  | 2 | 18/18 | 22 | 260 s | clean |
+  | 3 | 17/18 | 247 | 2,405 s | deadline |
+
+  The previous gate scored 18/18 on 3 of 3 at 76, 56 and 100 requests.
+- **The fixes didn't cause the drop.** We re-ran the acceptance test through the
+  gate and through plain pytest on all three final builds, and the verdicts
+  matched each time. The fixes act only at settle, so they can't change a first
+  pass. This time reps 1 and 3 settled short, and the redispatch path, which our
+  last run never reached, cost 2 to 3 times the requests without reliably
+  closing. That loop is the next thing to work on.
+- Details: [the one-pass note](2026-11-08-one-pass-vs-architect-loop.md).
+
+### `test_medium.py` extended against your witness builds (2026-11-13)
+
+- **Before:** 16 of your 43 Medium witnesses were classified as expected (17 by
+  your labels; see `newest_first` below).
+- **After:** 43 of 43. The test now reads each page as a document tree, so:
+  - a hidden label, a brand inside a comment, a control outside its form, and a
+    disabled or non-submitting button no longer count as shown;
+  - ids must form one increasing sequence across direct and route creation;
+  - the model keeps its field order and a UTC timestamp;
+  - resolving or reopening changes only that complaint and moves nothing, in the
+    list or on the board.
+- **The four valid builds pass now:** the three caption variants and
+  `textual_date`. A date is accepted in any common written form that shows the
+  year, month and day.
+- **Still green** on `agentclinic-done` alongside the phase 1-4 hidden oracle (15
+  of 15).
+- **One rejection beyond your labels: `newest_first`.** You label it valid, but our
+  18-check hidden grader rejects it, and the acceptance test has to be a superset
+  of the grader the run is scored on. So the board must show complaints in list
+  order.
+- **Stricter than our grader, by design.** The test now catches spec misses the
+  grader doesn't check:
+  - `id` placed before `timestamp`;
+  - a missing favicon;
+  - every complaint rendered twice.
+
+  One of our earlier 18/18 builds has two of these, so the gate would now send it
+  back. That's spec-correct, but it adds gate turns.
+- **Reproducible:**
+  [`2026-11-13-test-medium-qualified/qualify.py`](2026-11-13-test-medium-qualified/qualify.py)
+  reads your witness tables from the `andre-integration` git ref (no merge) and
+  writes [`matrix.md`](2026-11-13-test-medium-qualified/matrix.md).
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry

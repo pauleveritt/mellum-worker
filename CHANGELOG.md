@@ -241,6 +241,16 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **The Medium acceptance test now checks the whole spec, as a reader sees it.**
+  `ladder/fixtures/acceptance/test_medium.py` (the test a gated run re-runs at
+  settle) passed about twenty broken builds and rejected four valid ones. It now
+  reads pages as a document tree (hidden, commented-out, disabled or detached
+  elements don't count) and checks the id sequence across every creation path,
+  the model's field order and the board order. It classifies all 43 witness
+  builds from Paul's qualification matrix as expected. A gated run can now send
+  back a build the 18-check grader passes, when the build misses a spec item the
+  grader doesn't check.
+
 - **The `mellum-verify` gate now tells the worker its acceptance test is held
   out.** When the gate sends the worker back with the failing test names, a small
   model read those names as files to open and went hunting the filesystem for
