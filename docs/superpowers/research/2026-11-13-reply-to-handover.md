@@ -325,6 +325,42 @@ adjustments are added here, newest last.
   found, for example the stylesheet links it parsed, so a round can close on a
   structural miss too. That needs its own screen.
 
+### The acceptance test says what it found, and its screen (2026-11-13)
+
+- **The change (`32873be5`).** The layout, navbar and action-button checks in
+  `test_medium.py` used to fail with a label and `any(<generator>)`. Each now
+  lists the tags, nav links or card forms the page held. Five slow tests break
+  the complete build one way each and check the message names what it found.
+  Your 43 witness builds still classify as expected, and the done fixture still
+  passes with the hidden phase 1-4 oracle.
+- **The screen (Medium n=3, the last rig with only the messages changed):**
+
+  | rep | score | requests | wall | stop | gate rounds | acceptance test at exit |
+  |---|---|---|---|---|---|---|
+  | 1 | 18/18 | 197 | 1,812 s | clean | 5, ran out | 2 of 9 red |
+  | 2 | 17/18 | 160 | 2,309 s | clean | 5, ran out | 1 of 9 red |
+  | 3 | 17/18 | 149 | 2,405 s | deadline | 4 | 1 of 9 red |
+
+  No rep got the gate to green, against 2 of 3 on the last screen.
+- **The drop isn't on the checks this change touched.** Reps 2 and 3 miss the
+  Phase 4 id: two direct constructions and a route add don't share one id
+  sequence. Their message was already concrete, `[4, 0, 8, 0] == [0, 4, 8]`,
+  and both reps quoted it in their reasoning. That message didn't change. At
+  n=3, a miss the last screen happened not to draw is variance until shown
+  otherwise.
+- **Rep 1 read the new message and still missed.** It saw the parsed favicon
+  `<link>` and replaced the spec's favicon URL with a `data:` image, because the
+  message said what it found but not what it wanted. Its other red is the page
+  `<title>`: `home.html` overrides it with "Home". That check was one the change
+  missed, and it still printed a generator. Fixed test-first (`0ba29312`):
+  the message now shows the title found.
+- **Verdict (a lead).** Showing what the page held doesn't, on its own, close a
+  round. At n=3 we can't tell it from the last screen's 18/18 on 3 of 3.
+- **Next lever (a theory).** Say both halves: what the check wanted and what it
+  found, for example the favicon URL the spec names next to the one parsed. The
+  Phase 4 id miss is a separate matter: the reason is clear, and two reps still
+  couldn't act on it in five rounds.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
