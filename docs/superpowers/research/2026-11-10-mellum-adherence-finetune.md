@@ -1,5 +1,10 @@
 # Fine-tuning Mellum for task adherence - the learnings
 
+**Status (2026-11-13): parked.** The best tune so far, on-policy DPO on Mellum2.1, is
+a wash against its own base on easy n=6 (5/6 each, median 22 against 23.5 requests).
+Reopen when there's a pool big enough for the held-out margin to turn positive. Phases
+1 and 5 need to yield pairs as well. See "The on-policy DPO tune" below.
+
 ## What is measured / what is conjecture
 
 **Measured (2026-11-10, local M3 Max 48 GB):** that the model can be fine-tuned
