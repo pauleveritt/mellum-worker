@@ -66,13 +66,54 @@ export function redactTestPath(text: string, test: string, cwd: string): string 
 	for (const s of [abs, path, dirname(abs), basename(abs)]) {
 		if (s && s !== "." && s !== "/" && s !== cwd) out = out.split(s).join("<acceptance test>");
 	}
+	// The module name shows up in object reprs (`<test_x.Tree object>`). Only where it stands alone,
+	// so a test function sharing its prefix (`test_x_distinct`) keeps its name.
+	const stem = basename(abs).replace(/\.py$/, "");
+	if (stem) out = out.replace(new RegExp(`(?<![\\w.])${stem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\w)`, "g"), "<acceptance test>");
 	return out;
+}
+
+/** Per-test reason caps: enough for an assertion and its diff, never one test crowding out the rest. */
+const REASON_LINES = 12;
+const REASON_CHARS = 600;
+
+/** Each failing test's reason from `--tb=short` output: the `E` lines of its section (or the
+ * section's last lines when it has none), capped. Empty when no section matches, so the caller
+ * falls back to the output tail (a collection error, a timeout). */
+export function failureReasons(output: string, failures: string[]): string {
+	const lines = output.split("\n");
+	const header = /^_{3,} (?:\S+::)?(\S+?)(?:\[.*\])? _{3,}$/;
+	const sections = new Map<string, string[]>();
+	let current: string[] | undefined;
+	for (const line of lines) {
+		const h = line.match(header);
+		if (h) {
+			current = [];
+			if (!sections.has(h[1])) sections.set(h[1], current);
+			continue;
+		}
+		if (/^={3,}/.test(line)) current = undefined;
+		else current?.push(line);
+	}
+	const parts: string[] = [];
+	for (const name of failures) {
+		const body = sections.get(name);
+		if (!body) continue;
+		const e = body.filter((l) => l.startsWith("E "));
+		const picked = (e.length ? e : body.filter((l) => l.trim()).slice(-6)).slice(0, REASON_LINES);
+		let text = picked.join("\n");
+		if (text.length > REASON_CHARS) text = `${text.slice(0, REASON_CHARS)} …`;
+		parts.push(`- ${name}:\n${text}`);
+	}
+	return parts.join("\n");
 }
 
 /** The message handed back to the worker naming the concepts it has not met. */
 export function gateMessage(v: Verdict): string {
 	const concepts = v.failures.length ? v.failures.join(", ") : "(see output below)";
-	const tail = v.output.slice(-1200);
+	const reasons = failureReasons(v.output, v.failures);
+	const timedOut = v.output.match(/\[verify\] the test command timed out[^\n]*/)?.[0];
+	const tail = reasons ? `Why each one fails:\n${reasons}${timedOut ? `\n${timedOut}` : ""}` : v.output.slice(-1200);
 	return (
 		"[mellum-verify] The tests still fail, so you are not done. " +
 		`Unmet concepts (failing tests): ${concepts}. ` +

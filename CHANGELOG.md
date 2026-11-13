@@ -277,6 +277,12 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **The `mellum-verify` gate now says why each test fails, not just which.** It used to hand
+  back the last 1,200 characters of pytest output. With many tests, that tail was only PASSED and
+  FAILED lines, so the worker got names and no reasons. It reran its own green tests and settled
+  short. The message now carries each failing test's assertion lines, capped per test, and no
+  longer names the held-out test's module in an object repr.
+
 - **The `mellum-verify` settle gate is harder to fool and can't hang.** There are four
   fixes, from proposals 17 and 18 in Paul's handover:
   - A hung acceptance test is stopped with its process group after 150 s and reads red.

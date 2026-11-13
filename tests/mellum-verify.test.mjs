@@ -166,3 +166,55 @@ test("18: the gate message never names where the held-out test lives", () => {
 	assert.ok(!msg.includes(held), "no directory of the held-out test");
 	assert.ok(!msg.includes("test_contract.py"), "no file name of the held-out test");
 });
+
+test("gateMessage: carries each failing test's reason, not just the -rA summary tail", () => {
+	// The gated screen with the extended test (2026-11-13): with `-rA`, the last 1,200 chars of
+	// output were only PASSED/FAILED lines, so the worker got test NAMES and never WHY any failed.
+	// It reran its own green tests and settled; five rounds closed nothing. Each failing test's
+	// `E` lines must reach the worker, however long the summary below them is.
+	const summary = Array.from({ length: 60 }, (_, i) => `PASSED t.py::test_ok_${i}`).join("\n");
+	const out = [
+		"FF",
+		"=================================== FAILURES ===================================",
+		"____________________________ test_ids_distinct ____________________________",
+		"t.py:3: in test_ids_distinct",
+		"    assert ids == [0, 1]",
+		"E   AssertionError: one increasing id sequence: [5, 0]",
+		"____________________________ test_status_open ____________________________",
+		"E   assert 'resolved' == 'open'",
+		"=========================== short test summary info ============================",
+		summary,
+		"FAILED t.py::test_ids_distinct - AssertionError",
+		"FAILED t.py::test_status_open - assert",
+		"2 failed, 60 passed in 0.2s",
+	].join("\n");
+	const msg = gateMessage({ passed: false, failures: ["test_ids_distinct", "test_status_open"], output: out });
+	assert.match(msg, /test_ids_distinct[\s\S]*one increasing id sequence: \[5, 0\]/);
+	assert.match(msg, /test_status_open[\s\S]*'resolved' == 'open'/);
+	assert.ok(!msg.includes("PASSED t.py::test_ok_0"), "no wall of PASSED lines");
+});
+
+test("gateMessage: a failing test's reason is capped, so one huge diff can't crowd out the rest", () => {
+	const big = Array.from({ length: 200 }, (_, i) => `E   line ${i} ${"x".repeat(80)}`).join("\n");
+	const out = `____ test_a ____\n${big}\n____ test_b ____\nE   reason_b\n=== short test summary info ===\nFAILED t.py::test_a\nFAILED t.py::test_b`;
+	const msg = gateMessage({ passed: false, failures: ["test_a", "test_b"], output: out });
+	assert.match(msg, /reason_b/);
+	assert.ok(msg.length < 4000, `message stays bounded (${msg.length})`);
+});
+
+test("gateMessage: real pytest output carries the assertion reason (through runTest)", () => {
+	// Forty passing tests push the -rA summary past the old 1,200-char tail, as test_medium did.
+	const passing = Array.from({ length: 40 }, (_, i) => `def test_ok_${i}():\n    assert True\n`).join("\n");
+	const held = scratch({ "contract/test_contract.py": `${passing}\ndef test_ids_distinct():\n    assert [5, 0] == [0, 1], 'one increasing id sequence'\n` });
+	const ws = scratch({ "app.py": "" });
+	const msg = gateMessage(runTest(join(held, "contract/test_contract.py"), PYTEST, ws));
+	assert.match(msg, /test_ids_distinct[\s\S]*one increasing id sequence/);
+});
+
+test("18: a reason never leaks the held-out module name (an object repr), and test names survive", () => {
+	const held = scratch({ "contract/test_ids.py": "class Tree: pass\n\ndef test_ids_distinct():\n    assert Tree() is None\n" });
+	const ws = scratch({ "app.py": "" });
+	const msg = gateMessage(runTest(join(held, "contract/test_ids.py"), PYTEST, ws));
+	assert.match(msg, /test_ids_distinct/, "a concept sharing the module's prefix is still named");
+	assert.ok(!/test_ids\.Tree/.test(msg), "no module name in an object repr");
+});
