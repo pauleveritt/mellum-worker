@@ -6,6 +6,11 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **A `nudge/redirect-followed` remedy unit.** When a command's output shows 200 where a redirect (3xx)
+  was expected, it appends a note: the test client followed the redirect, so assert it with
+  `follow_redirects=False` or read `response.history`, and fix the test, not the route. Two of three
+  gated Medium reps stalled in exactly this debug. Opt-in, at most three notes a session, unmeasured.
+
 - **`guard/foreign-process`: the worker can no longer kill what it didn't start.**
   During sampling, a worker found its chosen port busy and killed the model server
   holding it, which ended its own run and broke every run queued after it. The new

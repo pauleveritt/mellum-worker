@@ -32,6 +32,7 @@ row is one problem and the unit that answers it; the last column is the
 | Pathology | Remedy unit | Evidence | Switch on |
 | --- | --- | --- | --- |
 | Ends a turn empty, part-way through the task | `nudge/empty-turn`: Restates the goal and asks for one more turn (at most 3) | ladder: 5 of 45 v3 runs, every failure; a null on the suites (M2) | `/remedy on nudge/empty-turn` |
+| Asserts a redirect with a client that follows redirects, reads the final page's 200, and debugs a route that already redirects | `nudge/redirect-followed`: When a command's output shows 200 against an expected 3xx, appends a note: the client followed the redirect; use follow_redirects=False or response.history (at most 3 notes) | failure-reasons screen (docs/superpowers/research/2026-11-13-reply-to-handover.md): 2 of 3 medium reps stalled in this debug, 17 and 23 turns; unmeasured as a remedy | `/remedy on nudge/redirect-followed` |
 
 ### Context
 

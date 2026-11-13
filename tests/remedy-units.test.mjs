@@ -41,7 +41,7 @@ for (const name of GUARDS) {
 }
 
 test("every unit carries the metadata the remedies list is generated from", async () => {
-	for (const path of [...GUARDS.map((n) => `guard/${n}`), "nudge/empty-turn"]) {
+	for (const path of [...GUARDS.map((n) => `guard/${n}`), "nudge/empty-turn", "nudge/redirect-followed"]) {
 		const { meta } = await import(`../remedies/${path}.ts`);
 		for (const key of ["pathology", "does", "lesson", "evidence"]) {
 			assert.equal(typeof meta[key], "string", `${path} meta.${key}`);
@@ -276,4 +276,35 @@ test("context/trim-tool-output trims a tool result too big for the context and s
 	assert.match(text, /offset/);
 	assert.equal(pi.fire("tool_result", { type: "tool_result", toolName: "read", input: {}, content: [{ type: "text", text: "small" }] }), undefined);
 	assert.equal(pi.fire("tool_result", { type: "tool_result", toolName: "write", input: {}, content: [{ type: "text", text: big }] }), undefined, "only output a model asked to see is trimmed");
+});
+
+test("nudge/redirect-followed explains a 3xx read as 200 when a test client followed the redirect", async () => {
+	// The failure-reasons screen (2026-11-13): two of three reps stalled after their own test,
+	// TestClient(app) with the default follow_redirects, asserted 303 and read the final page's 200.
+	// They spent 17 and 23 turns "fixing" a route that already returned 303.
+	const pi = fakePi();
+	(await import("../remedies/nudge/redirect-followed.ts")).default(pi);
+	assert.deepEqual(pi.events(), ["tool_result"]);
+	const fail = "E       assert 200 == 303\nE        +  where 200 = <Response [200 OK]>.status_code";
+	const out = pi.fire("tool_result", { type: "tool_result", toolName: "bash", input: {}, content: [{ type: "text", text: fail }] });
+	const text = out.content[0].text;
+	assert.ok(text.startsWith(fail), "the original output is kept");
+	assert.match(text, /follows? redirects/i);
+	assert.match(text, /follow_redirects=False/);
+	assert.match(text, /history/);
+	for (const t of ["AssertionError: 200 != 302", "assert 307 == 200", "assert response.status_code == 303\nE   assert 200 == 303"]) {
+		const fresh = fakePi(); // each case on its own unit, so the three-note cap doesn't decide it
+		(await import("../remedies/nudge/redirect-followed.ts")).default(fresh);
+		assert.ok(fresh.fire("tool_result", { type: "tool_result", toolName: "bash", input: {}, content: [{ type: "text", text: t }] }), t);
+	}
+});
+
+test("nudge/redirect-followed stays quiet on other output, other tools, and after three notes", async () => {
+	const pi = fakePi();
+	(await import("../remedies/nudge/redirect-followed.ts")).default(pi);
+	const r = (text, toolName = "bash") => pi.fire("tool_result", { type: "tool_result", toolName, input: {}, content: [{ type: "text", text }] });
+	for (const t of ["assert 404 == 200", "assert 200 == 201", "3 passed", "HTTP/1.1 303 See Other", "port 2003 == 3030"]) assert.equal(r(t), undefined, t);
+	assert.equal(r("assert 200 == 303", "read"), undefined, "a file read is not a run");
+	for (let i = 0; i < 3; i++) assert.ok(r("assert 200 == 303"));
+	assert.equal(r("assert 200 == 303"), undefined, "at most three notes a session");
 });
