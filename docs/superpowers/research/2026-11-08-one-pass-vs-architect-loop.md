@@ -291,6 +291,50 @@ split itself. With one fixed model the gap is zero, so the split is pure overhea
 which is exactly what Arm A vs the plan baseline shows. The split pays via a
 tier differential; with a single fixed model it is overhead.
 
+## The gate-runner fixes, screened (2026-11-13) - correct verdicts, but the redispatch path is costly
+
+`mellum-verify` took three gate-runner fixes and a path redaction (`62665777`,
+proposals 17 and 18 in the [reply to Paul's handover](2026-11-13-reply-to-handover.md)):
+a bounded test run, earlier settle entries kept, green only with a PASSED line for
+every acceptance function, and no held-out path in the message. Same rig as the
+clean-exit run above (`opmgg2`), only the gate changed, medium n=3:
+
+| rep | score | req | gate fired (lower bound) | wall | guard | hidden check failed |
+|-----|-------|-----|--------------------------|------|-------|---------------------|
+| 1 | 17/18 | 168 | 1+ | 2272s | ok | phase 4 `test_complaint_identity_is_stable_and_keyword_only` |
+| 2 | **18/18** | 22 | 0 | 260s | ok | none |
+| 3 | 17/18 | 247 | 2 | 2405s | DEADLINE | phase 2 `test_complaint_model_contract_is_preserved` |
+
+Baseline (`opmgg2`, the gate before the fixes): 18/18 on 3 of 3, 76 / 56 / 100
+requests, 547-844 s, the gate fired 0 times.
+
+1. **The fixed gate reads the same as plain pytest.** On all three final
+   workspaces the acceptance test was re-run through `runTest` and through plain
+   pytest: the same verdict every time (rep 1 red on
+   `test_new_complaints_default_open_with_distinct_auto_ids`, reps 2 and 3 green).
+   No timeouts fired and no log names `test_medium`. The fixes add no false red.
+2. **The difference from the baseline is the first pass, not the fixes.** The
+   fixes act only at settle, so they can't change what the worker builds before
+   its first settle. This time reps 1 and 3 settled short, so the redispatch path
+   the clean-exit run never reached did recur.
+3. **The redispatch path is where the cost lives, and it doesn't reliably close.**
+   Rep 1 was handed the distinct-ids concept, moved the id to `max + 1` in the add
+   route (the known Phase 4 shape, never a default on the dataclass), then spent
+   turns trying to install `httpx2` and start uvicorn (refused by the guard) and
+   settled still red at 168 requests. Rep 3 closed the acceptance test (8 of 8) but
+   ran into the 2,400 s deadline.
+4. **Rep 3 confirms the acceptance test is incomplete.** It is green on the
+   acceptance test and red on the hidden phase 2 model contract, the gap Paul's
+   matrix found. That extension is owed before the next gated Medium run.
+5. **"Gate fired" is a proxy.** The rig counts the worker echoing "Unmet
+   concepts", not the gate's own entries, so 1 and 2 are lower bounds.
+
+Decision: the fixes stay (correct verdicts, no regression they could cause).
+What this screen measured is the cost of a short first settle: a gate fire
+multiplied requests by roughly 2 to 3 and wall by 3 against a clean first pass.
+Making the corrective turn converge (the feedback content, the `httpx` gap in the
+workspace) is the next lever, as a theory until it is screened.
+
 ## What would falsify this / Risks
 
 - **n=2, two tiers, a scratch driver** — a screen, not a `run_ladder` rate, and
