@@ -281,6 +281,50 @@ adjustments are added here, newest last.
   the next lever. Whether a redirect-aware hint or guard closes it is a theory
   until it's screened.
 
+### The redirect spiral, and a nudge for it (2026-11-13)
+
+- **The trigger, confirmed.** Rep 3 above wrote its own test as `TestClient(app)`
+  and asserted 303. That client follows the redirect, so pytest printed
+  `assert 200 == 303`. The worker then rewrote a route that already returned 303,
+  spending 23 of its 78 turns on it. Rep 2 spent 17.
+- **The unit (`42e6ef1b`): `nudge/redirect-followed`.** When a command's output
+  shows 200 against an expected 3xx, it appends a note: the client followed the
+  redirect, the 3xx is in `response.history`, so check it with
+  `follow_redirects=False` and fix the test, not the route. It is opt-in, adds at
+  most three notes a session, and carries no suite values. Three new tests, two
+  shown red first.
+- **The screen (Medium n=3, the failure-reasons rig plus this one unit):**
+
+  | rep | score | requests | wall | stop | gate rounds | acceptance test at exit |
+  |---|---|---|---|---|---|---|
+  | 1 | 18/18 | 143 | 1,645 s | clean | 2, then green | 9 of 9 green |
+  | 2 | 18/18 | 200 | 1,833 s | clean | 5, ran out | 2 of 9 red |
+  | 3 | 18/18 | 46 | 510 s | clean | 0, green at once | 9 of 9 green |
+
+  18/18 on 3 of 3 at a mean of 130 requests, with no stalls. Across the last
+  three screens, at n=3 each:
+
+  | gate | scores | requests |
+  |---|---|---|
+  | names only | 16, 18, 17 | 153, 39, 234 |
+  | with reasons | 18, 14, 13 | 150, 172, 79 |
+  | with reasons and the nudge | 18, 18, 18 | 143, 200, 46 |
+
+- **Attribution is a lead.** We don't log each note the nudge adds. Reps 1 and 3
+  ended with `follow_redirects=False` in their own tests, and rep 1's reasoning
+  records the switch ("now it shows status 303"). Rep 2 never hit the redirect.
+  No rep stalled, against 2 of 3 last time. At n=3 that is a lead, not a rate.
+- **Rep 2's five rounds were a real miss with a thin reason.** The favicon
+  `<link>` left its `href` quote open, which swallows the Bootstrap stylesheet
+  link that follows. A browser parses it the same way, so the acceptance test's
+  red is correct. Our grader doesn't check the stylesheet, so the build still
+  scores 18/18. The reason the gate handed back was only "Bootstrap 5 CSS" and
+  `any(<generator>)`, so the worker couldn't see what the parse found and added
+  HTML comments instead.
+- **Next lever (a theory).** Make our own acceptance test's messages say what it
+  found, for example the stylesheet links it parsed, so a round can close on a
+  structural miss too. That needs its own screen.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
