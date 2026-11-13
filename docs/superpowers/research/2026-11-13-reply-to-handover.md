@@ -214,6 +214,38 @@ adjustments are added here, newest last.
   reads your witness tables from the `andre-integration` git ref (no merge) and
   writes [`matrix.md`](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-13-test-medium-qualified/matrix.md).
 
+### The gated screen with the extended test (2026-11-13)
+
+- **Same rig as the 17+18 screen**, with only `VERIFY_TEST` pointing at the new
+  `test_medium.py`. Medium, n=3:
+
+  | rep | score | requests | wall | stop | acceptance test at exit |
+  |---|---|---|---|---|---|
+  | 1 | 16/18 | 153 | 1,592 s | clean | 4 of 9 red |
+  | 2 | 18/18 | 39 | 626 s | clean | 9 of 9 green |
+  | 3 | 17/18 | 234 | 2,201 s | clean | 6 of 9 red |
+
+  Mean 17.0/18 at 142 requests. The 17+18 screen gave 17.3/18 at 146 requests,
+  and the earlier gate gave 18/18 on 3 of 3 at 77 requests.
+- **The gate's verdicts agree with the grader.** It is green only on the 18/18
+  build and red on both short builds. Every grader miss is in phase 4
+  (`test_complaint_identity_is_stable_and_keyword_only` on reps 1 and 3, plus
+  `test_resolve_route_marks_complaint_resolved_and_redirects` on rep 1). The
+  acceptance test flags those misses, plus spec misses the grader doesn't check:
+  6 red on rep 3 against 1 grader failure.
+- **The gate fired but didn't close.** In reps 1 and 3 the worker's reasoning
+  quotes the failing test names the gate handed back. Both builds settled red
+  with no guard or deadline stop, so the gate ran out of its five redispatches.
+  Our rig's round counter read 0 because it matched a string the console log
+  never prints. We can't recover the exact number of rounds, so it isn't
+  reported.
+- **What this settles.** A stricter test doesn't buy a better score on its own.
+  The gate is detecting correctly, and the cost sits in a redispatch loop that
+  spends 100 to 200 requests and still doesn't converge. That loop is the lever.
+  Why it doesn't converge (context compaction mid-loop, too many concepts per
+  round, the worker searching for the held-out file) is a theory until we run
+  it.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
