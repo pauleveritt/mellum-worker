@@ -1,69 +1,69 @@
 # Lessons
 
-Every findings lesson in one place: Paul's from the mellum-worker phases and
-ablations, Andre's from his pull requests. Each is one idea and follows the six
-steps. Scheduled lessons are their own phase; the deferred entries are
-candidates until their stated gate. Most are independent: each lists its
-prerequisites, [Getting started](../getting-started/index.md) is the only one
-unless a lesson says otherwise, and you can read them in any order.
+Each lesson takes one way a small model goes wrong, shows the measured evidence,
+and gives the one remedy unit that answers it. Then lets you run the before and
+after yourself. They follow the ladder: start from the bare floor and add one
+inspectable unit at a time, reading the model's own feed.
 
-The order below is a recommendation, not a dependency chain: what the ditch
-teaches first, then the remedies, then the shapes. The author is in italics
-at the end of each line. Every lesson is being re-measured; its badges say
-what it rests on now.
+![A small robot climbing three wide steps that rise from easy to hard](../assets/illustrations/lessons.webp){ .illustration }
 
-## Start here
+## Easy
 
-- **[The suite baseline](baseline.md)** — Baseline Pi and the Baseline Worker on easy, medium and hard, n = 3, on llama.cpp. *(Paul)*
-1. **[The primary agent is the wrong worker](primary-agent.md)** — Neither suite separates the two arms on passes at n = 3; what separates them is how they fail. *(Paul)*
+The Easy tier builds a passing run from nothing, one unit at a time. Three prompt
+lines earn the pass; a fourth lesson shows how to tell machinery *isn't* earning
+its place.
 
-## Paul's lessons
+- **[E1 · Name the Layout](easy/name-the-layout.md)**. The model invents its own
+  file layout; one agnostic line points it at the spec's. 0/3 → 2/3.
+- **[E2 · A Developer's Frame](easy/developer-frame.md)**. A meticulous,
+  spec-driven role cuts careless, unchecked mistakes. 2/3 → 3/3 (screen).
+- **[E3 · Verify the Whole Spec](easy/verify-the-spec.md)**. Check every
+  requirement and run the tests before finishing, closing a dropped requirement.
+  5/6 → 6/6.
+- **[E4 · Guards You Didn't Need](easy/guards-you-didnt-need.md)**. Measure
+  whether a unit fires; on Easy the guard and the enforcement gate both fired 0×,
+  and the gate made a passing stack worse.
 
-2. **[A short prompt, not a procedure](short-prompt.md)** — Prompt v5 is 643 characters, and on easy it did not move a pass: a null at n = 3. *(Paul)*
-3. **[Thinking is working memory](thinking-working-memory.md)** — The strip-thinking arm has no instrument on llama.cpp; thinking spends the output budget. *(Paul)*
-4. **[Guards for empty turns and loops](guards-for-empty-turns.md)** — The nudge never fired in ten easy sessions: no empty turn had the shape it answers. *(Paul)*
-5. **[Project facts](project-facts.md)** — The block reaches the model in every request and did not move easy at n = 3. A null, with a lead. *(Paul)*
-6. **[Write only the files you list](write-only-listed.md)** — A file-set check now runs after every session; easy showed no writes outside the layout. *(Paul)*
-7. **Who holds the loop** — *retired 2026-10-24.* It compared worker, Mode and a
-   delegated child; LC.8 renamed Mode to Worker and removed the delegated child,
-   so there is no second policy left to compare. The number is kept so the other
-   entries stay stable. *(Paul)*
-8. **[A prose brief stops at its first reply](prose-brief.md)** — One brief against four:
-   both passed the hidden tests, and the one-brief arm used a third of the
-   context. A `screen` at n = 1, against the old claim. *(Paul)*
-9. **[The intercom block is a prefill tax](intercom-block.md)** — A delegate's
-   transcript is paid on every turn; the worker hands back one summary block per
-   span instead. A rationale, because LC.8 removed the mechanism. *(Paul)*
-10. **[One spec file per phase](one-spec-per-phase.md)** — Writing the acceptance
-    criteria into the spec took a worker from "no check could run" to one missing
-    check; one file against four did not separate at n = 3. *(Paul)*
+## Medium
 
-Every scheduled lesson in this track now has a page. Each was a feature cycle
-that re-measured it on llama.cpp when its page was written; a page's badges say
-what it rests on.
+The Medium tier is guards and context errors. The ways a model spends a session
+badly, and the small units that catch them. Each lesson shows the exact change you
+make in Pi and reads the result in a trace.
 
-## Andre's mediation
+- **[M1 · The Live-Server Spiral](medium/live-server-spiral.md)**. A confused
+  model starts a server and curls it instead of testing in process;
+  `guard/no-live-server` keeps it in process. 1/3 → 3/3 reach the gate.
+- **[M2 · Think Briefly](medium/think-briefly.md)**. A turn cap that bounds easy
+  starves medium; `prompt/think-briefly` cuts the thinking so the cap fits.
+  median 10 → 16.
+- **[M3 · The Loop](medium/the-loop.md)**. The model re-runs an unchanged call as
+  a tic; `guard/repeat-loops` refuses the sixth and forgets after any write.
+- **[M4 · The Runaway Search](medium/the-runaway-search.md)**. Told to find a file
+  it can't see, the model crawls the whole disk; `guard/outside-workspace` fences
+  the search to the workspace.
+- **[M5 · Thinking in the Content Channel](medium/thinking-in-the-content-channel.md)**.
+  A serving stack mislabels reasoning as speech; `context/repair-think-tags` moves
+  it back. 236 of 244 turns leaked on one host, 0 of 136 on a correct one.
+- **[M6 · A Tool Result Too Big](medium/a-tool-result-too-big.md)**. An oversized
+  read fills the context and forces a re-read; `context/trim-tool-output` caps it and
+  leaves a pointer to the rest.
 
-11. **The worker moves its own goalposts** — It narrows pytest to one test function, passes that, and calls the file done. *(Andre)*
-12. **The mediated test clears the hard rungs** — A frozen test the worker cannot weaken, re-dispatched: rungs 6–9 at 12/12, rung 9 cracked. *(Andre)*
-13. **Implement the whole spec** — v9 lifts the phase-4 id miss from 0 to 2/3; v11's self-check takes it to 3/3. *(Andre)*
-14. **Mediation is a completeness gate** — It leaves the rung the worker can do alone and drags it back only when it stops short. *(Andre)*
+## Hard
 
-## Context and inputs
+The Hard tier is orchestration. Who drives the model, how work is split across
+agents, and how "done" is decided. Each lesson shows the loop and the gate in
+code.
 
-Entries #16–#20 are **Intermediate candidates** (INT.3), not scheduled
-Lessons; #15 remains a lesson candidate. Each needs a recorded screen before
-it becomes a lesson page.
+- **[H1 · The Architect Split](hard/architect-split.md)**. Delegating a spec
+  across an architect and fresh workers; with one fixed model the split is
+  overhead, and one pass is ~5× cheaper at equal score.
+- **[H2 · Don't Trust the Self-Exit](hard/dont-trust-the-self-exit.md)**. The
+  worker's own "done" can be wrong on the hard contract; a verify gate re-runs an
+  external frozen test and re-dispatches the failure until it is green.
+- **[H3 · The Gate Is a Proxy](hard/the-gate-is-a-proxy.md)**. The flow builds a
+  multi-phase app phase by phase, gating and git-checkpointing each; but the
+  examiner's gate is a proxy. All seven gates passed while the hidden grader failed
+  5 of 34.
 
-15. **Rungs 10–12: what the hard gates catch** — An archive decoy, a trap row and an overflowing file separate capability from completeness. *(Andre)*
-16. **Context search for large code** — Index and search the few relevant lines instead of loading whole files. *(Andre)*
-17. **Skeptical rethink** — Check a human's checkable claim before encoding the premise. *(Andre)*
-18. **Documents and images as inputs** — Read the PDF, the spreadsheet or the screenshot the file tools cannot. *(Andre)*
-19. **Live control and replay** — Watch the turns, edit the prompt, replay a bad one, pause at a boundary. *(Andre)*
-20. **Next-concept verify** — Re-dispatch on the failing test functions, not the whole file. *(Andre)*
-
-## Pathologies
-
-21. **The runaway search** — A recursive search that leaves the workspace can hang the whole run; the guard is proposed on branch `lc11b-confinement` ([code](https://github.com/pauleveritt/mellum-worker/blob/176922f05702d6f8e87a9b2570ed6fe9807db733/extensions/mellum-guards.ts#L145-L185), [tests](https://github.com/pauleveritt/mellum-worker/blob/176922f05702d6f8e87a9b2570ed6fe9807db733/tests/mellum-guards.test.mjs#L13-L40)). *(Andre)*
-22. **The server that never returns** — It started `uvicorn` in the foreground and burned the deadline; exercise the endpoint in process, or detach it and keep the pid ([guard](https://github.com/pauleveritt/mellum-worker/blob/420ba1d/extensions/mellum-guards.ts), [prompt v10](https://github.com/pauleveritt/mellum-worker/blob/4666612/prompts/mellum-worker.md)). *(Andre)*
-23. **The rule it knew and skipped** — It read the rule, then left the field `None` in one run of three; a clause-by-clause check against the spec closed it ([prompt v11](https://github.com/pauleveritt/mellum-worker/blob/da04888/prompts/mellum-worker.md)). *(Andre)*
+Every screen on these pages is a lead on llama.cpp, not a settled rate; each page
+says so and links the record.

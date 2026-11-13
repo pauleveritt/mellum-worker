@@ -12,7 +12,7 @@ lifecycle: closed
 Make the Lessons track consistent with the settlement Getting Started now
 teaches — llama.cpp, prompt v5, the easy/medium/hard suites — and with the
 lesson template. Every page's evidence comes from the new instrument; the
-oMLX citations leave the pages, and `docs/ladder/` keeps the oMLX records
+oMLX citations leave the pages, and `evals/` keeps the oMLX records
 exactly as they are.
 
 ## Inputs
@@ -24,7 +24,7 @@ exactly as they are.
 - [`learn/lesson-template.md`](../../../../learn/lesson-template.md) and
   [`learn/lessons/baseline.md`](../../../../learn/lessons/baseline.md), the
   only page already on the taught backend.
-- `docs/ladder/reference-llamacpp-rungs1-5` and
+- `evals/baseline/2026-10-20-reference-llamacpp-rungs1-5` and
   `docs/superpowers/research/2026-10-21-basic-remedies-runs.md`, the only
   llama.cpp evidence the track already has.
 - `main` at `7c94a6a`, on branch `lc13a-lessons-rebase` **corrected
@@ -38,7 +38,7 @@ exactly as they are.
 - An arm inventory: for each of Paul's ten lessons, the arm, whether the
   suites harness can express it today, and its cost.
 - Preregistered arms in staircase order, recorded in
-  `docs/superpowers/research/`, not in `docs/ladder/`.
+  `docs/superpowers/research/`, not in `evals/`.
 - `learn/lessons/*.md` rewritten: no oMLX citation, `backends: [llamacpp]`,
   the template's subsections and columns, `screen` badges where the arm is a
   screen and `cited` only where a preregistered arm supports it.
@@ -46,7 +46,7 @@ exactly as they are.
 
 ## Constraints
 
-- Do not delete or edit `docs/ladder/`; the oMLX records are evidence for
+- Do not delete or edit `evals/`; the oMLX records are evidence for
   their own backend and keep their place.
 - No comparative claim without a preregistration that fixed the arms, n,
   reading and rule first.
@@ -148,7 +148,7 @@ for LC.5 and lands on LC.7A's page.
 
 **Pages (done).** All four rewritten: `primary-agent`, `short-prompt`,
 `thinking-working-memory`, `guards-for-empty-turns`, plus the index's
-one-liners. No page links `docs/ladder/`, two are honest nulls, one is a void
+one-liners. No page links `evals/`, two are honest nulls, one is a void
 arm, and lesson 3 says plainly that it has no instrument here.
 
 ### Task 5: Close

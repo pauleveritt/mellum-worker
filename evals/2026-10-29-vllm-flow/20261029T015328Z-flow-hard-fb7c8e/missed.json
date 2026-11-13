@@ -1,0 +1,9 @@
+{
+  "checks_ran": true,
+  "missed": [
+    "grader_tests/test_migrations.py::test_all_migrations_are_recorded",
+    "grader_tests/test_migrations.py::test_index_exists",
+    "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop",
+    "grader_tests/test_migrations.py::test_resolved_at_is_backfilled"
+  ]
+}

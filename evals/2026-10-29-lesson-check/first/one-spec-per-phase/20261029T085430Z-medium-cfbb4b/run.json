@@ -1,0 +1,50 @@
+{
+  "suite": "medium",
+  "arm": "worker",
+  "single_prompt": false,
+  "specs": "split",
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 2700.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": false,
+  "contaminated": false,
+  "failed_checks": 1,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 1,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 0,
+      "total": 5
+    }
+  },
+  "requests": 58,
+  "turns": 58,
+  "tool_calls": 49,
+  "tool_errors": 2,
+  "context": 23614,
+  "output_tokens": 24756,
+  "wall": 511.635,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

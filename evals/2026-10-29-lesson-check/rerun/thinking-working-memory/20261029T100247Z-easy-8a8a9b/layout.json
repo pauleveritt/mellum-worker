@@ -1,0 +1,13 @@
+{
+  "created": [
+    "app.py",
+    "templates/base.html",
+    "templates/home.html",
+    "test_client.py",
+    "tests/test_home.py"
+  ],
+  "modified": [],
+  "out_of_layout": [
+    "test_client.py"
+  ]
+}

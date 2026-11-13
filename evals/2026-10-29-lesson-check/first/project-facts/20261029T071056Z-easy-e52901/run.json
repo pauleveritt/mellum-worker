@@ -1,0 +1,38 @@
+{
+  "suite": "easy",
+  "arm": "no-facts",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 1,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 1,
+      "total": 4
+    }
+  },
+  "requests": 49,
+  "turns": 49,
+  "tool_calls": 48,
+  "tool_errors": 9,
+  "context": 28718,
+  "output_tokens": 18798,
+  "wall": 463.177,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

@@ -1,0 +1,66 @@
+{
+  "suite": "running-commands",
+  "arm": "bare",
+  "remedies": [
+    "guard/break-repeat-loops",
+    "guard/stay-in-workspace",
+    "guard/refuse-whole-file-rewrite",
+    "guard/block-foreground-server"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/break-repeat-loops.ts",
+      "sha256": "72f2e756d77d6ce9d70404826660bb15fb51f2c8ddf6c9e85bdd9954fcb676f9"
+    },
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/stay-in-workspace.ts",
+      "sha256": "3fcf510fe618c3777f79fbabb3ee990620866d35aa141324780c7b1c81873df9"
+    },
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/refuse-whole-file-rewrite.ts",
+      "sha256": "0e4bbfcab727f3107561595617f927fedb451d11cbae01946aba1ef7863adc84"
+    },
+    {
+      "path": "/Users/codeinfinity/projects/mellum-worker/remedies/guard/block-foreground-server.ts",
+      "sha256": "34c1ea79b01ba9ef6c836b32eda7331166934a43fd63cea4ec75264373e94748"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_challenge.py": {
+      "missing": 0,
+      "total": 5
+    }
+  },
+  "requests": 46,
+  "turns": 46,
+  "tool_calls": 41,
+  "tool_errors": 7,
+  "context": 18989,
+  "output_tokens": 10826,
+  "wall": 64.518,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 2,
+  "leaked": [
+    {
+      "pid": 82895,
+      "pgid": null,
+      "command": "/opt/homebrew/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/Resources/Python.app/Contents/MacOS/Python app.py"
+    }
+  ],
+  "out_of_layout": []
+}

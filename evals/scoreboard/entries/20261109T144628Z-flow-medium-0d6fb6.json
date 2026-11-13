@@ -1,0 +1,18 @@
+{
+  "arm": null,
+  "date": "2026-11-09",
+  "id": "20261109T144628Z-flow-medium-0d6fb6",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 1,
+  "model": "Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "mellum-flow",
+    "mellum-think-tags"
+  ],
+  "suite": "medium",
+  "tool_calls": 56,
+  "turns": 65,
+  "version": "37e6e4cd",
+  "wall": 2467.0
+}

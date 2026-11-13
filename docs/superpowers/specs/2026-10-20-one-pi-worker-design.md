@@ -21,7 +21,7 @@ pi-subagents Worker and the OpenCode port are removed, completely.
   `05-worker-opencode.md`, the `opencode-plugin` package fields, and its
   tests and docs.
 - **The ladder's `delegated` mode is deleted**, with its mirror-profile code
-  and its summarize columns. Measured records in `docs/ladder/` stay as
+  and its summarize columns. Measured records in `evals/` stay as
   evidence; no record is rewritten or removed.
 
 ## What stays

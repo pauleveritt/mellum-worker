@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Complaints Board</h1>
+{% for complaint in complaints %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">By {{ complaint.agent_name }}</h5>
+    <p class="card-text"><strong>Date:</strong> {{ complaint.timestamp.strftime("%Y, %m, %d") }}</p>
+    <p class="card-text"><strong>Complaint:</strong> {{ complaint.text }}</p>
+    <p class="card-text"><strong>Status:</strong> <span class="badge bg-secondary">{{ complaint.status | capitalize }}</span></p>
+{% if complaint.status == "open" %}
+    <form method="POST" action="/complaints/{{ complaint.id }}/resolve">
+      <button type="submit" class="btn btn-success">Resolve</button>
+    </form>
+{% else %}
+    <form method="POST" action="/complaints/{{ complaint.id }}/reopen">
+      <button type="submit" class="btn btn-warning">Reopen</button>
+    </form>
+{% endif %}
+  </div>
+</div>
+{% endfor %}
+<form method="POST" action="/complaints">
+  <div class="form-group">
+    <label for="agent_name">Agent Name</label>
+    <input type="text" class="form-control" id="agent_name" name="agent_name" required>
+  </div>
+  <div class="form-group">
+    <label for="text">Complaint</label>
+    <textarea class="form-control" id="text" name="text" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Complaint</button>
+</form>
+{% endblock %}

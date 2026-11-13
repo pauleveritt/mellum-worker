@@ -1,0 +1,14 @@
+{
+  "created": [
+    "app.py",
+    "templates/base.html",
+    "templates/home.html",
+    "tests/test_home.py"
+  ],
+  "modified": [
+    "pyproject.toml"
+  ],
+  "out_of_layout": [
+    "pyproject.toml"
+  ]
+}

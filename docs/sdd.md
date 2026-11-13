@@ -154,7 +154,7 @@ assets after review; a sibling manifest can record their provenance.
   and environment, and check that the scoring can distinguish the arms.
 
 This does not reopen measured decisions: promotion still requires an
-applicable ladder run recorded in `docs/ladder/`.
+applicable ladder run recorded in `evals/`.
 
 ## Closing a feature cycle
 
@@ -183,7 +183,7 @@ tag, package version, README install lines and changelog must agree.
 ## Standing rules
 
 - Measured settings are not changed without a ladder run in `ladder/`,
-  recorded in `docs/ladder/`; raw evidence goes in a `research-YYYY-MM-DD`
+  recorded in `evals/`; raw evidence goes in a `research-YYYY-MM-DD`
   release, never in git.
 - Every new test is shown to fail before the code that makes it pass.
 - A release is a tag; the package version, the tag, and the README install

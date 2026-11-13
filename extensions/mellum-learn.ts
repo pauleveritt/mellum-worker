@@ -94,16 +94,19 @@ const LONG_RUN = 30;
 type Cmd = { command: string; failed: boolean; mutates?: boolean };
 const commandsOf = (r: RunLine): Cmd[] => (Array.isArray(r.commands) ? r.commands : []);
 const filesOf = (r: RunLine): string[] => (Array.isArray(r.files) ? r.files : []);
-const trimSlashes = (p: string) => p.replace(/\/+$/, "");
+// On Windows a path may use "\" or "/" (or both); compare them as "/".
+const slashes = (p: string) => (process.platform === "win32" ? p.replace(/\\/g, "/") : p);
+const trimSlashes = (p: string) => slashes(p).replace(/\/+$/, "");
 
 export function isUnder(cwd: string, dir: string): boolean {
 	const base = trimSlashes(dir);
-	return cwd === base || cwd.startsWith(`${base}/`);
+	const path = slashes(cwd);
+	return path === base || path.startsWith(`${base}/`);
 }
 
 /** Path relative to the record's cwd, without a leading `./`. */
 function relativeTo(path: string, cwd: string | undefined): string {
-	let p = path.replace(/^\.\//, "");
+	let p = slashes(path).replace(/^\.\//, "");
 	if (cwd !== undefined && isUnder(p, cwd) && p !== trimSlashes(cwd)) p = p.slice(trimSlashes(cwd).length + 1);
 	return p;
 }

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.db
+
+# generated task dirs (regenerate with generate.py)
+tasks/

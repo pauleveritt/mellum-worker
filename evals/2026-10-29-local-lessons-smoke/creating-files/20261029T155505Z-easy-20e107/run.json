@@ -1,0 +1,56 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "remedies": [
+    "guard/break-repeat-loops",
+    "guard/stay-in-workspace"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/break-repeat-loops.ts",
+      "sha256": "855d6b09948a2ec71f544d935c2ffe63e95d0aadf516c69b57794e38382e8497"
+    },
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/stay-in-workspace.ts",
+      "sha256": "58a7771b80c4ee4f4742efb1b37740fb9a519b9611091640a1f0e5128ae33ce1"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 600,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.1,
+    "limit": 120.0,
+    "command": "uv run python app.py"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "requests": 37,
+  "turns": 37,
+  "tool_calls": 37,
+  "tool_errors": 7,
+  "context": 1579,
+  "output_tokens": 10386,
+  "wall": 106.448,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": [
+    "__init__.py"
+  ]
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "pid": 82425,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/.venv/bin/python /Users/mac/projects/mellum-worker/.venv/bin/uvicorn app:app --port 8001 --reload"
+  },
+  {
+    "pid": 82426,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -c from multiprocessing.resource_tracker import main;main(4)"
+  },
+  {
+    "pid": 82427,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+  }
+]

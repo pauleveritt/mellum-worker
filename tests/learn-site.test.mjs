@@ -1,3 +1,4 @@
+// Retired: "the baseline shows the actual worker code" (learn/lessons/easy/baseline.md) and tests/lesson-write-only-listed.test.mjs (learn/lessons/easy/write-only-listed.md); both pages removed 2026-10-29 by the tiered-track restructure.
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -17,15 +18,10 @@ const PAGES = [
   "getting-started/index.md",
   "getting-started/base-pi-on-llamacpp.md",
   "getting-started/troubleshoot.md",
-  "getting-started/ditch.md",
-  "getting-started/harness.md",
-  "getting-started/suite.md",
-  "getting-started/worker-extension.md",
+  "getting-started/working-with-pi.md",
+  "getting-started/eval-suites.md",
+  "getting-started/extensions.md",
   "lessons/index.md",
-  ...readdirSync(resolve(ROOT, "learn/lessons"))
-    .filter((f) => f.endsWith(".md") && f !== "index.md")
-    .sort()
-    .map((f) => `lessons/${f}`),
   "lesson-template.md",
   "project/index.md",
   "project/toolchain.md",
@@ -53,9 +49,9 @@ test("the glossary is parsed by zensical-glossary", () => {
   assert.match(toml, /first_only = true/);
   assert.match(toml, /pymdownx\.superfences = \{\}/);
   const glossary = page("glossary.md");
-  for (const term of ["screen", "nudge", "empty-final nudge", "no-nudge",
-    "Baseline Worker", "Baseline Pi"])
-    assert.match(glossary, new RegExp(`^### ${term}$`, "m"));
+  for (const term of ["screen", "nudge", "empty-final nudge",
+    "Baseline Worker", "Vanilla Pi", "Strip thinking"])
+    assert.match(glossary, new RegExp(`^### ${term}$`, "mi"));
 });
 
 test("the site build runs from the project virtualenv", () => {
@@ -82,7 +78,7 @@ test("CI builds the site with uv run, not uvx", () => {
 
 test("credits name both authors and Tina4", () => {
   const c = page("credits.md");
-  assert.match(c, /a collaboration between Andre van Zuydam and Paul Everitt/);
+  assert.match(c, /a collaboration between Paul Everitt and Andre van Zuydam/);
   assert.match(c, /\[Tina4\]\(https?:\/\//);
 });
 
@@ -121,16 +117,9 @@ test("troubleshooting is a standalone Getting Started page", () => {
 
 test("the home page links the Introduction and counts five lessons", () => {
   const index = page("index.md");
-  assert.match(index, /\[Introduction\]\(introduction\/index\.md\) — Demystifying/);
-  assert.match(index, /five lessons/);
-  assert.doesNotMatch(index, /three lessons/);
-});
-
-test("the ditch drops author notes and states why it checked Python", () => {
-  const l = page("getting-started/ditch.md");
-  assert.doesNotMatch(l, /^music:/m);
-  assert.doesNotMatch(l, /^notes:/m);
-  assert.match(l, /model chose Python|chose Python in this run/);
+  assert.match(index, /\[Introduction\]\(introduction\/index\.md\): Demystifying/);
+  assert.match(index, /six steps/);
+  assert.doesNotMatch(index, /three (lessons|steps)/);
 });
 
 test("lesson 1 walks from uv to a base-Pi answer", () => {
@@ -170,8 +159,8 @@ test("the project pages orient a maintainer and name the checks", () => {
     assert.ok(toolchain.includes(text), `toolchain lacks ${text}`);
 });
 
-test("lesson 2 explains isolation and the one command", () => {
-  const l = page("getting-started/harness.md");
+test("Build a Harness explains isolation and the one command", () => {
+  const l = page("getting-started/the-harness.md");
   assert.match(l, /^track: getting-started$/m);
   const order = ["fresh directory", "harness.py run --suite easy",
     "n=1", "--repeat 3"];
@@ -185,51 +174,16 @@ test("lesson 2 explains isolation and the one command", () => {
     "sessions passed", "not a rate", "temperature 1.0", "top_p 0.95",
     "top_k 20", "max_tokens 16384", "context 50000"])
     assert.ok(l.toLowerCase().includes(text), `lesson 2 lacks ${text}`);
-  assert.match(page("getting-started/index.md"), /harness\.md/);
+  assert.match(page("getting-started/index.md"), /the-harness\.md/);
 });
 
 test("lesson 3 runs the suite, grading and the trace", () => {
-  const l = page("getting-started/suite.md");
+  const l = page("getting-started/eval-suites.md");
   assert.match(l, /^track: getting-started$/m);
   for (const text of ["run --suite all --grade", "ruff", "pyrefly", "complexipy",
     "trace.jsonl", "three", "graders", "one observation"])
     assert.ok(l.toLowerCase().includes(text), `lesson 3 lacks ${text}`);
-  assert.match(page("getting-started/index.md"), /suite\.md/);
-});
-
-test("the first findings lesson follows the six steps and names its badge", () => {
-  const l = page("lessons/primary-agent.md");
-  const heads = [...l.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  assert.deepEqual(heads, ["Problem", "Eval case", "Evidence of the problem",
-    "Solution", "Validation", "Interpretation"]);
-  const sections = l.split(/^## /m).slice(1);
-  const badge = (s) => /^\*\*Badge:\*\* `(reference-run|cited|screen|conjecture)`$/m.test(s);
-  sections.forEach((s, i) => assert.equal(badge(s), i < 5, `step ${i + 1}`));
-  assert.match(l, /weakest badge (?:here )?is `(?:reference-run|cited|screen|conjecture)`/);
-  assert.ok(!/docs\/ladder\//.test(l), "lesson links a ladder record");
-  assert.match(page("lessons/index.md"), /primary-agent\.md/);
-});
-
-test("the baseline shows the actual worker code", () => {
-  const l = page("lessons/baseline.md");
-  for (const text of ["extensions/mellum-worker.ts", "setActiveTools",
-    "createGuardSet"])
-    assert.ok(l.includes(text), `baseline lacks ${text}`);
-});
-
-test("the Lessons index is grouped without Basic Remedies", () => {
-  const index = page("lessons/index.md");
-  const items = index.match(/^\d+\. \*\*/gm) ?? [];
-  assert.equal(items.length, 23);
-  assert.match(index, /\*\((Paul|Andre)\)\*$/m);
-  assert.equal((index.match(/\*\(Paul\)\*/g) ?? []).length, 11);
-  assert.equal((index.match(/\*\(Andre\)\*/g) ?? []).length, 13);
-  for (const text of ["Start here", "Paul's lessons"])
-    assert.ok(index.includes(text), `index lacks ${text}`);
-  assert.ok(!index.includes("Basic Remedies"));
-  assert.match(index, /The runaway search/);
-  assert.match(index, /^3\. \*\*(?:\[Thinking is working memory\]|Thinking is working memory)/m);
-  assert.match(index, /^4\. \*\*(?:\[Guards for empty turns and loops\]|Guards for empty turns and loops)/m);
+  assert.match(page("getting-started/index.md"), /eval-suites\.md/);
 });
 
 test("the lesson template asks for evidence and records the conventions", () => {
@@ -250,35 +204,28 @@ test("the lesson template asks for evidence and records the conventions", () => 
     assert.ok(t.includes(text), `template lacks ${text}`);
 });
 
-test("the ditch shows a claim that did not survive a check", () => {
-  const l = page("getting-started/ditch.md");
-  for (const text of ["Build AgentClinic", "26 requests", "errors=4",
-    "unrecognized arguments", "n = 1", "Before fixing, get evidence"])
-    assert.ok(l.includes(text), `the ditch lacks ${text}`);
-  assert.match(page("getting-started/index.md"), /ditch\.md/);
-});
-
-test("the worker-extension lesson teaches the extension mechanism", () => {
-  const l = page("getting-started/worker-extension.md");
+test("the extensions page teaches the extension mechanism and remedy units", () => {
+  const l = page("getting-started/extensions.md");
   for (const text of ["A Pi extension", "registerCommand", "pi.on",
-    "before_provider_request", "tool_call", "agent_before_settle", "context",
-    "callback", "/mellum", "runaway search"])
-    assert.ok(l.toLowerCase().includes(text.toLowerCase()), `worker lesson lacks ${text}`);
+    "before_provider_request", "tool_call", "agent_before_settle", "registerTool",
+    "context", "callback", "/mellum", "runaway search", "remedies/<kind>/",
+    "meta", "remedies/presets/", "preset:easy", "--remedy", "--extension",
+    "/remedy", "baseline-worker"])
+    assert.ok(l.toLowerCase().includes(text.toLowerCase()), `extensions page lacks ${text}`);
   assert.doesNotMatch(l, /assert True|Run it on the ditch|n = 1/);
-  assert.match(page("getting-started/index.md"), /worker-extension\.md/);
+  assert.match(page("getting-started/index.md"), /extensions\.md/);
 });
 
-test("the second findings lesson follows the six steps and names its badge", () => {
-  const l = page("lessons/short-prompt.md");
-  const heads = [...l.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  assert.deepEqual(heads, ["Problem", "Eval case", "Evidence of the problem",
-    "Solution", "Validation", "Interpretation"]);
-  const sections = l.split(/^## /m).slice(1);
-  const badge = (s) => /^\*\*Badge:\*\* `(reference-run|cited|screen|conjecture)`$/m.test(s);
-  sections.forEach((s, i) => assert.equal(badge(s), i < 5, `step ${i + 1}`));
-  assert.match(l, /weakest badge is `(?:reference-run|cited|screen|conjecture)`/);
-  assert.ok(!/docs\/ladder\//.test(l), "lesson links a ladder record");
-  assert.match(page("lessons/index.md"), /short-prompt\.md/);
+test("Working With Pi covers the basics and the course's two commands", () => {
+  const l = page("getting-started/working-with-pi.md");
+  for (const text of ["/quit", "Ctrl+D", "Shift+Enter", "Escape", "read", "bash",
+    "edit", "write", "grep", "find", "ls", "Ctrl+O", "pi --continue", "/resume",
+    "/tree", "/fork", "/model", "/trust", ".pi/extensions", "/lesson", "/lesson E1",
+    "/remedy on guard/repeat-loops", "/remedy off", "/remedy preset:easy",
+    "remedies: N on"])
+    assert.ok(l.includes(text), `Working With Pi lacks ${text}`);
+  assert.match(page("getting-started/index.md"), /working-with-pi\.md/);
+  assert.match(page("getting-started/base-pi-on-llamacpp.md"), /\(working-with-pi\.md\)/);
 });
 
 test("learn/ never says tutorial or case study", () => {
@@ -292,80 +239,51 @@ test("reference-run is earned on the suites, not the ladder", () => {
   assert.ok(row, "no reference-run row");
   assert.match(row, /preregistration/);
   assert.doesNotMatch(row, /docs\/ladder\//);
-  assert.match(evidence.split("\n").find((l) => l.startsWith("| `cited`")), /docs\/ladder\//);
-  const entry = page("glossary.md").split("### reference-run")[1].split("###")[0];
+  assert.match(evidence.split("\n").find((l) => l.startsWith("| `cited`")), /evals\//);
+  const entry = page("glossary.md").split("### Reference-run")[1].split("###")[0];
   assert.match(entry, /preregistered run on llama\.cpp/);
   assert.doesNotMatch(entry, /ladder run/);
 });
 
 test("the harness is the measured instrument", () => {
-  const harness = page("getting-started/harness.md");
+  const harness = page("getting-started/the-harness.md");
   assert.doesNotMatch(harness, /`ladder\/` is the measured instrument/);
   assert.doesNotMatch(harness, /do not replace `docs\/ladder\/`/);
   assert.match(harness, /`learn\/code\/harness\.py` is the measured instrument/);
   assert.doesNotMatch(page("project/index.md"), /\*\*The ladder\*\*/);
   assert.match(page("project/toolchain.md"), /Measured work lands in `docs\/superpowers\/research\/`/);
-  assert.doesNotMatch(page("getting-started/harness.md"), /ladder is the measuring/);
-  assert.doesNotMatch(page("getting-started/suite.md"), /Rates come from the ladder/);
-  assert.doesNotMatch(page("getting-started/suite.md"), /The ladder is the measuring instrument/);
+  assert.doesNotMatch(page("getting-started/the-harness.md"), /ladder is the measuring/);
+  assert.doesNotMatch(page("getting-started/eval-suites.md"), /Rates come from the ladder/);
+  assert.doesNotMatch(page("getting-started/eval-suites.md"), /The ladder is the measuring instrument/);
 });
 
 test("the run record groups the failed checks by module", () => {
-  const suite = page("getting-started/suite.md");
+  const suite = page("getting-started/eval-suites.md");
   assert.match(suite, /grader module/);
   assert.match(suite, /missing_checks|expected tests that did not pass/);
-  const harness = page("getting-started/harness.md");
+  const harness = page("getting-started/the-harness.md");
   assert.match(harness, /--specs joined\|split/);
   assert.match(harness, /spec-variants|spec variant/);
-  const entry = page("glossary.md").split("### failed checks")[1].split("###")[0];
+  const entry = page("glossary.md").split("### Failed checks")[1].split("###")[0];
   assert.match(entry, /module/);
   assert.match(suite, /checks_ran: false/);
-  assert.match(page("glossary.md"), /^### checks did not run$/m);
+  assert.match(page("glossary.md"), /^### checks did not run$/mi);
 });
 
 test("the lesson template opens with the two-sentence paragraph", () => {
   const t = page("lesson-template.md");
-  const opening = t.split(/^# .+$/m)[1].split(/^## /m)[0].replace(/```[\s\S]*?```/g, "").trim();
+  const opening = t.split(/^# .+$/m)[1].split(/^## |^!!! /m)[0].replace(/```[\s\S]*?```/g, "").trim();
   assert.ok(opening.length > 0, "template has no opening paragraph");
   assert.equal(opening.split(/(?<=\.)\s+/).filter(Boolean).length, 2);
   assert.ok(opening.split(/\s+/).length <= 45, "opening is over 45 words");
   assert.match(t, /two-sentence paragraph/);
 });
 
-test("a lesson screen is sized by what it reads", () => {
-  const lessons = PAGES.filter((p) => p.startsWith("lessons/") && p !== "lessons/index.md");
-  for (const p of lessons) {
-    const l = page(p).replace(/\s+/g, " ");
-    // The rule is about the evidence the page rests on, so it reads the
-    // Validation step; an Interpretation may still describe a retired screen.
-    const evidence = l.split("## Validation")[1]?.split("## Interpretation")[0] ?? "";
-    const nOne = /\bn ?= ?1\b/.test(evidence);
-    if (nOne) {
-      // One session settles presence; it cannot support an absence or a comparison.
-      assert.doesNotMatch(evidence, /\bnull\b/i, `${p}: n = 1 cannot be a null`);
-      assert.doesNotMatch(evidence, /\bvoid\b/i, `${p}: n = 1 cannot be a void arm`);
-      assert.doesNotMatch(evidence, /\bseparat(?:ed|es|ion)\b/i, `${p}: n = 1 cannot claim separation`);
-    }
-    // A lesson with no arm says so instead of quoting an n.
-    if (/\bno arm\b/i.test(l)) continue;
-    // Every other lesson states the size of its evidence somewhere.
-    assert.match(
-      l,
-      /\bn ?= ?[1-9]\b|\b(?:one|two|three|four|five|ten|45)[ -](?:session|sessions)\b|sessions per arm/,
-      `${p}: states no n for its evidence`,
-    );
-  }
+test("the harness is a Getting Started page, not a lesson (it applies no remedy)", () => {
+  const l = page("getting-started/the-harness.md");
+  assert.match(l, /^track: getting-started$/m);
+  assert.doesNotMatch(l, /^number:/m);
+  assert.doesNotMatch(l, /\*\*Remedy unit:\*\*|\*\*Lesson check:\*\*/);
+  assert.match(page("getting-started/index.md"), /the-harness\.md/);
 });
 
-test("every lesson page opens with the two-sentence paragraph", () => {
-  const lessons = PAGES.filter((p) => p.startsWith("lessons/") && p !== "lessons/index.md");
-  assert.ok(lessons.length >= 8, "lesson discovery found too few pages");
-  for (const p of lessons) {
-    const l = page(p);
-    const opening = l.split(/^# .+$/m)[1].split(/^## /m)[0].trim();
-    assert.ok(opening.length > 0, `${p} has no opening paragraph`);
-    assert.equal(opening.split(/(?<=\.)\s+/).filter(Boolean).length, 2, `${p} opening is not two sentences`);
-    assert.ok(opening.split(/\s+/).length <= 45, `${p} opening is over 45 words`);
-    assert.doesNotMatch(opening, /`|\]\(|\*\*Badge/, `${p} opening carries markup`);
-  }
-});

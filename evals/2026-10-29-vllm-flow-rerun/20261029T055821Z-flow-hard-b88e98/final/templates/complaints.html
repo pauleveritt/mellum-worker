@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Complaints Board</h1>
+<div class="row">
+{% for complaint in complaints %}
+    <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Complaint by {{ complaint.agent_name }}</h5>
+                <p class="card-text"><strong>Date:</strong> {{ complaint.timestamp.strftime('%Y-%m-%d') }}</p>
+                <p class="card-text"><strong>Text:</strong> {{ complaint.text }}</p>
+                {% if complaint.status == "open" %}
+                    <span class="badge bg-success">Open</span>
+                    <form method="post" action="/complaints/{{ complaint.id }}/resolve" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Resolve</button>
+                    </form>
+                {% else %}
+                    <span class="badge bg-secondary">Resolved</span>
+                    <form method="post" action="/complaints/{{ complaint.id }}/reopen" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Reopen</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+<!-- Complaint submission form -->
+<form method="post" action="/complaints" class="mt-4">
+    <div class="mb-3">
+        <label for="agent_name" class="form-label">Agent Name</label>
+        <input type="text" class="form-control" id="agent_name" name="agent_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="text" class="form-label">Text</label>
+        <textarea class="form-control" id="text" name="text" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Complaint</button>
+</form>
+{% endblock %}

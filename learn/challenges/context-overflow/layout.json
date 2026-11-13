@@ -1,0 +1,4 @@
+{
+  "allow": ["owners.md"],
+  "ignore": [".venv/**", "__pycache__/**", "*.pyc", "*.log", ".git/**", ".pytest_cache/**", "grader_tests/**", "uv.lock", "pyproject.toml", "docs/**"]
+}

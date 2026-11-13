@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-	ENABLED,
 	isBackgrounded,
 	isForegroundServer,
 	backgroundForm,
@@ -27,6 +26,21 @@ test("isForegroundServer: the python-script forms the ladder-era pattern missed"
 	assert.equal(isForegroundServer("uv run --frozen python -m pytest tests"), false);
 	assert.equal(isForegroundServer("python tests/test_app.py"), false);
 	assert.equal(isForegroundServer("python -c 'import app'"), false);
+});
+
+test("isForegroundServer: the server NAME as an argument (import/pip/grep) is not a start", () => {
+	// The easy-screen stall: the worker only wanted to CHECK uvicorn, and every
+	// command that merely NAMED it was refused as "you started a server" — nonsense
+	// for an import or a pip query — so it could not understand the block and thrashed.
+	assert.equal(isForegroundServer('uv run --frozen python -c "import uvicorn"'), false);
+	assert.equal(isForegroundServer("uv run --frozen pip show uvicorn"), false);
+	assert.equal(isForegroundServer("uv run --frozen pip install uvicorn"), false);
+	assert.equal(isForegroundServer("uv run --frozen pip list | grep uvicorn"), false);
+	assert.equal(isForegroundServer("python -c 'import gunicorn'"), false);
+	// ...but the real EXECUTION forms must still block:
+	assert.equal(isForegroundServer("uvicorn app:app --reload"), true); // direct binary
+	assert.equal(isForegroundServer("uv run --frozen python -m uvicorn app:app"), true); // -m module
+	assert.equal(isForegroundServer("uv run uvicorn app:app"), true); // wrapper then binary
 });
 
 test("isForegroundServer: a backgrounded server is not blocking", () => {
@@ -54,10 +68,6 @@ test("backgroundForm: detached, logged, prints the pid", () => {
 	const bg = backgroundForm("uvicorn app:app --port 8001");
 	assert.match(bg, /^nohup uvicorn app:app --port 8001 /);
 	assert.match(bg, /&\s*echo "server pid \$!"$/);
-});
-
-test("foreground-server guard stays dormant until a screen enables it", () => {
-	assert.equal(ENABLED.blockForegroundServer, undefined);
 });
 
 test("serverGuard: blocks a foreground bash server, allows everything else", () => {

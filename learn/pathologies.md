@@ -4,20 +4,54 @@ The ways a small model goes wrong on an agentic task, each with the record that
 shows it and the shape that answers it. Read it as a map of failure, not as a
 scoreboard.
 
+![A doctor robot with a stethoscope examining the small robot beside a chart and magnifying glass](assets/illustrations/pathologies.webp){ .illustration }
+
 ## How to read this
 
 - **An entry needs an observation behind it.** A run that happened, in this
-  repository or — where it says `Seen elsewhere` — in a record we can point at.
+  repository or, where it says `Seen elsewhere`, in a record we can point at.
   A failure mode somebody reasoned their way to is a hypothesis, not an entry.
 - **It is a reference, not a rate, and not a denominator.** Do not count the entries and call it
   a rate. They were collected opportunistically, on different tasks, and the
   count measures what got written down.
 - **Some entries are not the model's fault.** A harness or spec fault that reads
   as a model fault belongs here too, marked as such, because from the outside
-  the two are indistinguishable until someone checks — and misfiling one is the
+  the two are indistinguishable until somebody checks, and misfiling one is the
   mistake worth remembering.
 - **`Answer:` means the shape that answers it, not a proven cure.** Where
   nothing answers it yet, the line says so.
+
+## Pathology and remedy
+
+Each pathology is tied here to the remedy unit that answers it. The `/remedy`
+unit you switch on, listed in [Remedies you can try](challenge/remedies.md). Or
+marked where there is **no loadable remedy**, because the answer lives in the
+harness, the spec or the sampling settings instead. The numbers match the
+entries below.
+
+| # | Pathology | Remedy |
+| --- | --- | --- |
+| 1 | False success | none. The harness runs the command and scores it |
+| 2 | Fabricated evidence | none. The harness runs the command after the child exits |
+| 3 | A dropped requirement | none as a unit. Cumulative grading is a harness guarantee; `workflow/spec-driven-flow`'s per-phase gates come closest |
+| 4 | A narrowed test | none. Hidden graders are copied in after the run |
+| 5 | An empty final | `nudge/empty-turn` |
+| 6 | A loop | `guard/repeat-loops` (and `guard/turn-cap` for an unbounded budget) |
+| 7 | A runaway search | `guard/outside-workspace` |
+| 8 | A server no one can stop | `guard/foreground-server`, or `tool/background-long-commands` to rewrite it to the background |
+| 9 | Thinking spends the answer budget | none. An output cap with room for the answer, a sampling-settings fix |
+| 10 | An inert gate | none. A harness fix (read the gate's config at settle time) |
+| 11 | A stop-cap and a gate deadlock | none. A harness fix (reconcile the cap and the gate) |
+| 12 | Writes outside the layout | none yet. A write-confining guard is planned; `guard/outside-workspace` covers searches only |
+| 13 | A lost id | none as a unit. The acceptance list carries the contract; `workflow/spec-driven-flow`'s frozen gates come closest |
+| 14 | The project stops importing | none as a unit. A seeded test and the test command in the brief give the signal; the harness records `checks_ran` |
+| 15 | Builds it somewhere else | none as a unit. The project layout belongs in the spec |
+| 16 | A skipped rule | none. A fact is a reminder; the guard enforces (e.g. `guard/foreground-server` for "do not start servers") |
+| 17 | Ships without running its own code | under test. `guard/foreground-server` blocks the server-start that passes for a check; a verification lever is being measured ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)) |
+| 18 | The live-server spiral | `guard/no-live-server`. Any server start plus a loopback curl, stricter than `guard/foreground-server` |
+| 19 | A clean build that won't exit | none yet. A finish-nudge once the gate goes green is the candidate |
+| 20 | A weak examiner gate | none. The examiner's gate is a proxy; judge by the hidden grade |
+| 21 | Reasoning returned as speech | `context/repair-think-tags`. A serving fault, repaired at the agent |
 
 ## It says it is done and it is not
 
@@ -25,116 +59,234 @@ scoreboard.
    the run never executed, so the operator pays for a result they then have to
    verify themselves. **Seen:** the ditch session, where the model claimed a
    passing run over a project with four errors
-   ([lesson](../getting-started/ditch.md)). **Answer:** run the command
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-the-ditch-session.md)). **Answer:** run the command
    yourself; the scoring is the check, not the reply.
-2. **Fabricated evidence.** A test run is reported that never happened — the
+2. **Fabricated evidence.** A test run is reported that never happened: the
    output is invented, in the shape a real run would have taken. **Seen:** the
    same ditch session, whose test output was written rather than printed
-   ([lesson](../getting-started/ditch.md)). **Answer:** the harness runs the
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-the-ditch-session.md)). **Answer:** the harness runs the
    command after the child exits, so nothing the child says about a test counts.
 3. **A dropped requirement.** A later phase is built and an earlier one is
    silently lost, so the project passes the newest checks and fails the oldest.
    **Seen:** `split` session `995575`, which passed every phase-3 and phase-4
    check while missing 3 of 4 phase-1 checks
-   ([record](../../docs/superpowers/research/2026-10-25-lesson10-run.md)).
-   **Answer:** cumulative checks — grade every phase on every run, not just the
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)).
+   **Answer:** cumulative checks: grade every phase on every run, not just the
    phase that was asked for.
 4. **A narrowed test.** The worker changes the test rather than the code: a
    function narrowed to one assertion, a passing `assert True`, a selector
    pointed at the easy case. **Seen:** LC.9's `/mellum` session left three
    passing tests including one `assert True`
-   ([row](../../ROADMAP.md)); Andre's digest records the narrow-to-one-function
-   form ([harvest](../../docs/superpowers/research/2026-10-24-pr-harvest-index.md)).
+   ([row](https://github.com/andrevanzuydam/mellum-worker/blob/main/ROADMAP.md)); Andre's digest records the narrow-to-one-function
+   form ([harvest](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-pr-harvest-index.md)).
    **Answer:** hidden graders are copied in after the run, so a weakened visible
    test buys nothing; the mediated-test cycle (LC.21) is the fuller remedy.
 
 ## It stops before the work is done
 
 5. **An empty final.** A turn ends with no text and no tool call, and the run
-   stops there having done nothing — followed by the quiet version, an empty
-   final at the very end. **Seen:** ten easy sessions in which the nudge never
+   stops there having done nothing, followed by the quiet version, an empty
+   final at the very end. **Seen:** ten Easy sessions in which the nudge never
    fired because no empty turn had the shape it answers, the finals ending on a
    context overflow or the output cap instead
-   ([lesson](../lessons/guards-for-empty-turns.md)). **Answer:** the bounded
+   ([lesson](lessons/index.md)). **Answer:** the bounded
    nudge answers a self-ended empty turn; a capped or aborted one is a budget
    question and needs its own fix.
 6. **A loop.** The same text or the same call repeats until the budget is gone,
    with no progress between repeats. **Seen:** a smoke run looped about four
    minutes retrying refused command shapes, each a slightly different call
-   ([record](../../docs/superpowers/research/2026-10-26-server-guard-run.md));
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-26-server-guard-run.md));
    the loop breaker exists and is unmeasured
-   ([lesson](../lessons/guards-for-empty-turns.md)). **Answer:** a refusal that
-   names an alternative, and a loop breaker — which no arm has yet shown earns
+   ([lesson](lessons/index.md)). **Answer:** a refusal that
+   names an alternative, and a loop breaker, which no arm has yet shown earns
    its place.
-7. **A runaway search.** Instead of working the task, the model searches — the
-   filesystem, the web, its own context — and the turns go into looking rather
+7. **A runaway search.** Instead of working the task, the model searches (the
+   filesystem, the web, its own context) and the turns go into looking rather
    than doing. **Seen elsewhere:** Andre's index, "the runaway search", with no
    reproduction here yet
-   ([harvest](../../docs/superpowers/research/2026-10-24-pr-harvest-index.md)).
+   ([harvest](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-pr-harvest-index.md)).
    **Answer:** a spec that names the workspace and the files, and a tool set
    that does not invite wandering.
-8. **A server nobody can stop.** The model starts `uvicorn` in the foreground to
+8. **A server no one can stop.** The model starts `uvicorn` in the foreground to
    check its work, the call never returns, and the session burns its whole
    deadline waiting. **Seen:** three `no-facts` sessions that went silent for
-   143–460 s, two of three `bare` easy sessions, and LC.19's first two attempts
-   ([screen](../../docs/superpowers/research/2026-10-24-project-facts-screen.md),
-   [run](../../docs/superpowers/research/2026-10-25-lesson1-run.md),
-   [attempts](../../docs/superpowers/research/2026-10-25-lesson10-run.md)).
-   **Answer:** a brief that names the check — `pytest`, `TestClient` — stops it
+   143–460 s, two of three `bare` Easy sessions, LC.19's first two attempts,
+   and, on the local 6-bit MLX host, two of three bare `build-a-harness` sessions
+   (2026-10-29 smoke), and two of three easy `acceptance + verify` reps on local Q4
+   that were killed at the 120 s stall on a foreground `python main.py`, before
+   the settle gate could ever fire (2026-10-31)
+   ([screen](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-project-facts-screen.md),
+   [run](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson1-run.md),
+   [attempts](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md),
+   [6-bit](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-local-lessons-smoke.md),
+   [gate screen](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
+   **Answer:** a brief that names the check (`pytest`, `TestClient`) stops it
    at the source; the dormant guard refuses the call when it appears, at the
    cost of retries.
 
+9. **Thinking spends the answer budget.** The model reasons until the output
+   cap is gone, and the turn ends with no answer. **Seen:** a one-turn smoke at
+   `max_tokens 32` that spent all 32 tokens thinking and returned empty content,
+   and suite finals on Easy and Medium ended by `length`
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-lessons-left-the-track.md)). **Answer:** an output cap with room for the answer;
+   stripping earlier reasoning does not give the turn its budget back.
+10. **An inert gate (not the model's fault).** The verify-and-redispatch gate
+   that should refuse a premature "done" was switched off the whole session, so
+   the worker self-exited with the work incomplete and nothing sent it back. A
+   harness fault that reads from the outside as the model stopping early.
+   **Seen:** the 2026-10-30 easy remedy screen, where `mellum-verify` read `VERIFY_TEST`
+   at extension-load, before `mellum-acceptance` set it at `session_start`, so
+   `[mellum-verify]` fired zero times and a 17-turn session settled with the app
+   built as `main.py` and the Phase-1 home checks unmet
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-30-acceptance-gate-inert.md)).
+   **Answer:** read the gate's config at settle time, not at load, and run the
+   contract with the workspace on `PYTHONPATH`; a smoke run that asserts the gate
+   actually redispatches would have caught it.
+11. **A stop-cap and a gate deadlock (not the model's fault).** Two remedies own
+   opposite halves of the stop/go decision and neither yields: a tool-call cap
+   refuses the next call ("budget reached. Stop") while a verify gate refuses
+   the settle ("tests still fail. Keep going"), so the worker can neither act
+   nor finish and churns text turns to the deadline. **Seen:** the 2026-10-31
+   easy screen, a `turn-cap(120)` + `mellum-verify` rep that ran 296 turns to the
+   1800 s wall with `tool_calls` pinned at 120, `agent_settled` zero times, 349
+   budget blocks against 193 gate refusals; the one rep where the cap barely bit
+   (5 blocks) passed at 125 turns
+   ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-31-cap-ncm-deadlock.md)).
+   **Answer:** do not run a hard stop-cap and a refuse-to-settle gate together
+   without reconciling them. The gate stands down once the budget is exhausted,
+   letting the run settle on its real (incomplete) state rather than timing out.
+
 ## It damages the project while finishing
 
-9. **Writes outside the layout.** The run passes every hidden test and still
+12. **Writes outside the layout.** The run passes every hidden test and still
    leaves scratch files, a second copy of the app, or an edited test, so the
    workspace is no longer the project. **Seen:** the file-set check found
    `main.py` outside the layout twice, and `pyproject.toml` once
-   ([run](../../docs/superpowers/research/2026-10-25-lesson1-run.md),
-   [lesson](../lessons/write-only-listed.md)). **Answer:** name the layout in
-   the task and compare the file set after the run.
-10. **A lost id.** The last phase's identity contract never lands — the field is
+   ([run](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson1-run.md),
+   no lesson yet). **Answer:** name the layout in the task and compare the file
+   set after the run; a guard that confines writes is planned.
+13. **A lost id.** The last phase's identity contract never lands: the field is
     missing, or it is rebuilt from a position that changes when the list does.
     **Seen:** phase 4's group of checks missing in three of the four sessions
     whose checks ran, in the spec-layout arm
-    ([record](../../docs/superpowers/research/2026-10-25-lesson10-run.md)).
-    **Answer:** write the contract into the acceptance list — unique, stable,
-    never reused — and grade the phase rather than the session.
-11. **The project stops importing.** A syntax error, or a dataclass that cannot
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)).
+    **Answer:** write the contract into the acceptance list (unique, stable,
+    never reused) and grade the phase rather than the session.
+14. **The project stops importing.** A syntax error, or a dataclass that cannot
     construct without an argument the seed code does not pass, leaves a
     workspace nothing can load. **Seen:** three of three sessions of a joined
-    brief, and two of six in the spec-layout arm — `ModuleNotFoundError`,
+    brief, and two of six in the spec-layout arm: `ModuleNotFoundError`,
     `SyntaxError: unterminated string`, `Complaint.__init__() missing …
     'timestamp'`
-    ([record](../../docs/superpowers/research/2026-10-27-prose-brief-run.md),
-    [record](../../docs/superpowers/research/2026-10-25-lesson10-run.md)).
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-27-prose-brief-run.md),
+    [record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)).
     **Answer:** the test command in the brief and a seeded test give the signal
     on the first turn; the harness now records `checks_ran: false` so a full
     set of missing checks is not read as a full set of failures.
-12. **Builds it somewhere else.** The requirements are met, but in a file the
-    project's own notes did not name — the dataclass in `app.py` rather than
-    `models.py` — so everything that imports the project fails. **Seen:** three
+15. **Builds it somewhere else.** The requirements are met, but in a file the
+    project's own notes did not name (the dataclass in `app.py` rather than
+    `models.py`) so everything that imports the project fails. **Seen:** three
     joined-brief sessions and one spec-layout session ended without `models.py`,
     and each scored 18 of 18 missing
-    ([record](../../docs/superpowers/research/2026-10-27-prose-brief-run.md),
-    [record](../../docs/superpowers/research/2026-10-25-lesson10-run.md)).
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-27-prose-brief-run.md),
+    [record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)).
     **Answer:** the project layout belongs in the spec, and the checks should
     say they could not run rather than that everything failed.
 
 ## It ignores what it was told
 
-13. **A skipped rule.** An instruction is in every request, in the project's own
+16. **A skipped rule.** An instruction is in every request, in the project's own
     words, and the run does the opposite. **Seen:** `Do not: start servers` sat
     in every request and both attempts started one
-    ([record](../../docs/superpowers/research/2026-10-25-lesson10-run.md)), and
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-25-lesson10-run.md)), and
     the facts block that carried it moved no pass at n = 3
-    ([run](../lessons/project-facts.md)). **Answer:** a fact is a reminder, not
+    ([run](lessons/index.md)). **Answer:** a fact is a reminder, not
     an enforcement; the guard is the enforcement, and it stays dormant until an
     arm needs it.
+
+## It ships a defect it never ran
+
+17. **Ships without running its own code.** The run declares done after an
+    ineffective self-check. It starts a foreground server, or only re-reads the
+    files, instead of exercising the real route or test. So a genuine defect
+    ships even though nothing was fabricated. Unlike false success (1), the model
+    is not inventing a result; it is verifying by the wrong means. **Seen:** the
+    Easy ladder at n = 6 (4/6) on `vanilla + name-the-layout + python-developer`,
+    where rep 2 wrote `def home(request):` (no `Request` annotation, so `GET /`
+    returned 422) and "verified" by launching `uvicorn`, which never hits the
+    route, and rep 5 had the route right but a different defect and only re-read
+    the files before stopping
+    ([easy-ladder](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-02-easy-ladder.md)).
+    **Answer:** verification. Run the real route or test before finishing;
+    `guard/foreground-server` removes the server-start that stands in for a check,
+    forcing a different verification, and a verify lever is being measured.
+
+## It chases a live server
+
+18. **The live-server spiral.** A redirect reads as the wrong number. A `303`
+    the model wanted to be `200`, a `TestClient` `422` its own route signature
+    causes. And it doesn't believe it, so it starts a live server and curls
+    `localhost` to see for itself. The server it starts is a stranger: it forks a
+    process that disagrees with the in-process test client, so the curl settles
+    nothing, so it starts another, thrashing to the stall before it ever settles.
+    Distinct from a server no one can stop (8): there a foreground server hangs
+    the run; here a *background* one, which `guard/foreground-server` waves
+    through, is the spiral's fuel. **Seen:** gated one-pass medium, where 2 of 3
+    reps never reached the exit-gate. 28 to 55 server starts each, the model
+    slipping past `guard/foreground-server` with `nohup … &` and
+    `.venv/bin/python app.py`
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
+    **Answer:** `guard/no-live-server` refuses any server start. Foreground or
+    background. And any loopback curl, and points the worker at
+    `TestClient(app, follow_redirects=False)`; with it, 3 of 3 reached the gate
+    and passed.
+
+## It will not stop when it is done
+
+19. **A clean build that won't exit.** The worker finishes the job. The build is
+    correct on the hidden grader, every requirement met. And then it will not
+    settle: it idles on, turn after turn, until the stall guard pulls the plug at
+    the tail. Distinct from the live-server spiral (18), which never builds a
+    correct app, and from the cap-and-gate deadlock (11), where a cap and a gate
+    disagree. Here nothing disagrees. The work is done and the worker just will
+    not down tools. **Seen:** the gated one-pass medium run, where a rep reached a
+    clean 18/18 and then idled into the 240 s stall, one blocked start and no curl
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-08-one-pass-vs-architect-loop.md)).
+    **Answer:** no unit yet. A finish-nudge once the gate goes green, settle now,
+    the test passes, is the candidate, unmeasured.
+
+## A gate that passes a wrong build
+
+20. **A weak examiner gate.** Distinct from a narrowed test (4), where the worker
+    weakens a test to pass it. Here a separate examiner writes the gate in the
+    first place, and writes it too thin. Every phase gate goes green, the worker
+    settles proud, and the hidden grader then fails the build the gates passed.
+    The examiner's test is a proxy for the real grade, and a proxy can be too
+    loose. **Seen:** the flow carried the hard suite through all seven frozen
+    per-phase gates to green, and the hidden grader read `visible=PASS,
+    hidden=FAIL`, 5 of 34 checks red
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-24-flow-hard-visible-pass-hidden-gap.md)).
+    **Answer:** no unit. Judge by the hidden grade, never the examiner's say-so;
+    a stronger, more exhaustive examiner narrows the gap.
+
+## It is failed by its host
+
+21. **Reasoning returned as speech.** Not the model's fault, like the inert gate
+    (10). The model reasons on its own channel, and the host is meant to hand
+    that reasoning back on a field the agent reads apart from the reply. When the
+    host's parser misses the split, the reasoning comes back as plain text in the
+    reply, so the agent shows it as the answer and feeds it back as a thing the
+    model said. Every turn after reads a little more confused. **Seen:** a LAN
+    vLLM host leaked the reasoning on 236 of 244 turns, against 0 of 136 on a
+    correctly serving host, same model
+    ([record](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-10-29-lan-reasoning-leak.md)).
+    **Answer:** `context/repair-think-tags` moves a leaked `<think>` reply back
+    into a thinking block; the real fix is to pin a serving stack that labels the
+    channel right.
 
 ---
 
 *Provenance: entry 7 comes from Andre's harvest and has no observation here yet;
-entries 1, 2 and 4-13 are drawn from this repository's own records, linked on
+entries 1, 2 and 4–21 are drawn from this repository's own records, linked on
 each line; the strongest are three of three. Collected as runs happened, which is why the list is uneven and why
 it is not a rate.*
