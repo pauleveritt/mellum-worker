@@ -267,6 +267,19 @@ Versions match git tags; pin one in both install lines.
 
 ### Fixed
 
+- **The `mellum-verify` settle gate is harder to fool and can't hang.** There are four
+  fixes, from proposals 17 and 18 in Paul's handover:
+  - A hung acceptance test is stopped with its process group after 150 s and reads red.
+    Before, it held settle until the outer cutoff.
+  - Green now needs a pass for every test function in the named test. Exit 0 isn't
+    enough, since a workspace conftest, pytest config or `PYTEST_ADDOPTS` could skip
+    the test and still exit 0.
+  - The gate keeps earlier settle handlers' messages. Before, Pi kept only the last
+    handler's, so the gate dropped them.
+  - The message sent back to the worker no longer names the held-out test's path,
+    folder or file.
+
+  `extensions/bounded.ts` is Paul's.
 - **The installer writes the Pi Node wrapper on the already-installed path too.**
   When `uv` and `llama-server` were already present, `install.sh` took its early
   exit and never ran `use_private_node_for_pi`, so anyone who already had `uv`

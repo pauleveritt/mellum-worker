@@ -78,3 +78,91 @@ test("verifyEnv: worker cwd on PYTHONPATH, VIRTUAL_ENV stripped (so a held-out c
 		else process.env.VIRTUAL_ENV = prev;
 	}
 });
+
+// ---- Gate-runner fixes (2026-11-13, from Paul's handover proposals 17 and 18) ----
+// Real pytest in throwaway directories, no mocks. Each test names the bug it pins.
+import { mkdtempSync, writeFileSync, mkdirSync, realpathSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { runTest } from "../extensions/mellum-verify.ts";
+import verify from "../extensions/mellum-verify.ts";
+
+const PYTEST = "uv run --with pytest python -m pytest";
+const scratch = (files) => {
+	const dir = realpathSync(mkdtempSync(join(tmpdir(), "verify-")));
+	for (const [name, body] of Object.entries(files)) {
+		mkdirSync(join(dir, name, ".."), { recursive: true });
+		writeFileSync(join(dir, name), body);
+	}
+	return dir;
+};
+
+test("runTest: a held-out test that passes reads green", () => {
+	const held = scratch({ "contract/test_contract.py": "def test_a():\n    assert True\n\ndef test_b():\n    assert True\n" });
+	const ws = scratch({ "app.py": "x = 1\n" });
+	assert.equal(runTest(join(held, "contract/test_contract.py"), PYTEST, ws).passed, true);
+});
+
+test("bug 1: a hung test is stopped at the timeout and reads red, instead of holding settle", () => {
+	const held = scratch({ "test_hang.py": "import time\n\ndef test_hang():\n    time.sleep(120)\n" });
+	const ws = scratch({ "app.py": "" });
+	const t0 = Date.now();
+	const v = runTest(join(held, "test_hang.py"), PYTEST, ws, 8000);
+	assert.equal(v.passed, false);
+	assert.match(v.output, /timed out/);
+	assert.ok(Date.now() - t0 < 30000, "returned near the timeout, not after the sleep");
+});
+
+test("bug 3: exit 0 is not evidence - a workspace conftest that skips every test reads red", () => {
+	// The ladder copies the acceptance test INTO the workspace (run_ladder.py:532-534), so the
+	// workspace's own conftest is collected with it and can skip it into an exit 0.
+	const ws = scratch({
+		"tests/test_contract.py": "def test_a():\n    assert False\n",
+		"conftest.py":
+			"import pytest\n\ndef pytest_collection_modifyitems(config, items):\n    for i in items:\n        i.add_marker(pytest.mark.skip(reason='x'))\n",
+	});
+	const v = runTest("tests/test_contract.py", PYTEST, ws);
+	assert.equal(v.passed, false, "a skipped acceptance test never passed");
+	assert.deepEqual(v.failures, ["test_a"], "the test with no pass is named as unmet");
+});
+
+test("bug 3: PYTEST_ADDOPTS from the environment cannot deselect the acceptance test", () => {
+	const prev = process.env.PYTEST_ADDOPTS;
+	process.env.PYTEST_ADDOPTS = "-k nothing_matches";
+	try {
+		assert.ok(!("PYTEST_ADDOPTS" in verifyEnv("/w")));
+	} finally {
+		if (prev === undefined) delete process.env.PYTEST_ADDOPTS;
+		else process.env.PYTEST_ADDOPTS = prev;
+	}
+});
+
+test("bug 2: the gate keeps an earlier settle handler's entries (Pi keeps the last handler's)", async () => {
+	const held = scratch({ "test_contract.py": "def test_a():\n    assert False\n" });
+	const ws = scratch({ "app.py": "" });
+	const prev = { t: process.env.VERIFY_TEST, p: process.env.VERIFY_PYTEST };
+	process.env.VERIFY_TEST = join(held, "test_contract.py");
+	process.env.VERIFY_PYTEST = PYTEST;
+	try {
+		let handler;
+		verify({ on: (_e, h) => { handler = h; } });
+		const earlier = { type: "custom_message", customType: "mellum-quality", content: "lint red", display: true };
+		const r = await handler({ type: "agent_before_settle", entries: [earlier], continue: true }, { cwd: ws });
+		assert.deepEqual(r.entries.map((e) => e.customType), ["mellum-quality", "mellum-verify"]);
+	} finally {
+		for (const [k, v] of [["VERIFY_TEST", prev.t], ["VERIFY_PYTEST", prev.p]]) {
+			if (v === undefined) delete process.env[k];
+			else process.env[k] = v;
+		}
+	}
+});
+
+test("18: the gate message never names where the held-out test lives", () => {
+	const held = scratch({ "contract/test_contract.py": "def test_ids_distinct():\n    assert 1 == 2\n" });
+	const ws = scratch({ "app.py": "" });
+	const path = join(held, "contract/test_contract.py");
+	const msg = gateMessage(runTest(path, PYTEST, ws));
+	assert.match(msg, /test_ids_distinct/, "the unmet concept is still named");
+	assert.ok(!msg.includes(held), "no directory of the held-out test");
+	assert.ok(!msg.includes("test_contract.py"), "no file name of the held-out test");
+});

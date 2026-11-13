@@ -24,8 +24,17 @@
  *               refuse to settle until green). Inert unless VERIFY_TEST or VERIFY_ALL.
  *   VERIFY_MAX     how many times to send the worker back (default 5).
  *   VERIFY_PYTEST  the pytest command (default: uv run --offline python -m pytest).
+ *
+ * Green needs evidence, not exit 0: every test function in a named test's source must
+ * show a pass, because a workspace conftest, pytest config or PYTEST_ADDOPTS can skip or
+ * deselect tests and still exit 0. A hung test is stopped with its process group at
+ * VERIFY_TIMEOUT_MS and reads red. The gate keeps earlier settle handlers' entries, and
+ * its message never names where the held-out test lives. (Proposals 17 and 18 in Paul's
+ * 2026-11-09 handover; `bounded.ts` is his.)
  */
-import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
+import { runBounded } from "./bounded.ts";
 
 export interface Verdict {
 	passed: boolean;
@@ -34,10 +43,30 @@ export interface Verdict {
 	output: string;
 }
 
-/** Parse `pytest -q` output: passed? and the failing `test_*` names (unmet concepts). */
-export function parsePytest(code: number, output: string): Verdict {
-	const failures = [...output.matchAll(/^FAILED\s+\S+::(\S+?)(?:\s|$)/gm)].map((m) => m[1]);
-	return { passed: code === 0, failures, output };
+/** Every `test*` function defined in a test file's source (methods count by their own name). */
+export function expectedTests(source: string): string[] {
+	return [...new Set([...source.matchAll(/^[ \t]*(?:async[ \t]+)?def[ \t]+(test\w*)[ \t]*\(/gm)].map((m) => m[1]))];
+}
+
+/** Parse `pytest -q -rA` output: passed? and the unmet concepts. With `expected` (the named test's
+ * functions), green also needs a PASSED line for each one: exit 0 alone is not evidence. */
+export function parsePytest(code: number, output: string, expected: string[] = []): Verdict {
+	const failed = [...output.matchAll(/^(?:FAILED|ERROR)\s+\S+::(\S+?)(?:\[|\s|$)/gm)].map((m) => m[1]);
+	const passedNames = new Set([...output.matchAll(/^PASSED\s+\S+::(\S+?)(?:\[|\s|$)/gm)].map((m) => m[1]));
+	const missing = expected.filter((n) => !passedNames.has(n));
+	return { passed: code === 0 && missing.length === 0, failures: [...new Set([...failed, ...missing])], output };
+}
+
+/** Strip where a held-out test lives from text the worker will read: its path, folder and file name. */
+export function redactTestPath(text: string, test: string, cwd: string): string {
+	const path = (test || "").trim();
+	if (!path) return text;
+	const abs = resolve(cwd, path);
+	let out = text;
+	for (const s of [abs, path, dirname(abs), basename(abs)]) {
+		if (s && s !== "." && s !== "/" && s !== cwd) out = out.split(s).join("<acceptance test>");
+	}
+	return out;
 }
 
 /** The message handed back to the worker naming the concepts it has not met. */
@@ -58,7 +87,7 @@ export function gateMessage(v: Verdict): string {
 /** The pytest command: a named test runs just that file; an empty test runs the whole visible suite. */
 export function verifyCommand(test: string, pytest: string): string {
 	const path = (test || "").trim();
-	return `${pytest}${path ? ` ${path}` : ""} -q -p no:warnings --tb=short`;
+	return `${pytest}${path ? ` ${path}` : ""} -q -rA -p no:warnings --tb=short`;
 }
 
 /** The verify subprocess environment: the worker cwd on PYTHONPATH, so a held-out
@@ -69,23 +98,27 @@ export function verifyCommand(test: string, pytest: string): string {
 export function verifyEnv(cwd: string): NodeJS.ProcessEnv {
 	const env: NodeJS.ProcessEnv = { ...process.env, PYTHONPATH: cwd };
 	delete env.VIRTUAL_ENV;
+	delete env.PYTEST_ADDOPTS; // could deselect the acceptance test from outside the run
 	return env;
 }
 
-/** Run the verification (a named test, or the whole suite when `test` is empty) in `cwd`; never throws. */
-export function runTest(test: string, pytest: string, cwd: string): Verdict {
-	try {
-		const out = execSync(verifyCommand(test, pytest), {
-			cwd,
-			env: verifyEnv(cwd),
-			encoding: "utf8",
-			stdio: ["ignore", "pipe", "pipe"],
-		});
-		return parsePytest(0, out);
-	} catch (e: any) {
-		const code = typeof e?.status === "number" ? e.status : 1;
-		return parsePytest(code, `${e?.stdout ?? ""}${e?.stderr ?? ""}`);
-	}
+/** The verify timeout: below the harness's 180 s stall cutoff, so a hung test cannot stall settle. */
+export const VERIFY_TIMEOUT_MS = 150_000;
+
+/** Run the verification (a named test, or the whole suite when `test` is empty) in `cwd`. A hung
+ * command is stopped with its process group and reads red. Throws only when the command could not
+ * start (exit 127), which is our tooling, not the worker's code. */
+export function runTest(test: string, pytest: string, cwd: string, timeoutMs = VERIFY_TIMEOUT_MS): Verdict {
+	const named = test.trim();
+	const abs = named ? resolve(cwd, named) : "";
+	const expected = abs && existsSync(abs) ? expectedTests(readFileSync(abs, "utf8")) : [];
+	const r = runBounded("sh", ["-c", verifyCommand(test, pytest)], { cwd, env: verifyEnv(cwd), timeoutMs });
+	if (!r.started || r.code === 127) throw new Error(`verify: the test command could not start: ${r.out.trim()}`);
+	const raw = r.timedOut
+		? `${r.out}\n[verify] the test command timed out after ${Math.round(timeoutMs / 1000)} s and was stopped.`
+		: r.out;
+	const v = parsePytest(r.timedOut ? 1 : (r.code ?? 1), raw, expected);
+	return { ...v, output: redactTestPath(raw, test, cwd) };
 }
 
 /** Read the gate config from the environment. Read AT SETTLE TIME, never at load:
@@ -103,7 +136,7 @@ export function gateConfig() {
 
 export default function (pi: { on: (event: string, handler: (ev: any, ctx?: any) => unknown) => void }) {
 	let used = 0;
-	pi.on("agent_before_settle", (_event: any, ctx: any) => {
+	pi.on("agent_before_settle", (event: any, ctx: any) => {
 		const { test, all, max, pytest } = gateConfig();
 		// Active when a named acceptance test is set (mediation) OR whole-suite verify is on (VERIFY_ALL).
 		if ((test === "" && !all) || !(used < max)) return undefined;
@@ -117,7 +150,8 @@ export default function (pi: { on: (event: string, handler: (ev: any, ctx?: any)
 		if (v.passed) return undefined; // every concept met — let it settle
 		used += 1;
 		return {
-			entries: [{ type: "custom_message", customType: "mellum-verify", content: gateMessage(v), display: true }],
+			// Pi keeps the entries the last handler returns, so carry the earlier handlers' forward.
+			entries: [...(event?.entries ?? []), { type: "custom_message", customType: "mellum-verify", content: gateMessage(v), display: true }],
 			continue: true,
 		};
 	});
