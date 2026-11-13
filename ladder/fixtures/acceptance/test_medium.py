@@ -233,7 +233,8 @@ def test_home_renders_the_tagline_and_base_layout():
     tree = Tree(r.text)
     assert "Come in. Sit down. Tell us about your human." in text(tree.root)
     titles = tree.find(lambda n: n.tag == "title")
-    assert titles and "AgentClinic" in "".join(c for c in titles[0].children if isinstance(c, str))
+    title = "".join(c for c in titles[0].children if isinstance(c, str)) if titles else None
+    assert title is not None and "AgentClinic" in title, f"AgentClinic in the page <title>; the title found: {title!r}"
     _assert_base_layout(tree)
 
 

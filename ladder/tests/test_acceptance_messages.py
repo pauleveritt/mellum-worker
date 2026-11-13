@@ -94,3 +94,17 @@ def test_a_missing_brand_shows_the_nav_links_found(tmp_path):
     code, out = _run(tmp_path, edit)
     reasons = _reasons(out)
     assert "AgentClinic brand" in reasons and "'Clinic'" in reasons, reasons
+
+
+@pytest.mark.slow
+def test_a_page_title_override_shows_the_title_found(tmp_path):
+    # the 2026-11-13 messages screen, rep 1: home.html overrode the title block with "Home"
+    def edit(ws):
+        tpl = ws / "templates" / "home.html"
+        text = tpl.read_text()
+        text = re.sub(r"{% block title %}.*?{% endblock %}", "", text, flags=re.S)
+        tpl.write_text(text.replace("{% block content %}", "{% block title %}Home{% endblock %}\n{% block content %}", 1))
+    code, out = _run(tmp_path, edit)
+    reasons = _reasons(out)
+    assert "title" in reasons and "'Home'" in reasons, reasons
+    assert "generator object" not in reasons, reasons
