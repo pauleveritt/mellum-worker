@@ -361,6 +361,46 @@ adjustments are added here, newest last.
   Phase 4 id miss is a separate matter: the reason is clear, and two reps still
   couldn't act on it in five rounds.
 
+### Both halves: what each check wanted and what it found (2026-11-15)
+
+- **The change (`3e20e161`).** Each Medium acceptance check now states what it
+  wanted next to what it found. The favicon message names the exact `href` the
+  spec gives. The Phase 4 id message says which creation got which id: the last
+  seed, a direct `Complaint(...)`, an add through the route, a second direct one.
+  It adds that the ids must rise across all four, so the id is a default on
+  `Complaint` itself. Two slow tests rebuild the last screen's misses and were
+  red on the old messages. 43 of 43 witness builds and the hidden oracle hold.
+- **The screen (Medium n=3, the same rig, only the messages changed):**
+
+  | rep | score | requests | wall | stop | gate rounds | acceptance test at exit |
+  |---|---|---|---|---|---|---|
+  | 1 | 18/18 | 25 | 231 s | clean | 0, green at once | 9 of 9 green |
+  | 2 | 18/18 | 54 | 682 s | clean | 1, then green | 9 of 9 green |
+  | 3 | 18/18 | 46 | 413 s | clean | 0, green at once | 9 of 9 green |
+
+  18/18 on 3 of 3 at a mean of 42 requests, every gate green. Across the
+  screens with the reasons in the gate, at n=3 each:
+
+  | gate message | scores | requests | gates green |
+  |---|---|---|---|
+  | reasons and the nudge | 18, 18, 18 | 143, 200, 46 | 2 of 3 |
+  | plus what was found | 18, 17, 17 | 197, 160, 149 | 0 of 3 |
+  | plus what was wanted | 18, 18, 18 | 25, 54, 46 | 3 of 3 |
+
+- **The one round that ran closed the miss that sank the last screen.** Rep 2
+  had the Phase 4 id assigned in the route with a default of 0, the same shape
+  as last screen's reps 2 and 3. Its next reasoning quotes the new message
+  ("ids strictly increasing across all four, so the id is an automatic default
+  on Complai…"), moves the id onto the dataclass, and the gate goes green after
+  that one round. Last screen, the same miss held two reps for nine rounds.
+- **What this doesn't show.** Reps 1 and 3 were green on their first pass, so
+  the messages never reached them. Their low request counts are the first pass
+  going well, not the gate. The win attributable to the messages rests on one
+  round, and the request drop against the earlier screens is mostly that. At
+  n=3, a lead, not a rate.
+- **Next (a theory).** A preregistered run of the gated one-pass rig against
+  the shipped plan loop, to settle whether this becomes a ladder mode.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
