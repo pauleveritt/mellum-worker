@@ -108,3 +108,33 @@ def test_a_page_title_override_shows_the_title_found(tmp_path):
     reasons = _reasons(out)
     assert "title" in reasons and "'Home'" in reasons, reasons
     assert "generator object" not in reasons, reasons
+
+
+# ---- both halves: what the check wanted AND what it found -----------------
+@pytest.mark.slow
+def test_a_wrong_favicon_names_the_href_the_spec_wants(tmp_path):
+    # the 2026-11-13 messages screen, rep 1: the worker swapped the spec's favicon for a data: image
+    def edit(ws):
+        _sub(ws / "templates" / "base.html",
+             'href="https://www.python.org/static/favicon.ico"', 'href="data:image/png;base64,AAAA"')
+    code, out = _run(tmp_path, edit)
+    reasons = _reasons(out)
+    assert "https://www.python.org/static/favicon.ico" in reasons, reasons  # wanted
+    assert "data:image/png" in reasons, reasons  # found
+
+
+@pytest.mark.slow
+def test_an_id_set_only_in_the_route_says_which_creation_got_which_id(tmp_path):
+    # the 2026-11-13 messages screen, reps 2 and 3: a direct construction got no id of its own
+    def edit(ws):
+        _sub(ws / "models.py", "id: int = field(default_factory=lambda: next(_ids))", "id: int = 0")
+        models = ws / "models.py"  # the seeds still get ids 1..n, as those reps' did
+        models.write_text(models.read_text() + "\nfor _i, _c in enumerate(complaints, 1):\n    _c.id = _i\n")
+        _sub(ws / "app.py", "complaints.append(Complaint(agent_name, text))",
+             "complaints.append(Complaint(agent_name, text, id=max(c.id for c in complaints) + 1))")
+    code, out = _run(tmp_path, edit)
+    lines = [l for l in _reasons(out).splitlines() if "id" in l]
+    msg = "\n".join(lines)
+    assert "direct" in msg and "Complaint(" in msg, msg  # names the direct construction
+    assert "got id 0" in msg or "id=0" in msg, msg  # and what it got
+    assert "strictly increasing" in msg, msg  # and what was wanted

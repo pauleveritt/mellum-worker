@@ -202,9 +202,9 @@ def _card_actions(tree, complaint):
 # ---- Phase 1: home page + base layout -------------------------------------
 def _assert_base_layout(tree):
     found = any(d.strip().lower() == "doctype html" for d in tree.decls)
-    assert found, f"HTML5 doctype, got {tree.decls}"
+    assert found, f"the HTML5 doctype <!DOCTYPE html>; found {tree.decls or 'no doctype'}"
     html = tree.find(lambda n: n.tag == "html")
-    assert html and html[0].attrs.get("lang") == "en", f'<html lang="en">, got {_tags(html)}'
+    assert html and html[0].attrs.get("lang") == "en", f'<html lang="en">; found {_tags(html) or "no <html> tag"}'
     metas = tree.find(lambda n: n.tag == "meta")
     found = any("charset" in m.attrs or "charset" in (m.attrs.get("content") or "").lower() for m in metas)
     assert found, f"a charset meta; the <meta> tags parsed: {_tags(metas)}"
@@ -213,25 +213,27 @@ def _assert_base_layout(tree):
     links = tree.find(lambda n: n.tag == "link")
     found = any("stylesheet" in (l.attrs.get("rel") or "").lower() and "bootstrap" in (l.attrs.get("href") or "").lower() for l in links)
     assert found, f"Bootstrap 5 CSS: a stylesheet link to Bootstrap; the <link> tags parsed: {_tags(links)}"
-    found = any("icon" in (l.attrs.get("rel") or "").lower().split() and l.attrs.get("href") == "https://www.python.org/static/favicon.ico" for l in links)
-    assert found, f"the favicon link; the <link> tags parsed: {_tags(links)}"
+    favicon = "https://www.python.org/static/favicon.ico"
+    found = any("icon" in (l.attrs.get("rel") or "").lower().split() and l.attrs.get("href") == favicon for l in links)
+    assert found, f"a favicon link: <link rel='icon' href='{favicon}'> (that exact href); the <link> tags parsed: {_tags(links)}"
     scripts = tree.find(lambda n: n.tag == "script")
     found = any("bootstrap" in (s.attrs.get("src") or "").lower() and "bundle" in (s.attrs.get("src") or "").lower() for s in scripts)
     assert found, f"the Bootstrap JS bundle; the <script> tags parsed: {_tags(scripts)}"
     navs = [n for n in tree.find(lambda n: n.tag == "nav") if shown(n)]
-    assert navs, "a visible navbar"
+    assert navs, "a visible <nav> navbar; found none on show"
     nav_links = {(a.attrs.get("href"), text(a)) for nav in navs for a in nav.walk() if a.tag == "a" and shown(a)}
     found = any(t == "AgentClinic" for _, t in nav_links)
     assert found, f"the AgentClinic brand on show in the navbar; visible nav links (href, text): {sorted(nav_links, key=str)}"
     hrefs = {h for h, t in nav_links if t}
-    assert "/" in hrefs and "/complaints" in hrefs, f"navbar links to / and /complaints, got {hrefs}"
+    assert "/" in hrefs and "/complaints" in hrefs, f"navbar links to / and /complaints; found {sorted(hrefs, key=str)}"
 
 
 def test_home_renders_the_tagline_and_base_layout():
     r = client.get("/")
     assert r.status_code == 200
     tree = Tree(r.text)
-    assert "Come in. Sit down. Tell us about your human." in text(tree.root)
+    tagline = "Come in. Sit down. Tell us about your human."
+    assert tagline in text(tree.root), f"the tagline {tagline!r}; the page text: {text(tree.root)[:300]!r}"
     titles = tree.find(lambda n: n.tag == "title")
     title = "".join(c for c in titles[0].children if isinstance(c, str)) if titles else None
     assert title is not None and "AgentClinic" in title, f"AgentClinic in the page <title>; the title found: {title!r}"
@@ -240,25 +242,25 @@ def test_home_renders_the_tagline_and_base_layout():
 
 # ---- Phase 2: complaints board -------------------------------------------
 def test_seed_complaints_include_the_exact_scope_creep_text():
-    assert 3 <= len(SEED) <= 5
-    assert "Scope creep never ends." in [c.text for c in SEED]
-    assert len(set(SEED_IDS)) == len(SEED_IDS)
+    assert 3 <= len(SEED) <= 5, f"3 to 5 seed complaints; found {len(SEED)}"
+    assert "Scope creep never ends." in [c.text for c in SEED], f"a seed complaint 'Scope creep never ends.'; found {[c.text for c in SEED]}"
+    assert len(set(SEED_IDS)) == len(SEED_IDS), f"distinct seed ids; found {SEED_IDS}"
 
 
 def test_board_lists_seed_complaints_with_name_date_and_text():
     tree = page("/complaints")
-    assert "Complaints Board" in text(tree.root)
+    assert "Complaints Board" in text(tree.root), f"the heading 'Complaints Board'; the page text: {text(tree.root)[:300]!r}"
     _assert_base_layout(tree)
     for c in SEED:
         body = text(card_for(tree, c))
-        assert c.agent_name in body
+        assert c.agent_name in body, f"the card shows the agent name {c.agent_name!r}; the card text: {body!r}"
         assert any(f in body for f in date_forms(c.timestamp)), f"a date with year, month and day in {body!r}"
 
 
 def test_complaint_dataclass_carries_the_spec_fields():
-    assert dataclasses.is_dataclass(models.Complaint)
+    assert dataclasses.is_dataclass(models.Complaint), f"Complaint is a @dataclass; found {models.Complaint!r}"
     names = [f.name for f in dataclasses.fields(models.Complaint)]
-    assert names[:3] == ["agent_name", "text", "timestamp"]
+    assert names[:3] == ["agent_name", "text", "timestamp"], f"fields start agent_name, text, timestamp; found {names}"
     a = models.Complaint("tester", "a gripe")
     b = models.Complaint("tester", "another gripe")
     assert a.agent_name == "tester" and a.text == "a gripe"
@@ -270,8 +272,8 @@ def test_complaint_dataclass_carries_the_spec_fields():
 def _add(name, gripe):
     before = {c.id: (c.agent_name, c.text) for c in models.complaints}
     r = client.post("/complaints", data={"agent_name": name, "text": gripe})
-    assert r.status_code == 303
-    assert r.headers["location"] == "/complaints"
+    assert r.status_code == 303, f"POST /complaints answers 303; found {r.status_code}"
+    assert r.headers.get("location") == "/complaints", f"redirects to /complaints; found location {r.headers.get('location')!r}"
     after = {c.id: (c.agent_name, c.text) for c in models.complaints}
     assert len(models.complaints) == len(before) + 1, "the new complaint is appended, nothing removed"
     assert all(after.get(k) == v for k, v in before.items()), "existing complaints keep their ids"
@@ -310,15 +312,19 @@ def test_new_complaints_default_open_with_distinct_auto_ids():
     # gets one too, and the add route uses the same sequence (never a second
     # counter, never recomputed from the list).
     names = [f.name for f in dataclasses.fields(models.Complaint)]
-    assert names.index("id") > names.index("timestamp") and "status" in names
+    assert "id" in names and "status" in names and names.index("id") > names.index("timestamp"), (
+        f"fields agent_name, text, timestamp, then id and status (defaults after); found {names}")
     a = models.Complaint("x", "first direct")
     routed = _add("Route", "created through the add route")
     b = models.Complaint("x", "second direct")
     ids = [max(SEED_IDS), a.id, routed.id, b.id]
-    assert all(type(i) is int for i in ids), ids
-    assert ids == sorted(set(ids)), f"one increasing id sequence across direct and route creation: {ids}"
-    assert a.status == b.status == routed.status == "open"
-    assert [c.id for c in SEED] == SEED_IDS, "seed ids never change"
+    made = (f"the last seed got id={ids[0]!r}; a direct Complaint('x', ...) got id={a.id!r}; "
+            f"one added through POST /complaints got id={routed.id!r}; a second direct Complaint('x', ...) got id={b.id!r}")
+    want = "ids strictly increasing across all four, so the id is an automatic default on Complaint itself, shared by direct and route creation"
+    assert all(type(i) is int for i in ids), f"{want}; {made}"
+    assert ids == sorted(set(ids)), f"{want}; {made}"
+    assert a.status == b.status == routed.status == "open", f"status defaults to 'open'; found {a.status!r}, {routed.status!r}, {b.status!r}"
+    assert [c.id for c in SEED] == SEED_IDS, f"seed ids never change; were {SEED_IDS}, now {[c.id for c in SEED]}"
 
 
 def _status_shown(tree, complaint):
@@ -350,7 +356,7 @@ def test_resolve_then_reopen_sets_status_303_and_keeps_order():
     shown_before = board_order(page("/complaints"))
 
     _post(f"/complaints/{target.id}/resolve")
-    assert target.status == "resolved"
+    assert target.status == "resolved", f"resolve sets status 'resolved'; found {target.status!r}"
     assert {c.id: c.status for c in models.complaints if c is not target} == others, "only that complaint changes"
     assert [c.id for c in models.complaints] == ids_before, "resolving does not move it"
     tree = page("/complaints")
@@ -361,7 +367,7 @@ def test_resolve_then_reopen_sets_status_303_and_keeps_order():
         f"a resolved card offers Reopen and not Resolve; its forms (action, buttons): {_card_actions(tree, target)}")
 
     _post(f"/complaints/{target.id}/reopen")
-    assert target.status == "open"
+    assert target.status == "open", f"reopen sets status 'open'; found {target.status!r}"
     assert [c.id for c in models.complaints] == ids_before, "reopening does not move it"
     tree = page("/complaints")
     assert board_order(tree) == shown_before
@@ -372,7 +378,7 @@ def test_board_shows_status_badge_and_the_action_forms():
     tree = page("/complaints")
     assert board_order(tree) == [c.id for c in models.complaints], "the board shows complaints in list order"
     for c in models.complaints:
-        assert c.status == "open"
+        assert c.status == "open", f"complaints start 'open'; found {c.status!r}"
         assert _status_shown(tree, c) == "Open"
         offers = _action(tree, c, "resolve") and not _action(tree, c, "reopen")
         assert offers, (

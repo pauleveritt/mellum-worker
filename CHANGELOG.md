@@ -260,7 +260,9 @@ Versions match git tags; pin one in both install lines.
   action-button checks used to fail with a label and `any(<generator>)`, so a worker sent back
   by the gate couldn't see the cause. One rep spent all five gate rounds on a favicon whose open
   quote swallowed the stylesheet link. Each failure now lists the tags or card forms the page
-  actually held. The same 43 of 43 witness builds classify as expected.
+  actually held. The same 43 of 43 witness builds classify as expected. Each failure now also
+  says what it wanted, for example the exact favicon URL, or which way of creating a complaint
+  got which id, so a round can tell a wrong value from a missing one.
 
 - **The `mellum-verify` gate now tells the worker its acceptance test is held
   out.** When the gate sends the worker back with the failing test names, a small
