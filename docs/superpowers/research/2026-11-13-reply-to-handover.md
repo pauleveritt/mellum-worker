@@ -401,6 +401,41 @@ adjustments are added here, newest last.
 - **Next (a theory).** A preregistered run of the gated one-pass rig against
   the shipped plan loop, to settle whether this becomes a ladder mode.
 
+### The baseline is the tested base, and the presets nest on it (2026-11-16)
+
+- **Your point held.** The presets each listed their own fixes and didn't build
+  on the base. Now `preset:baseline-worker` is the tested base, `easy` is that
+  base, `medium` starts from `easy` and adds what its measured gated run loaded,
+  and `hard` starts from `medium`. A test checks that each tier starts with the
+  one below it. The old bundle moves to `preset:pre-thin-worker`, so its
+  recorded results still reproduce, and any unit switches off with `/remedy off`.
+- **What the base holds.** First the four units that passed Easy 6 of 6:
+  name-the-layout, python-developer, verify-the-spec and the foreground-server
+  guard. Screened as the base on its own, at Easy:
+
+  | screen | passes | requests per rep | wall per rep |
+  |---|---|---|---|
+  | n=3 | 2 of 3 | 23, 21 (fail), 21 | 136, 101, 87 s |
+  | n=6 | 5 of 6 | 18, 18, 38 (fail), 31, 25, 20 | 92, 76, ~606 (fail), 382, 124, 102 s |
+
+  The n=3 miss was a doctype. The n=6 miss wasn't. That rep started a server in
+  the background, which the foreground guard allows, then ran `tail -f` on its
+  log and hung until the 600 s deadline.
+- **So the base gained `guard/no-live-server`.** It blocks any server start,
+  foreground or background, and any loopback HTTP probe, and points at the
+  in-process test client. It was already in `medium`; now `medium` inherits it.
+  Screened at Easy n=3:
+
+  | rep | result | requests | wall |
+  |---|---|---|---|
+  | 1 | pass | 18 | 96 s |
+  | 2 | pass | 32 | 361 s |
+  | 3 | pass | 25 | 111 s |
+
+- **What this doesn't show.** The guard never fired. No rep tried to start a
+  server, so the 3 of 3 says the guard does no harm on Easy, not that it stops
+  the hang. One hang in nine reps is a lead, not a rate.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
