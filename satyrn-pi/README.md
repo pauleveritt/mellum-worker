@@ -13,6 +13,7 @@ satyrn-pi/
   docs/rules-applicability.md   -> effective scope, precedence and path mappings
   docs/glossary.md              -> core product definitions
   docs/superpowers/research/    -> inspection evidence and named decision owners
+  docs/superpowers/plans/       -> the vocabulary cycle's plan and its check
 ```
 
 This is a planning handoff; none of the twelve product phases has shipped.
@@ -30,7 +31,9 @@ The public progression is Vanilla → Base → Easy → Medium → Hard. The
 [glossary](docs/glossary.md) distinguishes remedy presets from the suites they
 run on; Vanilla loads no remedy preset. The
 [vocabulary review](docs/superpowers/research/2026-11-16-vocabulary-review.md)
-maps historical terms without changing the source.
+maps historical terms without changing the source; its
+[plan](docs/superpowers/plans/2026-11-16-vocabulary.md) carries the work,
+including the retired-term check phase 2 installs.
 
 Nothing here is executed or imported by the source product. The source's
 default tests do not discover this tree. Its document caps still apply here;
