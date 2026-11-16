@@ -54,8 +54,8 @@ approves the contract and Ben reviews how score labels are explained.
   explicit definitions and are not compared as though the old field meant them.
 
 Qualification checks require no subject-model run. Process execution belongs
-in the marked integration tier; contract and fixture checks use the default
-tier where possible. Do not claim a grade version is qualified until its
+in marked integration tests; contract and fixture checks use the default
+tests where possible. Do not claim a grade version is qualified until its
 qualification evidence exists.
 
 ## What would falsify this

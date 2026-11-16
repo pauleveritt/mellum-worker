@@ -26,13 +26,25 @@ unclaimed on their registries. Both are published from CI using trusted
 publishing, so no person holds a release token and a release is not a task that
 waits on one person's hours.
 
-The product is a **floor plus explicit remedies**. Vanilla Pi is the floor: it
+The product starts with **Vanilla Pi plus explicit remedies**. Vanilla Pi
 loads no worker at all. On top of it sits a thin worker whose only job is to
 switch the session to the subject model and record the run. Everything else is
-an explicit, inspectable unit under `remedies/<kind>/` that a user or a preset
+an explicit, inspectable remedy under `remedies/<kind>/` that a user or a preset
 switches on. Nothing is bundled, so nothing has to be credited on faith.
 
-It owns: the worker extension and its mode machinery; the remedy units and the
+The public progression is **Vanilla → Base → Easy → Medium → Hard**.
+Vanilla is Pi plus a trace recorder. Base adds the thin worker and an explicit
+common remedy preset, initially empty. Easy adds its earned remedies to Base;
+Medium adds to Easy; Hard adds to Medium. The worker itself stays thin.
+These names say what is enabled; they do not claim a suite already passes.
+A suite names the tasks being graded: Vanilla and Base can both run the Easy
+suite. A preset stores the remedy list; Vanilla loads none. Use these direct
+names without an extra glossary concept called Stage. The
+[glossary](docs/glossary.md) defines the product terms; the
+[vocabulary review](docs/superpowers/research/2026-11-16-vocabulary-review.md)
+maps historical names. Baseline Worker is retired as a product label.
+
+It owns: the worker extension and its mode machinery; the remedies and the
 prompt fragments; the presets; the eval CLI, the suites, and the run records;
 the documentation that serves both an installer and a contributor.
 
@@ -99,7 +111,11 @@ agents use those skills; the subject Mellum worker does not acquire them by
 default. The contributors' model rig remains separate from the measured subject.
 
 The [SDD process](docs/sdd.md) records how this repository applies that workflow,
-under the [applicability rules](docs/rules-applicability.md). Phase 2 establishes
+under the [applicability rules](docs/rules-applicability.md). P1.2 first records
+the worker/eval responsibilities, shared run contract and small vocabulary in
+`docs/domain.md` and `docs/glossary.md`, including the numeric jargon budget and
+checker scope. This is a bounded documentation cycle after repository setup;
+later feature cycles may refine it with a recorded reason. Phase 2 establishes
 the contributor setup: select and record a Superpowers revision, make its skills
 available in the contributors' Pi rig, and prove a new contributor's agent can
 find the governing rules and follow a cycle. Copying process prose alone does
@@ -112,8 +128,9 @@ changes get a spec; work large enough to need a plan gets one. Execution follows
 that approved scope, with new tests shown to fail before the code that passes
 them. Bugs use systematic diagnosis; completion claims need fresh verification.
 Review checks both the agreed behaviour and implementation quality; Nicola
-approves PRs. Exploratory screens retain the SDD exception: no preregistration,
-spec or plan is needed just to explore, but a deciding run is preregistered.
+approves PRs. Screens (a few exploratory runs) retain the SDD exception: no
+preregistration, spec or plan is needed just to explore, but a deciding run is
+preregistered.
 
 **The roadmap conventions are repository extensions to that workflow.** A
 phase contains feature cycles. Each cycle has an ID and a `Ships`, `Excludes`
@@ -122,7 +139,7 @@ pointer; deferred work lives in a backlog entry with a reopen condition. Caps,
 plan front matter (`phase`, `feature_cycle`, `cycle`, `lifecycle`), a closing
 `## Result` and immutable archived plans keep intent, evidence and current
 state distinct. Phase 2 re-earns their executable checks; they are development
-rules, separate from Pi runtime extensions and remedy units.
+rules, separate from Pi runtime extensions and remedies.
 
 At cycle close, update the row and `## Now`, remove resolved backlog entries,
 update glossary and observed pathologies when warranted, reconcile the
@@ -168,7 +185,7 @@ contents.
 2. **Each feature cycle ships one user-visible behaviour** and names what it
    excludes. A phase contains cycles; an infrastructure cycle says so in its row.
 3. **Default tests use no model, no network, no subprocess.** Process behaviour
-   lives in a marked integration tier that CI does not run. A planted
+   lives in marked integration tests that CI does not run. A planted
    process-spawning test must fail the build, and that tripwire is proven once.
 4. **A refusal test has a sibling success test.** Demonstrate both the permitted
    and refused behaviour, so an unrelated failure cannot satisfy a refusal test.
@@ -185,32 +202,48 @@ contents.
    records retain the source rule's exemption.
 9. **The copied gates stay green.** The caps in `docs/sdd.md`, the feature-cycle
    lifecycle and the closing checklist arrive with working tests.
+10. **Prefer familiar, accurate vocabulary.** Use established terms where they
+    describe the same thing: suites, tasks, runs and presets. Use Vanilla → Base
+    → Easy → Medium → Hard directly, without teaching another label for the
+    progression. A preset names a remedy list; a complete experimental arm also
+    includes the worker state and run settings. Explain research terms where
+    needed and preserve their meaning. Apply this rule throughout porting and
+    ongoing work, with P1.2's jargon budget enforced in phase 2; keep historical
+    records and copied rules intact, with dated mappings for changed names. The
+    [vocabulary review](docs/superpowers/research/2026-11-16-vocabulary-review.md)
+    records the rationale and avoids claiming one universal industry dictionary.
 
 ## Architecture, already decided
 
 - **Pi only.** No second harness, and no install path that exists to please one.
-- **The floor is vanilla Pi plus the recorder.** Nothing else loads.
+- **Vanilla Pi plus the trace recorder is the baseline.** Nothing else loads.
 - **The worker bundles nothing** — the command tool and the mode machinery.
   It does not swap the system prompt, narrow the tools, add project facts, or
   install a guard.
-- **Everything else is a remedy unit** under `remedies/<kind>/`: `guard`,
+- **Everything else is a remedy** under `remedies/<kind>/`: `guard`,
   `nudge`, `context`, `prompt`, `tool`, `check`, `workflow`. The prompt is a kind
-  of its own: small fragments, added one at a time. A unit encodes no
+  of its own: small fragments, added one at a time. A remedy encodes no
   suite-specific answer.
-- **Presets are results.** The tiers start empty and are filled only by runs on
-  this repository's own stack. This deliberately differs from retaining the
+- **Presets are results.** Base, Easy, Medium and Hard start with empty remedy
+  lists and are filled only by runs on this repository's own stack. This
+  deliberately differs from retaining the
   source presets. Its Easy ladder records incremental prompt and guard screens,
   including n=6 results; those are leads, not settled rates. Andre explicitly
   refused emptying the source presets. We preserve that evidence and disagreement
   in the [credit policy](docs/superpowers/research/2026-11-16-remedy-credit.md).
-- **Presets are flat, self-contained JSON lists.** No includes and no nesting
-  machinery. "A tier builds on the one below" is a checked property instead:
-  a test asserts each tier's unit list is a superset of the rung below it.
-- **A remedy unit is a TypeScript module** exporting `meta` and its hook, one
-  file per unit under `remedies/<kind>/<name>.ts`. The loader that resolves a
-  unit name to a file, and the switch that turns one on in a live session, land
-  in the same cycle as the first real unit: the contract earns its shape from a
-  concrete unit rather than from a framework built ahead of it.
+- **Presets are flat, self-contained JSON lists.** `base.json`, `easy.json`,
+  `medium.json` and `hard.json` each list all remedies for that name, in load order.
+  No includes and no nesting machinery. A test checks that each successive
+  preset retains every remedy of its predecessor; adjacent lists may be equal.
+  Record the complete resolved list and order for each run. Cumulative lists
+  do not establish that gains transfer: measure each preset on its target suite.
+  A shared remedy earns a Base addition through its own cycle and promotion
+  decision, with affected later presets requalified before any new claim.
+- **A remedy is a TypeScript module** exporting `meta` and its hook, one
+  file per remedy under `remedies/<kind>/<name>.ts`. The loader that resolves a
+  remedy name to a file, and the switch that turns one on in a live session, land
+  in the same cycle as the first real remedy: the contract earns its shape from
+  a concrete remedy rather than from a framework built ahead of it.
 - **The graders ship inside the Python package**, because `uvx` cannot grade
   from a checkout it does not have, and they run from a copy outside the run's
   workspace, so the worker can neither read nor edit what grades it.
@@ -249,12 +282,12 @@ contents.
 
 ## Where to start
 
-[ROADMAP.md](ROADMAP.md) carries twelve phases, in this order: the repository and its
-dependencies; spec-driven development setup that copies `docs/sdd.md` and the
-rules; the Zensical documentation site; Getting Started's setup section for
-`llama.cpp`; the eval CLI; the eval suites; the vanilla-Pi arm; the baseline
-worker; the rest of Getting Started; then remedies as three phases — Easy,
-Medium, Hard — one remedy per feature cycle.
+[ROADMAP.md](ROADMAP.md) carries twelve phases, in this order: repository setup,
+including P1.2's domain and vocabulary agreement; spec-driven development setup
+that installs the preserved process and rules; the Zensical documentation site;
+Getting Started's setup section for `llama.cpp`; the eval CLI; the eval suites;
+Vanilla; Base; the rest of Getting Started; then remedies as three phases —
+Easy, Medium, Hard — one remedy per feature cycle.
 
 Read [the applicability rules](docs/rules-applicability.md) and
 [`docs/sdd.md`](docs/sdd.md) before writing a spec, a plan or a roadmap row.
@@ -273,7 +306,7 @@ reproducible for the full team rather than postponing its use until then.
   qualify the rewritten graders against preserved expectations and version any
   additional grade before phase 6 closes.
 - [Remedy credit](docs/superpowers/research/2026-11-16-remedy-credit.md): decide
-  which units earn each tier through preregistered runs in phases 10–12.
+  which remedies earn each preset through preregistered runs in phases 10–12.
 - [Batch hosts](docs/superpowers/research/2026-11-16-batch-hosts.md): establish
   cost and any claimed comparability before the batch they govern; fix n and
   the decision rule before a deciding run.
