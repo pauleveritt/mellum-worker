@@ -116,8 +116,11 @@ Follow the source repo's verified glossary setup: configure
 matching the deployed site path. Review aliases against the vocabulary
 decisions; do not hand-link prose terms or preserve misleading aliases.
 
-Run `uv sync`, `uv run zensical build --strict` in CI, and
-`uv run zensical serve` for preview. Confirm first-occurrence links, alias
+Set up GitHub Actions to run `uv sync` and `uv run zensical build --strict`
+on pull requests, then build and deploy the website to GitHub Pages from main.
+Configure Pages, record its public URL, and verify the deployed site; align
+`site_url` and glossary links with the actual base path. Use
+`uv run zensical serve` for local preview. Confirm first-occurrence links, alias
 targets and exclusions for code, headings and existing links in rendered pages.
 Check theme assets and glossary links in light/dark mode and under the deployed
 base path. These site checks are separate from the model-free default tests.

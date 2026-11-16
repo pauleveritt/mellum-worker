@@ -30,7 +30,7 @@ presets select remedies.
 
 | Cycle | Ships | Excludes | Status |
 | --- | --- | --- | --- |
-| **P3.1** | Infrastructure: a Zensical site over plain Markdown, adapting `satyrn-ai/satyrn-website`'s Satyrn theme, with installer/contributor navigation. Configure `zensical-glossary` against `docs/glossary.md`: `###` entries, reviewed aliases and automatic first-prose-occurrence links. Verify theme rendering, glossary links, preview and strict CI build under the [site acceptance rules](docs/rules-applicability.md#documentation-site-acceptance). Ben reviews navigation and terminology. | Learning centre, lessons, challenge and gamification; website blog/hero features; runtime setup claims; misleading legacy aliases. | proposed — after P2.1. |
+| **P3.1** | Infrastructure: a Zensical site over plain Markdown, adapting `satyrn-ai/satyrn-website`'s Satyrn theme, with installer/contributor navigation. Configure `zensical-glossary` against `docs/glossary.md`: `###` entries, reviewed aliases and automatic first-prose-occurrence links. Set up GitHub Actions for strict builds on PRs and GitHub Pages deployment from main; record and verify the public website URL. Check theme rendering, glossary links and preview under the [site acceptance rules](docs/rules-applicability.md#documentation-site-acceptance). Ben reviews navigation and terminology. | Learning centre, lessons, challenge and gamification; website blog/hero features; runtime setup claims; misleading legacy aliases. | proposed — after P2.1. |
 
 ## Phase 4 — Getting Started setup: llama.cpp
 
