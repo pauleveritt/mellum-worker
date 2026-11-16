@@ -101,9 +101,9 @@ failures were removed on 2026-11-01 to be rebuilt; the worker is a preset, not a
 The `/mellum` worker in Mellum mode (`MELLUM_MODE=1`): only the command tool and
 the mode machinery. Switch to Mellum, drop the pre-marker history, track the
 span, write the run record. It bundles nothing: no prompt swap, no tool
-narrowing, no facts, no guards. Those are all remedy units now, and the
-`baseline-worker` preset is the explicit set that reconstructs the worker's old
-bundle. The `worker` arm.
+narrowing, no facts, no guards. Those are all remedy units now. The
+`baseline-worker` preset is the tested base: the four units that passed Easy 6
+of 6. `pre-thin-worker` reconstructs the worker's old bundle. The `worker` arm.
 
 ### Vanilla Pi
 
@@ -147,9 +147,11 @@ with `--remedy <kind>/<name>`.
 ### Preset
 
 A named list of remedy units, loaded with `--remedy preset:<name>`.
-`preset:easy` is the measured Easy stack; each tier's preset builds on the
-previous one. `preset:baseline-worker` is the explicit set of units that
-reconstructs the worker's old, pre-decoupling bundle.
+`preset:baseline-worker` is the tested base, the four units that passed Easy;
+`easy`, `medium` and `hard` each start with the previous tier's units and add
+what their own measured run loaded. Any unit, or a whole preset, switches off
+with `/remedy off`. `preset:pre-thin-worker` reconstructs the worker's old,
+pre-decoupling bundle, so its recorded results can still be rerun.
 
 ### Before and after
 

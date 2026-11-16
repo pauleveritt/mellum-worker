@@ -1,7 +1,6 @@
 [
-  "context/narrow-tools",
-  "guard/repeat-loops",
-  "nudge/empty-turn",
+  "prompt/name-the-layout",
+  "prompt/python-developer",
   "guard/foreground-server",
-  "guard/outside-workspace"
+  "prompt/verify-the-spec"
 ]

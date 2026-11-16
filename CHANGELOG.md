@@ -246,6 +246,14 @@ Versions match git tags; pin one in both install lines.
 
 ### Changed
 
+- **`preset:baseline-worker` is now the tested base, and the tier presets nest on it.**
+  It holds the four units that passed Easy 6 of 6: name-the-layout, python-developer,
+  verify-the-spec and the foreground-server guard. `easy` is that base; `medium` adds the
+  units its measured gated run loaded (no-live-server, repeat-loops, outside-workspace,
+  exists and the redirect nudge); `hard` starts from `medium` until it has a measured run
+  of its own. The old bundle moves to `preset:pre-thin-worker`, so its recorded results
+  still reproduce, and any unit switches off with `/remedy off`.
+
 - **The Medium acceptance test now checks the whole spec, as a reader sees it.**
   `ladder/fixtures/acceptance/test_medium.py` (the test a gated run re-runs at
   settle) passed about twenty broken builds and rejected four valid ones. It now

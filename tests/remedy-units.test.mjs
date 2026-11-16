@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -230,12 +230,12 @@ test("a learner's own tool is kept when it calls keepTool", async () => {
 });
 
 // Behaviour-preserving parity (the baseline-kept gate): the thin worker swaps the prompt and
-// drops the pre-marker history (mode); the baseline-worker preset, applied on top, re-adds the
+// drops the pre-marker history (mode); the pre-thin-worker preset, applied on top, re-adds the
 // tool-narrowing and the project facts the MEASURED worker baked in. Together they reproduce the
 // request the measured worker sent, and the preset makes the same guard decisions.
-test("preset:baseline-worker makes the same guard decisions as the worker's guard set", async () => {
+test("preset:pre-thin-worker makes the same guard decisions as the worker's guard set", async () => {
 	const { createGuardSet, ENABLED } = await import("../extensions/mellum-guards.ts");
-	const preset = JSON.parse(readFileSync(new URL("../remedies/presets/baseline-worker.json", import.meta.url), "utf8"));
+	const preset = JSON.parse(readFileSync(new URL("../remedies/presets/pre-thin-worker.json", import.meta.url), "utf8"));
 	const pi = fakePi();
 	for (const name of preset) (await import(`../remedies/${name}.ts`)).install(pi, { cwd: process.cwd() });
 	const worker = createGuardSet(ENABLED);
@@ -307,4 +307,31 @@ test("nudge/redirect-followed stays quiet on other output, other tools, and afte
 	assert.equal(r("assert 200 == 303", "read"), undefined, "a file read is not a run");
 	for (let i = 0; i < 3; i++) assert.ok(r("assert 200 == 303"));
 	assert.equal(r("assert 200 == 303"), undefined, "at most three notes a session");
+});
+
+// The presets nest on a TESTED base (2026-11-16): baseline-worker is the stack measured 6/6 on
+// Easy; each tier adds only what its own measured run loaded. The old fat-worker bundle keeps its
+// parity record as pre-thin-worker.
+const presetOf = (name) => JSON.parse(readFileSync(new URL(`../remedies/presets/${name}.json`, import.meta.url), "utf8"));
+
+test("baseline-worker is the tested base: the four units measured 6/6 on Easy", () => {
+	assert.deepEqual(presetOf("baseline-worker"), [
+		"prompt/name-the-layout", "prompt/python-developer", "guard/foreground-server", "prompt/verify-the-spec",
+	]);
+});
+
+test("the tier presets nest: easy on baseline, medium on easy, hard on medium", () => {
+	const starts = (list, base) => assert.deepEqual(list.slice(0, base.length), base);
+	starts(presetOf("easy"), presetOf("baseline-worker"));
+	starts(presetOf("medium"), presetOf("easy"));
+	starts(presetOf("hard"), presetOf("medium"));
+});
+
+test("medium adds the units its measured gated run loaded, and each exists", () => {
+	const added = presetOf("medium").slice(presetOf("easy").length);
+	assert.deepEqual(added, [
+		"guard/no-live-server", "guard/repeat-loops", "guard/outside-workspace", "guard/exists", "nudge/redirect-followed",
+	]);
+	for (const name of ["baseline-worker", "easy", "medium", "hard", "pre-thin-worker"])
+		for (const unit of presetOf(name)) assert.ok(existsSync(new URL(`../remedies/${unit}.ts`, import.meta.url)), `${name}: ${unit}`);
 });
