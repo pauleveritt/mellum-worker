@@ -247,10 +247,11 @@ Versions match git tags; pin one in both install lines.
 ### Changed
 
 - **`preset:baseline-worker` is now the tested base, and the tier presets nest on it.**
-  It holds the four units that passed Easy 6 of 6: name-the-layout, python-developer,
-  verify-the-spec and the foreground-server guard. `easy` is that base; `medium` adds the
-  units its measured gated run loaded (no-live-server, repeat-loops, outside-workspace,
-  exists and the redirect nudge); `hard` starts from `medium` until it has a measured run
+  It holds the four units that passed Easy 6 of 6 (name-the-layout, python-developer,
+  verify-the-spec and the foreground-server guard) plus the no-live-server guard, added
+  after one Easy rep backgrounded a server, ran `tail -f` on its log and hung to the
+  deadline. `easy` is that base; `medium` adds the units its measured gated run loaded
+  (repeat-loops, outside-workspace, exists and the redirect nudge); `hard` starts from `medium` until it has a measured run
   of its own. The old bundle moves to `preset:pre-thin-worker`, so its recorded results
   still reproduce, and any unit switches off with `/remedy off`.
 

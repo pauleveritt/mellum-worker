@@ -310,13 +310,14 @@ test("nudge/redirect-followed stays quiet on other output, other tools, and afte
 });
 
 // The presets nest on a TESTED base (2026-11-16): baseline-worker is the stack measured 6/6 on
-// Easy; each tier adds only what its own measured run loaded. The old fat-worker bundle keeps its
+// Easy plus no-live-server (screened 3/3 on Easy); each tier adds only what its own measured run loaded. The old fat-worker bundle keeps its
 // parity record as pre-thin-worker.
 const presetOf = (name) => JSON.parse(readFileSync(new URL(`../remedies/presets/${name}.json`, import.meta.url), "utf8"));
 
-test("baseline-worker is the tested base: the four units measured 6/6 on Easy", () => {
+test("baseline-worker is the tested base: the Easy units plus no-live-server", () => {
 	assert.deepEqual(presetOf("baseline-worker"), [
 		"prompt/name-the-layout", "prompt/python-developer", "guard/foreground-server", "prompt/verify-the-spec",
+		"guard/no-live-server",
 	]);
 });
 
@@ -330,7 +331,7 @@ test("the tier presets nest: easy on baseline, medium on easy, hard on medium", 
 test("medium adds the units its measured gated run loaded, and each exists", () => {
 	const added = presetOf("medium").slice(presetOf("easy").length);
 	assert.deepEqual(added, [
-		"guard/no-live-server", "guard/repeat-loops", "guard/outside-workspace", "guard/exists", "nudge/redirect-followed",
+		"guard/repeat-loops", "guard/outside-workspace", "guard/exists", "nudge/redirect-followed",
 	]);
 	for (const name of ["baseline-worker", "easy", "medium", "hard", "pre-thin-worker"])
 		for (const unit of presetOf(name)) assert.ok(existsSync(new URL(`../remedies/${unit}.ts`, import.meta.url)), `${name}: ${unit}`);
