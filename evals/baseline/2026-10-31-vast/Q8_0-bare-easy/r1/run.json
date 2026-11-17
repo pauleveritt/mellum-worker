@@ -1,0 +1,44 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 1,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 1,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 44,
+  "turns": 44,
+  "tool_calls": 43,
+  "tool_errors": 12,
+  "context": 27756,
+  "output_tokens": 26631,
+  "wall": 334.972,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 2,
+  "leaked": [],
+  "out_of_layout": []
+}

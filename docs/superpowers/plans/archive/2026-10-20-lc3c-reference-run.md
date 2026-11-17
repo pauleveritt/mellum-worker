@@ -8,9 +8,9 @@ lifecycle: closed
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A preregistered, valid 15-run reference on llama.cpp, recorded in `docs/ladder/` with its pass counts, and citable by lessons as `reference-run`.
+**Goal:** A preregistered, valid 15-run reference on llama.cpp, recorded in `evals/` with its pass counts, and citable by lessons as `reference-run`.
 
-**Architecture:** The preregistration fixes the arms, n, reading and decision rule before any run. The ladder's backend flags (LC.3B) run the 15 rows; the record is a `docs/ladder/` directory with a README, `table.md` and each run's `run.json`, while raw traces stay out of git for a release.
+**Architecture:** The preregistration fixes the arms, n, reading and decision rule before any run. The ladder's backend flags (LC.3B) run the 15 rows; the record is a `evals/` directory with a README, `table.md` and each run's `run.json`, while raw traces stay out of git for a release.
 
 **Tech Stack:** `ladder/` (`uv run python -m ladder.run_ladder`), llama.cpp on port 8002, Markdown records.
 
@@ -46,10 +46,10 @@ lifecycle: closed
 ### Task 2: Run it
 
 **Files:**
-- Create: `docs/ladder/reference-llamacpp-rungs1-5/table.md`, `run.json` and `final.md`/`brief.md` per run
+- Create: `evals/baseline/2026-10-20-reference-llamacpp-rungs1-5/table.md`, `run.json` and `final.md`/`brief.md` per run
 
 - [ ] **Step 1: Start the server.** `uv run scripts/backend.py start`, `status` says `up`.
-- [ ] **Step 2: Run the preregistered command** from `ladder/`, with `--out ../docs/ladder/reference-llamacpp-rungs1-5`.
+- [ ] **Step 2: Run the preregistered command** from `ladder/`, with `--out ../evals/baseline/2026-10-20-reference-llamacpp-rungs1-5`.
 - [ ] **Step 3: Check validity.** For each run, read `run.json`: `backend.provider == "llamacpp"`, base URL, model, worker version/git; read its trace's first `provider_request` and confirm `temperature 0`, `top_p 1`, `top_k 0`, `min_p 0`, `seed 42`, `max_tokens 4096`. Count passes per rung.
 - [ ] **Step 4: Stop the server.**
 - [ ] **Step 5: Commit** the tracked record files only (no `trace.jsonl`, `stdout.txt`, `diff.patch`).
@@ -59,7 +59,7 @@ lifecycle: closed
 ### Task 3: Record and close
 
 **Files:**
-- Create: `docs/ladder/reference-llamacpp-rungs1-5/README.md`
+- Create: `evals/baseline/2026-10-20-reference-llamacpp-rungs1-5/README.md`
 - Modify: `ROADMAP.md`, `docs/backends/llamacpp.md`, `CHANGELOG.md`
 
 - [ ] **Step 1: Write the README.** Preregistration link, what is measured (backend, version, worker, n), the table of 15 rows, pass counts, validity, what it cannot claim, and the raw-evidence release line (tarball + SHA-256 when published, or "owed").
@@ -70,7 +70,7 @@ lifecycle: closed
 ## Result
 
 2026-10-20. Shipped: the preregistration and
-`docs/ladder/reference-llamacpp-rungs1-5/` (README, `table.md`, and each
+`evals/baseline/2026-10-20-reference-llamacpp-rungs1-5/` (README, `table.md`, and each
 run's `run.json`, `final.md`, `brief.md`).
 
 Verified: 15/15 runs valid — every first request carried the greedy block and

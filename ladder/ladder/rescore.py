@@ -2,7 +2,7 @@
 
 The baseline line counts come from ``baseline_lines`` in run.json.
 
-    uv run python -m ladder.rescore ../docs/ladder/phase0-baseline
+    uv run python -m ladder.rescore ../evals/baseline/2026-10-09-phase0-baseline
 
 With ``--existing-tests-kept`` it instead recomputes only rule 3 of the
 AgentClinic rungs (6 to 9), "no existing test is removed or edited; additions
@@ -10,7 +10,7 @@ are allowed", from each run's retained workspace, and writes the result next to
 the recorded ``check`` as ``check_rescored``. Nothing is re-run and
 ``table.md`` stays as recorded.
 
-    uv run python -m ladder.rescore --existing-tests-kept ../docs/ladder/<phase>
+    uv run python -m ladder.rescore --existing-tests-kept ../evals/<phase>
 """
 
 from __future__ import annotations

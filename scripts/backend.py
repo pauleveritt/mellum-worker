@@ -31,7 +31,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PROFILE = ROOT / "learn" / "code" / "profile" / "models.json"
 HOST = "127.0.0.1"
-PORT = 8002
+PORT = 8001
 ALIAS = "Mellum2.1-12B-A2.5B-Thinking"
 PIDFILE = Path(tempfile.gettempdir()) / "llamacpp-mellum.pid"
 LOGFILE = Path(tempfile.gettempdir()) / "llamacpp-mellum.log"
@@ -58,15 +58,21 @@ def serve_argv(
     port: int = PORT,
     binary: str = "llama-server",
 ) -> list[str]:
-    return [
+    argv = [
         binary, "-hf", settings["model"], "-a", ALIAS,
         "--host", host, "--port", str(port),
-        # No -ngl: llama.cpp's --fit then splits the model between GPU and CPU
-        # to fit free device memory. -c is set, so --fit never shrinks it.
+        # No -ngl by default: llama.cpp's --fit splits the model between GPU and
+        # CPU to fit free device memory, which keeps the recipe portable to a
+        # small machine. -c is set, so --fit never shrinks it. Set MELLUM_NGL
+        # (e.g. 999) to force full GPU offload where there is memory to spare.
         "-c", str(settings["context"]), "-np", "1",
         "--jinja", "-fa", "auto", "-b", "512", "-ub", "512",
         "-ctk", "q8_0", "-ctv", "q8_0",
     ]
+    ngl = os.environ.get("MELLUM_NGL")
+    if ngl:
+        argv += ["-ngl", ngl]
+    return argv
 
 
 def chat_body(settings: dict, prompt: str) -> dict:
@@ -190,10 +196,18 @@ def choose_server(found: list) -> tuple[str | None, int | None, list[str]]:
             return path, build, notes
         notes.append(f"skipping {path} (build {build}, too old for Mellum); "
                      f"remove {os.path.dirname(path)} from PATH so it stops coming first")
-    first = found[0][1] if found else 0
-    notes = [version_problem(first) or "", "found on PATH:"]
-    notes += [f"  {path} (build {build})" for path, build in found]
-    return None, None, notes
+    if not found:
+        return None, None, notes
+    # Every llama-server on PATH parsed as too old. The parse can be wrong —
+    # version strings differ by platform and build, and a Linux build that reads
+    # as too old still loads Mellum — and the real test is whether the model
+    # loads, which fails loudly with "unknown model architecture" if it truly
+    # cannot. So try the newest one rather than refusing to start.
+    path, build = max(found, key=lambda pb: pb[1] or 0)
+    notes.append(version_problem(build) or "")
+    notes.append(f"no build on PATH passed the {MIN_BUILD} check; trying {path} "
+                 f"(build {build}) anyway — the model load is the real check")
+    return path, build, notes
 
 
 def diagnose(log: str) -> list[str]:
@@ -631,10 +645,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "profile":
         rendered = render_profile(settings)
         if args.dry_run:
-            print(rendered, end="")
+            # LF on every OS: Windows text mode would turn "\n" into "\r\n".
+            sys.stdout.buffer.write(rendered.encode())
             return 0
         PROFILE.parent.mkdir(parents=True, exist_ok=True)
-        PROFILE.write_text(rendered)
+        PROFILE.write_text(rendered, newline="\n")
         print(f"wrote {PROFILE.relative_to(ROOT)}")
         return 0
 

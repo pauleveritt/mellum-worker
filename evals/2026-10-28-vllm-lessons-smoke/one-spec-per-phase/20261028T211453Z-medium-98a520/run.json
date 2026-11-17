@@ -1,0 +1,55 @@
+{
+  "suite": "medium",
+  "arm": "worker",
+  "single_prompt": false,
+  "specs": "split",
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 900.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": false,
+  "contaminated": false,
+  "failed_checks": 6,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+    "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+    "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 1,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 2,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 3,
+      "total": 5
+    }
+  },
+  "requests": 44,
+  "turns": 44,
+  "tool_calls": 40,
+  "tool_errors": 0,
+  "context": 19001,
+  "output_tokens": 18766,
+  "wall": 336.381,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

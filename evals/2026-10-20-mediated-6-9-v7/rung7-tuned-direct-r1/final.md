@@ -1,0 +1,1 @@
+Fixed the failing tests by adding the `/complaints` route to `app.py` and importing `models`. The route returns a list of seeded complaints, satisfying both test cases.

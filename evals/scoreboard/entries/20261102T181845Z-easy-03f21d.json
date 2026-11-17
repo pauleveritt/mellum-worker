@@ -1,0 +1,23 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-02",
+  "id": "20261102T181845Z-easy-03f21d",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "guard/foreground-server",
+    "mellum-acceptance",
+    "mellum-ncm",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "easy",
+  "tool_calls": 21,
+  "turns": 22,
+  "version": "dc7bf1be",
+  "wall": 74.703
+}

@@ -1,0 +1,8 @@
+[
+  "grader_tests/test_challenge.py::test_the_reading_was_found",
+  "grader_tests/test_challenge.py::test_the_highest_in_valley_was_found",
+  "grader_tests/test_challenge.py::test_reading_finds_sensors_in_any_region",
+  "grader_tests/test_challenge.py::test_an_unknown_sensor_is_none",
+  "grader_tests/test_challenge.py::test_region_max",
+  "grader_tests/test_challenge.py::test_an_unknown_region_is_none"
+]

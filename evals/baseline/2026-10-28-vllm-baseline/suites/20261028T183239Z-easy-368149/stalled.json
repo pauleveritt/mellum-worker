@@ -1,0 +1,1 @@
+{"seconds": 120.3, "limit": 120.0, "command": "uv run uvicorn app:app --port 8001"}

@@ -2,7 +2,7 @@
   "providers": {
     "llamacpp": {
       "name": "llama.cpp",
-      "baseUrl": "http://127.0.0.1:8002/v1",
+      "baseUrl": "http://127.0.0.1:8001/v1",
       "api": "openai-completions",
       "apiKey": "not-needed",
       "models": [

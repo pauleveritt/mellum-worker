@@ -1,0 +1,21 @@
+{
+  "arm": null,
+  "date": "2026-11-09",
+  "id": "rung13-tuned-direct-guards-r3",
+  "machine": null,
+  "missing": 0,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "guard/exists",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "medium",
+  "tool_calls": 251,
+  "turns": 260,
+  "version": "e2b13411",
+  "wall": 2675.2
+}

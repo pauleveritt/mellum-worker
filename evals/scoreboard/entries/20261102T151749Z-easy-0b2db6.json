@@ -1,0 +1,17 @@
+{
+  "arm": "server-guard",
+  "date": "2026-11-02",
+  "id": "20261102T151749Z-easy-0b2db6",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 4,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "arm:server-guard"
+  ],
+  "suite": "easy",
+  "tool_calls": 45,
+  "turns": 45,
+  "version": "n/a",
+  "wall": 541.138
+}

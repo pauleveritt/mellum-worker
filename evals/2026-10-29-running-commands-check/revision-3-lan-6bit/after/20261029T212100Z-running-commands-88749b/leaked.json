@@ -1,0 +1,7 @@
+[
+  {
+    "pid": 82895,
+    "pgid": null,
+    "command": "/opt/homebrew/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/Resources/Python.app/Contents/MacOS/Python app.py"
+  }
+]

@@ -61,7 +61,7 @@ alive instead of frozen: the glossary rule and the pathologies rule.
 
 - [ ] **Step 1: Write the test first** — four `##` section headings, thirteen
   numbered entries, every entry carrying `**Seen` and `**Answer:**`, every
-  `Seen:` line containing a link, no `docs/ladder/` link, the opening paragraph
+  `Seen:` line containing a link, no `evals/` link, the opening paragraph
   two sentences and under 45 words, and the phrase "not a denominator".
 - [ ] **Step 2: Write the page** in the three-line shape, following the harvest
   note's mapping.
@@ -126,7 +126,7 @@ an entry without an observation is a hypothesis.
 `tests/pathologies.test.mjs` holds the page's invariant: four family sections,
 eleven-plus entries with unique names, every entry carrying `Seen:` (with a
 link) and `Answer:`, a two-sentence opening, the "reference, not a rate" rule,
-and no `docs/ladder/` link. `npm test` 386/386, docs caps 4/4, build clean.
+and no `evals/` link. `npm test` 386/386, docs caps 4/4, build clean.
 
 Owed: nothing. If a later cycle reproduces the runaway search, its line changes
 from `Seen elsewhere` to a record.

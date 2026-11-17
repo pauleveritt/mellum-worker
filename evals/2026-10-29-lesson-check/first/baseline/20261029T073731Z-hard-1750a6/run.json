@@ -1,0 +1,82 @@
+{
+  "suite": "hard",
+  "arm": "worker",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 17,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_migrations.py::test_all_migrations_are_recorded",
+    "grader_tests/test_migrations.py::test_index_exists",
+    "grader_tests/test_migrations.py::test_note_column",
+    "grader_tests/test_migrations.py::test_open_tickets_view",
+    "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop",
+    "grader_tests/test_migrations.py::test_resolved_at_is_backfilled",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase5.py::test_archive_hides_from_board_but_keeps_the_record",
+    "grader_tests/test_phase5.py::test_archive_only_when_resolved",
+    "grader_tests/test_phase5.py::test_audit_records_each_transition_in_order_with_monotonic_seq",
+    "grader_tests/test_phase5.py::test_stats_open_excludes_resolved_and_archived",
+    "grader_tests/test_phase6.py::test_archived_defined_by_archived_at",
+    "grader_tests/test_phase6.py::test_report_exact_sums",
+    "grader_tests/test_phase6.py::test_totals_are_integers",
+    "grader_tests/test_visits.py::test_visits_filter_sort_and_limit",
+    "grader_tests/test_visits.py::test_visits_range_is_inclusive_and_minutes_bound"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 0,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 2,
+      "total": 5
+    },
+    "test_phase5.py": {
+      "missing": 4,
+      "total": 5
+    },
+    "test_phase6.py": {
+      "missing": 3,
+      "total": 3
+    },
+    "test_visits.py": {
+      "missing": 2,
+      "total": 2
+    },
+    "test_migrations.py": {
+      "missing": 6,
+      "total": 6
+    }
+  },
+  "requests": 59,
+  "turns": 59,
+  "tool_calls": 55,
+  "tool_errors": 7,
+  "context": 38600,
+  "output_tokens": 32223,
+  "wall": 599.097,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

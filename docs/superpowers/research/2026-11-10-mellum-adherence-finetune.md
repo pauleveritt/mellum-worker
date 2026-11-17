@@ -1,0 +1,513 @@
+# Fine-tuning Mellum for task adherence - the learnings
+
+**Status (2026-11-13): parked.** The best tune so far, on-policy DPO on Mellum2.1, is
+a wash against its own base on easy n=6 (5/6 each, median 22 against 23.5 requests).
+Reopen when there's a pool big enough for the held-out margin to turn positive. Phases
+1 and 5 need to yield pairs as well. See "The on-policy DPO tune" below.
+
+## What is measured / what is conjecture
+
+**Measured (2026-11-10, local M3 Max 48 GB):** that the model can be fine-tuned
+on this Mac, what the trajectory corpus holds, and the training set we built from
+it. **Conjecture:** that the tune actually improves adherence or cuts cost
+without regressing the hidden pass rate. Nothing is trained for real yet. Every
+number below is supply and setup, not a result.
+
+**Update (2026-11-11):** every tune below was trained on Mellum2 and compared with a
+Mellum2.1 baseline. Read the "tune loses" rows with that confound in mind (see
+[the DPO screen](#the-dpo-screen-and-the-base-model-confound-measured-2026-11-11)).
+
+## Why this exists
+
+A pivot from the harness work: instead of only fixing the worker's failures in
+the harness, teach the fixed model to stop making the cheap ones. The goal is to
+cut cost, and the first target is the pathology Andre watched most - the small
+model **not sticking to the task**. In the catalogue that is one root wearing
+several faces: a dropped requirement (#3), a runaway search (#7), a skipped rule
+(#16), and building in a file the spec did not name (#15, #12).
+
+The small-model LoRA literature backs the target choice: small models absorb
+**structure and style**, not new facts. Task adherence is structure - hold the
+brief, act only on the named files, stop - so it is a good LoRA target. The same
+rule says what NOT to tune: the migrations and visits factual gaps are a RAG or
+harness job, never LoRA.
+
+## What the feasibility probe found
+
+- `mlx-lm` 0.32.2 has a **native `mellum` model class** (`MellumSparseMoeBlock`,
+  64 experts top-8) - it loads and LoRA-trains the real 12B MoE, no patched
+  build. A one-step smoke completed end to end: 4 LoRA layers, loss 2.49 -> 0.60,
+  11 s, no OOM, adapter written.
+- Stock mlx-lm ships **SFT LoRA / DoRA only, no DPO**. First tune is SFT; true
+  preference (DPO) would need `mlx-lm-lora` or a small custom loss, later.
+- Weights: train from the MLX safetensors, not the GGUF. Pulled
+  `mlx-community/Mellum2-12B-A2.5B-Thinking-4bit` (6.4 GB).
+
+## What the trajectory corpus holds
+
+Measured over `runs/` + `evals/`:
+
+| signal | count |
+| --- | --- |
+| graded runs (score + check) | 780 |
+| hidden-pass | 166 |
+| clean winners (hidden-pass + right files + tests intact) | 138 |
+| clean winners with a trace still on disk | **44** |
+| runs that wrote outside the layout | 18 (graded) / 140 (all records) |
+| runs whose import broke (`checks_ran=false`) | 116 |
+
+The final solution code is gone (winner workspaces were temp dirs), but the
+**trace** survives, and for adherence the trajectory is the better signal: it is
+the sequence of read-the-spec -> edit the named file -> verify -> stop. Winner
+cost ran 11 to 88 requests, median 27; the cheap winners are the cleanest
+demonstrations.
+
+## The dataset we built
+
+Pipeline (in scratch, to be promoted): `make_sft.py` + `mix_general.py`.
+
+- **Positives:** each model response in a winner trace becomes one
+  (context -> on-task action) example. The context is the exact messages the
+  model saw; the action is the assistant turn it took, kept in the **native
+  tool-calling format** so training matches inference (small models take the
+  format literally).
+- **Holdout:** phase-4 (the lost-id miss) is held out entirely - 478 examples -
+  for measurement, so a gain is not memorisation.
+- **Quality filtering:** every example must render through the model's chat
+  template and fit the sequence budget; duplicates dropped. 1562 raw pairs, all
+  passed.
+- **Mixing:** blended 15% general coding-instruct (CodeAlpaca) as a regulariser
+  against over-specialisation, in-domain (code) but off our eval.
+
+Final set: **train 1134 (15.0% general), valid 141, phase-4 holdout 478.**
+
+## The training config (small-model regime)
+
+From the small-model LoRA guidance, to be run next:
+
+- **DoRA**, not plain LoRA - it decomposes magnitude and direction and holds up
+  better on small models.
+- **All linear modules**, not just q/v (attention q/k/v/o for sure; the MoE
+  expert projections if mlx-lm reaches them - to confirm).
+- **Rank 32, alpha 64.**
+- **Learning rate 1e-4** - the active param count is ~2.5B, so it behaves small.
+- **1 to 3 epochs, eval every ~50 steps, early-stop** when val loss creeps -
+  small models overfit fast.
+- Track base-vs-tune with **MLflow**: hidden-pass, requests, wall, and the
+  adherence verdicts (out_of_layout, checks_ran). Ship rule: cost drops AND the
+  hidden pass rate does not.
+
+## Speed track: the MTP draft head (fixed, needs llama.cpp >= b11747)
+
+Mellum ships an MTP (multi-token-prediction) draft head for self-speculative
+decoding, quoted at 1.4-1.8x with ~90% token acceptance. Measured facts:
+
+- **The head is 308 MB** - 16 tensors (one extra decoder block `blk.28` plus the
+  `nextn.eh_proj`/`enorm` projections). The shipped MTP gguf is 8.33 GB only
+  because it *bundles* a full copy of the 8.07 GB trunk so it can load alone; the
+  marginal head is 308 MB. Self-speculation (sharing the trunk) costs base +
+  0.31 GB + KV + flash-attn ≈ ~12 GB, barely more than the base alone. Good
+  economics: 308 MB for 1.4-1.8x.
+- **Two things had to be right.** (1) The engine: build 11429 failed with
+  `expected 355, got 339` - no code path for the `nextn` layer. The fix is
+  **llama.cpp >= b11747**; we upgraded to 0.9.0 (build 12110). (2) The wiring:
+  it is **self-speculation**, so serve the MTP gguf AS the main model with
+  `--spec-type draft-mtp`, NOT a `-md` sidecar (the sidecar would load a second
+  full trunk and does not use the nextn layers).
+- **Verified:** on build 12110 the MTP gguf loads and
+  `common_speculative_init_result: creating MTP draft context against the target
+  model`, server healthy. Wired behind `MELLUM_DRAFT` in `scripts/backend.py`
+  (off by default so measured runs stay on the simple config), test green.
+- **Clean speed sweep (GPU idle): n-max 1 = 1.05x, deeper is worse.** none
+  99.0 tok/s; draft n-max 1 = 104.0 (1.05x, acc 0.82, len 1.82); n-max 4 = 72.7
+  (0.74x, acc 0.38); n-max 8 = 43.2 (0.44x, acc 0.19). The `nextn` head predicts
+  ONE token well, so deeper drafts collapse acceptance and waste compute. On this
+  M3 Max the Q4 2.5B-active target already runs ~99 tok/s (bandwidth-bound), so
+  the draft overhead eats nearly all the gain: ~5% wall, nowhere near the vendor's
+  1.4-1.8x (likely a CUDA/BF16 figure). Low-value for us, and it does not touch
+  the request metric. (An earlier GPU-contended read showed 0.92x; contention hid
+  the small real gain.)
+- **Reproducibility note:** the ladder was measured on build 11669; moving to
+  12110 changes the substrate, so a kept speed claim wants a re-baseline.
+- **It does not help our cost metric regardless.** We score requests/turns; the
+  head speeds wall only. It cannot remove a turn, so it never substitutes for the
+  adherence tune.
+
+## Factual knowledge (e.g. Python 3.15) is RAG, not this tune
+
+New factual knowledge - a new Python version, a new library API - is the one
+thing the small-model guidance says not to fine-tune: the model will hallucinate
+a plausible-but-wrong answer. Split it:
+
+- **The facts -> RAG / context injection.** Retrieve the relevant 3.15 "What's
+  New" and the specific API docs a task touches into the prompt at inference.
+  Reliable, updatable without a retrain. It fits the remedy architecture as a
+  `context/python-315` unit, the same shape as the schema injection, and the
+  Groundwire RAG in `tina4-harness` is the retrieval home.
+- **The habit -> a thin style-SFT, only if wanted.** To make the model default
+  to 3.15 (target the version, prefer new idioms, avoid removed ones), a small
+  immaculate set of 3.15-style examples biases the default. That is style, which
+  it learns; it is not teaching the semantics of every new API.
+- **Keep it out of the adherence set.** Mixing 3.15 facts into the adherence
+  data would fail and pollute the adherence signal. Separate track, separate
+  data.
+
+## First tune result - held-out transfer (measured)
+
+A DoRA tune ran: all-attention keys, rank 32, lr 1e-4, 500 iters on 480 compacted
+examples (15% general mix), grad-checkpoint, max-seq 2048. The leaky val curve
+bottomed ~0.06-0.09 (train and valid share the same 44 traces, so it only shows
+the traces were learned). The accurate test is the **held-out phase-4 set** - 78
+traces excluded from train and valid entirely:
+
+| | base | tuned |
+| --- | --- | --- |
+| held-out phase-4 loss | 1.806 | **0.613** |
+| perplexity | 6.08 | **1.85** |
+
+Loss down ~66%, perplexity 3.3x lower on material the tune could not have
+memorised. The adherence behaviour generalised. **Caveat:** this is teacher-forced
+next-token loss on winner traces - a proxy. It shows the tuned model predicts
+on-task winning actions far better, not yet that it passes more or spends fewer
+requests. The real verdict is a harness run with the adapter (easy/hard suite,
+tuned vs base, scored by the hidden grader on checks-missed and requests). A lead,
+a strong one, not a rate.
+
+## Live harness verdict (measured) - the proxy did not transfer
+
+The held-out loss was a proxy, so we ran the real oracle. The tuned model was
+converted to a servable Q4_K_M GGUF (the conversion is its own note below) and put
+through the shipped harness against the base, same remedies both sides, on
+llama.cpp. The result reverses the proxy:
+
+| easy, n=6, `preset`-lean 3 prompts | passed | median requests | tool calls |
+| --- | --- | --- | --- |
+| base (JetBrains Q4) | **4/6** | 20 | 21, 18, 19, 32, 26, 17 |
+| tuned (DoRA Q4) | **1/6** | 14 | 10, 15, 19, 9, 14, 20 |
+
+| medium, n=1, `preset:medium` | hidden checks | requests | import ran |
+| --- | --- | --- | --- |
+| base | **16/18** | 79 | yes |
+| tuned | **0/18** | 178 | no (broke the import) |
+
+The tune is a broad loss, not a medium-specific one. On easy the tuned model runs
+**fewer** requests and **fewer** tool calls than the base and exits with content
+checks still unmet (`checks_ran` stayed true, so it is not an import break there -
+it just stops short). On medium it broke the import and churned 178 requests, 2.3x
+the base, before giving up. Two failure faces, one cause: the SFT taught the
+**shape** of a winner trace, "stop" included, and the model now stops before the
+task is actually done. The 15% general mix did not hold against 44 correlated
+traces.
+
+**The lesson about the metric.** Teacher-forced next-token loss on winner traces
+rewards predicting winner-trace tokens, which correlates with terseness and an
+early exit - not with capability. A 66% loss drop looked like a win and was a
+regression. The hidden grader is the oracle (AGENTS.md); the proxy is not, and this
+run is why. Record kept; the tune as configured does not ship.
+
+**What this does not kill.** The pipeline, the held-out discipline, and the ability
+to tune on this Mac all stand. Two corrections were then tried in turn - gentler
+hyperparameters and a full-length data rebuild (both below). The rebuild fixed the
+behaviour but not the pass rate, which points past the data to a self-distillation
+ceiling, not a knob or a dataset size. *(Corrected 2026-11-11: the ceiling is
+confounded by a second data defect - see "Correction" below.)*
+
+### Gentler retrain did not rescue it (measured)
+
+The first correction tried was gentler hyperparameters: rank 8 (from 32), dropout
+0.05, 200 iters (from 500), learning rate and data held constant - the minimal
+change that tests whether staying closer to base recovers capability. The nominal
+mix was left as-is, because the compacted set is already ~35% general (compaction
+dropped the long adherence traces and kept the short CodeAlpaca rows), so more
+general data would deepen the terseness, not cure it.
+
+| easy, n=6 | passed | median req | tool calls | import ran |
+| --- | --- | --- | --- | --- |
+| base | 4/6 | 20 | 21, 18, 19, 32, 26, 17 | yes |
+| tuned rank-32 | 1/6 | 14 | 10, 15, 19, 9, 14, 20 | yes (content short) |
+| tuned rank-8 gentle | **0/6** | 6 | 0, 0, 10, 38, 22, 0 | **no, all six** |
+
+Gentler regressed **further**. The adapter is coherent (a factorial probe returns
+120, so the conversion is sound) but agentically broken: three of six runs emit
+**zero tool calls** and stop, one thrashes to 38, and not one produces an importable
+build. Lower capacity did not pull the model back toward base, it collapsed the
+tool-calling format instead.
+
+### The data defect, and a full-length rebuild (measured)
+
+Reading the builder found the real defect. The length filter in `make_sft.py`
+(`MAX_TOKENS`) was a silent no-op: this tokenizer returns 2 tokens for ANY input
+under `apply_chat_template(tokenize=True)`, so nothing was ever dropped for length.
+Giant file-dump examples (real median 3,815 tokens, p75 13k, max 84k) therefore
+slipped through to `compact.py`, which capped each message at 800 chars. That
+truncated the **reasoning**, not the tool calls (those live in a separate key), so
+the set taught terse, early-exit behaviour; and the survivors skewed to short
+early-turn contexts, since a trace's late "verify and stop" turns carry the biggest
+contexts and were the ones cut.
+
+The v2 rebuild keeps every message whole and **drops** (never truncates) examples
+over a real token budget (measured with `tok.encode`, not the broken path): 510
+full-length adherence examples at <=4096 tokens plus a 10% general mix, rank 16,
+seq 4096, 300 iters.
+
+| easy, n=6 | passed | median req | tool calls | checks_ran |
+| --- | --- | --- | --- | --- |
+| base | 4/6 | 20 | 21,18,19,32,26,17 | all |
+| rank-32 compacted | 1/6 | 14 | 10,15,19,9,14,20 | all |
+| gentle rank-8 compacted | 0/6 | 6 | 0,0,10,38,22,0 | all |
+| v2 full-length rank-16 | 1/6 | 24 | 6,9,46,18,47,29 | 5/6 |
+
+v2 **fixed the behaviour collapse**: median back to 24 requests like base, tool
+calls plentiful, no zero-tool-call exits, two runs cleared every visible check. But
+pass rate stayed **1/6, below base's 4/6**. The compaction defect was real and
+fixing it recovered the symptom, it did not add capability. That isolates the two
+effects: compaction caused the collapse, and clean full-length SFT on 44 correlated
+self-winners still cannot exceed base.
+
+**Why this is a ceiling, not a knob.** SFT on the model's own winning traces is
+self-distillation: it can sharpen format and habit (v2 did) but cannot teach a skill
+the base lacks, because every label is an action the base already took when it won.
+Minting more winners - even diverse ones from the other ladder tasks - draws from
+the same source and faces the same ceiling, for hours of inference. The one lever
+that targets capability rather than imitation is **preference** optimisation (DPO:
+reward the cheap correct path, penalise the long wrong one), which stock mlx-lm does
+not ship (needs `mlx-lm-lora` or a custom loss). Three live screens now agree
+trace-SFT does not beat base; the measured wins in this repo come from harness
+remedies, not model surgery.
+
+**Correction (2026-11-11): the ceiling is a theory, not a finding.** Auditing the
+data for the DPO build found a second defect in `make_sft.py`. The trace's
+`provider_request` payload is already OpenAI-shaped: an assistant turn carries its
+`tool_calls` at message level with `content: None`. `to_openai` only looks for tool
+calls inside content parts, finds none, sees empty text, and drops the turn. So every
+history assistant turn was deleted. Measured on the training files: of the examples
+with tool results in context, **466/466 (v2) and 920/920 (original) contain zero
+assistant tool calls** - each context is a run of tool results with no actions that
+produced them. All three SFT screens trained on that. The measured rows above stand
+(base 4/6 beats every tune), but they no longer separate "SFT cannot add capability"
+from "SFT on malformed contexts teaches the wrong conditional". The self-distillation
+ceiling is a plausible theory; it is not proven by these runs. A fair SFT verdict
+needs the native rebuild below.
+
+The same audit fixed three more things before any DPO run: (1) the native rebuild
+restores each assistant turn from its `message_end` action (reasoning plus native
+`tool_calls`; 52/52 turns align by tool name on a phase-4 winner) and masks only
+assistant tokens; (2) "rejected" is restricted to graded failures - the first DPO set
+had labelled unclean *passes* and ungraded runs as rejected; (3) upstream
+`mlx-lm-lora` 5.10.2 silently ignores `--dpo-cpo-loss-type` (runs sigmoid on summed,
+length-biased scores), truncates over-length pairs, OOMs evaluating 32k sequences, and
+cannot backprop its long-context path through 4-bit weights. The DPO run therefore
+uses its own step (now [`learn/finetune/dpo_native_train.py`](../../../learn/finetune/dpo_native_train.py)), reusing
+upstream's loss and chunk iterator. Its chunked backward is checked against an exact
+full-sequence gradient: cosine 0.938 at 512-token chunks, 0.926 at 256 (truncation
+through the KV cache is real but modest). Separately, 4-bit MoE log-probs shift by
+~0.1 nats/token with pass length alone (no cache involved; same length is
+bit-identical), so policy and reference are always scored by the same path.
+
+### The DPO screen, and the base-model confound (measured, 2026-11-11)
+
+**Setup.** The native set has 48 train pairs and 6 valid pairs. Valid is held out by
+trajectory: 2 phase-4 winners and 3 phase-4 losers that are never trained on. 35 of
+the 48 train pairs are phase-4. Sequences run 20-40k tokens, and 71% of tokens are
+scored (assistant only).
+
+The run used LoRA on the default keys (attention plus experts) at rank 8, scale 2.0,
+over 16 layers, which is 81.31M trainable parameters. Other settings: IPO β 10 (a
+per-token gap target of 0.05), lr 2e-5, 4 pairs per update, 2048-token chunks. The
+base was `mlx-community/Mellum2-12B-A2.5B-Thinking-4bit`.
+
+| update | train loss | train acc | train margin | held-out |
+| --- | --- | --- | --- | --- |
+| 0 | - | - | - | loss 0.00250, margin 0 |
+| 2 | | 0.75 | 0.026 | |
+| 4 | | 1.0 | 0.076 | |
+| 6 | 0.00071 | | 0.296 | **loss 0.00340, acc 0.667, margin -0.023** |
+| 8 | 0.00040 | | 0.663 | stopped: past the 0.5 target |
+
+The iter-1 loss of 0.0025 is (1/2β)², which confirms IPO really ran. Train margin
+rose steadily while held-out margin went slightly negative and held-out loss rose. On
+6 pairs that is a lead, not a rate, but it does not show generalisation.
+
+**Live (easy, the 4/6 baseline's remedies), update-6 checkpoint:**
+- Runs 1 and 2 failed. Run 1 used 9 requests and 8 tool calls, with 4 tool errors,
+  and its checks never ran.
+- Run 3 was stopped.
+- The traces show corrupted tokens, not a misread task:
+  - paths like `/Userls/mac`, `/Users/mapkars` and `index.1.html`
+  - a hallucinated `BookRepository`
+  - `{{% extends %}}`
+  - foreign control tokens such as `<|start|><|channel|>`
+
+**Where the damage is not.** We used perplexity on unseen code (`learn/code/harness.py`,
+17,616 tokens, 2048-token windows, scoring each window's second half):
+
+| model | path | perplexity |
+| --- | --- | --- |
+| Mellum2.1 | JetBrains Q4 GGUF | **3.798** |
+| Mellum2 | MLX 4-bit | 3.893 |
+| Mellum2 + DPO u6 | MLX 4-bit | 3.895 (+0.03%) |
+| Mellum2 | our conversion, zero adapter | 3.922 (+0.7%) |
+| Mellum2 + DPO u6 | our conversion | 3.923 |
+
+Neither the adapter nor our conversion moves language modelling by more than 1%. The
+corrupted output above would cost far more than that.
+
+A sampled tool-call probe on mlx_lm (no conversion, temperature 1.0, n=10) gave valid
+calls for base 8/10 and for DPO u6 5/10. That is a lead (p ≈ 0.35). Greedy output is
+correct for both.
+
+**The confound.** Every tune in this note was trained on **Mellum2**: the three SFT
+screens and this DPO screen. Every baseline it was compared against, base 4/6 easy and
+16/18 medium, is **Mellum2.1**, served from the JetBrains GGUF. The tunes and the
+baseline are different releases. Two consequences follow:
+
+- **The data was rendered with the wrong template.** Line 58 differs between the two
+  templates. Mellum2.1 has `{%- if reasoning_content %}`. Mellum2 has
+  `{%- if loop.last or (not loop.last and reasoning_content) %}`, which writes an empty
+  `<think></think>` into a final assistant turn that has no reasoning.
+- **Our conversion quantises twice.** We go from 4-bit MLX, dequantise to fp16, then
+  quantise to Q4_K_M. The perplexity row shows a measured cost of +0.7%.
+
+So **"every tune loses to base" is not yet a training result.** Part of the gap, or
+all of it, may be Mellum2 against Mellum2.1. The control that separates the two is
+untrained Mellum2 through our conversion (`ourbase-Q4_K_M.gguf`, already built) on
+easy n=6. That control has not been run. *(Correction, 2026-11-11: it has. Untrained
+Mellum2 scored 0/6. See "The controls" below.)*
+
+**Rebuilt on Mellum2.1 (2026-11-11).** No download is needed. The repo's local
+`.models/Mellum2.1-12B-A2.5B-Thinking-{6bit,8bit}` carry a chat template
+byte-identical to the served GGUF's (4,849 characters), and the tokenizer is identical
+across Mellum2 and Mellum2.1.
+
+The rebuild ran `build_dpo_native.py --budget 41000 --model .models/...-6bit`. It gave
+the same 40 trajectories and the same 54 pairs (48 train, 6 valid). All 4,929 scored
+runs open right after the assistant header, and token and mask lengths match.
+
+The only change is the final assistant turn: the empty `<think></think>` is gone,
+which makes each sequence 2-6 tokens shorter. The next DPO run trains on the 2.1 MLX
+weights with this set. The 6-bit copy still quantises twice on the way to Q4, but
+from 6 bits rather than 4.
+
+### The controls (measured, 2026-11-11)
+
+Both untrained bases went through our conversion (zero adapter, fuse `--dequantize`,
+remap, f16, Q4_K_M) and ran on easy n=6, with the same serve flags and the same three
+prompt remedies as every row above.
+
+| Untrained base, our conversion | Easy pass | Median requests |
+| --- | --- | --- |
+| Mellum2 (4-bit MLX) | **0/6** | 7 |
+| Mellum2.1 (6-bit MLX) | **5/6** | 23 |
+| Mellum2.1, JetBrains GGUF (reference) | 4/6 | 24 |
+
+Per rep, Mellum2 ran 7, 6, 3, 7, 9 and 6 requests in 184-392 s, and every rep failed
+4 checks. Several hit the output token limit. Mellum2.1 ran 33, 22, 20, 16, 31 and 25
+requests in 136-258 s. Only rep 2 failed, on 1 check.
+
+Two leads follow, each a screen at n=6:
+
+- **The conversion doesn't damage Mellum2.1.** It matches the JetBrains reference
+  (5/6 against 4/6), so a Mellum2.1 tune can be served through this path.
+- **The tunes never lost to their own base.** Untrained Mellum2 scores 0/6. Against
+  that, the SFT tunes (1/6, 0/6, 1/6) and DPO update 6 (0/2) are level or ahead. The
+  4/6 gap was Mellum2 against Mellum2.1 all along. "The tune makes it worse" was
+  never measured, and it is withdrawn.
+
+### On-policy sampling, and a worker that killed the model server (2026-11-12)
+
+The old DPO pairs came from mixed runs (6-bit oMLX, mode, primary, llama.cpp), so they
+aren't the served model's own behaviour. The fix is self-distillation. The served
+JetBrains Mellum2.1 Q4_K_M runs the AgentClinic rungs as clean single episodes (direct,
+tuned, guards, thinking off, no redispatch). The hidden oracle grades every run.
+
+The first batch was half lost. In rung 7 r2, the worker wanted port 8001 for its own
+uvicorn and found llama-server already there. It ran `kill <pid>`. The model server
+shut down mid-run, so 15 later runs got only connection errors. Two more ran against
+a different server that took over the port. All 19 are set aside in
+`runs/2026-11-11-onpolicy-21-invalid/`.
+
+`guard/foreign-process` (992c877) now refuses a kill aimed at anything outside the
+workspace, and any kill by name, port or pipe. It is loaded for the re-sample.
+
+Valid so far, served Mellum2.1 (hidden pass):
+
+| Phase | Pass | Requests per rep | Wall per rep (s) |
+| --- | --- | --- | --- |
+| 1 | 3/4 | 31, 74, 106, 78 | 43-157 |
+| 2 | 1/1 | 65 | 103 |
+| 4 | 5/10 | 33-110 | 246-600 |
+
+The guarded re-sample (`runs/2026-11-12-onpolicy-21`) ran with no server kills:
+phase 2 2/3, phase 3 1/4, phase 5 4/4, phase 6 3/4, phase 7 1/4.
+
+### The on-policy DPO tune (measured, 2026-11-12)
+
+`build_dpo_native.py` turned both batches into 21 pairs: 15 train, with the 6
+phase-4 pairs held out as validation. Phase 1 gave none, because its passes weren't
+clean winners. Phase 5 gave none either, because every rep passed and left no loser.
+IPO-DPO ran on the Mellum2.1 6-bit weights (β 10, lr 2e-5, accumulation 4, 8 updates,
+`adapters_dpo_onpolicy21`).
+
+The training pairs were learned and the held-out ones weren't. Train accuracy reached
+1.00 with a margin of 0.97. Validation accuracy went 0.00, then 0.33 at update 6, then
+0.33 at update 8, with the margin flat at -0.01. Fifteen pairs are enough to memorise
+and not enough to generalise.
+
+Served through the same conversion and run on easy n=6 with the same remedies as the
+controls (`runs/2026-11-12-dpo21-onpolicy-easy`):
+
+| Rep | Pass | Requests | Turns | Wall (s) |
+| --- | --- | --- | --- | --- |
+| 1 | pass | 15 | 15 | 91 |
+| 2 | FAIL (quality check) | 25 | 25 | 98 |
+| 3 | pass | 24 | 24 | 85 |
+| 4 | pass | 17 | 17 | 72 |
+| 5 | pass | 20 | 20 | 107 |
+| 6 | pass | 26 | 26 | 89 |
+
+**5/6, median 22 requests.** The untrained Mellum2.1 control scored 5/6 with a median
+of 23.5. On pass rate and requests this is a wash, so the tune is not a measured win.
+Wall halved (72-107 s against 136-258 s), but wall is informational here: the two arms
+ran hours apart on a shared machine, and requests barely moved, so a faster server
+state explains it as well as the tune does. That is a lead to recheck, not a result.
+The tune also did no harm, which matches the held-out curve.
+
+The next lever is more on-policy pairs. Sample more reps per phase so phases 1 and 5
+yield pairs too, and train again only once the held-out margin turns positive.
+
+### Conversion (the serving path that unblocked the verdict)
+
+mlx-lm's own GGUF export rejects the `mellum` type, and its server caps max_tokens
+far below the profile's 16384 (pathology #9 - the agent loop dies mid-thinking at
+`finish=length`). So the tuned adapter was fused and converted for the proven
+llama.cpp path: `mlx_lm.fuse --dequantize` to fp16 HF, then llama.cpp's
+`convert_hf_to_gguf.py`, then `llama-quantize Q4_K_M`. The converter wants
+per-expert `mlp.experts.{0..63}.{proj}` while mlx-lm stores them pre-stacked as
+`mlp.switch_mlp.{proj}` [64, out, in]; `remap_experts.py` slices the stack into
+per-expert tensors - a pure slice, the layout already matches, no transpose. The
+Q4 output is coherent (factorial correct) and tool-calls (`bash("ls")`), so the
+regression above is the tune, not a broken conversion.
+
+## What would falsify this / risks
+
+- **Base-model confound (2026-11-11).** The tunes are Mellum2 and the baseline is
+  Mellum2.1. If untrained Mellum2 through our conversion also scores below 4/6 on
+  easy, the tune-loses rows measure the release, not the training. Train and serve the
+  same release from here on (`--model`).
+
+- **44 trajectories is a narrow, correlated pool.** 1134 examples come from 44
+  runs; the model may learn those runs, not the behaviour. Grow the pool by
+  running the worker to mint more clean winners.
+- **Training on suite traces risks memorising the suite.** Mitigation: phase-4 is
+  held out, and the real test is the hard ladder the easy/medium winners never
+  saw. A gain that does not transfer off the trained phases is memorisation.
+- **The cost win could be the holdout, not the tune.** A fair measurement fixes
+  the same deadline and scores requests, base vs tune, on held-out tasks.
+- **Small-model forgetting.** The 15% mix is the guard; if general coherence
+  drops, raise the mix or lower the rank.
+- **Format drift.** We train in the native tool-calling template; if a later
+  converter flattens tool calls to text, the gain would not reach the real
+  harness.
+- **SFT imitates, it does not prefer.** SFT on cheap winners teaches the short
+  path by example; it cannot penalise the long one directly. DPO is the next
+  tool if SFT underdelivers.

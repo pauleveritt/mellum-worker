@@ -70,7 +70,7 @@ what got a 12B worker from "nothing imports" to 1 of 18 checks missing.
 
 - [ ] **Step 1: Write the lesson test first.** It asserts the six `##` headings,
   a two-sentence opening of 45 words or fewer with no badge or link, the badge
-  pattern, `weakest badge is`, the record's session ids, and no `docs/ladder/`
+  pattern, `weakest badge is`, the record's session ids, and no `evals/`
   link. Run it and see it fail for the missing page.
 
 - [ ] **Step 2: Write the page** in the six steps:

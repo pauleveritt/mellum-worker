@@ -1,0 +1,72 @@
+{
+  "suite": "hard",
+  "arm": "bare",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 2700.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 4,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_migrations.py::test_all_migrations_are_recorded",
+    "grader_tests/test_migrations.py::test_rerunning_migrations_is_a_noop",
+    "grader_tests/test_visits.py::test_visits_filter_sort_and_limit",
+    "grader_tests/test_visits.py::test_visits_range_is_inclusive_and_minutes_bound"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 0,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 0,
+      "total": 5
+    },
+    "test_phase5.py": {
+      "missing": 0,
+      "total": 5
+    },
+    "test_phase6.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_visits.py": {
+      "missing": 2,
+      "total": 2
+    },
+    "test_migrations.py": {
+      "missing": 2,
+      "total": 6
+    }
+  },
+  "requests": 200,
+  "turns": 200,
+  "tool_calls": 183,
+  "tool_errors": 44,
+  "context": 74938,
+  "output_tokens": 87782,
+  "wall": 1105.696,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": [
+    "inspect",
+    "migrations.py"
+  ]
+}

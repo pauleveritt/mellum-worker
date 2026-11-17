@@ -1,6 +1,6 @@
 """Summarise a ladder output directory: pass counts per rung and non-zero pathology columns.
 
-uv run python -m ladder.summarize ../docs/ladder/phase0-baseline [more dirs...]
+uv run python -m ladder.summarize ../evals/baseline/2026-10-09-phase0-baseline [more dirs...]
 """
 
 from __future__ import annotations

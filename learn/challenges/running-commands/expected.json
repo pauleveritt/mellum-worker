@@ -1,0 +1,7 @@
+[
+  "grader_tests/test_challenge.py::test_health_answers_ok",
+  "grader_tests/test_challenge.py::test_the_live_check_was_saved",
+  "grader_tests/test_challenge.py::test_items_lists_both",
+  "grader_tests/test_challenge.py::test_one_item_by_id",
+  "grader_tests/test_challenge.py::test_missing_item_is_404"
+]

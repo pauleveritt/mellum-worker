@@ -14,8 +14,9 @@ until they pass, and reports. Your main model stays in charge.
   records remain, and the table below marks them as history.
 
 Every setting was measured by the ladder (`ladder/`; records in
-`docs/ladder/`). The 6-bit MLX weights (for Apple Silicon, served by oMLX)
-are on [Hugging Face](https://huggingface.co/pauleveritt/Mellum2.1-12B-A2.5B-Thinking-mlx-6bit).
+`evals/`). The model runs locally on llama.cpp: the Q4_K_M GGUF weights
+([Hugging Face](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF))
+download on the first run, served by `llama-server` on `127.0.0.1:8001`.
 
 ## Domain engineering
 
@@ -45,15 +46,49 @@ run it again afterwards. The reasoning is in the
 
 ## Install
 
-Pi:
+**llama.cpp: Linux, macOS, Windows.** Clone the repo and run the installer.
+It sets up `uv`, `llama-server`, a Node.js new enough for Pi, and Pi itself:
 
 ```bash
-pi install git:github.com/pauleveritt/mellum-worker@v0.1.8
+git clone https://github.com/andrevanzuydam/mellum-worker
+cd mellum-worker
+bash install.sh
 ```
 
-Then `/skill:mellum-setup`: weights, oMLX server, provider entry, optional
-rules, smoke test. It checks each step and asks before writing to your
-files. Mellum Worker works once the model is served.
+On Linux it downloads llama.cpp's prebuilt release for your hardware: CUDA
+when `nvidia-smi` finds an NVIDIA GPU, Vulkan when a Vulkan loader is
+installed, otherwise CPU. Set `MELLUM_LLAMA_FLAVOR` (`cuda-13.4`,
+`cuda-12.8`, `vulkan`, `cpu`) to choose one yourself, or
+`MELLUM_LLAMA_SOURCE=1` to compile instead. On macOS it keeps a current
+Homebrew llama.cpp, or compiles one. On Windows, follow
+[Base Pi on llama.cpp](learn/getting-started/base-pi-on-llamacpp.md).
+
+Then start the model and Pi:
+
+```bash
+bash run.sh                    # Pi in this repo: the course, /lesson, /remedy
+bash run.sh ~/code/my-project  # Pi in your own project, with /mellum loaded
+MELLUM_REMEDY=preset:easy bash run.sh ~/code/my-project   # with the Easy stack on
+```
+
+The first `run.sh` downloads the Q4_K_M weights (about 8 GB) into the
+Hugging Face cache and serves them on `127.0.0.1:8001`. Things the scripts
+change outside this folder:
+
+- `install.sh` puts `uv`, `llama-server` and `pi` in `~/.local/bin`, and
+  installs this package into your own Pi (`~/.pi/agent/settings.json`). Undo
+  the package with `pi remove <this folder>`.
+- If your Node.js is older than 24, `install.sh` adds a private one under
+  `~/.local/share/mellum-node`. Only `install.sh` and `run.sh` use it; your own
+  `node` stays as it is.
+- `run.sh` stops any running `llama-server` and anything listening on port
+  8001 before it starts the model.
+
+**oMLX: Apple Silicon only.** The measured setup:
+
+```bash
+pi install git:github.com/andrevanzuydam/mellum-worker@v0.1.8
+```
 
 ## Use it
 
@@ -67,8 +102,7 @@ Pi switches to Mellum, runs the task, and switches back. For several tasks,
 `/mellum on`, type them as normal prompts, then `/mellum off`; your model
 gets one handoff block per span (summary line, files written, commands run,
 last output, Mellum's reply) instead of every edit. Run the tests yourself
-afterwards. Run `/mellum off` before a long main-model turn: auto-compaction
-is refused while Mode is on. `pi -p "/mellum <task>"` runs one task
+afterwards. `pi -p "/mellum <task>"` runs one task
 headlessly.
 
 Each span appends a JSON line to `~/.pi/agent/mellum-mode-runs.jsonl`
@@ -153,7 +187,7 @@ model can change them.
 node <package dir>/scripts/mellum.mjs check --host pi
 ```
 
-`<package dir>` is `~/.pi/agent/git/github.com/pauleveritt/mellum-worker`.
+`<package dir>` is `~/.pi/agent/git/github.com/andrevanzuydam/mellum-worker`.
 It checks that the server answers and lists the model, that the
 settings no request can undo match (the server-only rows above, thinking
 not forced off, and forced sampling at 1 / 0.95 / 20), and that your
@@ -228,7 +262,7 @@ Mellum as your main Pi model (no `/mellum`) writes no record, so `last` and
 ## What you get
 
 Rungs 1–5, five coding tasks, three runs each, on an M5 Max through oMLX
-([summary](docs/ladder/ablation-summary.md)):
+([summary](evals/ablation-summary.md)):
 
 | Host | Deliverable | Use | Passes | Wall s, mean | Requests per run | Your main model per run |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -246,10 +280,10 @@ specs. A run passes when the project's tests and hidden behaviour tests
 pass, no existing test was removed or edited, and nothing was written
 outside the file list. Mode, 12 runs each
 ([note](docs/superpowers/research/2026-10-09-m7-project-facts.md)): facts
-off ([A18](docs/ladder/ablation-a18-agentclinic-facts-off/README.md)), a
-`## Mellum` section ([A19](docs/ladder/ablation-a19-facts-on/README.md)),
+off ([A18](evals/2026-10-09-ablation-a18-agentclinic-facts-off/README.md)), a
+`## Mellum` section ([A19](evals/2026-10-10-ablation-a19-facts-on/README.md)),
 and the fallback only
-([A20](docs/ladder/ablation-a20-facts-fallback-only/README.md)). Passes,
+([A20](evals/2026-10-10-ablation-a20-facts-fallback-only/README.md)). Passes,
 requests, time and stray writes are in What helped, below; runs cut at the
 600 s deadline were 3, 1 and 1 of 12.
 
@@ -283,7 +317,7 @@ Pi was not run on these rungs.
 - [Learning Center](learn/index.md): problems, fixes, and evidence for small coding models.
 - [recipe.md §6](docs/recipe.md#6-what-is-settled-and-what-is-not): what is settled and what is not.
 - [recipe.md §4](docs/recipe.md#4-using-mellum-worker-delegated): recorded pathologies and the guard for each.
-- [Ablation summary](docs/ladder/ablation-summary.md): every setting measured in and out.
+- [Ablation summary](evals/ablation-summary.md): every setting measured in and out.
 - [Where the cost goes](docs/superpowers/research/2026-10-09-worker-cost-options.md): Mode versus Worker.
 - [Recovery report](docs/superpowers/research/2026-10-07-mellum-recovery/report.md): why Mellum cannot be the primary agent.
 
@@ -295,17 +329,24 @@ harness, with every claim labelled by the evidence behind it:
 1. [Base Pi on llama.cpp](learn/getting-started/base-pi-on-llamacpp.md) —
    install `uv`, llama.cpp and the Mellum weights, chat, and get an answer
    from base Pi.
-2. [The ditch](learn/getting-started/ditch.md) — one open-ended AgentClinic
-   session, and a final report that does not survive being checked.
-3. [Make a mini harness](learn/getting-started/harness.md) — one task, one
-   fresh directory, one score line.
-4. [Eval suites and the telemetry](learn/getting-started/suite.md) — three
+2. [Working with Pi](learn/getting-started/working-with-pi.md) — starting
+   Pi, its tools and sessions, project trust, and the course's `/lesson` and
+   `/remedy` commands.
+3. [Eval suites and the telemetry](learn/getting-started/eval-suites.md) — three
    AgentClinic suites with hidden graders and known-good/broken qualification,
    graded with `ruff`, `pyrefly` and `complexipy`, and read from the trace.
-5. [The worker extension](learn/getting-started/worker-extension.md) — what a
-   Pi extension is, and `/mellum` as the vehicle the remedies improve.
+4. [The Harness](learn/getting-started/the-harness.md) — write a mini harness
+   that runs Pi in a fresh folder and scores it, the instrument every lesson's
+   before/after line uses.
+5. [Extensions and Remedy Units](learn/getting-started/extensions.md) — what a
+   Pi extension and a remedy unit are, presets, and the worker as a command
+   tool.
+6. [Troubleshoot](learn/getting-started/troubleshoot.md).
 
-All findings lessons are in [Lessons](learn/lessons/index.md). The site builds on
+From there, see the [Lessons](learn/lessons/index.md) index, or go straight to
+[The Challenge](learn/challenge/index.md).
+
+The findings lessons are being rebuilt. The site builds on
 pull requests and deploys to GitHub Pages from `main`
 (`.github/workflows/docs.yml`). Run the harness with `uv run learn/code/harness.py run --suite all --grade`.
 
@@ -324,8 +365,12 @@ still fails.
 
 ## Requirements
 
-- Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or newer, 9.9 GB for the weights
-- Node 24 or newer; Pi 1.0 or newer
+- llama.cpp path: Linux, macOS or Windows; about 10 GB free for the Q4_K_M
+  weights; a GPU with 8 GB or more helps (it ran on an 8 GB RTX 5050), CPU works
+  but slowly. `install.sh` brings the rest.
+- oMLX path: Apple Silicon Mac, [oMLX](https://github.com/jundot/omlx) 0.6.4 or
+  newer, 9.9 GB for the weights
+- Node 24 or newer (install.sh provides one); Pi 1.0 or newer
 
 Other backends: [docs/backends/llamacpp.md](docs/backends/llamacpp.md) is
 smoke-tested but not ladder-measured, and
@@ -345,6 +390,73 @@ Nothing registers at load time. Pi loads the worker extension, dormant
 until `/mellum`; the skill writes the provider and rules into your config
 from [templates/](templates/).
 
+## Getting started (the next engineer)
+
+Start with **[`LESSONS.md`](LESSONS.md)** — a hundred lessons and dated
+addenda from building this, gotchas included — and
+**[`LEARNING.md`](LEARNING.md)**, which badges each of those findings by the
+evidence behind it. Then, to run the ladder yourself:
+
+1. **The ladder lives in `ladder/`, on `uv`.** `cd ladder`; `uv run python -m
+   pytest` runs its suite, and `uv run python -m ladder.run_ladder --help` lists
+   every flag. The commands below run from `ladder/`.
+
+2. **Serve Mellum on oMLX first.** Follow
+   [`docs/backends/omlx.md`](docs/backends/omlx.md): the model answers at
+   `http://127.0.0.1:8001/v1`, and the server holds the tuned settings the
+   records were measured under. `/mellum check` tells you when it's drifted.
+
+3. **Register the provider before you run the shipped worker.** `--mode mode`
+   is Mellum Worker, and it reads `~/.pi/agent/models.json`; without it Pi
+   refuses with `Model "omlx/Mellum…" not found`. Copy it once:
+   ```bash
+   cp ../templates/pi/models.omlx.json ~/.pi/agent/models.json
+   ```
+   `--mode direct` wires its own provider, so it runs without this step — which
+   is exactly why a direct run can pass while Mode won't even start.
+
+4. **Run it where you can watch.** In one terminal start the follower, then
+   launch the run in another:
+   ```bash
+   uv run python scripts/watch_ladder.py
+   ```
+   It tails the newest per-rung trace and prints each turn — the thinking and
+   the tool calls — as they happen, switching rungs on its own.
+
+5. **Know which worker you're measuring.** `--mode direct` is the isolation
+   rig: the ladder supplies the provider and the mediation (`--acceptance-test`,
+   `--redispatch`, `--effort-ramp`). `--mode mode` is the real product — Mellum
+   Worker with its guards and project facts. They aren't the same run, and a
+   direct number isn't a Mode number. `scripts/screen.sh` and
+   `scripts/product.sh` (from the repo root) are the two standard shapes.
+
+6. **The frozen acceptance tests are committed**, so a mediated run reproduces:
+   point `--acceptance-test` at
+   [`evals/2026-10-20-v7-ablation/acceptance/`](evals/2026-10-20-v7-ablation/acceptance/)
+   (`test_phase1.py`…`test_phase4.py`).
+
+7. **Every run that backs a claim is recorded** under
+   `evals/<date-topic>/`; compare any two mechanically with `uv run python
+   scripts/compare_runs.py <dirA> <dirB>`.
+
+## Working on it — the mellum-dev skill
+
+Development here runs through the **`mellum-dev` skill**
+([`.claude/skills/mellum-dev/SKILL.md`](.claude/skills/mellum-dev/SKILL.md)),
+which operationalizes `AGENTS.md` and [`docs/sdd.md`](docs/sdd.md):
+spec-driven development, test-first, frozen-oracle runs, recording every run,
+running them where you can watch, and one small PR per win or loss.
+
+**Activate it.** In Claude Code it loads on its own: `CLAUDE.md` says to always
+load and follow it when developing here. You know it is active because replies
+open with its marker. With other agents, point them at the skill file and have
+them follow it; its authoritative sources are `AGENTS.md` and `docs/sdd.md`.
+
+**Why.** The measured claims here only hold if the process holds — tests shown
+to fail first, settings frozen without evidence, every run recorded, failures
+surfaced instead of swallowed. The skill makes that the default rather than
+something to remember.
+
 ## Layout
 
 ```
@@ -354,7 +466,7 @@ skills/mellum-setup/          the guided installer
 templates/                    provider fragments
 scripts/                      merge-json (the skill); mellum.mjs check, learn
 docs/                         recipe, backend guides, docs/sdd.md
-ladder/, docs/ladder/         the measuring ladder and its phase records
+ladder/, evals/         the measuring ladder and its phase records
 ROADMAP.md, BACKLOG.md        phases and deferred work
 ```
 

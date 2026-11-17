@@ -1,0 +1,41 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 1800.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "record_failures": [],
+  "requests": 58,
+  "turns": 58,
+  "tool_calls": 57,
+  "tool_errors": 13,
+  "context": 1571,
+  "output_tokens": 17630,
+  "wall": 339.893,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 0,
+  "compactions": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

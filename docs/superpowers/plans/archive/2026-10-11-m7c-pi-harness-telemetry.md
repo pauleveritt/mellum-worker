@@ -57,8 +57,8 @@ three tightly related tasks, no shipped behavior change, one final review.
   extend `test_runner.py` and `test_score.py` only where integration needs them.
 - Create small fixtures under `tests/fixtures/telemetry/`, with `README.md` provenance.
 - Update `docs/recipe.md`, `CHANGELOG.md` alongside changed ladder commands/records.
-- Create `docs/ladder/smoke-m7c/` records and a short M.7C research finding;
-  update `docs/ladder/PROVENANCE.md` and `ROADMAP.md` at closure.
+- Create `evals/2026-10-11-smoke-m7c/` records and a short M.7C research finding;
+  update `evals/PROVENANCE.md` and `ROADMAP.md` at closure.
 
 ## Task 1: Verified launch
 
@@ -204,8 +204,8 @@ three tightly related tasks, no shipped behavior change, one final review.
 ## Task 3: Compatibility proof and two smokes, then stop
 
 **Files:** fixtures `tests/fixtures/telemetry/`, `test_score.py`,
-`record-pi.test.mjs`, `test_pi_trace.py`, `docs/ladder/smoke-m7c/`,
-`docs/ladder/PROVENANCE.md`, M.7C research finding, roadmap and this plan.
+`record-pi.test.mjs`, `test_pi_trace.py`, `evals/2026-10-11-smoke-m7c/`,
+`evals/PROVENANCE.md`, M.7C research finding, roadmap and this plan.
 
 **Interfaces:** Consume Tasks 1–2 launch/trace functions and metadata.
 Use existing `score(...).as_row()`, rung checks and `archive_raw`; add no new CLI.
@@ -233,7 +233,7 @@ Use existing `score(...).as_row()`, rung checks and `archive_raw`; add no new CL
   Run the existing read-only setup check and inspect measured server/provider
   values. Do not change prompt/sampling/guards to make a smoke succeed.
 - [x] Run from `ladder/` with the selected absolute executable substituted for
-  `<pi-1.1.0>`: `uv run python -m ladder.run_ladder --pi-executable <pi-1.1.0> --profile baseline --mode mode --rung 1 --repeat 1 --out ../docs/ladder/smoke-m7c`.
+  `<pi-1.1.0>`: `uv run python -m ladder.run_ladder --pi-executable <pi-1.1.0> --profile baseline --mode mode --rung 1 --repeat 1 --out ../evals/2026-10-11-smoke-m7c`.
   Then run the same command with `--mode delegated --guards`. These are the
   two initial counted attempts; retain the existing 600-second runner deadline.
   Check observed Mellum requests use max_tokens 16,384, thinking on and sampling

@@ -44,7 +44,7 @@ record, and claims nothing the record does not.
 
 ## Constraints
 
-- No `docs/ladder/` link and no oMLX citation; the page is llama.cpp only.
+- No `evals/` link and no oMLX citation; the page is llama.cpp only.
 - Every number on the page appears in the facts record: `1/2` valid,
   `0/3`, injection `26/26`, `22/22`, `11/11` against `0/17`, `0/48`,
   `0/51`, and the one invalid session.

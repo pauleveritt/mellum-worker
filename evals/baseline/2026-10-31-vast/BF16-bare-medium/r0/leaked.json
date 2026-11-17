@@ -1,0 +1,7 @@
+[
+  {
+    "pid": 87678,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/.venv/bin/python /Users/mac/projects/mellum-worker/.venv/bin/uvicorn app:app --port 8000"
+  }
+]

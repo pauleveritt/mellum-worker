@@ -1,0 +1,42 @@
+/* Lesson and landing-page illustrations: full width, softly framed. */
+.md-typeset img.illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.2em 0 1.6em;
+  border-radius: 12px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Evidence badges: an icon pill per step (decorated by javascripts/badges.js). */
+.md-typeset p.badge-line { margin: 0.4em 0 0.8em; }
+.md-typeset .evidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.15em 0.7em 0.15em 0.5em;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  border: 1px solid currentColor;
+}
+.md-typeset .evidence-badge svg {
+  width: 1.15em;
+  height: 1.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.md-typeset .evidence-badge--reference-run { color: #2e7d32; background: #e8f5e9; }
+.md-typeset .evidence-badge--cited { color: #1565c0; background: #e3f2fd; }
+.md-typeset .evidence-badge--screen { color: #b26a00; background: #fff4e0; }
+.md-typeset .evidence-badge--conjecture { color: #5f6368; background: #f1f3f4; }
+[data-md-color-scheme="slate"] .md-typeset .evidence-badge--reference-run { color: #81c784; background: #1b3a1e; }
+[data-md-color-scheme="slate"] .md-typeset .evidence-badge--cited { color: #90caf9; background: #10283f; }
+[data-md-color-scheme="slate"] .md-typeset .evidence-badge--screen { color: #ffcc80; background: #3a2a10; }
+[data-md-color-scheme="slate"] .md-typeset .evidence-badge--conjecture { color: #bdc1c6; background: #2a2c2f; }
+.md-typeset .evidence-badge { white-space: nowrap; }

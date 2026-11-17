@@ -1,0 +1,42 @@
+{
+  "suite": "reasoning-as-text",
+  "arm": "bare",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_challenge.py": {
+      "missing": 0,
+      "total": 2
+    }
+  },
+  "record_failures": [
+    "reasoning_as_text is 7 (at most 0)"
+  ],
+  "requests": 9,
+  "turns": 9,
+  "tool_calls": 8,
+  "tool_errors": 0,
+  "context": 3587,
+  "output_tokens": 1217,
+  "wall": 7.17,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "reasoning_as_text": 7,
+  "leaked": [],
+  "out_of_layout": []
+}

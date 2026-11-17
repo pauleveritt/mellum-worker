@@ -1,0 +1,51 @@
+{
+  "suite": "easy",
+  "arm": "bare",
+  "remedies": [
+    "guard/break-repeat-loops"
+  ],
+  "extensions": [
+    {
+      "path": "/Users/mac/projects/mellum-worker/remedies/guard/break-repeat-loops.ts",
+      "sha256": "855d6b09948a2ec71f544d935c2ffe63e95d0aadf516c69b57794e38382e8497"
+    }
+  ],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 600,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.6,
+    "limit": 120.0,
+    "command": "uv run python -m uvicorn app:app --reload"
+  },
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 1,
+  "checks_ran": true,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 1,
+      "total": 4
+    }
+  },
+  "requests": 21,
+  "turns": 21,
+  "tool_calls": 21,
+  "tool_errors": 2,
+  "context": 1579,
+  "output_tokens": 5578,
+  "wall": 54.214,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

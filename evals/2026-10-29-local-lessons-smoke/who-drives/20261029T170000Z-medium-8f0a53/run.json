@@ -1,0 +1,53 @@
+{
+  "suite": "medium",
+  "arm": "worker",
+  "remedies": [],
+  "extensions": [],
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3 Max, 48 GiB",
+  "deadline": 900.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 0,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 0,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 0,
+      "total": 5
+    }
+  },
+  "requests": 53,
+  "turns": 53,
+  "tool_calls": 49,
+  "tool_errors": 5,
+  "context": 5852,
+  "output_tokens": 27090,
+  "wall": 292.995,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": [
+    "pyproject.toml",
+    "uv.lock"
+  ]
+}

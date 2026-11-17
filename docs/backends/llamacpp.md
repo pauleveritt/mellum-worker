@@ -50,7 +50,7 @@ The command `start` runs:
 
 ```bash
 llama-server -hf JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF:Q4_K_M \
-  -a Mellum2.1-12B-A2.5B-Thinking --host 127.0.0.1 --port 8002 \
+  -a Mellum2.1-12B-A2.5B-Thinking --host 127.0.0.1 --port 8001 \
   -c 50000 -np 1 --jinja -fa auto -b 512 -ub 512 \
   -ctk q8_0 -ctv q8_0
 ```
@@ -97,7 +97,7 @@ plausible for the first time.
 
 ## Open
 
-- Rungs 1–5 have a reference run ([record](../ladder/reference-llamacpp-rungs1-5/README.md)):
+- Rungs 1–5 have a reference run ([record](../../evals/baseline/2026-10-20-reference-llamacpp-rungs1-5/README.md)):
   14/15, one rung-4 failure on the `max_tokens` cap. Rungs 6–9 have not been
   run on llama.cpp, so nothing is comparable to the oMLX numbers yet.
 - A 16 GB machine is untested; 8.38 GB leaves room for macOS but the
@@ -111,4 +111,4 @@ plausible for the first time.
   --profile baseline --provider llamacpp --base-url http://127.0.0.1:8002/v1
   --model llamacpp/Mellum2.1-12B-A2.5B-Thinking --context-window 50000`):
   PASS, 7 requests, no tool errors. It is a smoke, not a reference run;
-  nothing from it is in `docs/ladder/`.
+  nothing from it is in `evals/`.

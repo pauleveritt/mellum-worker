@@ -1,0 +1,67 @@
+{
+  "suite": "medium",
+  "arm": "bare",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 600.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": false,
+  "tests_passed": false,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 18,
+  "checks_ran": false,
+  "missing_checks": [
+    "grader_tests/test_phase1_home.py::test_home_has_html5_doctype",
+    "grader_tests/test_phase1_home.py::test_home_html_element_declares_english_language",
+    "grader_tests/test_phase1_home.py::test_home_still_has_navigation_links",
+    "grader_tests/test_phase1_home.py::test_home_still_returns_200_and_tagline",
+    "grader_tests/test_phase2_board.py::test_complaint_model_contract_is_preserved",
+    "grader_tests/test_phase2_board.py::test_complaints_board_preserves_the_shared_layout",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_has_its_heading",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_lists_seed_complaint",
+    "grader_tests/test_phase2_board.py::test_complaints_board_still_renders_seed_complaint_details",
+    "grader_tests/test_phase2_board.py::test_seed_complaint_count_is_preserved",
+    "grader_tests/test_phase3_add.py::test_complaints_board_renders_add_complaint_form",
+    "grader_tests/test_phase3_add.py::test_post_complaint_redirects_to_complaints_board",
+    "grader_tests/test_phase3_add.py::test_posted_complaint_appears_on_complaints_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_complaint_identity_is_stable_and_keyword_only",
+    "grader_tests/test_phase4_resolve_reopen.py::test_reopen_route_marks_complaint_open_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_reopen_does_not_reorder_the_board",
+    "grader_tests/test_phase4_resolve_reopen.py::test_resolve_route_marks_complaint_resolved_and_redirects",
+    "grader_tests/test_phase4_resolve_reopen.py::test_seed_complaints_have_distinct_ids"
+  ],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 4,
+      "total": 4
+    },
+    "test_phase2_board.py": {
+      "missing": 6,
+      "total": 6
+    },
+    "test_phase3_add.py": {
+      "missing": 3,
+      "total": 3
+    },
+    "test_phase4_resolve_reopen.py": {
+      "missing": 5,
+      "total": 5
+    }
+  },
+  "requests": 40,
+  "turns": 40,
+  "tool_calls": 35,
+  "tool_errors": 1,
+  "context": 21720,
+  "output_tokens": 30705,
+  "wall": 570.928,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

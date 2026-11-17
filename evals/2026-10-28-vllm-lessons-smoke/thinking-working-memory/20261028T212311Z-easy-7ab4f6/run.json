@@ -1,0 +1,36 @@
+{
+  "suite": "easy",
+  "arm": "worker",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": false,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 900.0,
+  "stall": 120.0,
+  "stalled": null,
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "requests": 41,
+  "turns": 41,
+  "tool_calls": 39,
+  "tool_errors": 5,
+  "context": 42120,
+  "output_tokens": 12650,
+  "wall": 257.138,
+  "nudges": 1,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

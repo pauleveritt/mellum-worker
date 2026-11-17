@@ -7,7 +7,7 @@ this digest, and everything measured here ran on oMLX. Nothing in it is a
 llama.cpp number; the [reference run](../ladder/reference-llamacpp-rungs1-5/README.md)
 covers rungs 1–5 and does not speak to these ablations.
 
-**What is measured.** The oMLX ladder records in `docs/ladder/` and the
+**What is measured.** The oMLX ladder records in `evals/` and the
 notes they point at, as cited per entry. Sample sizes are the records': 15
 runs for rungs 1–5, 12 for rungs 6–9, 3 for screens.
 

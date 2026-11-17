@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { installRecorder } from "../learn/code/record-pi.mjs";
+import { installRecorder } from "../extensions/mellum-recorder.ts";
 
 function capture() {
   const handlers = {}, rows = [];

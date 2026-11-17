@@ -1,0 +1,1 @@
+The tests now pass after adding the `/report` endpoint to `app.py` that queries the `data.db` database and returns the required sums.

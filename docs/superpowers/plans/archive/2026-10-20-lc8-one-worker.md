@@ -16,7 +16,7 @@ Mellum Worker, and `/mellum` behaves as before.
 - What Mellum receives is unchanged: prompt, tools, guards, sampling.
 - `/mellum` and the extension's run-record path stay; Worker records stop
   being written and read.
-- Measured records in `docs/ladder/` are not touched.
+- Measured records in `evals/` are not touched.
 - Every removal takes its tests with it; the removal itself gets a test.
 - OpenCode is LC.8A, not this cycle.
 

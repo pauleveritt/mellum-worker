@@ -15,5 +15,5 @@ lifecycle: closed
 ## Result
 
 2026-10-20. Shipped on `lc10`: the lesson. No run was made; every number is
-from `docs/ladder/` (8/15 bare, 10/15 operator, 15/15 worker, with wall and
+from `evals/` (8/15 bare, 10/15 operator, 15/15 worker, with wall and
 prefill). `npm test` 313/313, docs caps, build.
