@@ -10,6 +10,9 @@ Next: [P1.1](#phase-1--repository-and-dependencies), populating the repository f
 
 Rows are initial proposals. Brainstorm each phase during the port and split or
 add cycles before implementation; one row does not limit a phase to one cycle.
+Each cycle lands in the port repository at `~/projects/satyrn/satyrn-pi` as one
+pull request for Nicola; a cycle that cannot be reviewed as one pull request is
+too big and splits.
 Use [Vanilla → Base → Easy → Medium → Hard](docs/glossary.md); suites select tasks,
 presets select remedies.
 
@@ -17,7 +20,7 @@ presets select remedies.
 
 | Cycle | Ships | Excludes | Status |
 | --- | --- | --- | --- |
-| **P1.1** | Infrastructure: `github.com/satyrn-ai/satyrn-pi` seeded from this tree, npm and Python package layout and dependency locks, default test commands, ignored runs, and a repository-weight check. Both package names are `satyrn-pi`. Include Zensical and `zensical-glossary` in the docs development dependencies; theme and extension setup land in P3.1. | Publishing empty packages; worker behaviour; eval execution; OpenCode. | proposed — first implementation cycle; P1.2 confirms package responsibilities. |
+| **P1.1** | Infrastructure: `github.com/satyrn-ai/satyrn-pi` seeded from this tree, npm and Python package layout and dependency locks, default test commands, ignored runs, and a repository-weight check. Record the Pi version the port targets, declare it as the package's peer range, and claim both registry names: a PyPI pending trusted publisher for `satyrn-pi`, and an npm name checked and, if it must be held, published as an agreed placeholder. Both package names are `satyrn-pi`. Include Zensical and `zensical-glossary` in the docs development dependencies; theme and extension setup land in P3.1. | Publishing empty packages; worker behaviour; eval execution; OpenCode. | proposed — first implementation cycle; P1.2 confirms package responsibilities. |
 | **P1.2** | Documentation: worker/eval responsibilities, import direction and shared run meaning in `docs/domain.md`; canonical terms in `docs/glossary.md`, with a numeric jargon budget and checker scope for phase 2. Apply the [vocabulary decisions](docs/superpowers/research/2026-11-16-vocabulary-review.md#port-acceptance); review Vanilla on the Easy suite and Base with an empty preset to expose ambiguity. | Runtime code; a generic domain framework; detailed CLI/schema design; new names for concepts ordinary language already explains. | proposed — after P1.1 and before P2.1; Nicola reviews with implementers and Ben. Later cycles record justified refinements. [Plan](docs/superpowers/plans/2026-11-16-vocabulary.md) carries the budget, the rejected alternatives and the retired-term check. |
 
 ## Phase 2 — SDD setup

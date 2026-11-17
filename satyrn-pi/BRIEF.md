@@ -82,6 +82,15 @@ records their exact scope, phase-6 qualification work and later remedy-cycle
 implications. The original source pin, preserved rules and historical grades
 remain attached to their original revision; the supplement does not rebase them.
 
+**Provenance drift, 2026-11-16:** `origin/main` is exactly two commits past the
+pin — `3e20e161` and `41fa54d0` — and they are the two the supplement above
+reviews; nothing further has landed. The pin stays `0e4a9b68` rather than
+following the branch, because moving it would reopen the grades, fixtures and
+screens already reviewed at that revision, and the supplement already carries
+what those two commits change (`ladder/fixtures/acceptance/test_medium.py` and
+its new message tests). Reopens when a phase needs a commit past those two, and
+then as one named adoption with its own review, not as a background refresh.
+
 **What crosses verbatim:** the prompt source, the suite fixtures and the
 graders' expectations, the measured run records, the guards' policy and their
 thresholds, and `docs/sdd.md` together with the project rules. The two rule
