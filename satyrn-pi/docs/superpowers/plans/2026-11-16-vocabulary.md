@@ -24,6 +24,7 @@ work, including the gate, so neither is re-derived later.
 | `ladder`, `rung` | Source-mapping only; never taught as product choices | Names an axis the source does not have: the model is fixed, the task varies |
 | `recorder` | Retained; conversation/action history is the trajectory | The component has no standard name; the data it writes does |
 | Dataset, task, trial, job, verifier, agent | Proposed for P1.2, per Harbor | Industry vocabulary already in use for this exact domain |
+| `Agent` | Added as the genus: Vanilla, Base, Easy, Medium and Hard are agents | Five entries named no kind; the count is flat because `Stage` was removed to make room |
 
 Ladder and rung are not standard evaluation vocabulary. In ML a *scaling ladder*
 means a series of model sizes, and on a leaderboard it means a ranking; here the

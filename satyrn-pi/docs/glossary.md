@@ -1,23 +1,36 @@
 # Satyrn Pi glossary
 
-Use Vanilla → Base → Easy → Medium → Hard directly. A suite says what work is
-graded; the chosen name says what is enabled. Historical names are mapped in
+Use Vanilla → Base → Easy → Medium → Hard directly. Each names an
+[agent](#agent); Easy, Medium and Hard also name an [eval suite](#eval-suite)
+and a [preset](#preset), so say which you mean. Historical names are mapped in
 the [vocabulary review](superpowers/research/2026-11-16-vocabulary-review.md).
 The Zensical glossary presentation lands in phase 3.
+
+### Agent
+
+<!-- zensical-glossary-aliases: agent configuration -->
+The task-completing program: Pi plus the extensions and remedies it loads,
+separate from the model it uses. Vanilla, Base, Easy, Medium and Hard are
+agents; they differ only in which remedies are enabled.
+
+An agent is not a preset — a preset is the remedy list alone, and the same
+preset can sit under different run settings. It is not an arm either: arm is
+research vocabulary for one comparison, and also fixes the run settings.
 
 ### Vanilla
 
 <!-- zensical-glossary-aliases: Vanilla Pi -->
-Pi using the subject model, with the trace recorder and no worker extension or
-remedies. The baseline for comparisons. It loads no remedy preset.
+An agent: Pi using the subject model, with the trace recorder and no worker
+extension or remedies. The baseline for comparisons. It loads no remedy preset.
 
 ### Base
 
-The thin worker in its active mode, plus the remedies explicitly listed in
-`base.json`. The list starts empty. The worker switches to the subject model,
-drops pre-marker history, tracks and records the span, then restores the main
-model. It bundles no prompt replacement, tool restriction, project facts or
-guards. Common remedies must earn additions through measurement.
+An agent: the thin worker in its active mode, plus the remedies explicitly
+listed in `base.json`. The list starts empty. The worker switches to the
+subject model, drops pre-marker history, tracks and records the span, then
+restores the main model. It bundles no prompt replacement, tool restriction,
+project facts or guards. Common remedies must earn additions through
+measurement.
 
 ### Remedy
 
@@ -34,7 +47,8 @@ A named, ordered JSON list of remedies, with no includes or implicit additions.
 contents. Easy retains Base's remedies, Medium retains Easy's, and Hard retains
 Medium's; each adds only remedies earned through measurement. Adjacent lists
 may be equal. Loading a preset selects remedies, not a model or a suite, and
-does not prove a passing result.
+does not prove a passing result. A preset is not an agent: the agent is Pi plus
+the preset it loads, and several agents can share one preset.
 
 ### Eval suite
 
