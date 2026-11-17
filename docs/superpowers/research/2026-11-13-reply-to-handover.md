@@ -436,6 +436,35 @@ adjustments are added here, newest last.
   server, so the 3 of 3 says the guard does no harm on Easy, not that it stops
   the hang. One hang in nine reps is a lead, not a rate.
 
+### The medium preset on Medium (2026-11-17)
+
+- **What ran.** The same gated one-pass rig as the last two screens, with its
+  units now read from `remedies/presets/medium.json` (`003fa16c`). That's the
+  same nine units the 18/18-on-3-of-3 screen loaded, now in the nested order:
+  the baseline five, then repeat-loops, outside-workspace, exists and the
+  redirect nudge.
+
+  | rep | score | requests | wall | stop | gate rounds | acceptance test at exit |
+  |---|---|---|---|---|---|---|
+  | 1 | 15/18 | 88 | 1688 s | stall | 5, all red | 6 of 9 green |
+  | 2 | 18/18 | 103 | 1526 s | clean | 1, then green | 9 of 9 green |
+  | 3 | 18/18 | 28 | 241 s | clean | 1, then green | 9 of 9 green |
+
+  18/18 on 2 of 3 at a mean of 73 requests. The last screen had 18/18 on 3 of 3
+  at 42.
+- **Rep 1 is the Phase 4 id miss again, and the messages didn't close it.**
+  Its three failures are all Phase 4: distinct auto ids, resolve and reopen.
+  The worker read the wanted-and-found message (it quotes ids `[3, 0, 7, 0]`),
+  but spent its rounds debugging the board and the routes with in-process
+  scripts. It never moved the id onto `Complaint`. After the fifth red round it
+  kept going until one tool call ran 240 s with no result, and the rig stopped
+  it. That last call was a short `uv run python -` script that uses the test
+  client. Why it hung isn't known.
+- **What this doesn't show.** The preset loads the same units as the last
+  screen, so the difference is the spread at n=3, not the preset: 3 of 3 then
+  2 of 3 is 5 of 6 across both. The one-round fix the messages gave last time
+  didn't repeat here. A lead, not a rate.
+
 ## What would falsify this / risks
 
 - If the cross-check grade (2) disagrees often with our scorer, our past numbers carry
