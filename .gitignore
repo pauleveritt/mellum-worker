@@ -27,3 +27,8 @@ scripts/baseline/vast.env
 
 # Manual lesson work: project/<lesson number>, made and reset by /lesson (p); /lesson clean removes it.
 /project/
+
+# generated: satyrn tasks converted to harness suites, phase-pair DPO data
+learn/finetune/satyrn_suites/
+learn/finetune/data_dpo_phases*/
+learn/finetune/adapters_dpo_phases*/
