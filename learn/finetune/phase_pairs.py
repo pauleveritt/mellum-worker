@@ -111,3 +111,20 @@ def worked(seg):
     attempted the task, so it is not a fair `rejected` example."""
     return any(c.get("name") in ("write", "edit")
                for a in seg["acts"][len(seg["acts"]) - seg["n_phase"]:] for c in _calls(a))
+
+
+def trusted_outcomes(outcome, reached):
+    """Keep the grades a later phase could not have caused.
+
+    The grade is taken on the FINAL workspace. A pass holds up, but a failure of an
+    earlier phase may be a later phase breaking it (a broken import fails every
+    phase), so a failure only counts for the last phase the run reached."""
+    return {p: ok for p, ok in outcome.items() if ok or p == reached}
+
+
+def grader_seen(trace_text, suite, canary):
+    """Did the run see the hidden grader? The harness's own check also matches the
+    suite's base/ (the starting files every workspace already holds), so a run that
+    ran pytest on the base copy is flagged although it never saw a hidden test."""
+    return bool((canary and canary in trace_text) or f"suites/{suite}/grader" in trace_text
+                or "grader_tests/" in trace_text)

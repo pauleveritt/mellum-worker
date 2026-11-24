@@ -84,3 +84,19 @@ def test_worked_counts_only_writes_and_edits_in_this_phase():
     assert worked(segment_trace(rows)[1])
     rows = ROWS[:4] + [act("a2", tool="write")] + ROWS[5:]
     assert not worked(segment_trace(rows)[1])  # phase 1's write is not phase 2's work
+
+
+def test_trusted_outcomes_drop_failures_a_later_phase_could_have_caused():
+    from phase_pairs import trusted_outcomes
+    # final-state grading: phase 4 broke the import, so 2 and 3 read as failed too
+    assert trusted_outcomes({2: False, 3: False, 4: False}, reached=4) == {4: False}
+    assert trusted_outcomes({2: True, 3: False, 4: False}, reached=4) == {2: True, 4: False}
+    assert trusted_outcomes({2: True, 3: False, 4: False}, reached=3) == {2: True, 3: False}
+
+
+def test_grader_seen_ignores_the_suite_base_but_not_the_grader():
+    from phase_pairs import grader_seen
+    assert not grader_seen("ran ../../learn/code/suites/medium/base/tests/test_home.py", "medium", "CANARY-1")
+    assert grader_seen("cat learn/code/suites/medium/grader/test_phase1_home.py", "medium", "CANARY-1")
+    assert grader_seen("saw CANARY-1 in output", "medium", "CANARY-1")
+    assert grader_seen("cat grader_tests/test_phase1_home.py", "medium", None)

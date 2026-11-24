@@ -18,7 +18,7 @@ import argparse, collections, glob, json, os, random, statistics as st
 from pathlib import Path
 
 from mlx_lm import load
-from phase_pairs import phase_outcomes, render_segment, segment_trace, worked
+from phase_pairs import phase_outcomes, render_segment, segment_trace, trusted_outcomes, worked, grader_seen
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -69,12 +69,19 @@ def encode(msgs, scored, tools):
 win, loss, why = collections.defaultdict(list), collections.defaultdict(list), collections.Counter()
 for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in args.source_all_phases]:
     for f in sorted(glob.glob(f"{root}/**/run.json", recursive=True)):
-        run = json.load(open(f)); outcome = phase_outcomes(run)
-        trace = Path(f).with_name("trace.jsonl")
+        run = json.load(open(f)); trace = Path(f).with_name("trace.jsonl")
+        if run.get("contaminated") and trace.is_file():
+            canary_file = Path(__file__).resolve().parents[1] / "code" / "suites" / str(run.get("suite")) / "grader" / "canary"
+            canary = canary_file.read_text().strip() if canary_file.is_file() else None
+            if not grader_seen(trace.read_text(errors="ignore"), run.get("suite"), canary):
+                run = {**run, "contaminated": False}; why["base-path-flag-cleared"] += 1
+        outcome = phase_outcomes(run)
         if not outcome or not trace.is_file():
             why["no-grade-or-trace"] += 1; continue
         rows = [json.loads(line) for line in open(trace) if line.strip()]
-        for seg in segment_trace(rows):
+        segs = segment_trace(rows)
+        outcome = trusted_outcomes(outcome, reached=len(segs))
+        for seg in segs:
             p = seg["phase"]
             if (not keep_all and p in args.exclude) or p not in outcome:
                 continue
