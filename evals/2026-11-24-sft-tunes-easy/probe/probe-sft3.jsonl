@@ -1,0 +1,16 @@
+{"label": "sft3", "case": "list-files", "rep": 1, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 72, "secs": 0.6}
+{"label": "sft3", "case": "list-files", "rep": 2, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 83, "secs": 0.5}
+{"label": "sft3", "case": "list-files", "rep": 3, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 61, "secs": 0.4}
+{"label": "sft3", "case": "list-files", "rep": 4, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 43, "secs": 0.3}
+{"label": "sft3", "case": "list-files", "rep": 5, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 73, "secs": 0.5}
+{"label": "sft3", "case": "read-then-fix", "rep": 1, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 58, "secs": 0.4}
+{"label": "sft3", "case": "read-then-fix", "rep": 2, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 68, "secs": 0.4}
+{"label": "sft3", "case": "read-then-fix", "rep": 3, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 47, "secs": 0.3}
+{"label": "sft3", "case": "read-then-fix", "rep": 4, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["read"], "tool_text_in_content": false, "completion_tokens": 43, "secs": 0.3}
+{"label": "sft3", "case": "read-then-fix", "rep": 5, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["bash"], "tool_text_in_content": false, "completion_tokens": 66, "secs": 0.4}
+{"label": "sft3", "case": "write-module", "rep": 1, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["write"], "tool_text_in_content": false, "completion_tokens": 111, "secs": 0.8}
+{"label": "sft3", "case": "write-module", "rep": 2, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["write"], "tool_text_in_content": false, "completion_tokens": 121, "secs": 0.8}
+{"label": "sft3", "case": "write-module", "rep": 3, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["write"], "tool_text_in_content": false, "completion_tokens": 199, "secs": 1.2}
+{"label": "sft3", "case": "write-module", "rep": 4, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["write"], "tool_text_in_content": false, "completion_tokens": 148, "secs": 0.9}
+{"label": "sft3", "case": "write-module", "rep": 5, "finish": "tool_calls", "calls": 1, "valid": 1, "names": ["write"], "tool_text_in_content": false, "completion_tokens": 85, "secs": 0.5}
+{"label": "sft3", "summary": {"list-files": "5/5", "read-then-fix": "5/5", "write-module": "5/5"}}
