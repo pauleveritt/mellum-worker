@@ -104,3 +104,10 @@ def phase_outcomes(run):
         if m and group.get("total"):
             out[int(m.group(1))] = group.get("missing", 0) == 0
     return out
+
+
+def worked(seg):
+    """Did this phase write or edit a file? A phase cut off while still reading never
+    attempted the task, so it is not a fair `rejected` example."""
+    return any(c.get("name") in ("write", "edit")
+               for a in seg["acts"][len(seg["acts"]) - seg["n_phase"]:] for c in _calls(a))

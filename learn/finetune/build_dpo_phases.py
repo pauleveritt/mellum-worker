@@ -18,7 +18,7 @@ import argparse, collections, glob, json, os, random, statistics as st
 from pathlib import Path
 
 from mlx_lm import load
-from phase_pairs import phase_outcomes, render_segment, segment_trace
+from phase_pairs import phase_outcomes, render_segment, segment_trace, worked
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -78,6 +78,8 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
             p = seg["phase"]
             if (not keep_all and p in args.exclude) or p not in outcome:
                 continue
+            if not outcome[p] and not worked(seg):
+                why["rejected-never-wrote"] += 1; continue  # cut off while reading: not a fair loser
             rendered = render_segment(seg, cap=cap)
             if rendered is None:
                 why["misaligned"] += 1; continue

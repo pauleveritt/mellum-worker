@@ -74,3 +74,13 @@ def test_phase_outcomes_from_check_groups():
         "test_phase2_board.py": {"missing": 2, "total": 6}}}
     assert phase_outcomes(run) == {1: True, 2: False}
     assert phase_outcomes({**run, "contaminated": True}) == {}
+
+
+def test_worked_counts_only_writes_and_edits_in_this_phase():
+    from phase_pairs import worked
+    seg = segment_trace(ROWS)[1]
+    assert not worked(seg)  # phase 2 only ran bash
+    rows = ROWS[:-1] + [act("b2", tool="edit")]
+    assert worked(segment_trace(rows)[1])
+    rows = ROWS[:4] + [act("a2", tool="write")] + ROWS[5:]
+    assert not worked(segment_trace(rows)[1])  # phase 1's write is not phase 2's work
