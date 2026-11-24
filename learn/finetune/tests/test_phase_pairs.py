@@ -100,3 +100,16 @@ def test_grader_seen_ignores_the_suite_base_but_not_the_grader():
     assert grader_seen("cat learn/code/suites/medium/grader/test_phase1_home.py", "medium", "CANARY-1")
     assert grader_seen("saw CANARY-1 in output", "medium", "CANARY-1")
     assert grader_seen("cat grader_tests/test_phase1_home.py", "medium", None)
+
+
+def test_a_request_cut_off_by_the_deadline_does_not_break_alignment():
+    rows = ROWS + [req([SYS, U1, hist("a1"), TOOL, hist("a2"), TOOL, U2, hist("b1"), TOOL, hist("b2"), TOOL])]
+    seg = segment_trace(rows)[1]
+    assert render_segment(seg) is not None and seg["n_phase"] == 2
+
+
+def test_single_phase_suites_grade_on_all_their_tests():
+    run = {"contaminated": False, "check_groups": {"test_review.py": {"missing": 0, "total": 6}}}
+    assert phase_outcomes(run) == {1: True}
+    run["check_groups"]["test_review.py"]["missing"] = 2
+    assert phase_outcomes(run) == {1: False}

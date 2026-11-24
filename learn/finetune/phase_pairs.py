@@ -17,24 +17,28 @@ import re
 
 
 def segment_trace(rows):
-    segs, acts, cur = [], [], None
+    # A request only counts once its reply arrives: a request the deadline cut off
+    # has no reply, and taking its context would shift every turn by one.
+    segs, acts, cur, pending = [], [], None, None
     for row in rows:
         kind = row.get("type")
         if kind == "instance_start":
             if cur and cur["payload"] is not None:
                 segs.append(cur)
-            cur = {"phase": len(segs) + 1, "payload": None, "n_phase": 0}
+            cur, pending = {"phase": len(segs) + 1, "payload": None, "n_phase": 0}, None
         elif cur is None:
             continue
         elif kind == "provider_request":
             payload = row.get("payload") or {}
             if payload.get("messages"):
-                cur["payload"] = payload
+                pending = payload
         elif kind == "message_end":
             msg = row.get("message")
             if isinstance(msg, dict) and msg.get("role") == "assistant":
                 acts.append(msg)
                 cur["n_phase"] += 1
+                if pending is not None:
+                    cur["payload"], pending = pending, None
         if cur is not None:
             cur["acts"] = list(acts)
     if cur and cur["payload"] is not None:
@@ -98,11 +102,14 @@ def phase_outcomes(run):
     """{phase: passed} from a harness run's per-module grade; {} if it can't be trusted."""
     if run.get("contaminated"):
         return {}
+    groups = run.get("check_groups") or {}
     out = {}
-    for module, group in (run.get("check_groups") or {}).items():
+    for module, group in groups.items():
         m = re.match(r"test_phase(\d+)_", module)
         if m and group.get("total"):
             out[int(m.group(1))] = group.get("missing", 0) == 0
+    if not out and groups:  # a single-phase suite: phase 1 passes only if every test does
+        out[1] = all(g.get("missing", 0) == 0 for g in groups.values())
     return out
 
 
