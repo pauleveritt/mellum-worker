@@ -58,8 +58,15 @@ def serve_argv(
     port: int = PORT,
     binary: str = "llama-server",
 ) -> list[str]:
+    # MELLUM_DRAFT=<path to the MTP-bundled gguf> turns on draft-MTP
+    # self-speculation (needs llama.cpp >= b11747): serve the MTP gguf AS the
+    # main model and let it draft from its own nextn layers - no sidecar model,
+    # ~308 MB over the base. Otherwise serve the base from Hugging Face. Behind a
+    # toggle so the measured runs stay on the simple config unless it is set.
+    draft = os.environ.get("MELLUM_DRAFT")
+    model_src = ["-m", draft] if draft else ["-hf", settings["model"]]
     argv = [
-        binary, "-hf", settings["model"], "-a", ALIAS,
+        binary, *model_src, "-a", ALIAS,
         "--host", host, "--port", str(port),
         # No -ngl by default: llama.cpp's --fit splits the model between GPU and
         # CPU to fit free device memory, which keeps the recipe portable to a
@@ -72,6 +79,9 @@ def serve_argv(
     ngl = os.environ.get("MELLUM_NGL")
     if ngl:
         argv += ["-ngl", ngl]
+    if draft:
+        argv += ["--spec-type", "draft-mtp",
+                 "--spec-draft-n-max", os.environ.get("MELLUM_DRAFT_NMAX", "1")]
     return argv
 
 
