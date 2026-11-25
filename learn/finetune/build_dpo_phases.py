@@ -14,10 +14,9 @@ Held out:
 Over-budget segments are dropped, never truncated. Output rows match
 dpo_native_train.py: phase, chosen, chosen_mask, rejected, rejected_mask.
 """
-import argparse, collections, glob, json, os, random, statistics as st
+import argparse, collections, glob, json, os, random, statistics as st, sys
 from pathlib import Path
 
-from mlx_lm import load
 from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
                          trusted_outcomes, worked, grader_seen, best_outcomes)
 
@@ -42,6 +41,10 @@ ap.add_argument("--valid-step-every", type=int, default=10,
                 help="every Nth run's step pairs go to validation (held out by trajectory)")
 ap.add_argument("--out", required=True)
 args = ap.parse_args()
+if os.path.exists(args.out):
+    # training sets are kept, never replaced: build into a new versioned folder (data_dpo_<name>_v2, ...)
+    sys.exit(f"{args.out} already exists; build into a new versioned folder instead of overwriting it")
+from mlx_lm import load  # noqa: E402 - after the cheap checks
 random.seed(0)
 _, tok = load(args.model, lazy=True)
 hf = tok._tokenizer
@@ -150,7 +153,7 @@ for p in sorted(set(win) | set(loss)):
 train += step_train; valid += step_valid
 per["steps"] = {"train": len(step_train), "valid": len(step_valid)}
 random.shuffle(train)
-os.makedirs(args.out, exist_ok=True)
+os.makedirs(args.out)
 for name, rows in (("train", train), ("valid", valid)):
     with open(f"{args.out}/{name}.jsonl", "w") as fh:
         for r in rows:
