@@ -95,7 +95,7 @@ def render_segment(seg, cap=lambda text: text):
     if reasoning:
         final["reasoning_content"] = reasoning
     calls = [{"id": c.get("id") or f"call_{i}", "type": "function",
-              "function": {"name": c.get("name"), "arguments": json.dumps(c.get("arguments") or {})}}
+              "function": {"name": c.get("name"), "arguments": json.dumps(c.get("arguments") or {}, ensure_ascii=False)}}
              for i, c in enumerate(_calls(last))]
     if calls:
         final["tool_calls"] = calls
@@ -124,18 +124,24 @@ def step_pairs(seg):
     return out
 
 
-def _call_turn(act):
+def _call_turn(context_act, call_act):
+    """An assistant turn with `context_act`'s thinking and text and `call_act`'s tool calls."""
     calls = [{"id": c.get("id") or f"call_{i}", "type": "function",
-              "function": {"name": c.get("name"), "arguments": json.dumps(c.get("arguments") or {})}}
-             for i, c in enumerate(_calls(act))]
-    return {"role": "assistant", "content": "", "tool_calls": calls}
+              "function": {"name": c.get("name"), "arguments": json.dumps(c.get("arguments") or {}, ensure_ascii=False)}}
+             for i, c in enumerate(_calls(call_act))]
+    turn = {"role": "assistant", "content": _parts(context_act, ("text",)), "tool_calls": calls}
+    reasoning = _parts(context_act, ("thinking", "reasoning"))
+    if reasoning:
+        turn["reasoning_content"] = reasoning
+    return turn
 
 
 def render_step(seg, bad, fix, cap=lambda text: text):
     """(chosen, rejected) message lists sharing the context before act `bad`.
 
-    Only the tool call is kept on the final turn: the recovery's text and reasoning were
-    written after seeing the error, and would leak it into a context that hasn't seen it."""
+    The model thinks on every turn, so both sides keep the thinking and text it wrote before the failed call:
+    written before it saw any error, it can't leak one, and the turn keeps the model's own format. Only the
+    tool call differs (the recovering call against the failed one); score it with `scored_span(calls_only)`."""
     rendered = render_segment(seg, cap)
     if rendered is None:
         return None
@@ -145,7 +151,16 @@ def render_step(seg, bad, fix, cap=lambda text: text):
     if j < 0 or j >= len(ast):
         return None  # compacted away, or the last turn
     prefix = msgs[:ast[j]]
-    return prefix + [_call_turn(acts[fix])], prefix + [_call_turn(acts[bad])]
+    return prefix + [_call_turn(acts[bad], acts[fix])], prefix + [_call_turn(acts[bad], acts[bad])]
+
+
+def scored_span(text, start, end, calls_only):
+    """The character span to score inside an assistant turn: all of it, or from its first tool call."""
+    if calls_only:
+        at = text.find("<tool_call>", start, end)
+        if at >= 0:
+            return at, end
+    return start, end
 
 
 def phase_outcomes(run):

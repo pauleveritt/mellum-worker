@@ -14,3 +14,7 @@ Phase pairs (max 60 per phase): medium:p2 46 wins / 10 losses, p3 46 / 9, p4 34 
 a failed read/edit/write/ls call against the next call, which succeeded, at the same
 context, tool call only. Easy and Medium phase 1 never enter (the Easy screen task).
 Train 297, valid 20.
+
+Rebuilt 2026-11-25 18:50: step pairs now keep the thinking the model wrote before the failed call on both
+sides (the model thinks on every turn: 1388 of 1388 recorded turns), and only the tool call is scored
+(`scored_span(calls_only=True)`). Tool-call arguments keep non-ASCII as the chat template does.

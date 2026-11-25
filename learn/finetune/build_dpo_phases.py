@@ -18,7 +18,7 @@ import argparse, collections, glob, json, os, random, statistics as st
 from pathlib import Path
 
 from mlx_lm import load
-from phase_pairs import (phase_outcomes, render_segment, render_step, segment_trace, step_pairs,
+from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
                          trusted_outcomes, worked, grader_seen, best_outcomes)
 
 ap = argparse.ArgumentParser()
@@ -54,7 +54,7 @@ def cap(text):
     return text[:args.head] + f"\n...[{len(text) - args.head - args.tail} chars elided]...\n" + text[-args.tail:]
 
 
-def encode(msgs, scored, tools):
+def encode(msgs, scored, tools, calls_only=False):
     text = tok.apply_chat_template(msgs, tools=tools, tokenize=False)
     spans, pos = [], 0
     while (s := text.find(AST, pos)) >= 0:
@@ -65,7 +65,7 @@ def encode(msgs, scored, tools):
     ast = [i for i, m in enumerate(msgs) if m["role"] == "assistant"]
     if len(spans) != len(ast):
         return None
-    keep = [spans[ast.index(i)] for i in scored]
+    keep = [scored_span(text, *spans[ast.index(i)], calls_only) for i in scored]
     enc = hf(text, add_special_tokens=False, return_offsets_mapping=True)
     mask = [int(any(a <= o[0] < b for a, b in keep)) for o in enc["offset_mapping"]]
     return {"ids": enc["input_ids"], "mask": mask}
@@ -80,8 +80,8 @@ def emit_steps(seg, key, src, to_valid):
         r = render_step(seg, bad, fix, cap=cap)
         if r is None:
             why["step-misaligned"] += 1; continue
-        recs = [encode(m, [max(i for i, x in enumerate(m) if x["role"] == "assistant")], seg["payload"].get("tools"))
-                for m in r]
+        recs = [encode(m, [max(i for i, x in enumerate(m) if x["role"] == "assistant")], seg["payload"].get("tools"),
+                       calls_only=True) for m in r]
         if None in recs or max(len(x["ids"]) for x in recs) > args.budget:
             why["step-dropped"] += 1; continue
         (step_valid if to_valid else step_train).append(

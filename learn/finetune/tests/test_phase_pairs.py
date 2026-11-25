@@ -154,7 +154,10 @@ def test_render_step_shares_the_prefix_and_keeps_only_the_tool_call():
     assert [m["role"] for m in chosen[:-1]] == ["system", "user", "assistant", "tool"]
     assert rejected[-1]["tool_calls"][0]["function"]["name"] == "edit"
     assert chosen[-1]["tool_calls"][0]["function"]["name"] == "read"
-    assert chosen[-1]["content"] == "" and "reasoning_content" not in chosen[-1]  # no leak of the error it saw
+    # both sides keep the thinking the model wrote BEFORE the failed call (it never saw the error), so the
+    # turn has the model's own format; only the call differs
+    assert chosen[-1]["reasoning_content"] == rejected[-1]["reasoning_content"] == "why"
+    assert chosen[-1]["content"] == rejected[-1]["content"]
 
 
 def test_a_provider_error_turn_is_not_counted_as_an_act():
@@ -174,3 +177,21 @@ def test_verified_phase_grades_replace_the_final_state_guess():
     assert best_outcomes(final, graded, reached=4) == {1: True, 2: True, 3: False, 4: False}
     assert best_outcomes(final, {"verified": False, "phases": {}}, reached=4) == {4: False}
     assert best_outcomes(final, None, reached=4) == {4: False}
+
+
+def test_tool_call_arguments_keep_non_ascii_like_the_template():
+    from phase_pairs import render_step
+    rows = [dict(r) for r in STEP_ROWS]
+    rows[5] = {"type": "message_end", "message": {"role": "assistant", "content": [
+        {"type": "thinking", "thinking": "why"},
+        {"type": "toolCall", "name": "edit", "id": "c", "arguments": {"path": "café.py"}}]}}
+    _chosen, rejected = render_step(segment_trace(rows)[0], 1, 2)
+    assert "café.py" in rejected[-1]["tool_calls"][0]["function"]["arguments"]
+
+
+def test_scored_span_can_start_at_the_tool_call():
+    from phase_pairs import scored_span
+    text = "<|im_start|>assistant\n<think>\nplan\n</think>\n\n<tool_call>\n{}\n</tool_call><|im_end|>"
+    start, end = len("<|im_start|>assistant\n"), len(text)
+    assert scored_span(text, start, end, calls_only=False) == (start, end)
+    assert text[slice(*scored_span(text, start, end, calls_only=True))].startswith("<tool_call>")
