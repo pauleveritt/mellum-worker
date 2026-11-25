@@ -113,3 +113,64 @@ def test_single_phase_suites_grade_on_all_their_tests():
     assert phase_outcomes(run) == {1: True}
     run["check_groups"]["test_review.py"]["missing"] = 2
     assert phase_outcomes(run) == {1: False}
+
+
+def result(tool, err, text="ok"):
+    return {"type": "tool_result", "toolName": tool, "isError": err, "content": [{"type": "text", "text": text}]}
+
+
+STEP_ROWS = [
+    {"type": "instance_start"},
+    req([SYS, U1]), act("a1", tool="read"), result("read", False),
+    req([SYS, U1, hist("a1", tool="read"), TOOL]), act("bad", tool="edit"),
+    result("edit", True, "Could not find the exact text in app.py."),
+    req([SYS, U1, hist("a1", tool="read"), TOOL, hist("bad", tool="edit"), TOOL]), act("fix", tool="read"),
+    result("read", False),
+    req([SYS, U1, hist("a1", tool="read"), TOOL, hist("bad", tool="edit"), TOOL, hist("fix", tool="read"), TOOL]),
+    act("done", tool="edit"), result("edit", False),
+]
+
+
+def test_step_pairs_pair_a_failed_call_with_the_recovery_that_followed():
+    from phase_pairs import step_pairs
+    seg = segment_trace(STEP_ROWS)[0]
+    assert step_pairs(seg) == [(1, 2)]  # act 1 (the failed edit) vs act 2 (the read that recovered)
+
+
+def test_step_pairs_skip_environment_errors_and_unrecovered_failures():
+    from phase_pairs import step_pairs
+    rows = [r if not (r.get("type") == "tool_result" and r["isError"]) else
+            result("edit", True, "fd is not available and could not be downloaded") for r in STEP_ROWS]
+    assert step_pairs(segment_trace(rows)[0]) == []
+    rows = STEP_ROWS[:6]  # the failure is the last thing in the trace: no recovery to prefer
+    assert step_pairs(segment_trace(rows)[0]) == []
+
+
+def test_render_step_shares_the_prefix_and_keeps_only_the_tool_call():
+    from phase_pairs import render_step
+    seg = segment_trace(STEP_ROWS)[0]
+    chosen, rejected = render_step(seg, 1, 2)
+    assert chosen[:-1] == rejected[:-1]  # same context up to the failed call
+    assert [m["role"] for m in chosen[:-1]] == ["system", "user", "assistant", "tool"]
+    assert rejected[-1]["tool_calls"][0]["function"]["name"] == "edit"
+    assert chosen[-1]["tool_calls"][0]["function"]["name"] == "read"
+    assert chosen[-1]["content"] == "" and "reasoning_content" not in chosen[-1]  # no leak of the error it saw
+
+
+def test_a_provider_error_turn_is_not_counted_as_an_act():
+    # a connection error ends a turn with no content; Pi retries the same request and the
+    # failed turn never enters the context, so it must not shift the alignment
+    err = {"type": "message_end", "message": {"role": "assistant", "content": [], "stopReason": "error"}}
+    rows = ROWS[:3] + [ROWS[3], err] + ROWS[3:]
+    segs = segment_trace(rows)
+    assert [s["n_phase"] for s in segs] == [2, 2]
+    assert render_segment(segs[1]) is not None
+
+
+def test_verified_phase_grades_replace_the_final_state_guess():
+    from phase_pairs import best_outcomes
+    final = {2: False, 3: False, 4: False}
+    graded = {"verified": True, "phases": {"1": True, "2": True, "3": False, "4": False}}
+    assert best_outcomes(final, graded, reached=4) == {1: True, 2: True, 3: False, 4: False}
+    assert best_outcomes(final, {"verified": False, "phases": {}}, reached=4) == {4: False}
+    assert best_outcomes(final, None, reached=4) == {4: False}

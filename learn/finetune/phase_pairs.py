@@ -19,7 +19,7 @@ import re
 def segment_trace(rows):
     # A request only counts once its reply arrives: a request the deadline cut off
     # has no reply, and taking its context would shift every turn by one.
-    segs, acts, cur, pending = [], [], None, None
+    segs, acts, errs, cur, pending = [], [], {}, None, None
     for row in rows:
         kind = row.get("type")
         if kind == "instance_start":
@@ -34,13 +34,19 @@ def segment_trace(rows):
                 pending = payload
         elif kind == "message_end":
             msg = row.get("message")
-            if isinstance(msg, dict) and msg.get("role") == "assistant":
+            if (isinstance(msg, dict) and msg.get("role") == "assistant"
+                    and not (msg.get("stopReason") in ("error", "aborted") and not msg.get("content"))):
+                # a provider error turn has no content and never enters the context: Pi
+                # retries the same request, so counting it would shift every turn by one
                 acts.append(msg)
                 cur["n_phase"] += 1
                 if pending is not None:
                     cur["payload"], pending = pending, None
+        elif kind == "tool_result" and acts:
+            text = "".join(p.get("text", "") for p in row.get("content") or [] if isinstance(p, dict))
+            errs.setdefault(len(acts) - 1, []).append((row.get("toolName"), bool(row.get("isError")), text[:500]))
         if cur is not None:
-            cur["acts"] = list(acts)
+            cur["acts"], cur["errs"] = list(acts), dict(errs)
     if cur and cur["payload"] is not None:
         segs.append(cur)
     return segs
@@ -98,6 +104,50 @@ def render_segment(seg, cap=lambda text: text):
     return msgs, ast[-min(n_phase, len(ast)):]
 
 
+ENV_ERRORS = ("not available and could not be downloaded",)
+
+
+def step_pairs(seg):
+    """(failed act, recovering act) index pairs within this phase.
+
+    A failed act is one whose non-bash tool call errored for a reason the model caused
+    (a missing file, an edit that matched nothing), not the environment (a tool binary
+    the sandbox lacks). Bash is left out: a failing test run is normal TDD, not a bad call.
+    The recovery is the very next act, kept only if every one of its calls succeeded."""
+    acts, errs = seg["acts"], seg.get("errs") or {}
+    start, out = len(acts) - seg["n_phase"], []
+    for k in range(start, len(acts) - 1):
+        bad = [e for e in errs.get(k, []) if e[1] and e[0] != "bash" and not any(x in e[2] for x in ENV_ERRORS)]
+        nxt = errs.get(k + 1, [])
+        if bad and nxt and not any(e[1] for e in nxt):
+            out.append((k, k + 1))
+    return out
+
+
+def _call_turn(act):
+    calls = [{"id": c.get("id") or f"call_{i}", "type": "function",
+              "function": {"name": c.get("name"), "arguments": json.dumps(c.get("arguments") or {})}}
+             for i, c in enumerate(_calls(act))]
+    return {"role": "assistant", "content": "", "tool_calls": calls}
+
+
+def render_step(seg, bad, fix, cap=lambda text: text):
+    """(chosen, rejected) message lists sharing the context before act `bad`.
+
+    Only the tool call is kept on the final turn: the recovery's text and reasoning were
+    written after seeing the error, and would leak it into a context that hasn't seen it."""
+    rendered = render_segment(seg, cap)
+    if rendered is None:
+        return None
+    msgs, acts = rendered[0], seg["acts"]
+    ast = [i for i, m in enumerate(msgs) if m["role"] == "assistant"]
+    j = bad - (len(acts) - len(ast))
+    if j < 0 or j >= len(ast):
+        return None  # compacted away, or the last turn
+    prefix = msgs[:ast[j]]
+    return prefix + [_call_turn(acts[fix])], prefix + [_call_turn(acts[bad])]
+
+
 def phase_outcomes(run):
     """{phase: passed} from a harness run's per-module grade; {} if it can't be trusted."""
     if run.get("contaminated"):
@@ -127,6 +177,14 @@ def trusted_outcomes(outcome, reached):
     earlier phase may be a later phase breaking it (a broken import fails every
     phase), so a failure only counts for the last phase the run reached."""
     return {p: ok for p, ok in outcome.items() if ok or p == reached}
+
+
+def best_outcomes(final, phase_grades, reached):
+    """Each phase's own grade when a verified replay exists (regrade_phases.py), else
+    the final-state grades a later phase could not have caused."""
+    if phase_grades and phase_grades.get("verified") and phase_grades.get("phases"):
+        return {int(p): bool(ok) for p, ok in phase_grades["phases"].items()}
+    return trusted_outcomes(final, reached)
 
 
 def grader_seen(trace_text, suite, canary):

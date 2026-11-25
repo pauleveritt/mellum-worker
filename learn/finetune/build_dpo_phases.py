@@ -18,7 +18,8 @@ import argparse, collections, glob, json, os, random, statistics as st
 from pathlib import Path
 
 from mlx_lm import load
-from phase_pairs import phase_outcomes, render_segment, segment_trace, trusted_outcomes, worked, grader_seen
+from phase_pairs import (phase_outcomes, render_segment, render_step, segment_trace, step_pairs,
+                         trusted_outcomes, worked, grader_seen, best_outcomes)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -35,6 +36,10 @@ ap.add_argument("--valid-key", action="append", default=None,
 ap.add_argument("--valid-win", type=int, default=2)
 ap.add_argument("--valid-loss", type=int, default=3)
 ap.add_argument("--max-pairs-per-phase", type=int, default=60)
+ap.add_argument("--steps", action="store_true",
+                help="also emit step pairs: a failed tool call against the call that recovered from it")
+ap.add_argument("--valid-step-every", type=int, default=10,
+                help="every Nth run's step pairs go to validation (held out by trajectory)")
 ap.add_argument("--out", required=True)
 args = ap.parse_args()
 random.seed(0)
@@ -67,6 +72,22 @@ def encode(msgs, scored, tools):
 
 
 win, loss, why = collections.defaultdict(list), collections.defaultdict(list), collections.Counter()
+step_train, step_valid, n_runs = [], [], 0
+
+
+def emit_steps(seg, key, src, to_valid):
+    for bad, fix in step_pairs(seg):
+        r = render_step(seg, bad, fix, cap=cap)
+        if r is None:
+            why["step-misaligned"] += 1; continue
+        recs = [encode(m, [max(i for i, x in enumerate(m) if x["role"] == "assistant")], seg["payload"].get("tools"))
+                for m in r]
+        if None in recs or max(len(x["ids"]) for x in recs) > args.budget:
+            why["step-dropped"] += 1; continue
+        (step_valid if to_valid else step_train).append(
+            {"phase": key + ":step", "chosen": recs[0]["ids"], "chosen_mask": recs[0]["mask"],
+             "rejected": recs[1]["ids"], "rejected_mask": recs[1]["mask"], "src": [f"{src}@{bad}"] * 2})
+        why["step-ok"] += 1
 for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in args.source_all_phases]:
     for f in sorted(glob.glob(f"{root}/**/run.json", recursive=True)):
         run = json.load(open(f)); trace = Path(f).with_name("trace.jsonl")
@@ -76,11 +97,22 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
             if not grader_seen(trace.read_text(errors="ignore"), run.get("suite"), canary):
                 run = {**run, "contaminated": False}; why["base-path-flag-cleared"] += 1
         outcome = phase_outcomes(run)
-        if not outcome or not trace.is_file():
-            why["no-grade-or-trace"] += 1; continue
+        if run.get("contaminated") or not trace.is_file():
+            why["contaminated-or-no-trace"] += 1; continue
         rows = [json.loads(line) for line in open(trace) if line.strip()]
         segs = segment_trace(rows)
-        outcome = trusted_outcomes(outcome, reached=len(segs))
+        if args.steps:
+            n_runs += 1
+            for seg in segs:
+                if keep_all or seg["phase"] not in args.exclude:
+                    emit_steps(seg, f"{run.get('suite')}:p{seg['phase']}", Path(f).parent.name,
+                               n_runs % args.valid_step_every == 0)
+        if not outcome:
+            why["no-grade"] += 1; continue
+        pg = Path(f).with_name("phase_grades.json")
+        graded = json.loads(pg.read_text()) if pg.is_file() else None
+        why["phase-graded"] += bool(graded and graded.get("verified"))
+        outcome = best_outcomes(outcome, graded, reached=len(segs))
         for seg in segs:
             p = seg["phase"]
             if (not keep_all and p in args.exclude) or p not in outcome:
@@ -115,6 +147,8 @@ for p in sorted(set(win) | set(loss)):
     lens = [len(r["ids"]) for r in W + L]
     per[p] = {"win": len(W), "loss": len(L), "train_pairs": len(cand), "valid_pairs": len(hw) * len(hl),
               "median_tokens": int(st.median(lens)) if lens else 0}
+train += step_train; valid += step_valid
+per["steps"] = {"train": len(step_train), "valid": len(step_valid)}
 random.shuffle(train)
 os.makedirs(args.out, exist_ok=True)
 for name, rows in (("train", train), ("valid", valid)):
