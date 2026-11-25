@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_retry.py::test_first_success_is_returned_and_logged_once",
+  "grader_tests/test_retry.py::test_all_failures_return_none_and_log_once"
+]

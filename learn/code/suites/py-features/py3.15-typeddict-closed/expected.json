@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_payloads.py::test_event_is_closed",
+  "grader_tests/test_payloads.py::test_labels_allow_str_extras"
+]

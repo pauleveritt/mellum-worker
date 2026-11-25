@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_load.py::test_mapping_contents",
+  "grader_tests/test_load.py::test_immutable_and_hashable"
+]

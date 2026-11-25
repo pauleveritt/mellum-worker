@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_sql.py::test_values_become_placeholders",
+  "grader_tests/test_sql.py::test_injection_text_stays_a_value",
+  "grader_tests/test_sql.py::test_no_interpolations"
+]

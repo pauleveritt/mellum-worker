@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_lookup.py::test_missing_is_a_builtin_sentinel",
+  "grader_tests/test_lookup.py::test_lookup_defaults"
+]

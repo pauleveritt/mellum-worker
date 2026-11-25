@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_cli.py::test_importing_cli_does_not_load_reports",
+  "grader_tests/test_cli.py::test_main_loads_reports_on_first_use"
+]

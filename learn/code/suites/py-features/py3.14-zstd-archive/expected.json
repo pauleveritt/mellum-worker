@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_archive.py::test_pack_writes_a_real_zstandard_frame",
+  "grader_tests/test_archive.py::test_round_trip"
+]

@@ -1,0 +1,5 @@
+{
+  "python": "3.15",
+  "kind": "new-api",
+  "pep": "PEP 661"
+}
