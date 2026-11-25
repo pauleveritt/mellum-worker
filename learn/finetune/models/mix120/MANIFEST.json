@@ -1,0 +1,284 @@
+{
+  "name": "mix120",
+  "created": "2026-11-25T23:51:03+00:00",
+  "machine": "Darwin arm64 Mac",
+  "git": {
+    "training_commit": "8325dfa2",
+    "manifest_written_at": "6608f7354f5b0252e985defb54c4ce4977779f5b",
+    "dirty": false,
+    "note": "trainer, chunking, resume and data_dpo_mix120 are unchanged between 8325dfa2 (training start, 18:34) and the manifest commit; the only untracked paths were this manifest and the never-trained probe set data_dpo_steps_probe"
+  },
+  "data": {
+    "dir": "data_dpo_mix120",
+    "source_md": true,
+    "files": {
+      "train.jsonl": {
+        "sha256": "b1cae748b5ea91e04008cb3def5c74d53102e493f1656b428d513d5e570433b0",
+        "rows": 120
+      },
+      "valid.jsonl": {
+        "sha256": "df9c42d0fb2d327350b6fc4f9c4c9d6e59a372c87358b6c2def4e334e61eb951",
+        "rows": 20
+      }
+    }
+  },
+  "base": {
+    "dir": "../../.models/Mellum2.1-12B-A2.5B-Thinking-6bit",
+    "quantization": {
+      "group_size": 64,
+      "bits": 6,
+      "mode": "affine"
+    },
+    "files": {
+      "model-00001-of-00002.safetensors": "4c563ab1ea93eb1c2c12bf5258e27ad7b3ceac88f07f825899c6e27e44d1b492",
+      "model-00002-of-00002.safetensors": "475afd1005efa2cc78c68f01c8337d658ff766fef8942b7b25aff5c5bec75568"
+    }
+  },
+  "adapter": {
+    "dir": "adapters_dpo_mix120",
+    "files": {
+      "0015_adapters.safetensors": "c2478d2ab11f4fbadf8ece41e2a5b4c1e6630fd838b088263f1b52ec980fdd87",
+      "0030_adapters.safetensors": "69e509335e52a329690b8621dd02cd3be0c27e4597e16f139bec7a058502f123",
+      "adapter_config.json": "46ccf116385da5b0c5d080c4d4251a0eec6e569bdf5be9bbe3f90e0c22f04fa7",
+      "adapters.safetensors": "69e509335e52a329690b8621dd02cd3be0c27e4597e16f139bec7a058502f123"
+    }
+  },
+  "settings": {
+    "beta": 10,
+    "lr": 2e-05,
+    "accum": 4,
+    "step": 2048,
+    "epochs": 1,
+    "eval_every": 15,
+    "rank": 8,
+    "scale": 2.0,
+    "num_layers": 16,
+    "seed": 0
+  },
+  "packages": {
+    "python": "3.14.2",
+    "mlx": null,
+    "mlx-lm": null,
+    "mlx-lm-lora": null,
+    "numpy": null,
+    "safetensors": null,
+    "torch": null,
+    "transformers": null
+  },
+  "log": {
+    "train": [
+      {
+        "update": 1,
+        "loss": 0.0025,
+        "acc": 0.0,
+        "margin": 0.0
+      },
+      {
+        "update": 2,
+        "loss": 0.00225,
+        "acc": 0.75,
+        "margin": 0.02727
+      },
+      {
+        "update": 3,
+        "loss": 0.00245,
+        "acc": 0.25,
+        "margin": 0.01907
+      },
+      {
+        "update": 4,
+        "loss": 0.00184,
+        "acc": 1.0,
+        "margin": 0.08352
+      },
+      {
+        "update": 5,
+        "loss": 0.0019,
+        "acc": 0.75,
+        "margin": 0.08794
+      },
+      {
+        "update": 6,
+        "loss": 0.00375,
+        "acc": 0.75,
+        "margin": 0.48499
+      },
+      {
+        "update": 7,
+        "loss": 0.00177,
+        "acc": 0.5,
+        "margin": 0.14373
+      },
+      {
+        "update": 8,
+        "loss": 0.00202,
+        "acc": 1.0,
+        "margin": 0.05304
+      },
+      {
+        "update": 9,
+        "loss": 0.00223,
+        "acc": 0.75,
+        "margin": 0.27633
+      },
+      {
+        "update": 10,
+        "loss": 0.00272,
+        "acc": 0.75,
+        "margin": 0.27888
+      },
+      {
+        "update": 11,
+        "loss": 0.00098,
+        "acc": 1.0,
+        "margin": 0.25025
+      },
+      {
+        "update": 12,
+        "loss": 0.00108,
+        "acc": 1.0,
+        "margin": 0.18723
+      },
+      {
+        "update": 13,
+        "loss": 0.00062,
+        "acc": 1.0,
+        "margin": 0.38778
+      },
+      {
+        "update": 14,
+        "loss": 0.00414,
+        "acc": 0.75,
+        "margin": 0.50207
+      },
+      {
+        "update": 15,
+        "loss": 0.00348,
+        "acc": 0.75,
+        "margin": 0.39602
+      },
+      {
+        "update": 16,
+        "loss": 0.00509,
+        "acc": 0.75,
+        "margin": 0.90098
+      },
+      {
+        "update": 17,
+        "loss": 0.00286,
+        "acc": 0.75,
+        "margin": 0.40457
+      },
+      {
+        "update": 18,
+        "loss": 0.00104,
+        "acc": 0.75,
+        "margin": 0.2661
+      },
+      {
+        "update": 19,
+        "loss": 0.00167,
+        "acc": 0.75,
+        "margin": 0.10377
+      },
+      {
+        "update": 20,
+        "loss": 0.00178,
+        "acc": 0.75,
+        "margin": 0.37254
+      },
+      {
+        "update": 21,
+        "loss": 0.00198,
+        "acc": 0.75,
+        "margin": 0.08038
+      },
+      {
+        "update": 22,
+        "loss": 0.01453,
+        "acc": 0.25,
+        "margin": -0.41231
+      },
+      {
+        "update": 23,
+        "loss": 0.00063,
+        "acc": 1.0,
+        "margin": 0.32189
+      },
+      {
+        "update": 24,
+        "loss": 0.00753,
+        "acc": 0.5,
+        "margin": 0.20053
+      },
+      {
+        "update": 25,
+        "loss": 0.00119,
+        "acc": 1.0,
+        "margin": 0.16575
+      },
+      {
+        "update": 26,
+        "loss": 0.00546,
+        "acc": 0.5,
+        "margin": -0.13185
+      },
+      {
+        "update": 27,
+        "loss": 0.00334,
+        "acc": 0.25,
+        "margin": 0.21497
+      },
+      {
+        "update": 28,
+        "loss": 0.00299,
+        "acc": 0.75,
+        "margin": 0.32255
+      },
+      {
+        "update": 29,
+        "loss": 0.00435,
+        "acc": 0.75,
+        "margin": 0.25048
+      },
+      {
+        "update": 30,
+        "loss": 0.00105,
+        "acc": 1.0,
+        "margin": 0.46504
+      }
+    ],
+    "eval": [
+      {
+        "update": 0,
+        "loss": 0.0025,
+        "acc": 0.0,
+        "margin": 0.0
+      },
+      {
+        "update": 15,
+        "loss": 0.00239,
+        "acc": 0.8,
+        "margin": 0.31033
+      },
+      {
+        "update": 30,
+        "loss": 0.00587,
+        "acc": 0.7,
+        "margin": 0.67098
+      }
+    ]
+  },
+  "gguf": {
+    "file": "ours-mix120-Q4_K_M.gguf",
+    "sha256": "3cecadc1edace4075b29cbd5d2dd0546f324164be7ddc10c0815a0023c0e6965",
+    "bytes": 8071295008
+  },
+  "llama_cpp_convert_commit": "cd959bae9",
+  "llama_quantize": "",
+  "trainer_packages": {
+    "mlx-lm": "0.32.2",
+    "mlx-lm-lora": "5.10.2"
+  },
+  "pipeline": "scratchpad pipeline-mix120.sh (equivalent to pipeline/train_model.sh)"
+}
