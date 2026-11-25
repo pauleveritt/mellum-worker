@@ -25,7 +25,8 @@ from mlx_lm import load
 from mlx_lm.tuner.utils import linear_to_lora_layers
 from mlx_lm.models.cache import make_prompt_cache
 from mlx_lm_lora.trainer.dpo_trainer import get_token_scores, dpo_loss
-from mlx_lm_lora.trainer.long_context import iter_cached_sft_chunks
+from chunking import chunk_bounds
+from resume import load_checkpoint, plan_updates, save_checkpoint
 
 BASE = "mlx-community/Mellum2-12B-A2.5B-Thinking-4bit"
 
@@ -41,7 +42,7 @@ def ntok(m):
 def chunked_score(model, x, m, step):
     """Exact (up to kernel numerics) sum of masked next-token log-probs, no grad."""
     cache = make_prompt_cache(model); n = x.shape[1]; tot = mx.zeros((x.shape[0],))
-    for s, e in iter_cached_sft_chunks(n, step):
+    for s, e in chunk_bounds(n, step):
         tot = tot + mx.stop_gradient(get_token_scores(model, x[:, s:e], m[:, s:e], cache=cache)).sum(-1)
         mx.eval(tot)
         if e >= n: break
@@ -62,7 +63,7 @@ def pair_grad(policy, ref, c, cm, r, rm, beta, step):
     grads = None
     for x, m, w in ((c, cm, wc), (r, rm, wr)):
         cache = make_prompt_cache(policy); n = x.shape[1]
-        for s, e in iter_cached_sft_chunks(n, step):
+        for s, e in chunk_bounds(n, step):
             xs, ms = x[:, s:e], m[:, s:e]
             def f(model_):
                 return (get_token_scores(model_, xs, ms, cache=cache).sum(-1) * w).sum()
@@ -131,6 +132,7 @@ def main():
     ap.add_argument("--accum", type=int, default=4, help="pairs per optimizer update")
     ap.add_argument("--step", type=int, default=512, help="chunk size")
     ap.add_argument("--eval-every", type=int, default=6, help="updates between held-out evals")
+    ap.add_argument("--resume", action="store_true", help="continue from the checkpoint in --out after a crash")
     ap.add_argument("--check-grad", action="store_true", help="compare chunked vs exact gradient, no training")
     ap.add_argument("--crop", type=int, default=3000, help="--check-grad: crop pair to fit an exact full pass")
     a = ap.parse_args()
@@ -159,30 +161,33 @@ def main():
     print(f"train {len(train)} pairs, valid {len(valid)} (held-out trajectories); "
           f"{a.epochs} epochs x {upd_per_epoch} updates (accum {a.accum}) = {total} updates; "
           f"IPO beta {a.beta} (target per-token gap {1/(2*a.beta):.3f}), lr {a.lr}", flush=True)
-    vl, va, vm = evaluate(policy, ref, valid, a.beta, a.step)
-    print(f"[eval] update 0: val loss {vl:.5f} acc {va:.3f} margin {vm:.5f}", flush=True)
-    upd = 0; t0 = time.time()
-    for ep in range(a.epochs):
-        order = np.random.permutation(len(train))
-        for b0 in range(0, len(order), a.accum):
-            idx = order[b0:b0 + a.accum]; acc_g = None; Ls, As, Ms = [], [], []
-            for i in idx:
-                p = train[int(i)]
-                c, cm = arr(p["chosen"], p["chosen_mask"]); r, rm = arr(p["rejected"], p["rejected_mask"])
-                l, g, met, _ = pair_grad(policy, ref, c, cm, r, rm, a.beta, a.step)
-                acc_g = g if acc_g is None else tree_map(lambda x, y: x + y, acc_g, g)
-                Ls.append(l); As.append(met["accuracies"]); Ms.append(met["margins"])
-            acc_g = tree_map(lambda x: x / len(idx), acc_g)
-            opt.update(policy, acc_g); mx.eval(policy.trainable_parameters(), opt.state)
-            upd += 1
-            el = time.time() - t0
-            print(f"[train] ep {ep+1} update {upd}/{total}: loss {np.mean(Ls):.5f} acc {np.mean(As):.3f} "
-                  f"margin {np.mean(Ms):.5f} | {el/60:.1f} min elapsed, ~{el/upd*(total-upd)/60:.0f} min left, "
-                  f"peak {mx.get_peak_memory()/1e9:.1f} GB", flush=True)
-            if upd % a.eval_every == 0 or upd == total:
-                vl, va, vm = evaluate(policy, ref, valid, a.beta, a.step)
-                print(f"[eval] update {upd}: val loss {vl:.5f} acc {va:.3f} margin {vm:.5f}", flush=True)
-                save_adapters(policy, a.out, a.rank, a.scale, a.num_layers, tag=f"{upd:04d}_adapters")
+    start = load_checkpoint(a.out, policy, opt) if a.resume else 0
+    if start:
+        print(f"[resume] from update {start}", flush=True)
+    else:
+        vl, va, vm = evaluate(policy, ref, valid, a.beta, a.step)
+        print(f"[eval] update 0: val loss {vl:.5f} acc {va:.3f} margin {vm:.5f}", flush=True)
+    t0, done_here = time.time(), 0
+    for ep, upd, idx in plan_updates(len(train), a.accum, a.epochs, seed=0, start=start):
+        acc_g = None; Ls, As, Ms = [], [], []
+        for i in idx:
+            p = train[i]
+            c, cm = arr(p["chosen"], p["chosen_mask"]); r, rm = arr(p["rejected"], p["rejected_mask"])
+            l, g, met, _ = pair_grad(policy, ref, c, cm, r, rm, a.beta, a.step)
+            acc_g = g if acc_g is None else tree_map(lambda x, y: x + y, acc_g, g)
+            Ls.append(l); As.append(met["accuracies"]); Ms.append(met["margins"])
+        acc_g = tree_map(lambda x: x / len(idx), acc_g)
+        opt.update(policy, acc_g); mx.eval(policy.trainable_parameters(), opt.state)
+        save_checkpoint(a.out, policy.trainable_parameters(), opt, upd)  # a crash costs one update, not the run
+        done_here += 1
+        el = time.time() - t0
+        print(f"[train] ep {ep+1} update {upd}/{total}: loss {np.mean(Ls):.5f} acc {np.mean(As):.3f} "
+              f"margin {np.mean(Ms):.5f} | {el/60:.1f} min elapsed, ~{el/done_here*(total-upd)/60:.0f} min left, "
+              f"peak {mx.get_peak_memory()/1e9:.1f} GB", flush=True)
+        if upd % a.eval_every == 0 or upd == total:
+            vl, va, vm = evaluate(policy, ref, valid, a.beta, a.step)
+            print(f"[eval] update {upd}: val loss {vl:.5f} acc {va:.3f} margin {vm:.5f}", flush=True)
+            save_adapters(policy, a.out, a.rank, a.scale, a.num_layers, tag=f"{upd:04d}_adapters")
     save_adapters(policy, a.out, a.rank, a.scale, a.num_layers)
     print(f"[done] saved {a.out}/adapters.safetensors", flush=True)
 
