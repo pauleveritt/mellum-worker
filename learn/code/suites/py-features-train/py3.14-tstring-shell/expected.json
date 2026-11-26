@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_shell.py::test_values_are_quoted_literals_kept",
+  "grader_tests/test_shell.py::test_injection_stays_one_argument",
+  "grader_tests/test_shell.py::test_plain_command"
+]

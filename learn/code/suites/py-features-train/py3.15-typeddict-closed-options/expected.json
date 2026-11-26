@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_options.py::test_options_are_closed_and_optional",
+  "grader_tests/test_options.py::test_env_allows_str_extras"
+]

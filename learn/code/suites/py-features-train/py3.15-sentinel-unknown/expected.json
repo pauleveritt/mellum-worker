@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_flags.py::test_unknown_is_a_builtin_sentinel",
+  "grader_tests/test_flags.py::test_parse_flag"
+]

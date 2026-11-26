@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_docs.py::test_undefined_return_is_described_not_evaluated",
+  "grader_tests/test_docs.py::test_unannotated_return_is_none"
+]
