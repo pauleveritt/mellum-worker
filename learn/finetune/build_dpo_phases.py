@@ -20,7 +20,8 @@ from pathlib import Path
 from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
                          worked, grader_seen, best_outcomes)
 from pairs_io import write_pairs
-from pathology_pairs import idiom_pairs, outside_search_pairs, render_alt, unused_import_pairs, with_regressions
+from pathology_pairs import (idiom_pairs, outside_search_pairs, render_alt, shell_pairs, unused_import_pairs,
+                             with_regressions)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -41,7 +42,9 @@ ap.add_argument("--steps", action="store_true",
                 help="also emit step pairs: a failed tool call against the call that recovered from it")
 ap.add_argument("--pathologies", action="store_true",
                 help="also emit pathology pairs: a search outside the workspace against the same search "
-                     "aimed at it, and a write leaving an unused import against the same write without it")
+                     "aimed at it, a write leaving an unused import against the same write without it, and a bash "
+                     "command that failed on its own shape (quoting, a python -c that can't parse, a missing flag) "
+                     "against the clean bash retry that followed")
 ap.add_argument("--idioms-root", default=None,
                 help="training-task folder (py-features-train): a failed run on one of its tasks also gives idiom "
                      "pairs, its last write of each reference file against the same write with the reference")
@@ -86,19 +89,19 @@ win, loss, why = collections.defaultdict(list), collections.defaultdict(list), c
 step_train, step_valid, n_runs = [], [], 0
 
 
-def emit_steps(seg, key, src, to_valid):
-    for bad, fix in step_pairs(seg):
+def emit_steps(seg, key, src, to_valid, kind="step", pairs=None):
+    for bad, fix in (step_pairs(seg) if pairs is None else pairs):
         r = render_step(seg, bad, fix, cap=cap)
         if r is None:
-            why["step-misaligned"] += 1; continue
+            why[f"{kind}-misaligned"] += 1; continue
         recs = [encode(m, [max(i for i, x in enumerate(m) if x["role"] == "assistant")], seg["payload"].get("tools"),
                        calls_only=True) for m in r]
         if None in recs or max(len(x["ids"]) for x in recs) > args.budget:
-            why["step-dropped"] += 1; continue
+            why[f"{kind}-dropped"] += 1; continue
         (step_valid if to_valid else step_train).append(
-            {"phase": key + ":step", "chosen": recs[0]["ids"], "chosen_mask": recs[0]["mask"],
+            {"phase": f"{key}:{kind}", "chosen": recs[0]["ids"], "chosen_mask": recs[0]["mask"],
              "rejected": recs[1]["ids"], "rejected_mask": recs[1]["mask"], "src": [f"{src}@{bad}"] * 2})
-        why["step-ok"] += 1
+        why[f"{kind}-ok"] += 1
 def emit_alt(seg, key, src, to_valid, kind, pairs):
     for bad, calls in pairs:
         r = render_alt(seg, bad, calls, cap=cap)
@@ -139,6 +142,7 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
                     if args.pathologies:
                         emit_alt(seg, key, src, to_valid, "outside", outside_search_pairs(seg, ws))
                         emit_alt(seg, key, src, to_valid, "unused", unused_import_pairs(seg))
+                        emit_steps(seg, key, src, to_valid, "shell", shell_pairs(seg))
         if not outcome:
             why["no-grade"] += 1; continue
         pg = Path(f).with_name("phase_grades.json")

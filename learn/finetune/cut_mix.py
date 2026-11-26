@@ -7,7 +7,11 @@
   run dominates;
 - step pairs (`...:step`): `--steps` sampled at random;
 - training-task pairs (`py3.*:p1`): each task's pass-against-fail pairs, capped and round-robin like a phase;
-- pathology and idiom pairs (`...:outside`, `...:unused`, `...:idiom`): all kept, there are few.
+- pathology, shell and idiom pairs (`...:outside`, `...:unused`, `...:shell`, `...:idiom`): all kept, there are few.
+
+`--no-knowledge` cuts a tools-first set: no idiom pairs and no training-task pass-against-fail pairs, so a tune
+can show a tool-calling gain before any new Python knowledge is added. The tool pairs those runs gave (step,
+shell, outside, unused) stay in.
 
 Validation is copied unchanged. Seeded (0), so the same raw set always cuts the same way.
 """
@@ -20,14 +24,17 @@ from collections import defaultdict
 from pairs_io import read_pairs, write_pairs
 
 PHASES = ["medium:p2", "medium:p3", "medium:p4"]
-PATHOLOGIES = ("outside", "unused", "idiom")
+PATHOLOGIES = ("outside", "unused", "shell", "idiom")
+KNOWLEDGE = ("idiom",)
 TASK_PREFIX = "py3."  # py-features-train tasks: each task's pass-against-fail pairs, capped like a phase
 
 
-def cut(rows, per_phase=20, phases=PHASES, steps=60, seed=0):
+def cut(rows, per_phase=20, phases=PHASES, steps=60, seed=0, knowledge=True):
     rng = random.Random(seed)
     out = []
-    tasks = sorted({r["phase"] for r in rows if r["phase"].startswith(TASK_PREFIX) and r["phase"].count(":") == 1})
+    if not knowledge:
+        rows = [r for r in rows if r["phase"].rsplit(":", 1)[-1] not in KNOWLEDGE]
+    tasks = [] if not knowledge else sorted({r["phase"] for r in rows if r["phase"].startswith(TASK_PREFIX) and r["phase"].count(":") == 1})
     for p in list(phases) + tasks:
         by_loser = defaultdict(list)
         for r in rows:
@@ -55,11 +62,12 @@ def main():
     ap.add_argument("--raw", required=True)
     ap.add_argument("--per-phase", type=int, default=20)
     ap.add_argument("--steps", type=int, default=60)
+    ap.add_argument("--no-knowledge", action="store_true", help="tools-first: drop idiom and training-task pairs")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     if os.path.exists(a.out):
         sys.exit(f"{a.out} already exists; cut into a new versioned folder instead of overwriting it")
-    train = cut(read_pairs(a.raw, "train"), a.per_phase, PHASES, a.steps)
+    train = cut(read_pairs(a.raw, "train"), a.per_phase, PHASES, a.steps, knowledge=not a.no_knowledge)
     os.makedirs(a.out)
     write_pairs(a.out, "train", train)
     write_pairs(a.out, "valid", read_pairs(a.raw, "valid"))

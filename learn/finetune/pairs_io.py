@@ -1,7 +1,7 @@
 """Pair sets on disk: one file per section and part, every file under GitHub's size limit.
 
 A split ("train", "valid") is written as `<split>.<section>.<NN>.jsonl`. The section is the pair kind (phase,
-step, outside, unused), so each kind can be read and checked on its own; a section bigger than `MAX_BYTES` is
+step, outside, unused, shell, idiom), so each kind can be read and checked on its own; a section bigger than `MAX_BYTES` is
 cut into numbered parts. Each row carries its position (`i`), so reading puts the rows back in exactly the order
 they were written and a training run that shuffles them with a fixed seed is reproducible. Older sets stored as
 one `<split>.jsonl` are read as they are.
@@ -11,7 +11,7 @@ from collections import defaultdict
 from pathlib import Path
 
 MAX_BYTES = 45_000_000  # under GitHub's 50 MB warning, well under its 100 MB refusal
-KINDS = ("step", "outside", "unused", "idiom")
+KINDS = ("step", "outside", "unused", "shell", "idiom")
 
 
 def section(row):

@@ -149,3 +149,45 @@ def test_idiom_pairs_skip_a_write_that_already_matches_and_a_file_last_touched_b
     edited = one_phase(act("write", {"path": "contacts.py", "content": "UNSET = object()\n"}),
                        act("edit", {"path": "contacts.py", "oldText": "object()", "newText": "None"}))
     assert idiom_pairs(same, REF, WS) == [] and idiom_pairs(edited, REF, WS) == []
+
+
+# --- malformed shell commands (quoting, python -c, flags this shell lacks) -----------------
+
+def res(text, error=True):
+    return {"type": "tool_result", "toolName": "bash", "isError": error, "content": [{"type": "text", "text": text}]}
+
+
+def with_results(*pairs):
+    """A one-phase trace where each (act, result) pair is followed by its tool result."""
+    rows, ctx = [{"type": "instance_start"}], [SYS, U1]
+    for a, r in pairs:
+        rows += [req(list(ctx)), a] + ([r] if r else [])
+        ctx += [hist(a["message"]["content"][2]["name"]), TOOL]
+    return segment_trace(rows)[0]
+
+
+QUOTE = "/bin/bash: -c: line 0: unexpected EOF while looking for matching `\"'\n"
+PYSYN = '  File "<string>", line 1\n    try: import x; except: pass\n         ^\nSyntaxError: invalid syntax\n'
+FLAG = "cat: illegal option -- A\nusage: cat [-belnstuv] [file ...]\n"
+
+
+def test_shell_shape_names_the_command_faults_only():
+    from pathology_pairs import shell_shape
+    assert shell_shape(QUOTE) == "quote"
+    assert shell_shape(PYSYN) == "pysyntax"
+    assert shell_shape(FLAG) == "flag"
+    assert shell_shape("FAILED tests/test_app.py::test_home - assert 404 == 200\n1 failed") is None  # red test: TDD
+    assert shell_shape("ls: tests: No such file or directory\n") is None  # probing for a file is fine
+    assert shell_shape('Traceback\n  File "app.py", line 3\nSyntaxError: x') is None  # the code is wrong, not the command
+
+
+def test_shell_pairs_take_the_clean_bash_retry_as_chosen():
+    from pathology_pairs import shell_pairs
+    seg = with_results(
+        (act("bash", {"command": 'python -c "try: import x; except: pass"'}), res(PYSYN)),
+        (act("bash", {"command": "python -c 'import x'"}), res("ok", error=False)),
+        (act("bash", {"command": "cat -A app.py"}), res(FLAG)),
+        (act("write", {"path": "a.py", "content": "x"}), res("ok", error=False)),  # not a bash retry
+        (act("bash", {"command": "uv run pytest"}), res("1 failed")),
+        (act("bash", {"command": "uv run pytest"}), res("1 passed", error=False)))
+    assert shell_pairs(seg) == [(0, 1)]  # flag fault has no bash retry; a red test run is not a fault

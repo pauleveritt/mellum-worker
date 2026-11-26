@@ -138,3 +138,33 @@ def idiom_pairs(seg, reference, workspace):
         calls = out.get(k) or list(_calls(acts[k]))
         out[k] = [_alt(x, {**x["arguments"], "content": text}) if x is c else x for x in calls]
     return sorted(out.items())
+
+
+SHELL_SHAPES = (
+    ("quote", re.compile(r"/bin/(ba|z)?sh: .*(unexpected EOF while looking for matching|syntax error)")),
+    ("pysyntax", re.compile(r'File "<string>", line \d+(?s:.*)SyntaxError')),
+    ("flag", re.compile(r"(illegal|invalid|unrecognized|unknown) option")),
+)
+
+
+def shell_shape(output):
+    """Which command fault a bash error shows (bad quoting, a `python -c` that can't parse, a flag this shell
+    lacks), or None. A red test run, a missing file and a bug in the code are not command faults."""
+    for name, pattern in SHELL_SHAPES:
+        if pattern.search(output or ""):
+            return name
+    return None
+
+
+def shell_pairs(seg):
+    """(failed act, retry act) pairs in this phase: a bash call that failed on a command fault, followed straight
+    away by a bash call that ran clean. Score with `render_step` + `calls_only`, like the other step pairs."""
+    acts, errs = seg["acts"], seg.get("errs") or {}
+    out = []
+    for k in range(len(acts) - seg["n_phase"], len(acts) - 1):
+        bad = [e for e in errs.get(k, []) if e[0] == "bash" and e[1] and shell_shape(e[2])]
+        nxt = errs.get(k + 1, [])
+        retry = [c.get("name") for c in _calls(acts[k + 1])]
+        if bad and nxt and not any(e[1] for e in nxt) and retry and set(retry) == {"bash"}:
+            out.append((k, k + 1))
+    return out

@@ -33,3 +33,17 @@ def test_training_task_phase_pairs_are_kept_up_to_the_cap():
     rows = [row("py3.15-sentinel-unset:p1", f"w{i}", f"l{i}") for i in range(30)] + [row("satyrn-x:p1", "w", "l")]
     got = cut(rows, per_phase=20, phases=[], steps=0)
     assert len(got) == 20 and all(r["phase"].startswith("py3.") for r in got)
+
+
+def test_shell_pairs_are_all_kept_and_get_their_own_section():
+    from pairs_io import section
+    rows = [row("medium:p3:shell", "s", f"s{i}") for i in range(3)]
+    assert len(cut(rows, phases=[], steps=0)) == 3
+    assert section(rows[0]) == "shell"
+
+
+def test_a_tools_first_cut_leaves_out_the_new_knowledge():
+    rows = ([row("py3.15-x:p1", "w", "l"), row("py3.15-x:p1:idiom", "i", "i")]  # what the model doesn't know yet
+            + [row("py3.15-x:p1:step", "s", "s"), row("py3.15-x:p1:shell", "b", "b"), row("medium:p2", "w", "l")])
+    got = cut(rows, per_phase=5, phases=["medium:p2"], steps=5, knowledge=False)
+    assert sorted(r["phase"] for r in got) == ["medium:p2", "py3.15-x:p1:shell", "py3.15-x:p1:step"]
