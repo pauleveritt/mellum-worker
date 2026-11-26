@@ -27,3 +27,9 @@ def test_steps_are_sampled_and_pathologies_all_kept():
 def test_cut_is_deterministic():
     rows = [row("medium:p2:step", "s", f"s{i}") for i in range(50)]
     assert cut(rows, steps=10, phases=[]) == cut(rows, steps=10, phases=[])
+
+
+def test_training_task_phase_pairs_are_kept_up_to_the_cap():
+    rows = [row("py3.15-sentinel-unset:p1", f"w{i}", f"l{i}") for i in range(30)] + [row("satyrn-x:p1", "w", "l")]
+    got = cut(rows, per_phase=20, phases=[], steps=0)
+    assert len(got) == 20 and all(r["phase"].startswith("py3.") for r in got)

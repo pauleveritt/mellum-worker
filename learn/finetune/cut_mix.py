@@ -6,7 +6,8 @@
 - phase pairs: `--per-phase` for each listed phase, round-robin over distinct rejected runs, so no one losing
   run dominates;
 - step pairs (`...:step`): `--steps` sampled at random;
-- pathology pairs (`...:outside`, `...:unused`): all kept, there are few.
+- training-task pairs (`py3.*:p1`): each task's pass-against-fail pairs, capped and round-robin like a phase;
+- pathology and idiom pairs (`...:outside`, `...:unused`, `...:idiom`): all kept, there are few.
 
 Validation is copied unchanged. Seeded (0), so the same raw set always cuts the same way.
 """
@@ -20,12 +21,14 @@ from pairs_io import read_pairs, write_pairs
 
 PHASES = ["medium:p2", "medium:p3", "medium:p4"]
 PATHOLOGIES = ("outside", "unused", "idiom")
+TASK_PREFIX = "py3."  # py-features-train tasks: each task's pass-against-fail pairs, capped like a phase
 
 
 def cut(rows, per_phase=20, phases=PHASES, steps=60, seed=0):
     rng = random.Random(seed)
     out = []
-    for p in phases:
+    tasks = sorted({r["phase"] for r in rows if r["phase"].startswith(TASK_PREFIX) and r["phase"].count(":") == 1})
+    for p in list(phases) + tasks:
         by_loser = defaultdict(list)
         for r in rows:
             if r["phase"] == p:
