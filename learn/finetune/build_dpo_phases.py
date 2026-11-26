@@ -18,7 +18,8 @@ import argparse, collections, glob, json, os, random, statistics as st, sys
 from pathlib import Path
 
 from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
-                         trusted_outcomes, worked, grader_seen, best_outcomes)
+                         worked, grader_seen, best_outcomes)
+from pairs_io import write_pairs
 from pathology_pairs import outside_search_pairs, render_alt, unused_import_pairs, with_regressions
 
 ap = argparse.ArgumentParser()
@@ -184,8 +185,6 @@ per["steps"] = {"train": len(step_train), "valid": len(step_valid)}
 random.shuffle(train)
 os.makedirs(args.out)
 for name, rows in (("train", train), ("valid", valid)):
-    with open(f"{args.out}/{name}.jsonl", "w") as fh:
-        for r in rows:
-            fh.write(json.dumps(r) + "\n")
+    write_pairs(args.out, name, rows)  # one file per section and part, each under the size limit
 print("per phase:", json.dumps(per))
 print(f"train {len(train)}  valid {len(valid)}  -> {args.out}")

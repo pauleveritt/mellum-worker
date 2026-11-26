@@ -11,11 +11,12 @@
 Validation is copied unchanged. Seeded (0), so the same raw set always cuts the same way.
 """
 import argparse
-import json
 import os
 import random
 import sys
 from collections import defaultdict
+
+from pairs_io import read_pairs, write_pairs
 
 PHASES = ["medium:p2", "medium:p3", "medium:p4"]
 PATHOLOGIES = ("outside", "unused")
@@ -55,13 +56,10 @@ def main():
     a = ap.parse_args()
     if os.path.exists(a.out):
         sys.exit(f"{a.out} already exists; cut into a new versioned folder instead of overwriting it")
-    rows = [json.loads(line) for line in open(f"{a.raw}/train.jsonl")]
-    train = cut(rows, a.per_phase, PHASES, a.steps)
+    train = cut(read_pairs(a.raw, "train"), a.per_phase, PHASES, a.steps)
     os.makedirs(a.out)
-    with open(f"{a.out}/train.jsonl", "w") as fh:
-        fh.writelines(json.dumps(r) + "\n" for r in train)
-    with open(f"{a.raw}/valid.jsonl") as src, open(f"{a.out}/valid.jsonl", "w") as dst:
-        dst.write(src.read())
+    write_pairs(a.out, "train", train)
+    write_pairs(a.out, "valid", read_pairs(a.raw, "valid"))
     counts = defaultdict(int)
     for r in train:
         counts[r["phase"].rsplit(":", 1)[-1] if r["phase"].count(":") > 1 else r["phase"]] += 1

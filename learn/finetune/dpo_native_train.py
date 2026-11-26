@@ -26,12 +26,10 @@ from mlx_lm.tuner.utils import linear_to_lora_layers
 from mlx_lm.models.cache import make_prompt_cache
 from mlx_lm_lora.trainer.dpo_trainer import get_token_scores, dpo_loss
 from chunking import chunk_bounds
+from pairs_io import read_pairs
 from resume import load_checkpoint, plan_updates, save_checkpoint
 
 BASE = "mlx-community/Mellum2-12B-A2.5B-Thinking-4bit"
-
-def load_pairs(path):
-    return [json.loads(l) for l in open(path)]
 
 def arr(ids, mask):
     return (mx.array(np.asarray(ids, np.int32)[None]), mx.array(np.asarray(mask, np.float32)[None]))
@@ -138,7 +136,7 @@ def main():
     a = ap.parse_args()
     BASE = a.model
     np.random.seed(0)
-    train, valid = load_pairs(f"{a.data}/train.jsonl"), load_pairs(f"{a.data}/valid.jsonl")
+    train, valid = read_pairs(a.data, "train"), read_pairs(a.data, "valid")
     policy, _ = build_policy(a.rank, a.scale, a.num_layers); ref = build_ref()
 
     if a.check_grad:

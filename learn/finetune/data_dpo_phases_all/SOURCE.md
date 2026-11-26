@@ -12,3 +12,5 @@ any folder whose name holds `sft`, `tuned`, `dpo`, `onpolicy`, `2bit`, `canary`,
 Result: train 154, valid 6 (held out by trajectory on medium:p4).
 Per phase: medium:p2 47 wins / 1 loss, medium:p3 47 / 1, medium:p4 32 / 14; satyrn all-pass or all-fail (0 pairs).
 Token ids are for the Mellum2.1-12B-A2.5B-Thinking tokenizer.
+
+Split 2026-11-26 into section files under 45 MB each (`pairs_io.py`), so no file nears GitHub's limit. The rows and their order are unchanged: `read_pairs` returns exactly the old `train.jsonl` (sha256 1d2d8dc4bdc806f908bdabc5267a2161dc57b8f28038a698f32ad9fd3c316656).

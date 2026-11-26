@@ -21,3 +21,5 @@ What is new against `data_dpo_mix_raw` (the pathologies the mix120 screens showe
 Both pathology kinds keep the thinking the model wrote and score only the tool call. Phase pairs and step
 pairs are built as in `data_dpo_mix_raw`. Easy and Medium phase 1 never enter (the Easy screen task).
 Train 305 (180 phase, 117 step, 8 pathology), valid 20.
+
+Split 2026-11-26 into section files under 45 MB each (`pairs_io.py`), so no file nears GitHub's limit. The rows and their order are unchanged: `read_pairs` returns exactly the old `train.jsonl` (sha256 4019ac60505def40bff46d21e00a9aa81fa13c8e9c864e7f54e130eddd0c1e8f).
