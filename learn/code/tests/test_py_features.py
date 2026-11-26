@@ -77,3 +77,24 @@ def test_discover_finds_every_task_of_every_version(tmp_path):
     for py in ("3.14", "3.15", "3.16"):
         scaffold(tmp_path, "x", python=py, kind="new-api", pep="PEP 1")
     assert [t.name for t in py_features.discover(tmp_path)] == ["py3.14-x", "py3.15-x", "py3.16-x"]
+
+
+TRAIN = Path(py_features.__file__).resolve().parent / "suites" / "py-features-train"
+
+
+def test_training_tasks_are_kept_apart_from_the_eval():
+    # the eval stays held out: no training task shares a name, a prompt or a grader with an eval task
+    evals, trains = py_features.discover(), py_features.discover(TRAIN)
+    assert trains, "no training tasks"
+    assert not {t.name for t in evals} & {t.name for t in trains}
+    texts = lambda tasks, part: {p.read_text() for t in tasks for p in (t / part).glob("*")}  # noqa: E731
+    for part in ("prompts", "grader"):
+        assert not texts(evals, part) & texts(trains, part), part
+
+
+def test_main_checks_another_root(tmp_path, capsys):
+    task = scaffold(tmp_path, "empty", python="3.14", kind="new-api", pep="PEP 999")
+    with pytest.raises(SystemExit) as done:
+        sys.argv = ["py_features.py", "check", "--root", str(tmp_path), task.name]
+        py_features.main()
+    assert done.value.code == 1 and "FAIL  py3.14-empty" in capsys.readouterr().out

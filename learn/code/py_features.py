@@ -139,6 +139,7 @@ def check(task):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--root", type=Path, default=ROOT, help="the task folder (default: the eval suite)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     new = sub.add_parser("new")
     new.add_argument("name")
@@ -146,12 +147,13 @@ def main():
     new.add_argument("--kind", choices=["new-api", "trap", "fix"], required=True)
     new.add_argument("--pep", required=True)
     chk = sub.add_parser("check")
+    chk.add_argument("--root", type=Path, default=argparse.SUPPRESS)
     chk.add_argument("tasks", nargs="*")
     a = ap.parse_args()
     if a.cmd == "new":
-        print(scaffold(ROOT, a.name, a.python, a.kind, a.pep))
+        print(scaffold(a.root, a.name, a.python, a.kind, a.pep))
         return
-    tasks = [ROOT / t for t in a.tasks] or discover()
+    tasks = [a.root / t for t in a.tasks] or discover(a.root)
     bad = 0
     for task in tasks:
         v = check(task)

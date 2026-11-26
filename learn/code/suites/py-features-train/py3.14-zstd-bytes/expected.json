@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_codec.py::test_encode_makes_a_real_zstandard_frame",
+  "grader_tests/test_codec.py::test_round_trip_at_any_level",
+  "grader_tests/test_codec.py::test_higher_level_is_not_larger_on_repetitive_data"
+]

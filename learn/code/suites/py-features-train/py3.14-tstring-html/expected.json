@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_render.py::test_values_are_escaped_markup_is_kept",
+  "grader_tests/test_render.py::test_quotes_in_values_are_escaped",
+  "grader_tests/test_render.py::test_plain_fragment"
+]
