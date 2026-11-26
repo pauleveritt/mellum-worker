@@ -18,10 +18,10 @@ def test_phase_pairs_round_robin_over_distinct_losers():
 
 def test_steps_are_sampled_and_pathologies_all_kept():
     rows = ([row("medium:p2:step", "s", f"s{i}") for i in range(10)] + [row("medium:p3:outside", "o", "o")]
-            + [row("medium:p4:unused", "u", "u")] + [row("hard:p2", "w", "l")])
+            + [row("medium:p4:unused", "u", "u")] + [row("py3.15-x:p1:idiom", "i", "i")] + [row("hard:p2", "w", "l")])
     got = cut(rows, per_phase=5, phases=["medium:p2"], steps=4)
     kinds = sorted(r["phase"].rsplit(":", 1)[-1] for r in got)
-    assert kinds == ["outside", "step", "step", "step", "step", "unused"]  # hard:p2 is not a listed phase
+    assert kinds == ["idiom", "outside", "step", "step", "step", "step", "unused"]  # hard:p2 is not a listed phase
 
 
 def test_cut_is_deterministic():

@@ -126,3 +126,26 @@ def test_find_regressions_names_the_earlier_phases_each_phase_broke():
     broken = {(3, 1), (4, 1), (4, 2)}  # (phase m's end state, earlier phase k) pairs that fail
     got = find_regressions(own, lambda m, k: (m, k) not in broken)
     assert got == {2: [], 3: [1], 4: [1, 2]}  # phase 1 broke nothing; a phase that never passed can't regress
+
+
+# --- idioms the model doesn't know (training tasks only) ------------------------------------
+
+REF = {"contacts.py": 'UNSET = sentinel("UNSET")\n'}
+
+
+def test_idiom_pairs_swap_the_last_write_of_a_reference_file_for_the_reference():
+    from pathology_pairs import idiom_pairs
+    seg = one_phase(act("write", {"path": "contacts.py", "content": "UNSET = object()\n"}),
+                    act("write", {"path": "tests/test_contacts.py", "content": "x"}),
+                    act("write", {"path": f"{WS}/contacts.py", "content": "class U: pass\nUNSET = U()\n"}))
+    pairs = idiom_pairs(seg, REF, WS)
+    assert [bad for bad, _ in pairs] == [2]  # only the last write of the file counts
+    assert pairs[0][1][0]["arguments"] == {"path": f"{WS}/contacts.py", "content": REF["contacts.py"]}
+
+
+def test_idiom_pairs_skip_a_write_that_already_matches_and_a_file_last_touched_by_edit():
+    from pathology_pairs import idiom_pairs
+    same = one_phase(act("write", {"path": "contacts.py", "content": REF["contacts.py"]}))
+    edited = one_phase(act("write", {"path": "contacts.py", "content": "UNSET = object()\n"}),
+                       act("edit", {"path": "contacts.py", "oldText": "object()", "newText": "None"}))
+    assert idiom_pairs(same, REF, WS) == [] and idiom_pairs(edited, REF, WS) == []

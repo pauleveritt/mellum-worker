@@ -11,7 +11,7 @@ from collections import defaultdict
 from pathlib import Path
 
 MAX_BYTES = 45_000_000  # under GitHub's 50 MB warning, well under its 100 MB refusal
-KINDS = ("step", "outside", "unused")
+KINDS = ("step", "outside", "unused", "idiom")
 
 
 def section(row):

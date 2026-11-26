@@ -109,3 +109,32 @@ def with_regressions(outcome, record):
     broke = {int(p) for p, earlier in (record.get("regressed") or {}).items() if earlier}
     return {p: ok and p not in broke for p, ok in outcome.items()}
 
+
+
+def _rel(path, workspace):
+    root = workspace.rstrip("/") + "/"
+    path = path[len(root):] if path.startswith(root) else path
+    return path[2:] if path.startswith("./") else path
+
+
+def idiom_pairs(seg, reference, workspace):
+    """(act index, chosen calls): the last write of each reference file, with the reference content instead.
+
+    For training tasks only (py-features-train), never an eval task: a run that wrote the old workaround (a
+    hand-made sentinel, a gzip stand-in) gets the same write carrying the idiom the task needs. A file whose last
+    change in the phase was an edit, or whose write already matches, gives no pair."""
+    acts, last = seg["acts"], {}
+    for k in range(len(acts) - seg["n_phase"], len(acts)):
+        for c in _calls(acts[k]):
+            if c.get("name") in ("write", "edit"):
+                last[_rel(str((c.get("arguments") or {}).get("path") or ""), workspace)] = (k, c)
+    out = {}
+    for rel, text in reference.items():
+        if rel not in last:
+            continue
+        k, c = last[rel]
+        if c.get("name") != "write" or (c["arguments"].get("content") or "") == text:
+            continue
+        calls = out.get(k) or list(_calls(acts[k]))
+        out[k] = [_alt(x, {**x["arguments"], "content": text}) if x is c else x for x in calls]
+    return sorted(out.items())

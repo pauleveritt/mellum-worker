@@ -17,6 +17,7 @@ def rows():
 
 def test_section_names_the_pair_kind():
     assert [section(r) for r in rows()[:6]] == ["phase", "step", "outside", "phase", "unused", "step"]
+    assert section({"phase": "py3.15-x:p1:idiom"}) == "idiom"
 
 
 def test_write_splits_by_section_and_size_and_reads_back_in_order(tmp_path):

@@ -19,7 +19,7 @@ from collections import defaultdict
 from pairs_io import read_pairs, write_pairs
 
 PHASES = ["medium:p2", "medium:p3", "medium:p4"]
-PATHOLOGIES = ("outside", "unused")
+PATHOLOGIES = ("outside", "unused", "idiom")
 
 
 def cut(rows, per_phase=20, phases=PHASES, steps=60, seed=0):

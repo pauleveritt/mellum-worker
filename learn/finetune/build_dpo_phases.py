@@ -20,7 +20,7 @@ from pathlib import Path
 from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
                          worked, grader_seen, best_outcomes)
 from pairs_io import write_pairs
-from pathology_pairs import outside_search_pairs, render_alt, unused_import_pairs, with_regressions
+from pathology_pairs import idiom_pairs, outside_search_pairs, render_alt, unused_import_pairs, with_regressions
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -42,6 +42,9 @@ ap.add_argument("--steps", action="store_true",
 ap.add_argument("--pathologies", action="store_true",
                 help="also emit pathology pairs: a search outside the workspace against the same search "
                      "aimed at it, and a write leaving an unused import against the same write without it")
+ap.add_argument("--idioms-root", default=None,
+                help="training-task folder (py-features-train): a failed run on one of its tasks also gives idiom "
+                     "pairs, its last write of each reference file against the same write with the reference")
 ap.add_argument("--valid-step-every", type=int, default=10,
                 help="every Nth run's step pairs go to validation (held out by trajectory)")
 ap.add_argument("--out", required=True)
@@ -146,6 +149,14 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
         regress = json.loads(pr.read_text()) if pr.is_file() else None
         why["regressed-phases"] += sum(1 for v in ((regress or {}).get("regressed") or {}).values() if v)
         outcome = with_regressions(outcome, regress)
+        if args.idioms_root and outcome.get(1) is False:
+            ref_dir = Path(args.idioms_root) / str(run.get("suite")) / "fixtures" / "reference"
+            if ref_dir.is_dir():
+                ref = {str(p.relative_to(ref_dir)): p.read_text() for p in ref_dir.rglob("*.py")}
+                for seg in segs:
+                    emit_alt(seg, f"{run.get('suite')}:p{seg['phase']}", Path(f).parent.name,
+                             n_runs % args.valid_step_every == 0, "idiom",
+                             idiom_pairs(seg, ref, str(Path(f).parent / "workspace")))
         for seg in segs:
             p = seg["phase"]
             if (not keep_all and p in args.exclude) or p not in outcome:
