@@ -50,6 +50,11 @@ def grade_module(files, suite, n):
     return {t for t in mod if f"PASSED {t}" not in text}
 
 
+def find_regressions(own, passes):
+    """{phase m: [earlier phases k it broke]}: k passed at its own end but fails on m's end state."""
+    return {m: [k for k in sorted(own) if k < m and own[k] and not passes(m, k)] for m in sorted(own) if m > 1}
+
+
 def grade(files, suite):
     with tempfile.TemporaryDirectory() as tmp:
         ws = Path(tmp) / "ws"
@@ -65,14 +70,23 @@ def grade(files, suite):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("roots", nargs="+")
+    ap.add_argument("--regressions", action="store_true",
+                    help="for runs already graded and verified, also record which earlier phases each phase broke "
+                         "(phase_regressions.json)")
     a = ap.parse_args()
     suites = {}
     for root in a.roots:
         for f in sorted(glob.glob(f"{root}/**/run.json", recursive=True)):
             run = json.load(open(f)); d = Path(f).parent
             name = run.get("suite")
-            if not name or not (d / "trace.jsonl").is_file() or (d / "phase_grades.json").is_file():
+            done = d / ("phase_regressions.json" if a.regressions else "phase_grades.json")
+            if not name or not (d / "trace.jsonl").is_file() or done.is_file():
                 continue
+            if a.regressions:
+                pg = d / "phase_grades.json"
+                graded = json.loads(pg.read_text()) if pg.is_file() else {}
+                if not graded.get("verified"):
+                    continue
             if name not in suites:
                 try:
                     suites[name] = harness.load_suite(ROOT / "learn" / "code" / "suites", name)
@@ -84,6 +98,17 @@ def main():
             rows = [json.loads(line) for line in open(d / "trace.jsonl") if line.strip()]
             snaps = phase_snapshots(read_base(suite.root / "base"), rows, str(d / "workspace"))
             recorded = set(run.get("missing_checks") or [])
+            if a.regressions:
+                own = {int(k): v for k, v in graded["phases"].items()}
+
+                def passes(m, k):
+                    if m == len(snaps):
+                        return not (set(t for t in suite.expected if f"test_phase{k}_" in t) & recorded)
+                    return not grade_module(snaps[m - 1], suite, k)
+                regressed = find_regressions(own, passes)
+                done.write_text(json.dumps({"verified": True, "regressed": regressed}) + "\n")
+                print(f"{d.name}: regressed={regressed}", flush=True)
+                continue
             final = grade(snaps[-1], suite) if snaps else None
             verified = final == recorded and bool(run.get("checks_ran"))
             phases = {}

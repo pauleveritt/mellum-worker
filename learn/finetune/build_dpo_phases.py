@@ -19,6 +19,7 @@ from pathlib import Path
 
 from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
                          trusted_outcomes, worked, grader_seen, best_outcomes)
+from pathology_pairs import outside_search_pairs, render_alt, unused_import_pairs, with_regressions
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -37,6 +38,9 @@ ap.add_argument("--valid-loss", type=int, default=3)
 ap.add_argument("--max-pairs-per-phase", type=int, default=60)
 ap.add_argument("--steps", action="store_true",
                 help="also emit step pairs: a failed tool call against the call that recovered from it")
+ap.add_argument("--pathologies", action="store_true",
+                help="also emit pathology pairs: a search outside the workspace against the same search "
+                     "aimed at it, and a write leaving an unused import against the same write without it")
 ap.add_argument("--valid-step-every", type=int, default=10,
                 help="every Nth run's step pairs go to validation (held out by trajectory)")
 ap.add_argument("--out", required=True)
@@ -91,6 +95,21 @@ def emit_steps(seg, key, src, to_valid):
             {"phase": key + ":step", "chosen": recs[0]["ids"], "chosen_mask": recs[0]["mask"],
              "rejected": recs[1]["ids"], "rejected_mask": recs[1]["mask"], "src": [f"{src}@{bad}"] * 2})
         why["step-ok"] += 1
+def emit_alt(seg, key, src, to_valid, kind, pairs):
+    for bad, calls in pairs:
+        r = render_alt(seg, bad, calls, cap=cap)
+        if r is None:
+            why[f"{kind}-misaligned"] += 1; continue
+        recs = [encode(m, [max(i for i, x in enumerate(m) if x["role"] == "assistant")], seg["payload"].get("tools"),
+                       calls_only=True) for m in r]
+        if None in recs or max(len(x["ids"]) for x in recs) > args.budget:
+            why[f"{kind}-dropped"] += 1; continue
+        (step_valid if to_valid else step_train).append(
+            {"phase": f"{key}:{kind}", "chosen": recs[0]["ids"], "chosen_mask": recs[0]["mask"],
+             "rejected": recs[1]["ids"], "rejected_mask": recs[1]["mask"], "src": [f"{src}@{bad}"] * 2})
+        why[f"{kind}-ok"] += 1
+
+
 for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in args.source_all_phases]:
     for f in sorted(glob.glob(f"{root}/**/run.json", recursive=True)):
         run = json.load(open(f)); trace = Path(f).with_name("trace.jsonl")
@@ -104,18 +123,28 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
             why["contaminated-or-no-trace"] += 1; continue
         rows = [json.loads(line) for line in open(trace) if line.strip()]
         segs = segment_trace(rows)
-        if args.steps:
+        if args.steps or args.pathologies:
             n_runs += 1
+            ws = str(Path(f).parent / "workspace")
             for seg in segs:
                 if keep_all or seg["phase"] not in args.exclude:
-                    emit_steps(seg, f"{run.get('suite')}:p{seg['phase']}", Path(f).parent.name,
-                               n_runs % args.valid_step_every == 0)
+                    key, src = f"{run.get('suite')}:p{seg['phase']}", Path(f).parent.name
+                    to_valid = n_runs % args.valid_step_every == 0
+                    if args.steps:
+                        emit_steps(seg, key, src, to_valid)
+                    if args.pathologies:
+                        emit_alt(seg, key, src, to_valid, "outside", outside_search_pairs(seg, ws))
+                        emit_alt(seg, key, src, to_valid, "unused", unused_import_pairs(seg))
         if not outcome:
             why["no-grade"] += 1; continue
         pg = Path(f).with_name("phase_grades.json")
         graded = json.loads(pg.read_text()) if pg.is_file() else None
         why["phase-graded"] += bool(graded and graded.get("verified"))
         outcome = best_outcomes(outcome, graded, reached=len(segs))
+        pr = Path(f).with_name("phase_regressions.json")
+        regress = json.loads(pr.read_text()) if pr.is_file() else None
+        why["regressed-phases"] += sum(1 for v in ((regress or {}).get("regressed") or {}).values() if v)
+        outcome = with_regressions(outcome, regress)
         for seg in segs:
             p = seg["phase"]
             if (not keep_all and p in args.exclude) or p not in outcome:
