@@ -143,12 +143,40 @@ def test_idiom_pairs_swap_the_last_write_of_a_reference_file_for_the_reference()
     assert pairs[0][1][0]["arguments"] == {"path": f"{WS}/contacts.py", "content": REF["contacts.py"]}
 
 
-def test_idiom_pairs_skip_a_write_that_already_matches_and_a_file_last_touched_by_edit():
+def test_idiom_pairs_skip_a_write_that_already_matches():
     from pathology_pairs import idiom_pairs
     same = one_phase(act("write", {"path": "contacts.py", "content": REF["contacts.py"]}))
-    edited = one_phase(act("write", {"path": "contacts.py", "content": "UNSET = object()\n"}),
-                       act("edit", {"path": "contacts.py", "oldText": "object()", "newText": "None"}))
-    assert idiom_pairs(same, REF, WS) == [] and idiom_pairs(edited, REF, WS) == []
+    assert idiom_pairs(same, REF, WS) == []
+
+
+def edit(path, *pairs):
+    return act("edit", {"path": path, "edits": [{"oldText": o, "newText": n} for o, n in pairs]})
+
+
+START = {"contacts.py": '"""Contact records."""\n'}
+
+
+def test_idiom_pairs_turn_a_last_edit_into_the_same_edit_reaching_the_reference():
+    """The task file already exists, so most runs edit it: replay the file from the task's starting copy, then the
+    chosen call is an edit from what the file held at that point to the reference."""
+    from pathology_pairs import idiom_pairs
+    seg = with_results(
+        (edit("contacts.py", ('"""Contact records."""', '"""Contact records."""\n\nUNSET = object()')),
+         res("ok", error=False)),
+        (edit("contacts.py", ("UNSET = nothing", "x")), res("Could not find the exact text", error=True)),  # failed
+        (edit(f"{WS}/contacts.py", ("object()", "type('U', (), {})()")), res("ok", error=False)))
+    pairs = idiom_pairs(seg, REF, WS, START)
+    assert [bad for bad, _ in pairs] == [2]
+    before = '"""Contact records."""\n\nUNSET = object()\n'  # the edit before it applied; the failed one didn't
+    assert pairs[0][1][0]["arguments"] == {"path": f"{WS}/contacts.py",
+                                           "edits": [{"oldText": before, "newText": REF["contacts.py"]}]}
+
+
+def test_idiom_pairs_skip_an_edit_whose_file_state_cannot_be_replayed():
+    from pathology_pairs import idiom_pairs
+    seg = with_results((edit("contacts.py", ("text the start never had", "x")), res("ok", error=False)))
+    assert idiom_pairs(seg, REF, WS, START) == []  # the recorded edit worked, so our replay is wrong: no pair
+    assert idiom_pairs(seg, REF, WS) == []  # no starting copy: no edit pair
 
 
 # --- malformed shell commands (quoting, python -c, flags this shell lacks) -----------------

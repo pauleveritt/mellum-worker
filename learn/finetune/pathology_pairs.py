@@ -117,28 +117,70 @@ def _rel(path, workspace):
     return path[2:] if path.startswith("./") else path
 
 
-def idiom_pairs(seg, reference, workspace):
-    """(act index, chosen calls): the last write of each reference file, with the reference content instead.
+def _replay(content, edits):
+    """`content` with each edit applied in turn, or None if an edit's old text isn't there."""
+    for e in edits or []:
+        old = (e or {}).get("oldText")
+        if not isinstance(old, str) or old not in content:
+            return None
+        content = content.replace(old, e.get("newText") or "", 1)
+    return content
+
+
+def idiom_pairs(seg, reference, workspace, start=None):
+    """(act index, chosen calls): the last change to each reference file, carrying the reference instead.
 
     For training tasks only (py-features-train), never an eval task: a run that wrote the old workaround (a
-    hand-made sentinel, a gzip stand-in) gets the same write carrying the idiom the task needs. A file whose last
-    change in the phase was an edit, or whose write already matches, gives no pair."""
-    acts, last = seg["acts"], {}
+    hand-made sentinel, a gzip stand-in) gets the same call carrying the idiom the task needs.
+
+    - a last `write` becomes the same write with the reference content;
+    - a last `edit` becomes one edit from what the file held at that point to the reference. The file is
+      replayed from the task's starting copy (`start`) through every change that worked; if the replay disagrees
+      with the recording (an edit the trace says worked can't apply), or there is no starting copy, no pair.
+
+    A change that already leaves the reference gives no pair."""
+    acts, errs = seg["acts"], seg.get("errs") or {}
+    state = dict(start or {})
+    known = set(state)
+    last, before = {}, {}
     for k in range(len(acts) - seg["n_phase"], len(acts)):
-        for c in _calls(acts[k]):
-            if c.get("name") in ("write", "edit"):
-                last[_rel(str((c.get("arguments") or {}).get("path") or ""), workspace)] = (k, c)
+        results = errs.get(k) or []
+        for j, c in enumerate(_calls(acts[k])):
+            if c.get("name") not in ("write", "edit"):
+                continue
+            args = c.get("arguments") or {}
+            rel = _rel(str(args.get("path") or ""), workspace)
+            failed = j < len(results) and results[j][1]
+            before[(k, rel)] = state.get(rel) if rel in known else None
+            if not failed:
+                last[rel] = (k, c)
+                if c["name"] == "write":
+                    state[rel] = args.get("content") or ""
+                    known.add(rel)
+                elif rel in known:
+                    replayed = _replay(state[rel], args.get("edits"))
+                    if replayed is None:
+                        known.discard(rel)  # our copy no longer matches the run's file
+                    else:
+                        state[rel] = replayed
     out = {}
     for rel, text in reference.items():
         if rel not in last:
             continue
         k, c = last[rel]
-        if c.get("name") != "write" or (c["arguments"].get("content") or "") == text:
-            continue
+        args = c["arguments"]
+        if c.get("name") == "write":
+            if (args.get("content") or "") == text:
+                continue
+            alt = {**args, "content": text}
+        else:
+            held = before.get((k, rel))
+            if held is None or rel not in known or held == text or state.get(rel) == text:
+                continue
+            alt = {"path": args.get("path"), "edits": [{"oldText": held, "newText": text}]}
         calls = out.get(k) or list(_calls(acts[k]))
-        out[k] = [_alt(x, {**x["arguments"], "content": text}) if x is c else x for x in calls]
+        out[k] = [_alt(x, alt) if x is c else x for x in calls]
     return sorted(out.items())
-
 
 SHELL_SHAPES = (
     ("quote", re.compile(r"/bin/(ba|z)?sh: .*(unexpected EOF while looking for matching|syntax error)")),

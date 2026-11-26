@@ -157,10 +157,12 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
             ref_dir = Path(args.idioms_root) / str(run.get("suite")) / "fixtures" / "reference"
             if ref_dir.is_dir():
                 ref = {str(p.relative_to(ref_dir)): p.read_text() for p in ref_dir.rglob("*.py")}
+                base_dir = ref_dir.parents[1] / "base"  # the task's starting files, to replay edits from
+                start = {r: (base_dir / r).read_text() for r in ref if (base_dir / r).is_file()}
                 for seg in segs:
                     emit_alt(seg, f"{run.get('suite')}:p{seg['phase']}", Path(f).parent.name,
                              n_runs % args.valid_step_every == 0, "idiom",
-                             idiom_pairs(seg, ref, str(Path(f).parent / "workspace")))
+                             idiom_pairs(seg, ref, str(Path(f).parent / "workspace"), start))
         for seg in segs:
             p = seg["phase"]
             if (not keep_all and p in args.exclude) or p not in outcome:
