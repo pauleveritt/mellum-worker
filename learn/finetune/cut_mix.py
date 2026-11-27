@@ -24,7 +24,7 @@ from collections import defaultdict
 from pairs_io import read_pairs, write_pairs
 
 PHASES = ["medium:p2", "medium:p3", "medium:p4"]
-PATHOLOGIES = ("outside", "unused", "shell", "idiom")
+PATHOLOGIES = ("outside", "unused", "shell", "reread", "cleanup", "idiom")
 KNOWLEDGE = ("idiom",)
 TASK_PREFIX = "py3."  # py-features-train tasks: each task's pass-against-fail pairs, capped like a phase
 

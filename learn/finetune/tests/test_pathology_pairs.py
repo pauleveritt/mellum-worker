@@ -190,7 +190,8 @@ def with_results(*pairs):
     rows, ctx = [{"type": "instance_start"}], [SYS, U1]
     for a, r in pairs:
         rows += [req(list(ctx)), a] + ([r] if r else [])
-        ctx += [hist(a["message"]["content"][2]["name"]), TOOL]
+        calls = [x for x in a["message"]["content"] if x.get("type") == "toolCall"]
+        ctx += [hist(calls[0]["name"]), TOOL] if calls else [{"role": "assistant", "content": "Done."}]
     return segment_trace(rows)[0]
 
 
@@ -219,3 +220,58 @@ def test_shell_pairs_take_the_clean_bash_retry_as_chosen():
         (act("bash", {"command": "uv run pytest"}), res("1 failed")),
         (act("bash", {"command": "uv run pytest"}), res("1 passed", error=False)))
     assert shell_pairs(seg) == [(0, 1)]  # flag fault has no bash retry; a red test run is not a fault
+
+
+# --- re-read after a failed edit --------------------------------------------------------------
+
+MISS = "Could not find the exact text in tests/test_app.py. The old text must match exactly"
+
+
+def test_reread_pairs_swap_a_second_blind_edit_for_a_read_of_the_file():
+    """An edit that failed, then another edit to the same file straight away, which failed too: the second
+    call should have read the file first."""
+    from pathology_pairs import reread_pairs
+    seg = with_results(
+        (edit("tests/test_app.py", ("a", "b")), res(MISS)),
+        (edit("tests/test_app.py", ("a", "b")), res(MISS)),            # the same blind edit again
+        (act("read", {"path": "tests/test_app.py"}), res("x", error=False)),
+        (edit("tests/test_app.py", ("x", "y")), res("ok", error=False)),
+        (edit("app.py", ("c", "d")), res("Could not find the exact text in app.py.")),
+        (act("read", {"path": "app.py"}), res("c", error=False)))     # recovered properly: no pair
+    pairs = reread_pairs(seg)
+    assert [bad for bad, _ in pairs] == [1]
+    call = pairs[0][1][0]
+    assert call["name"] == "read" and call["arguments"] == {"path": "tests/test_app.py"}
+
+
+def test_reread_pairs_need_the_second_edit_to_fail_on_the_same_file():
+    from pathology_pairs import reread_pairs
+    seg = with_results((edit("a.py", ("a", "b")), res(MISS)), (edit("a.py", ("q", "r")), res("ok", error=False)),
+                       (edit("b.py", ("a", "b")), res(MISS)), (edit("c.py", ("a", "b")), res(MISS)))
+    assert reread_pairs(seg) == []
+
+
+# --- leave no scratch files behind ------------------------------------------------------------
+
+def test_scratch_files_are_model_written_py_outside_the_layout_that_nothing_imports():
+    from pathology_pairs import scratch_files
+    files = {"app.py": "from models import Item\n", "models.py": "class Item: ...\n",
+             "debug.py": "from app import app\nprint(app)\n", "check_routes.py": "import app\n",
+             "main.py": "import uvicorn\n", "helpers.py": "X = 1\n", "app2.py": "from helpers import X\n"}
+    out_of_layout = ["debug.py", "check_routes.py", "main.py", "models.py", "helpers.py", "uv.lock", "__init__.py"]
+    written = {"debug.py", "check_routes.py", "main.py", "models.py", "helpers.py", "app.py", "app2.py"}
+    assert scratch_files(out_of_layout, written, files) == ["check_routes.py", "debug.py"]
+    # main.py is a conventional entrypoint; models.py and helpers.py are imported; uv.lock is not code
+
+
+def test_cleanup_pairs_add_a_delete_before_the_final_answer():
+    from pathology_pairs import cleanup_pairs
+    final = {"type": "message_end", "message": {"role": "assistant", "content": [
+        {"type": "thinking", "thinking": "all green"}, {"type": "text", "text": "Done."}]}}
+    seg = with_results((act("write", {"path": "debug.py", "content": "print(1)\n"}), res("ok", error=False)),
+                       (final, None))
+    pairs = cleanup_pairs(seg, ["check_routes.py", "debug.py"])
+    assert [bad for bad, _ in pairs] == [1]
+    assert pairs[0][1][0]["name"] == "bash"
+    assert pairs[0][1][0]["arguments"] == {"command": "rm -f check_routes.py debug.py"}
+    assert cleanup_pairs(seg, []) == []

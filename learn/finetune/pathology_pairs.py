@@ -210,3 +210,53 @@ def shell_pairs(seg):
         if bad and nxt and not any(e[1] for e in nxt) and retry and set(retry) == {"bash"}:
             out.append((k, k + 1))
     return out
+
+
+def _single(act, name):
+    calls = _calls(act)
+    return calls[0] if len(calls) == 1 and calls[0].get("name") == name else None
+
+
+def reread_pairs(seg):
+    """(act index, chosen calls): an edit made straight after a failed edit to the same file, which failed too.
+
+    The model tried the same blind edit again instead of looking at what the file holds now; the chosen call
+    reads the file. Only a second edit that also failed counts, so the pair never punishes a fix that worked."""
+    acts, errs = seg["acts"], seg.get("errs") or {}
+    out = []
+    for k in range(len(acts) - seg["n_phase"], len(acts) - 1):
+        first, second = _single(acts[k], "edit"), _single(acts[k + 1], "edit")
+        e0, e1 = errs.get(k) or [], errs.get(k + 1) or []
+        if not (first and second and e0 and e1 and e0[0][1] and e1[0][1]):
+            continue
+        path = (first.get("arguments") or {}).get("path")
+        if path and path == (second.get("arguments") or {}).get("path"):
+            out.append((k + 1, [{**second, "name": "read", "arguments": {"path": path}}]))
+    return out
+
+
+ENTRYPOINTS = {"app.py", "main.py", "wsgi.py", "asgi.py", "server.py", "manage.py", "__init__.py", "conftest.py"}
+
+
+def scratch_files(out_of_layout, written, files):
+    """Throwaway scripts the model left behind: a `.py` it wrote itself, outside the task's layout, that no other
+    file imports and that is not a conventional entrypoint (`debug.py`, `check_routes.py`, `inspect_app.py`)."""
+    out = []
+    for rel in sorted(out_of_layout or []):
+        name = PurePosixPath(rel)
+        if name.suffix != ".py" or name.name in ENTRYPOINTS or rel not in written:
+            continue
+        mod = re.escape(str(name.with_suffix("")).replace("/", "."))
+        used = re.compile(rf"^\s*(from\s+{mod}\s+import|import\s+{mod}\b)", re.M)
+        if not any(used.search(text) for other, text in files.items() if other != rel):
+            out.append(rel)
+    return out
+
+
+def cleanup_pairs(seg, scratch):
+    """(act index, chosen calls): the final answer of a run that left scratch files, against deleting them first."""
+    acts = seg["acts"]
+    if not scratch or not acts or _calls(acts[-1]):
+        return []
+    return [(len(acts) - 1, [{"type": "toolCall", "name": "bash", "id": "cleanup",
+                              "arguments": {"command": "rm -f " + " ".join(scratch)}}])]

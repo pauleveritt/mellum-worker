@@ -154,12 +154,22 @@ def render_step(seg, bad, fix, cap=lambda text: text):
     return prefix + [_call_turn(acts[bad], acts[fix])], prefix + [_call_turn(acts[bad], acts[bad])]
 
 
+TURN_END = "<|im_end|>"
+
+
 def scored_span(text, start, end, calls_only):
-    """The character span to score inside an assistant turn: all of it, or from its first tool call."""
+    """The character span to score inside an assistant turn: all of it, or from its first real tool call.
+
+    A real call comes after the thinking (a call written inside `<think>` is text, not a call). A turn with no
+    call (a final answer paired against a call) scores only its end-of-turn token: the choice to stop."""
     if calls_only:
-        at = text.find("<tool_call>", start, end)
+        think = text.find("</think>", start, end)
+        after = think + len("</think>") if think >= 0 else start
+        at = text.find("<tool_call>", after, end)
         if at >= 0:
             return at, end
+        if text.endswith(TURN_END, start, end):
+            return end - len(TURN_END), end
     return start, end
 
 

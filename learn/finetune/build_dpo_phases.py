@@ -20,8 +20,9 @@ from pathlib import Path
 from phase_pairs import (phase_outcomes, render_segment, render_step, scored_span, segment_trace, step_pairs,
                          worked, grader_seen, best_outcomes)
 from pairs_io import write_pairs
-from pathology_pairs import (idiom_pairs, outside_search_pairs, render_alt, shell_pairs, unused_import_pairs,
-                             with_regressions)
+from pathology_pairs import (cleanup_pairs, idiom_pairs, outside_search_pairs, render_alt, reread_pairs,
+                             scratch_files, shell_pairs, unused_import_pairs, with_regressions)
+from phase_pairs import _calls
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--source", action="append", default=[], help="run-record root(s) to mine")
@@ -44,7 +45,8 @@ ap.add_argument("--pathologies", action="store_true",
                 help="also emit pathology pairs: a search outside the workspace against the same search "
                      "aimed at it, a write leaving an unused import against the same write without it, and a bash "
                      "command that failed on its own shape (quoting, a python -c that can't parse, a missing flag) "
-                     "against the clean bash retry that followed")
+                     "against the clean bash retry that followed, a second blind edit after a failed one against reading "
+                     "the file, and a final answer that leaves scratch scripts behind against deleting them first")
 ap.add_argument("--idioms-root", default=None,
                 help="training-task folder (py-features-train): a failed run on one of its tasks also gives idiom "
                      "pairs, its last write of each reference file against the same write with the reference")
@@ -133,6 +135,13 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
         if args.steps or args.pathologies:
             n_runs += 1
             ws = str(Path(f).parent / "workspace")
+            scratch = []
+            if args.pathologies:
+                written = {str((c.get("arguments") or {}).get("path") or "").removeprefix(ws + "/").removeprefix("./")
+                           for a in (segs[-1]["acts"] if segs else []) for c in _calls(a) if c.get("name") == "write"}
+                files = {str(q.relative_to(ws)): q.read_text(errors="ignore") for q in Path(ws).rglob("*.py")
+                         if ".venv" not in q.parts} if Path(ws).is_dir() else {}
+                scratch = scratch_files(run.get("out_of_layout"), written, files)
             for seg in segs:
                 if keep_all or seg["phase"] not in args.exclude:
                     key, src = f"{run.get('suite')}:p{seg['phase']}", Path(f).parent.name
@@ -143,6 +152,9 @@ for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in ar
                         emit_alt(seg, key, src, to_valid, "outside", outside_search_pairs(seg, ws))
                         emit_alt(seg, key, src, to_valid, "unused", unused_import_pairs(seg))
                         emit_steps(seg, key, src, to_valid, "shell", shell_pairs(seg))
+                        emit_alt(seg, key, src, to_valid, "reread", reread_pairs(seg))
+                        if seg is segs[-1]:
+                            emit_alt(seg, key, src, to_valid, "cleanup", cleanup_pairs(seg, scratch))
         if not outcome:
             why["no-grade"] += 1; continue
         pg = Path(f).with_name("phase_grades.json")

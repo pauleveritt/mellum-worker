@@ -195,3 +195,18 @@ def test_scored_span_can_start_at_the_tool_call():
     start, end = len("<|im_start|>assistant\n"), len(text)
     assert scored_span(text, start, end, calls_only=False) == (start, end)
     assert text[slice(*scored_span(text, start, end, calls_only=True))].startswith("<tool_call>")
+
+
+def test_scored_span_ignores_a_tool_call_written_inside_the_thinking():
+    from phase_pairs import scored_span
+    text = '<think>\nmaybe <tool_call>{"name": "read"}</tool_call>\n</think>\n\n<tool_call>{"name": "bash"}</tool_call><|im_end|>'
+    s, e = scored_span(text, 0, len(text), calls_only=True)
+    assert text[s:e] == '<tool_call>{"name": "bash"}</tool_call><|im_end|>'
+
+
+def test_scored_span_without_a_call_scores_only_the_end_of_the_turn():
+    """A final answer against a tool call (cleanup pairs): only the choice to stop differs, not the thinking."""
+    from phase_pairs import scored_span
+    text = "<think>\nall tests pass\n</think>\n\nDone.<|im_end|>"
+    s, e = scored_span(text, 0, len(text), calls_only=True)
+    assert text[s:e] == "<|im_end|>"
