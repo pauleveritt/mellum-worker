@@ -131,6 +131,13 @@ def _size(n):
     return f"{n / 1e9:.1f} GB" if n >= 1e9 else f"{n / 1e6:.1f} MB"
 
 
+def _schedule(info):
+    total = info.get("total_updates")
+    if total and total != info["updates"]:
+        return f"{total} updates; this is the checkpoint taken at update {info['updates']}, about {info['updates'] * 4} pairs in"
+    return f"{info['updates']} updates"
+
+
 def render_card(info):
     """The model card: what it is, how to run it, how it was made, what it scored and where it falls short."""
     repo, gguf, commit = info["repo"], info["gguf"], info["commit"]
@@ -195,7 +202,7 @@ to `~/.pi/agent/models.json`:
   of the base model.
 - **Adapter:** LoRA rank 8, scale 2.0, 81.3M trainable parameters, merged into the dequantised base before
   conversion.
-- **Schedule:** {info["pairs"]} pairs, 1 epoch, 4 pairs per update ({info["updates"]} updates), learning rate 2e-5,
+- **Schedule:** {info["pairs"]} pairs, 1 epoch, 4 pairs per update ({_schedule(info)}), learning rate 2e-5,
   sequences up to 41,000 tokens processed in 2,048-token chunks.
 - **Hardware:** Apple M3 Max with MLX (`mlx-lm` 0.32.2); conversion with llama.cpp `convert_hf_to_gguf.py` and
   `llama-quantize`.
@@ -269,7 +276,8 @@ def main():
     ap.add_argument("--results", type=Path, required=True, help="JSON list of {screen, model, passed, n, faults_per_100}")
     ap.add_argument("--data", required=True, help="repo path of the training set")
     ap.add_argument("--pairs", type=int, required=True)
-    ap.add_argument("--updates", type=int, required=True)
+    ap.add_argument("--updates", type=int, required=True, help="the published checkpoint's update")
+    ap.add_argument("--total-updates", type=int, help="updates in the whole run, if the checkpoint is earlier")
     ap.add_argument("--heldout-margin", type=float, required=True)
     ap.add_argument("--stage", type=Path, required=True)
     ap.add_argument("--smoke-url", help="a llama-server serving --gguf with --jinja, e.g. http://127.0.0.1:8001/v1")
@@ -291,7 +299,7 @@ def main():
     sums = sha256_lines([a.gguf])
     a.stage.mkdir(parents=True, exist_ok=True)
     info = {"repo": a.repo, "gguf": a.gguf.name, "commit": commit, "data": a.data, "pairs": a.pairs,
-            "updates": a.updates, "heldout_margin": a.heldout_margin, "results": json.loads(a.results.read_text()),
+            "updates": a.updates, "total_updates": a.total_updates, "heldout_margin": a.heldout_margin, "results": json.loads(a.results.read_text()),
             "name": a.name, "kinds": pair_kinds(Path(__file__).resolve().parents[2] / a.data),
             "files": [(a.gguf.name, a.gguf.stat().st_size, sums[0].split()[0])]}
     (a.stage / "README.md").write_text(render_card(info))

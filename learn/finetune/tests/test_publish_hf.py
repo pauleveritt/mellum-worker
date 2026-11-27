@@ -103,3 +103,13 @@ def test_pair_kinds_are_counted_from_the_set_files(tmp_path):
     (tmp_path / "train.reread.01.jsonl").write_text("{}\n")
     (tmp_path / "valid.step.01.jsonl").write_text("{}\n")
     assert pair_kinds(tmp_path) == {"step": 3, "reread": 1}
+
+
+def test_an_early_checkpoint_says_where_it_stopped():
+    card = render_card({**INFO, "pairs": 262, "updates": 15, "total_updates": 66})
+    assert "66 updates" in card and "checkpoint taken at update 15" in card
+    assert "(15 updates)" not in card
+
+
+def test_a_full_run_states_its_updates():
+    assert "(30 updates)" in render_card(INFO)
