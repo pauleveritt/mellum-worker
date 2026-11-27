@@ -1,0 +1,542 @@
+{
+  "name": "tools",
+  "created": "2026-11-27T05:16:32+00:00",
+  "machine": "Darwin arm64 Macs-MacBook-Pro.local",
+  "git": {
+    "commit": "28036e2bac2f8e75b33263d22926c6ef6f0ea2c1",
+    "dirty": true
+  },
+  "data": {
+    "dir": "data_dpo_mix_tools",
+    "source_md": true,
+    "files": {
+      "train.outside.01.jsonl": {
+        "sha256": "4d28debb468b299c960af162136b83c1660ec9e0053367380d3ab0c229224dac",
+        "rows": 6
+      },
+      "train.phase.01.jsonl": {
+        "sha256": "9187e6b5ec61ddacdb2eabf6b408e9ffef0b693c16d5375c11dae6a04baf22a0",
+        "rows": 60
+      },
+      "train.shell.01.jsonl": {
+        "sha256": "38bcc366400ec963a200a8095e3e71dee3f504b605f833efff16a80928cf9e56",
+        "rows": 31
+      },
+      "train.step.01.jsonl": {
+        "sha256": "8ed95029ed2f68984b46494327ab33139caa9ad01605571d53081c6fb87d68c1",
+        "rows": 158
+      },
+      "train.unused.01.jsonl": {
+        "sha256": "e299c8630d003c9a9c61fdb35473b6bcf8478d7d115acc142174af83377c9263",
+        "rows": 7
+      },
+      "valid.idiom.01.jsonl": {
+        "sha256": "27e7897be15ebccc12486536e6d776ee72077e5848de65f6da707eb34b84498e",
+        "rows": 1
+      },
+      "valid.phase.01.jsonl": {
+        "sha256": "6dbe22c556be9168184b7a09ccb611deb6984bff53aaa19b779b96c8d0df8e74",
+        "rows": 6
+      },
+      "valid.shell.01.jsonl": {
+        "sha256": "53c70beb384349671b7917cd3e58102ca64e0b87aa3e03d928b6b74b2419e27c",
+        "rows": 3
+      },
+      "valid.step.01.jsonl": {
+        "sha256": "0b35794a8f7485c26985b22dfb748daa47cd570e592bdba4a69c867bd590d6c8",
+        "rows": 24
+      }
+    }
+  },
+  "base": {
+    "dir": "/Users/mac/projects/mellum-worker/.models/Mellum2.1-12B-A2.5B-Thinking-6bit",
+    "quantization": {
+      "group_size": 64,
+      "bits": 6,
+      "mode": "affine"
+    },
+    "files": {
+      "model-00001-of-00002.safetensors": "4c563ab1ea93eb1c2c12bf5258e27ad7b3ceac88f07f825899c6e27e44d1b492",
+      "model-00002-of-00002.safetensors": "475afd1005efa2cc78c68f01c8337d658ff766fef8942b7b25aff5c5bec75568"
+    }
+  },
+  "adapter": {
+    "dir": "adapters_tools",
+    "files": {
+      "0015_adapters.safetensors": "c3d71f8e73d9a2324f98c6c96451b9c54a0850851262b0fa6018fee6f1eaf4aa",
+      "0030_adapters.safetensors": "cc513565dc8991aa532932fea291aea567668155f30459781e7b3e8c476da58f",
+      "0045_adapters.safetensors": "40b176ec1111ff6128833e541e36cffa0495e1c1f64d926706056f303881ff72",
+      "0060_adapters.safetensors": "a1878288a3c8ff16aa2474043f4bd4ef5dc62214dd439a72b75f8d800026358b",
+      "0066_adapters.safetensors": "dfabf47fa1e86fa54758bef85439cfadb84c0e445075ab78b845758721b040c7",
+      "adapter_config.json": "46ccf116385da5b0c5d080c4d4251a0eec6e569bdf5be9bbe3f90e0c22f04fa7",
+      "adapters.safetensors": "dfabf47fa1e86fa54758bef85439cfadb84c0e445075ab78b845758721b040c7"
+    }
+  },
+  "settings": {
+    "beta": 10,
+    "lr": 2e-05,
+    "accum": 4,
+    "step": 2048,
+    "epochs": 1,
+    "eval_every": 15,
+    "rank": 8,
+    "scale": 2.0,
+    "num_layers": 16,
+    "seed": 0
+  },
+  "packages": {
+    "python": "3.14.2",
+    "mlx": "0.32.5",
+    "mlx-lm": "0.32.2",
+    "mlx-lm-lora": "5.10.2",
+    "numpy": "2.5.5",
+    "safetensors": "0.8.0",
+    "torch": null,
+    "transformers": "5.24.1"
+  },
+  "log": {
+    "train": [
+      {
+        "update": 1,
+        "loss": 0.0025,
+        "acc": 0.0,
+        "margin": 0.0
+      },
+      {
+        "update": 2,
+        "loss": 0.00209,
+        "acc": 0.75,
+        "margin": 0.0526
+      },
+      {
+        "update": 3,
+        "loss": 0.00146,
+        "acc": 1.0,
+        "margin": 0.12697
+      },
+      {
+        "update": 4,
+        "loss": 0.00363,
+        "acc": 0.75,
+        "margin": 0.42041
+      },
+      {
+        "update": 5,
+        "loss": 0.00323,
+        "acc": 0.75,
+        "margin": 0.29567
+      },
+      {
+        "update": 6,
+        "loss": 0.00097,
+        "acc": 1.0,
+        "margin": 0.52921
+      },
+      {
+        "update": 7,
+        "loss": 0.00581,
+        "acc": 0.5,
+        "margin": -0.20936
+      },
+      {
+        "update": 8,
+        "loss": 0.00145,
+        "acc": 1.0,
+        "margin": 0.21102
+      },
+      {
+        "update": 9,
+        "loss": 0.00191,
+        "acc": 0.5,
+        "margin": 0.12766
+      },
+      {
+        "update": 10,
+        "loss": 0.00238,
+        "acc": 1.0,
+        "margin": 0.72854
+      },
+      {
+        "update": 11,
+        "loss": 0.00273,
+        "acc": 0.25,
+        "margin": 0.10572
+      },
+      {
+        "update": 12,
+        "loss": 0.00822,
+        "acc": 0.5,
+        "margin": -0.22939
+      },
+      {
+        "update": 13,
+        "loss": 0.01913,
+        "acc": 0.5,
+        "margin": -0.61491
+      },
+      {
+        "update": 14,
+        "loss": 0.001,
+        "acc": 1.0,
+        "margin": 0.38951
+      },
+      {
+        "update": 15,
+        "loss": 0.0016,
+        "acc": 0.75,
+        "margin": 0.1676
+      },
+      {
+        "update": 16,
+        "loss": 0.00556,
+        "acc": 1.0,
+        "margin": 0.98615
+      },
+      {
+        "update": 17,
+        "loss": 0.00139,
+        "acc": 1.0,
+        "margin": 0.26932
+      },
+      {
+        "update": 18,
+        "loss": 0.0036,
+        "acc": 0.75,
+        "margin": 0.53469
+      },
+      {
+        "update": 19,
+        "loss": 0.00161,
+        "acc": 0.75,
+        "margin": 0.51764
+      },
+      {
+        "update": 20,
+        "loss": 0.00568,
+        "acc": 0.75,
+        "margin": 0.6195
+      },
+      {
+        "update": 21,
+        "loss": 0.00368,
+        "acc": 1.0,
+        "margin": 0.70252
+      },
+      {
+        "update": 22,
+        "loss": 0.00211,
+        "acc": 1.0,
+        "margin": 0.72127
+      },
+      {
+        "update": 23,
+        "loss": 0.00285,
+        "acc": 0.75,
+        "margin": 0.33399
+      },
+      {
+        "update": 24,
+        "loss": 0.0022,
+        "acc": 1.0,
+        "margin": 0.48218
+      },
+      {
+        "update": 25,
+        "loss": 0.00194,
+        "acc": 0.5,
+        "margin": 0.19731
+      },
+      {
+        "update": 26,
+        "loss": 0.00511,
+        "acc": 0.5,
+        "margin": -0.13823
+      },
+      {
+        "update": 27,
+        "loss": 0.00124,
+        "acc": 1.0,
+        "margin": 0.19714
+      },
+      {
+        "update": 28,
+        "loss": 0.00746,
+        "acc": 0.0,
+        "margin": -0.3384
+      },
+      {
+        "update": 29,
+        "loss": 0.00213,
+        "acc": 0.75,
+        "margin": 0.04913
+      },
+      {
+        "update": 30,
+        "loss": 0.01246,
+        "acc": 0.75,
+        "margin": 1.06719
+      },
+      {
+        "update": 31,
+        "loss": 0.00102,
+        "acc": 1.0,
+        "margin": 0.30595
+      },
+      {
+        "update": 32,
+        "loss": 0.00213,
+        "acc": 0.75,
+        "margin": 0.04107
+      },
+      {
+        "update": 33,
+        "loss": 0.00203,
+        "acc": 0.5,
+        "margin": 0.06473
+      },
+      {
+        "update": 34,
+        "loss": 0.00124,
+        "acc": 0.75,
+        "margin": 0.16927
+      },
+      {
+        "update": 35,
+        "loss": 0.00386,
+        "acc": 1.0,
+        "margin": 0.6666
+      },
+      {
+        "update": 36,
+        "loss": 0.00785,
+        "acc": 0.25,
+        "margin": -0.22268
+      },
+      {
+        "update": 37,
+        "loss": 0.0021,
+        "acc": 0.75,
+        "margin": 0.04618
+      },
+      {
+        "update": 38,
+        "loss": 0.00087,
+        "acc": 1.0,
+        "margin": 0.31633
+      },
+      {
+        "update": 39,
+        "loss": 0.00439,
+        "acc": 0.25,
+        "margin": -0.01293
+      },
+      {
+        "update": 40,
+        "loss": 0.00043,
+        "acc": 1.0,
+        "margin": 0.64048
+      },
+      {
+        "update": 41,
+        "loss": 0.00154,
+        "acc": 0.75,
+        "margin": 0.4231
+      },
+      {
+        "update": 42,
+        "loss": 0.00093,
+        "acc": 1.0,
+        "margin": 0.46025
+      },
+      {
+        "update": 43,
+        "loss": 0.00249,
+        "acc": 1.0,
+        "margin": 0.86938
+      },
+      {
+        "update": 44,
+        "loss": 0.00548,
+        "acc": 1.0,
+        "margin": 0.9355
+      },
+      {
+        "update": 45,
+        "loss": 0.00457,
+        "acc": 1.0,
+        "margin": 0.84484
+      },
+      {
+        "update": 46,
+        "loss": 0.00692,
+        "acc": 1.0,
+        "margin": 1.1298
+      },
+      {
+        "update": 47,
+        "loss": 0.00118,
+        "acc": 1.0,
+        "margin": 0.19355
+      },
+      {
+        "update": 48,
+        "loss": 0.00143,
+        "acc": 0.75,
+        "margin": 0.14441
+      },
+      {
+        "update": 49,
+        "loss": 0.00152,
+        "acc": 1.0,
+        "margin": 0.51036
+      },
+      {
+        "update": 50,
+        "loss": 0.01564,
+        "acc": 1.0,
+        "margin": 0.79913
+      },
+      {
+        "update": 51,
+        "loss": 0.00313,
+        "acc": 0.5,
+        "margin": 0.08388
+      },
+      {
+        "update": 52,
+        "loss": 0.0026,
+        "acc": 0.5,
+        "margin": 0.09217
+      },
+      {
+        "update": 53,
+        "loss": 0.00119,
+        "acc": 1.0,
+        "margin": 0.28883
+      },
+      {
+        "update": 54,
+        "loss": 0.00307,
+        "acc": 0.75,
+        "margin": 0.3316
+      },
+      {
+        "update": 55,
+        "loss": 0.00244,
+        "acc": 1.0,
+        "margin": 0.51834
+      },
+      {
+        "update": 56,
+        "loss": 0.00087,
+        "acc": 1.0,
+        "margin": 0.41102
+      },
+      {
+        "update": 57,
+        "loss": 0.00174,
+        "acc": 1.0,
+        "margin": 0.64178
+      },
+      {
+        "update": 58,
+        "loss": 0.00102,
+        "acc": 1.0,
+        "margin": 0.19056
+      },
+      {
+        "update": 59,
+        "loss": 0.00185,
+        "acc": 0.5,
+        "margin": 0.08863
+      },
+      {
+        "update": 60,
+        "loss": 0.0021,
+        "acc": 0.5,
+        "margin": 0.0805
+      },
+      {
+        "update": 61,
+        "loss": 0.00121,
+        "acc": 0.75,
+        "margin": 0.26048
+      },
+      {
+        "update": 62,
+        "loss": 0.00671,
+        "acc": 0.5,
+        "margin": -0.18958
+      },
+      {
+        "update": 63,
+        "loss": 0.00228,
+        "acc": 0.75,
+        "margin": 0.0533
+      },
+      {
+        "update": 64,
+        "loss": 0.00123,
+        "acc": 0.75,
+        "margin": 0.19295
+      },
+      {
+        "update": 65,
+        "loss": 0.00429,
+        "acc": 0.75,
+        "margin": -0.03641
+      },
+      {
+        "update": 66,
+        "loss": 0.00208,
+        "acc": 0.5,
+        "margin": 0.05252
+      }
+    ],
+    "eval": [
+      {
+        "update": 0,
+        "loss": 0.0025,
+        "acc": 0.0,
+        "margin": 0.0
+      },
+      {
+        "update": 15,
+        "loss": 0.00366,
+        "acc": 0.971,
+        "margin": 0.72087
+      },
+      {
+        "update": 30,
+        "loss": 0.00192,
+        "acc": 0.765,
+        "margin": 0.26749
+      },
+      {
+        "update": 45,
+        "loss": 0.0041,
+        "acc": 0.912,
+        "margin": 0.59652
+      },
+      {
+        "update": 60,
+        "loss": 0.00411,
+        "acc": 0.559,
+        "margin": 0.16784
+      },
+      {
+        "update": 66,
+        "loss": 0.00313,
+        "acc": 0.765,
+        "margin": 0.4076
+      }
+    ]
+  },
+  "gguf": {
+    "file": "tools-Q4_K_M.gguf",
+    "sha256": "3766e1ff961b945dd58c861631cbf38b873c857b4b93374332397695ecc8b6f0",
+    "bytes": 8071295040
+  },
+  "llama_cpp_convert_commit": "cd959bae9",
+  "llama_quantize": ""
+}
