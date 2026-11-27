@@ -1,0 +1,378 @@
+{
+  "name": "tools2",
+  "created": "2026-11-27T18:30:46+00:00",
+  "machine": "Darwin arm64 Mac",
+  "git": {
+    "commit": "eed8225f25df12d8d701d9bc7459288b4875909f",
+    "dirty": true
+  },
+  "data": {
+    "dir": "data_dpo_mix_tools_v2",
+    "source_md": true,
+    "files": {
+      "train.cleanup.01.jsonl": {
+        "sha256": "33dd92da679776cf999ff5632dcc72378a1a6c067d4c67fa145d2dbedd40f0e9",
+        "rows": 7
+      },
+      "train.outside.01.jsonl": {
+        "sha256": "5b55f444065aad28033f456cf948865205984c22af8e4fe05cb6f576c569c6c3",
+        "rows": 6
+      },
+      "train.phase.01.jsonl": {
+        "sha256": "7e2dd132320cd9ac2d377d2581ab12a8da68ede00b6f18278c1a62b9de718d94",
+        "rows": 30
+      },
+      "train.reread.01.jsonl": {
+        "sha256": "31f49fab534ceb067f0eb60ce425ac9fafd41f822ab577e7719704a1b539ae59",
+        "rows": 29
+      },
+      "train.shell.01.jsonl": {
+        "sha256": "dd60d27543ad68767aee6d148d788e5a4406703c46f0dab1b435b2bb5b0f355b",
+        "rows": 35
+      },
+      "train.step.01.jsonl": {
+        "sha256": "87e685e5532eecdef4a54b070de2047c77f168acbd3236baca8e60b69a7c50aa",
+        "rows": 40
+      },
+      "train.unused.01.jsonl": {
+        "sha256": "67d08bd1132c7d8249f4ca9e1b45753f3f8a9b1adb3064f4847d58f35a077c83",
+        "rows": 8
+      },
+      "valid.idiom.01.jsonl": {
+        "sha256": "e49481add0e45ead468e3dc583ce6c6e276d303246f651e4f6f28d9c03107b30",
+        "rows": 6
+      },
+      "valid.phase.01.jsonl": {
+        "sha256": "617d148940fac04dfe21496f10f2a14dbb85d6b58d27949b0b4fbac3336056aa",
+        "rows": 6
+      },
+      "valid.reread.01.jsonl": {
+        "sha256": "7ed7117d69f51d93085299de7f9aa3eac7753c295c0b91927d824069ada619f3",
+        "rows": 1
+      },
+      "valid.shell.01.jsonl": {
+        "sha256": "4745fd52c9ea2aba9eb308a61685ff87fd1a8757aac7ea8a86359eab1d68760b",
+        "rows": 3
+      },
+      "valid.step.01.jsonl": {
+        "sha256": "24c95a29551ffa65fe49733c8aee2f5551e142cbbc05745ac39eb845650cdc40",
+        "rows": 20
+      }
+    }
+  },
+  "base": {
+    "dir": "/Users/mac/projects/mellum-worker/.models/Mellum2.1-12B-A2.5B-Thinking-6bit",
+    "quantization": {
+      "group_size": 64,
+      "bits": 6,
+      "mode": "affine"
+    },
+    "files": {
+      "model-00001-of-00002.safetensors": "4c563ab1ea93eb1c2c12bf5258e27ad7b3ceac88f07f825899c6e27e44d1b492",
+      "model-00002-of-00002.safetensors": "475afd1005efa2cc78c68f01c8337d658ff766fef8942b7b25aff5c5bec75568"
+    }
+  },
+  "adapter": {
+    "dir": "adapters_tools2",
+    "files": {
+      "0015_adapters.safetensors": "903cdf39887589b7a50828de97458a1fe25416da9d93a1a6a259064436420e76",
+      "0030_adapters.safetensors": "d3e7a63bca29cd508ff5429ceca939869694432ef6bd5d352d6d93b242822a0b",
+      "0039_adapters.safetensors": "c0a79817af4609cc9bdcf3b67e3bbbc60ff47900921063412dc134f2a5943a58",
+      "adapter_config.json": "46ccf116385da5b0c5d080c4d4251a0eec6e569bdf5be9bbe3f90e0c22f04fa7",
+      "adapters.safetensors": "c0a79817af4609cc9bdcf3b67e3bbbc60ff47900921063412dc134f2a5943a58"
+    }
+  },
+  "settings": {
+    "beta": 10,
+    "lr": 2e-05,
+    "accum": 4,
+    "step": 2048,
+    "epochs": 1,
+    "eval_every": 15,
+    "rank": 8,
+    "scale": 2.0,
+    "num_layers": 16,
+    "seed": 0
+  },
+  "packages": {
+    "python": "3.14.2",
+    "mlx": "0.32.5",
+    "mlx-lm": "0.32.2",
+    "mlx-lm-lora": "5.10.2",
+    "numpy": "2.5.5",
+    "safetensors": "0.8.0",
+    "torch": null,
+    "transformers": "5.24.1"
+  },
+  "log": {
+    "train": [
+      {
+        "update": 1,
+        "loss": 0.0025,
+        "acc": 0.0,
+        "margin": 0.0
+      },
+      {
+        "update": 2,
+        "loss": 0.00308,
+        "acc": 0.25,
+        "margin": -0.04451
+      },
+      {
+        "update": 3,
+        "loss": 0.00142,
+        "acc": 0.75,
+        "margin": 0.14862
+      },
+      {
+        "update": 4,
+        "loss": 0.00269,
+        "acc": 0.25,
+        "margin": -0.01758
+      },
+      {
+        "update": 5,
+        "loss": 0.00316,
+        "acc": 0.75,
+        "margin": 0.36002
+      },
+      {
+        "update": 6,
+        "loss": 0.01452,
+        "acc": 0.75,
+        "margin": 0.76328
+      },
+      {
+        "update": 7,
+        "loss": 0.02619,
+        "acc": 1.0,
+        "margin": 1.54226
+      },
+      {
+        "update": 8,
+        "loss": 0.00248,
+        "acc": 0.5,
+        "margin": 0.01382
+      },
+      {
+        "update": 9,
+        "loss": 0.00349,
+        "acc": 0.75,
+        "margin": 0.49103
+      },
+      {
+        "update": 10,
+        "loss": 0.00242,
+        "acc": 0.75,
+        "margin": 0.00843
+      },
+      {
+        "update": 11,
+        "loss": 0.00139,
+        "acc": 0.75,
+        "margin": 0.36096
+      },
+      {
+        "update": 12,
+        "loss": 0.00221,
+        "acc": 1.0,
+        "margin": 0.67217
+      },
+      {
+        "update": 13,
+        "loss": 0.00261,
+        "acc": 1.0,
+        "margin": 0.6888
+      },
+      {
+        "update": 14,
+        "loss": 0.00217,
+        "acc": 0.5,
+        "margin": 0.05943
+      },
+      {
+        "update": 15,
+        "loss": 0.00291,
+        "acc": 0.75,
+        "margin": 0.47461
+      },
+      {
+        "update": 16,
+        "loss": 0.08484,
+        "acc": 0.25,
+        "margin": -1.40624
+      },
+      {
+        "update": 17,
+        "loss": 0.00191,
+        "acc": 0.75,
+        "margin": 0.19438
+      },
+      {
+        "update": 18,
+        "loss": 0.06313,
+        "acc": 1.0,
+        "margin": 1.42435
+      },
+      {
+        "update": 19,
+        "loss": 0.00228,
+        "acc": 0.75,
+        "margin": 0.15618
+      },
+      {
+        "update": 20,
+        "loss": 0.00111,
+        "acc": 1.0,
+        "margin": 0.30507
+      },
+      {
+        "update": 21,
+        "loss": 0.00444,
+        "acc": 0.5,
+        "margin": -0.08876
+      },
+      {
+        "update": 22,
+        "loss": 0.00225,
+        "acc": 0.5,
+        "margin": 0.26978
+      },
+      {
+        "update": 23,
+        "loss": 0.00068,
+        "acc": 1.0,
+        "margin": 0.2903
+      },
+      {
+        "update": 24,
+        "loss": 0.00222,
+        "acc": 0.5,
+        "margin": 0.09422
+      },
+      {
+        "update": 25,
+        "loss": 0.00371,
+        "acc": 0.75,
+        "margin": 0.01832
+      },
+      {
+        "update": 26,
+        "loss": 0.00141,
+        "acc": 1.0,
+        "margin": 0.14252
+      },
+      {
+        "update": 27,
+        "loss": 0.00528,
+        "acc": 0.5,
+        "margin": 0.49814
+      },
+      {
+        "update": 28,
+        "loss": 0.00057,
+        "acc": 1.0,
+        "margin": 0.51776
+      },
+      {
+        "update": 29,
+        "loss": 0.00149,
+        "acc": 0.75,
+        "margin": 0.26688
+      },
+      {
+        "update": 30,
+        "loss": 0.00117,
+        "acc": 1.0,
+        "margin": 0.16634
+      },
+      {
+        "update": 31,
+        "loss": 0.0025,
+        "acc": 1.0,
+        "margin": 0.46698
+      },
+      {
+        "update": 32,
+        "loss": 0.00128,
+        "acc": 0.75,
+        "margin": 0.23674
+      },
+      {
+        "update": 33,
+        "loss": 0.00078,
+        "acc": 1.0,
+        "margin": 0.23777
+      },
+      {
+        "update": 34,
+        "loss": 0.00182,
+        "acc": 1.0,
+        "margin": 0.43794
+      },
+      {
+        "update": 35,
+        "loss": 0.00252,
+        "acc": 0.5,
+        "margin": -0.00122
+      },
+      {
+        "update": 36,
+        "loss": 0.00325,
+        "acc": 0.75,
+        "margin": 0.52391
+      },
+      {
+        "update": 37,
+        "loss": 0.00461,
+        "acc": 0.5,
+        "margin": 0.30074
+      },
+      {
+        "update": 38,
+        "loss": 0.00135,
+        "acc": 0.75,
+        "margin": 0.23227
+      },
+      {
+        "update": 39,
+        "loss": 0.00486,
+        "acc": 1.0,
+        "margin": 0.56457
+      }
+    ],
+    "eval": [
+      {
+        "update": 0,
+        "loss": 0.0025,
+        "acc": 0.0,
+        "margin": 0.0
+      },
+      {
+        "update": 15,
+        "loss": 0.00204,
+        "acc": 0.639,
+        "margin": 0.16847
+      },
+      {
+        "update": 30,
+        "loss": 0.00235,
+        "acc": 0.833,
+        "margin": 0.3075
+      },
+      {
+        "update": 39,
+        "loss": 0.00221,
+        "acc": 0.833,
+        "margin": 0.33004
+      }
+    ]
+  },
+  "gguf": {
+    "file": "tools2-Q4_K_M.gguf",
+    "sha256": "3426271c9ad782750f0d198304b884e0d6ecb64d795404bf7a6133e897b987f0",
+    "bytes": 8071295040
+  },
+  "llama_cpp_convert_commit": "cd959bae9",
+  "llama_quantize": ""
+}
