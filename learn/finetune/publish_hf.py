@@ -87,6 +87,46 @@ def smoke_tool_call(url, model):
     return []
 
 
+KINDS = {
+    "phase": ("Phase pairs", "a run that passed a phase's hidden tests against one that failed the same phase. Only "
+              "that phase's turns are scored; earlier phases are context."),
+    "step": ("Step pairs", "at the same point in a run, the tool call that recovered from a failed `read`, `edit`, "
+             "`write` or `ls` against the failed call. Only the tool call is kept, so the error message never "
+             "leaks into the preferred side."),
+    "shell": ("Shell pairs", "a bash command that failed on its own shape (bad quoting, a `python -c` that can't "
+              "parse, a flag this shell lacks) against the clean command that followed."),
+    "outside": ("Outside pairs", "a search aimed outside the workspace (`find /`, `ls ~`) against the same search "
+                "aimed at the project."),
+    "unused": ("Unused-import pairs", "the last write of a source file that leaves an import unused against the "
+               "same write without it (ruff's own F401 fix)."),
+    "reread": ("Re-read pairs", "a second blind edit to a file straight after a failed edit to it, which failed "
+               "too, against reading the file first."),
+    "cleanup": ("Cleanup pairs", "finishing with throwaway scripts left in the project against deleting them "
+                "first."),
+    "idiom": ("Idiom pairs", "a workaround for a new Python feature against the same call using the feature."),
+}
+
+
+def pair_kinds(data_dir):
+    """Training pairs per kind, counted from a set's `train.<kind>.<NN>.jsonl` files."""
+    out = {}
+    for f in sorted(Path(data_dir).glob("train.*.jsonl")):
+        kind = f.name.split(".")[1]
+        out[kind] = out.get(kind, 0) + sum(1 for line in f.open() if line.strip())
+    return out
+
+
+def _kind_lines(kinds):
+    if not kinds:
+        kinds = {"phase": None, "step": None}
+    lines = []
+    for kind, (title, text) in KINDS.items():
+        if kind in kinds:
+            n = kinds[kind]
+            lines.append(f"- **{title}{f' ({n})' if n is not None else ''}:** {text}")
+    return "\n".join(lines)
+
+
 def _size(n):
     return f"{n / 1e9:.1f} GB" if n >= 1e9 else f"{n / 1e6:.1f} MB"
 
@@ -95,8 +135,9 @@ def render_card(info):
     """The model card: what it is, how to run it, how it was made, what it scored and where it falls short."""
     repo, gguf, commit = info["repo"], info["gguf"], info["commit"]
     data_url = f"{GITHUB}/tree/{commit}/{info['data']}"
-    rows = "\n".join(f"| {r['model']} | {r['passed']}/{r['n']} | {r['tool_error_rate']:.0%} |"
+    rows = "\n".join(f"| {r['screen']} | {r['model']} | {r['passed']}/{r['n']} | {r['faults_per_100']:.1f} |"
                      for r in info["results"])
+    name = f"**{info['name']}** is a" if info.get("name") else "A"
     files = "\n".join(f"| {name} | {_size(size)} | `{digest[:16]}…` |" for name, size, digest in info.get("files", []))
     return f"""---
 base_model: {BASE_MODEL}
@@ -115,7 +156,7 @@ tags:
 
 # {repo.split("/")[-1]}
 
-A preference-tuned build of [{BASE_MODEL}](https://huggingface.co/{BASE_MODEL}) for one job: working as a bounded
+{name} preference-tuned build of [{BASE_MODEL}](https://huggingface.co/{BASE_MODEL}) for one job: working as a bounded
 coding agent inside the [Pi](https://github.com/earendil-works/pi) harness, calling `read`, `bash`, `edit` and `write`
 to change a small Python project until its tests pass, then stopping. It is an experiment from
 [mellum-worker]({GITHUB}), not a general upgrade of the base model.
@@ -158,37 +199,44 @@ to `~/.pi/agent/models.json`:
   sequences up to 41,000 tokens processed in 2,048-token chunks.
 - **Hardware:** Apple M3 Max with MLX (`mlx-lm` 0.32.2); conversion with llama.cpp `convert_hf_to_gguf.py` and
   `llama-quantize`.
-- **Gate:** the adapter is only converted if its margin on held-out pairs ends above zero. This one ended at
-  {info["heldout_margin"]:+.4f}.
+- **Gate:** an adapter is only converted if its margin on held-out pairs is above zero. The published checkpoint's
+  margin is {info["heldout_margin"]:+.4f}.
 
 ## Training data
 
 All pairs come from the base model's own recorded runs on the mellum-worker task suites, graded by hidden tests.
 The exact set, with how it was built, is at [{info["data"]}]({data_url}).
 
-- **Phase pairs:** a run that passed a phase's hidden tests against one that failed the same phase. Only that
-  phase's turns are scored; earlier phases are context.
-- **Step pairs:** at the same point in a run, the tool call that recovered from a failed `read`, `edit`, `write` or
-  `ls` against the failed call. Only the tool call is kept, so the error message never leaks into the preferred side.
-- **Held out:** the Easy task the model is screened on never enters training, and validation pairs are held out by
-  whole run.
+{_kind_lines(info.get("kinds"))}
+
+Each pair shares everything before one recorded act and keeps the thinking the model wrote for it; only the
+scored part differs. **Held out:** the Easy task and the Python eval tasks the model is screened on never enter
+training, and validation pairs are held out by whole run.
 
 ## Evaluation
 
-The Easy suite: one small FastAPI app built from a written spec, graded by hidden tests, 3 runs per model, same
-server build and settings.
+Every screen builds or changes a small Python project from a written spec, graded by hidden tests, on the same
+llama.cpp build, Q4_K_M quantisation, harness settings and deadlines for every model.
 
-| Model | Easy passed | Tool-call errors |
-|---|---|---|
+- **Easy:** one small FastAPI app in one phase.
+- **Medium:** the same kind of app built over four phases, each adding to the last.
+- **Python eval:** 10 held-out tasks that need Python 3.14 and 3.15 features, one run each.
+
+A faulty call is one the model got wrong: an edit that matched nothing, a read of a missing file, a malformed shell
+command, or a search outside the workspace. Red test runs and environment errors don't count.
+
+| Screen | Model | Passed | Faulty calls per 100 |
+|---|---|---|---|
 {rows}
 
-Three runs per model is a screen, not a rate: it can show a large gap, not a small one.
+A handful of runs per model is a screen, not a rate: it can show a large gap, not a small one.
 
 ## Limitations
 
 - One harness (Pi), one model family, and small task suites written in one style. Behaviour elsewhere is unmeasured.
 - The preference data is the base model's own work, so the tune can only prefer habits the base already has.
 - Q4_K_M quantisation; other quantisations were not evaluated.
+- New Python 3.14 and 3.15 features were not taught; on those tasks it still writes workarounds.
 - Thinking is on, as in the base model; runs are slower than a non-thinking model.
 
 ## Files
@@ -218,13 +266,14 @@ def main():
     ap.add_argument("--base-gguf", type=Path, required=True)
     ap.add_argument("--adapter", type=Path, required=True)
     ap.add_argument("--repo", required=True)
-    ap.add_argument("--results", type=Path, required=True, help="JSON list of {model, passed, n, tool_error_rate}")
+    ap.add_argument("--results", type=Path, required=True, help="JSON list of {screen, model, passed, n, faults_per_100}")
     ap.add_argument("--data", required=True, help="repo path of the training set")
     ap.add_argument("--pairs", type=int, required=True)
     ap.add_argument("--updates", type=int, required=True)
     ap.add_argument("--heldout-margin", type=float, required=True)
     ap.add_argument("--stage", type=Path, required=True)
     ap.add_argument("--smoke-url", help="a llama-server serving --gguf with --jinja, e.g. http://127.0.0.1:8001/v1")
+    ap.add_argument("--name", help="the model's name on the card, e.g. Tsunami")
     ap.add_argument("--upload", action="store_true")
     a = ap.parse_args()
 
@@ -243,6 +292,7 @@ def main():
     a.stage.mkdir(parents=True, exist_ok=True)
     info = {"repo": a.repo, "gguf": a.gguf.name, "commit": commit, "data": a.data, "pairs": a.pairs,
             "updates": a.updates, "heldout_margin": a.heldout_margin, "results": json.loads(a.results.read_text()),
+            "name": a.name, "kinds": pair_kinds(Path(__file__).resolve().parents[2] / a.data),
             "files": [(a.gguf.name, a.gguf.stat().st_size, sums[0].split()[0])]}
     (a.stage / "README.md").write_text(render_card(info))
     (a.stage / "SHA256SUMS").write_text("\n".join(sums) + "\n")
