@@ -4,7 +4,9 @@
   "machine": "Darwin arm64 Macs-MacBook-Pro.local",
   "git": {
     "commit": "28036e2bac2f8e75b33263d22926c6ef6f0ea2c1",
-    "dirty": true
+    "dirty": true,
+    "training_commit": "066967b9",
+    "note": "training started 15:31 on 2026-11-26 at 066967b9; the commit above is when this manifest was written. dpo_native_train.py, chunking.py, resume.py, pairs_io.py and data_dpo_mix_tools are unchanged between the two; dirty = this manifest and later pair-builder work, none of it read by training"
   },
   "data": {
     "dir": "data_dpo_mix_tools",
