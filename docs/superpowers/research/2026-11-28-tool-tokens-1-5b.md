@@ -44,7 +44,14 @@ expected) before the fix.
 2. Train LoRA plus the new rows; record a MANIFEST.
 3. Measure before and after: marker emission where a call belongs, parsed tool calls from llama-server, the
    Easy screen, and plain prompts.
-4. Measure n-gram speculation speed and output match.
+4. Measure n-gram speculation speed and output match: the baseline.
+5. Train our own draft head on the trained 1.5B and test it against n-gram on the same agent turns.
+
+## Log
+
+- 2026-11-28: the GPU was cleared for this work by stopping a Tsunami evaluation on the Python training-task
+  suite after 2 of 9 tasks (0/6 passed; base scored 5/27 on the whole suite, mix120 2/27). It was a scorecard
+  fill-in, not a held-out test, and Tsunami's training was already finished.
 
 ## What would falsify this / Risks
 

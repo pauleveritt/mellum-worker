@@ -29,9 +29,12 @@ template names DeepSeek tool markers its vocabulary lacks).
    - plain prompts: answers without tools unchanged (the old rows were frozen).
 5. **Speculative decoding (n-gram):** serve the trained model with `--spec-type ngram-mod` and measure tokens
    per second on recorded agent turns with and without it; confirm the outputs match (llama.cpp verifies
-   each draft token, so only speed should change). Only if it falls short, consider a trained draft model or
-   head (EAGLE-3 / DFlash style), which needs the same token surgery on the draft.
+   each draft token, so only speed should change). This is the baseline the draft head has to beat.
+6. **Train our own draft head** (the goal): a small speculative head on the trained 1.5B's hidden states
+   (EAGLE-3 / DFlash style; llama.cpp serves both types), trained on the 1.5B's own outputs so it shares the
+   new tokens. Test against n-gram on the same recorded agent turns: tokens per second, acceptance length,
+   and identical outputs. Kept only if it beats n-gram.
 
 ## Out of scope (now)
 
-DPO on the 1.5B's own runs (after it can call tools); a draft model; publishing.
+DPO on the 1.5B's own runs (after it can call tools); a separate draft model; publishing.
