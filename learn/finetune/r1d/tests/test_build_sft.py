@@ -41,3 +41,11 @@ def test_a_step_whose_call_failed_is_not_taught():
 def test_history_keeps_no_thinking():
     ex = examples(MSGS, [4], TOOLS, failed=set())[0]
     assert "Look first." not in ex["prompt"]
+
+
+def test_held_out_suites_are_refused():
+    from build_sft import held_out
+    for s in ("easy", "medium", "hard", "satyrn-agentclinic-repair-depth-2", "py3.14-zstd-archive"):
+        assert held_out(s), s
+    for s in ("tt-log-analyser", "py3.14-zstd-bytes", "satyrn-format_number"):
+        assert not held_out(s), s

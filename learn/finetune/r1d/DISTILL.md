@@ -23,8 +23,8 @@ The AgentClinic family (`easy`, `medium`, `hard`, and Satyrn's `agentclinic-*`),
 | Source | Tasks | Notes |
 |---|---|---|
 | `suites/py-features-train` | 12 | Python 3.14/3.15 features; the teacher lacks some APIs, so many runs fail but their successful calls still count |
-| Satyrn self-host + `format_number` | 8 | converted with `satyrn_suites.py`; read locally, nothing goes back to Satyrn |
-| New varied suites | to write | small apps and libraries, never AgentClinic, each checked both ways before use |
+| Satyrn self-host + `format_number` | 7 | converted into the git-ignored `learn/code/suites-local/satyrn-train` (no Satyrn content in this repo) with `uv run --no-project python ../finetune/satyrn_suites.py --tasks <satyrn-evals>/src/satyrn_evals/tasks --out suites-local/satyrn-train --only format_number --only selfhost-... --check`; `selfhost-preflight-quiet` left out (its known-good fix fails its own check) |
+| `suites/tools-train` | 24 (being written) | varied tool use in small stdlib projects, never AgentClinic; each proven by `py_features.py --root suites/tools-train check` (reference green, workaround red, base red) |
 
 ## Teacher batches
 

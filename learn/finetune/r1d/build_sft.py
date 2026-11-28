@@ -28,6 +28,15 @@ _env.filters["tojson"] = lambda v: json.dumps(v, ensure_ascii=False)
 _tpl = _env.from_string(TEMPLATE)
 
 
+EVAL_TASKS = {d.name for d in (HERE.parents[1] / "code" / "suites" / "py-features").iterdir() if d.is_dir()}
+
+
+def held_out(suite):
+    """Never train on these (ADR 0010): the AgentClinic family and the Python eval tasks."""
+    suite = str(suite)
+    return suite in ("easy", "medium", "hard") or "agentclinic" in suite or suite in EVAL_TASKS
+
+
 def render(messages, tools, gen=False):
     return _tpl.render(messages=messages, tools=tools, add_generation_prompt=gen, bos_token=BOS)
 
@@ -67,8 +76,13 @@ def main():
     ap.add_argument("--tokenizer", required=True)
     ap.add_argument("--budget", type=int, default=24576, help="max tokens per example; longer ones are dropped")
     ap.add_argument("--valid-every", type=int, default=10, help="every Nth run goes to validation")
+    ap.add_argument("--cap", choices=["none", "head-tail"], default="none",
+                    help="none: keep tool results as the harness recorded them (teacher runs are already trimmed by "
+                         "context/trim-tool-output); head-tail: the old 400+200 cut, kept only to rebuild v1")
     ap.add_argument("--head", type=int, default=400)
     ap.add_argument("--tail", type=int, default=200)
+    ap.add_argument("--all-runs", action="store_true",
+                    help="also teach successful steps from phases that failed their hidden tests (ADR 0010)")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     out = Path(args.out)
@@ -77,6 +91,8 @@ def main():
     tok = Tokenizer.from_file(str(Path(args.tokenizer).expanduser() / "tokenizer.json"))
 
     def cap(text):
+        if args.cap == "none":
+            return text
         if len(text) <= args.head + args.tail + 40:
             return text
         return text[:args.head] + f"\n...[{len(text) - args.head - args.tail} chars elided]...\n" + text[-args.tail:]
@@ -85,13 +101,16 @@ def main():
     for root, keep_all in [(r, False) for r in args.source] + [(r, True) for r in args.source_all_phases]:
         for f in sorted(glob.glob(f"{root}/**/run.json", recursive=True)):
             run, trace = json.load(open(f)), Path(f).with_name("trace.jsonl")
+            if held_out(run.get("suite")):
+                why["held-out-suite"] += 1
+                continue
             if run.get("contaminated") and trace.is_file():
                 canary_file = HERE.parents[1] / "code" / "suites" / str(run.get("suite")) / "grader" / "canary"
                 canary = canary_file.read_text().strip() if canary_file.is_file() else None
                 if not grader_seen(trace.read_text(errors="ignore"), run.get("suite"), canary):
                     run = {**run, "contaminated": False}
             outcome = phase_outcomes(run)
-            if run.get("contaminated") or not trace.is_file() or not outcome:
+            if run.get("contaminated") or not trace.is_file() or (not outcome and not args.all_runs):
                 why["contaminated-no-trace-or-grade"] += 1
                 continue
             segs = segment_trace([json.loads(x) for x in open(trace) if x.strip()])
@@ -102,7 +121,7 @@ def main():
             split = "valid" if n_runs % args.valid_every == 0 else "train"
             for seg in segs:
                 p = seg["phase"]
-                if (not keep_all and p in args.exclude) or not outcome.get(p):
+                if (not keep_all and p in args.exclude) or (not outcome.get(p) and not args.all_runs):
                     continue
                 rendered = render_segment(seg, cap=cap)
                 if rendered is None:
@@ -119,7 +138,7 @@ def main():
                         why["over-budget"] += 1
                         continue
                     rows[split].append({"prompt": ex["prompt"], "completion": ex["completion"], "tokens": n,
-                                        "phase": f"{run.get('suite')}:p{p}",
+                                        "phase": f"{run.get('suite')}:p{p}", "passed": bool(outcome.get(p)),
                                         "src": f"{Path(f).parent.name}#p{p}#{ex['step']}"})
                     why["ok"] += 1
     print("examples:", dict(why))
