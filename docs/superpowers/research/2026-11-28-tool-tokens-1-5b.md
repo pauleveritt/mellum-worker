@@ -49,6 +49,16 @@ expected) before the fix.
 
 ## Log
 
+- 2026-11-28: first Easy screens of the trained 1.5B (sft-v2b, Q8_0, llama-server `--jinja`, the teacher's harness
+  shape, n=1 per arm, Easy held out from training). All four FAIL, no file created in any:
+  - thinking off: 103 requests, 104 parsed calls, 92 errors; one command repeated 40 times;
+  - thinking off + `guard/repeat-loops`: 358 requests, 355 calls, 325 errors; `uv run --version` 283 times. The
+    guard blocked each fifth repeat, the model kept sending it: blocking does not redirect a 1.5B;
+  - thinking on, with and without the guard: 8 to 10 sensible exploring steps (ls, AGENTS.md, pyproject, tests),
+    then a turn holding only thinking, which ends the run.
+  Format and switch hold under the real harness; the gap is acting (18% of the taught calls are edit or write,
+  and the run trained on 1,400 of 5,104 examples). Leads, not rates.
+
 - 2026-11-28: first trained 1.5B (`adapters_r1d_sft_v2`, 1,400 examples of `data_sft_v2`, 350 updates, 162 min,
   18.7 GB peak). Validation loss 3.05 to 0.90; marker rate 0/39 at step 0, 39/39 from update 50 on (one dip to
   14/39 at update 300, back to 39/39 at 350). `r1d/fuse.py` folds the LoRA and the row deltas into plain weights;
