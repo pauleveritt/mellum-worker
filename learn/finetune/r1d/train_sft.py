@@ -33,6 +33,28 @@ def completion_loss(model, ids, n_prompt):
     return nn.losses.cross_entropy(model.lm_head(h), ids[n_prompt:]).mean()
 
 
+def switchable_checkpoint(layer):
+    """Gradient checkpointing for every layer of type(layer), switchable per call: ({"on": bool}, restore).
+
+    Like mlx-lm's grad_checkpoint (which is always on), but a short example can skip the rerun of each layer's
+    forward pass in the backward pass, which costs about a third more compute and saves memory it does not need."""
+    cls = type(layer)
+    fn = cls.__call__
+    state = {"on": True}
+
+    def call(model, *args, **kwargs):
+        if not state["on"]:
+            return fn(model, *args, **kwargs)
+
+        def inner(params, *args, **kwargs):
+            model.update(params)
+            return fn(model, *args, **kwargs)
+        return mx.checkpoint(inner)(model.trainable_parameters(), *args, **kwargs)
+
+    cls.__call__ = call
+    return state, lambda: setattr(cls, "__call__", fn)
+
+
 def pick_examples(rows, seed, start, count):
     """rows shuffled with `seed` (as random.seed + random.shuffle), then [start:start+count] (count 0: to the end).
 
@@ -53,7 +75,6 @@ def main():
     from mlx.utils import tree_flatten
     import mlx.optimizers as optim
     from mlx_lm import load
-    from mlx_lm.tuner.trainer import grad_checkpoint
     from mlx_lm.tuner.utils import linear_to_lora_layers
     from tokenizers import Tokenizer
     from pairs_io import read_pairs
@@ -77,6 +98,8 @@ def main():
                     help="all-linear: attention and MLP projections (dense models); default: mlx-lm's choice (MoE models)")
     ap.add_argument("--resume", default="", help="adapters.safetensors to start from (optimizer state starts fresh)")
     ap.add_argument("--start-example", type=int, default=0, help="skip this many shuffled examples (what an earlier run used)")
+    ap.add_argument("--checkpoint-above", type=int, default=0,
+                    help="gradient checkpointing only for examples longer than this many tokens (0: always)")
     ap.add_argument("--marker", default="<｜tool▁calls▁begin｜>", help="the token that starts a tool call, for the hit rate")
     a = ap.parse_args()
     out = Path(a.out)
@@ -102,7 +125,7 @@ def main():
         print(f"resumed from {a.resume}", flush=True)
     marker = tok.token_to_id(a.marker)
     assert marker is not None, f"{a.marker} is not a single token in this tokenizer"
-    grad_checkpoint(model.model.layers[0])
+    ckpt, _ = switchable_checkpoint(model.model.layers[0])
     n_train = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
     print(f"trainable parameters: {n_train:,}", flush=True)
 
@@ -143,6 +166,7 @@ def main():
     n_updates = len(train) // a.accum
     for i, row in enumerate(train):
         ids, n_p = encode(row)
+        ckpt["on"] = ids.size > a.checkpoint_above
         loss, grads = loss_and_grad(model, ids, n_p)
         acc_grads = grads if acc_grads is None else nn.utils.tree_map(lambda x, y: x + y, acc_grads, grads)
         acc_loss += loss.item()

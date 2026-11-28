@@ -7,7 +7,7 @@ import mlx.nn as nn
 from mlx_lm.models.qwen2 import Model, ModelArgs
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from train_sft import completion_loss, marker_hits, pick_examples  # noqa: E402
+from train_sft import completion_loss, marker_hits, pick_examples, switchable_checkpoint  # noqa: E402
 
 mx.random.seed(0)
 ARGS = ModelArgs(model_type="qwen2", hidden_size=16, num_hidden_layers=1, intermediate_size=32, num_attention_heads=2,
@@ -38,3 +38,27 @@ def test_a_resumed_run_takes_exactly_the_examples_the_first_run_skipped():
     assert first == ref[:20] and rest == ref[20:]
     assert len(rest) == 30 and not {r["i"] for r in first} & {r["i"] for r in rest}
     assert rows == [{"i": i} for i in range(50)]  # the caller's list is not shuffled in place
+
+
+def test_checkpointing_switches_per_example_and_leaves_the_gradients_unchanged(monkeypatch):
+    """Checkpointing reruns each layer's forward in the backward pass: worth it only for long examples."""
+    model = Model(ARGS); model.freeze(); model.model.layers[0].self_attn.q_proj.unfreeze()
+    ids = mx.array([1, 2, 3, 4, 5, 6, 7])
+    grad = lambda: nn.value_and_grad(model, completion_loss)(model, ids, 4)[1]
+    plain = grad()
+    calls = []
+    real = mx.checkpoint
+    monkeypatch.setattr(mx, "checkpoint", lambda f: calls.append(1) or real(f))
+    state, restore = switchable_checkpoint(model.model.layers[0])
+    try:
+        state["on"] = False
+        off = grad()
+        assert calls == []
+        state["on"] = True
+        on = grad()
+        assert calls
+    finally:
+        restore()
+    for g in (off, on):
+        assert all(mx.allclose(a, b, atol=1e-6) for a, b in zip(nn.utils.tree_flatten(g), nn.utils.tree_flatten(plain))
+                   for a, b in [(a[1], b[1])])
