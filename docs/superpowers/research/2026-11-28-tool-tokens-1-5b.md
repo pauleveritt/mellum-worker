@@ -49,6 +49,13 @@ expected) before the fix.
 
 ## Log
 
+- 2026-11-28: Mellum switch-training timing test (8 examples, LoRA on 16 layers, 6-bit base): one update at
+  20.5 GB in 0.5 min, the next at 92 GB peak (swapping on a 48 GB Mac) and 15 min. A long example does not fit
+  Mellum in one pass; the earlier Mellum tunes used 2,048-token chunks. Mellum's switch set is capped at 8,192
+  tokens (most off-mode examples fit; median about 4,000) and re-timed before the real run. Its marker rate was
+  already 5/5 at step 0: Mellum calls tools after an empty think block on single steps, it fails over whole runs,
+  so Mellum's switch is judged on harness runs with `--thinking off`, not on the marker rate.
+
 - 2026-11-28: thinking switch added (ADR 0012). Two more tokens, `<｜think▁on｜>` and `<｜think▁off｜>`, at 151674
   and 151675; the template names the mode at the start of each generated turn, and `enable_thinking: false` (what
   Pi sends for `--thinking off`) gives an empty thinking block. The builder writes every teacher step in both
