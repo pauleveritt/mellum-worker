@@ -31,6 +31,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from grading import passed_tests
+
 ROOT = Path(__file__).resolve().parent / "suites" / "py-features"
 IGNORE = [".venv/**", "__pycache__/**", "*.pyc", ".pytest_cache/**", "grader_tests/**", "uv.lock"]
 AGENTS = """# {name}
@@ -109,7 +111,7 @@ def grade(task, overlay, version):
              "-p", "no:cacheprovider", "grader_tests"],
             cwd=ws, capture_output=True, text=True, env=env)
     output = done.stdout + done.stderr
-    return {test_id for test_id in expected if f"PASSED {test_id}" in output}, output
+    return passed_tests(output, expected), output
 
 
 def check(task):

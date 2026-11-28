@@ -27,6 +27,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from grading import passed_tests
+
 CODE = Path(__file__).resolve().parent
 RUNS = Path(tempfile.gettempdir()) / "mellum-eval-runs"
 SUITES = CODE / "suites"
@@ -1061,7 +1063,8 @@ def score_workspace_details(
     # executed -- usually because the workspace lacks a module they import. That
     # is still a failure, but it must not read as "every check failed".
     checks_ran = result.returncode in (0, 1) and "errors during collection" not in output
-    missing = sorted(test for test in suite.expected if f"PASSED {test}" not in output)
+    passed = passed_tests(output, suite.expected)
+    missing = sorted(test for test in suite.expected if test not in passed)
     lines = output.splitlines()[-20:]
     if missing:
         lines.append("missing expected tests: " + ", ".join(missing))
