@@ -496,6 +496,26 @@ The number assigned to a token in a tokenizer’s vocabulary.
 
 The system that converts text into token IDs and back again.
 
+### Special token
+
+A token the tokenizer never splits, such as an end-of-turn or tool-call marker, used to mark structure rather than text.
+
+### Language-model head
+
+The model's last table: it scores every token in the vocabulary to pick the next one. One row per token ID; when it is not tied to the embedding table, a new token needs its own row here as well.
+
+### Token surgery
+
+Adding or changing tokens in an existing model: registering them in the tokenizer and giving each one an embedding row and a language-model head row, here in spare rows the model already had.
+
+### Speculative decoding
+
+Guessing several next tokens cheaply, then having the model check them all in one pass, so it keeps the ones it would have chosen anyway. It changes speed, not output.
+
+### Draft model
+
+The small, fast model whose guesses speculative decoding checks. It must share the main model's vocabulary exactly.
+
 ### Tool calling
 
 A model producing a structured request for software to perform an action.

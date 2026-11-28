@@ -1,0 +1,55 @@
+# Adding tool calling to a 1.5B model through new tokens
+
+Running record of the work in the [plan](../plans/2026-11-28-r1d-tool-tokens.md). Updated at each step.
+
+## What is measured
+
+- DeepSeek-R1-Distill-Qwen-1.5B has no tool calling. Its chat template writes DeepSeek's tool markers
+  (`<｜tool▁calls▁begin｜>` and eight more), but its tokenizer has none of them: each marker splits into about
+  11 ordinary tokens (checked with its own `tokenizer.json`, and with llama.cpp's `/tokenize` on the
+  original GGUF).
+- Its embedding table and its language-model head are separate (`tie_word_embeddings: false`), both
+  151,936 x 1,536, while the tokenizer uses IDs up to 151,664: 271 rows are spare.
+- `learn/finetune/r1d/add_tokens.py` adds the nine markers as special tokens at IDs 151665-151673, sets each
+  new embedding and head row to the mean of the rows of its old pieces, and leaves every other row as it was.
+  Proven by 14 tests (`learn/finetune/r1d/tests/`) and by llama.cpp reading each marker as one token in the
+  converted GGUF, with every old special token at its old ID.
+- `learn/finetune/r1d/deepseek_tools.jinja` is the chat template: llama.cpp's DeepSeek R1 tool template with
+  three fixes (a turn with text keeps its calls; string arguments are not JSON-encoded twice; each run of tool
+  results opens its own block). All four template tests fail on the stock template and pass on ours.
+
+## A bug the tests caught
+
+The first build looked right in the plain tokenizer but broke in the GGUF: end-of-sentence landed on a tool
+marker, and `<think>` and the other specials moved. The original `tokenizer_config.json` has no
+`added_tokens_decoder`; the surgery created one holding only the nine new tokens. With `config.json` present,
+transformers loads its Qwen2 tokenizer, which rebuilds the special tokens from that section when it exists, so
+a partial list re-laid all of them; the GGUF converter reads the vocabulary through transformers and copied
+the result. The fix lists every added token in that section. The test that now guards it loads the tokenizer
+from a folder holding the real `config.json`; it was shown red with the old code (151653 where 151643 was
+expected) before the fix.
+
+## What is conjecture
+
+- That starting each new row at the mean of its old pieces trains faster than a random start. Untested.
+- That LoRA plus the nine new rows, with every old row frozen, can teach the format from a few thousand
+  examples drawn from Mellum's and Tsunami's passing runs, and leave plain answers unchanged.
+- That n-gram speculative decoding (`--spec-type ngram-mod`) speeds up agent turns noticeably, because edits
+  and tool arguments repeat text already in the context. llama.cpp checks every draft token, so outputs
+  should not change; to be confirmed side by side.
+
+## Next
+
+1. Build the supervised set in the DeepSeek tool format, committed with a SOURCE.md.
+2. Train LoRA plus the new rows; record a MANIFEST.
+3. Measure before and after: marker emission where a call belongs, parsed tool calls from llama-server, the
+   Easy screen, and plain prompts.
+4. Measure n-gram speculation speed and output match.
+
+## What would falsify this / Risks
+
+- After training, llama-server returns no parsed tool calls, or the Easy screen stays at its baseline: the
+  tokens were added but not learned.
+- Plain prompts change noticeably: freezing the old rows was not enough to protect the rest of the model.
+- The supervised data is Mellum's thinking style; a 1.5B model may copy the format without the judgement.
+- Mellum's traces run to 41,000 tokens; a 1.5B model may handle the context poorly whatever it learns.
