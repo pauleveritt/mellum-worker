@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_cache.py::test_fetch_price_hits_backend_once_per_sku",
+  "grader_tests/test_cache.py::test_evicts_least_recently_used",
+  "grader_tests/test_cache.py::test_cache_clear_forgets_everything"
+]

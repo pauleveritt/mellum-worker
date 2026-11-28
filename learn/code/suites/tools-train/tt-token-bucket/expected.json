@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_ratelimit.py::test_starts_full_then_refuses",
+  "grader_tests/test_ratelimit.py::test_refills_with_time_but_never_above_capacity",
+  "grader_tests/test_ratelimit.py::test_refused_request_takes_nothing",
+  "grader_tests/test_ratelimit.py::test_client_refuses_without_calling_transport"
+]

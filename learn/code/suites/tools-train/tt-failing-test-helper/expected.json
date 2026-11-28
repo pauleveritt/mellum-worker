@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_dates.py::test_saturday_and_sunday_are_not_business_days",
+  "grader_tests/test_dates.py::test_one_business_day_after_friday_is_monday",
+  "grader_tests/test_dates.py::test_due_dates"
+]

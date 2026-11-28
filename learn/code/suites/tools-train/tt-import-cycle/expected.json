@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_cycle.py::test_each_module_imports_on_its_own",
+  "grader_tests/test_cycle.py::test_to_cents_lives_in_money",
+  "grader_tests/test_cycle.py::test_orders_and_discounts_unchanged"
+]

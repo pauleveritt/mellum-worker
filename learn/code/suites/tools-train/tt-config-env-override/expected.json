@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_env_timeout.py::test_file_timeout_used_without_override",
+  "grader_tests/test_env_timeout.py::test_timeout_override_applies_as_a_float",
+  "grader_tests/test_env_timeout.py::test_other_overrides_still_work_alongside"
+]

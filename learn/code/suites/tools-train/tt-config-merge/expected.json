@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_config.py::test_nested_sections_merge_at_every_depth",
+  "grader_tests/test_config.py::test_lists_and_scalars_replace",
+  "grader_tests/test_config.py::test_missing_user_file_is_ignored",
+  "grader_tests/test_config.py::test_merge_does_not_change_its_inputs"
+]

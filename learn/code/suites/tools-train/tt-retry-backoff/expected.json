@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_retry.py::test_succeeds_after_failures_with_growing_delays",
+  "grader_tests/test_retry.py::test_gives_up_and_reraises_last_error_without_final_sleep",
+  "grader_tests/test_retry.py::test_other_errors_are_not_retried",
+  "grader_tests/test_retry.py::test_fetcher_uses_its_own_schedule"
+]

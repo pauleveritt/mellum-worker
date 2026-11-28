@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_report.py::test_summary_for_a_utc_day",
+  "grader_tests/test_report.py::test_offset_event_lands_on_its_utc_day",
+  "grader_tests/test_report.py::test_empty_day"
+]

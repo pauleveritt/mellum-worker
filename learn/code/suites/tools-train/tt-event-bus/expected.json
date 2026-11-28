@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_events.py::test_handlers_run_in_order_and_count_is_returned",
+  "grader_tests/test_events.py::test_unsubscribe_stops_delivery",
+  "grader_tests/test_events.py::test_unsubscribe_during_publish_skips_nobody"
+]

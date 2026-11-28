@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_rename.py::test_new_name_is_public_and_works",
+  "grader_tests/test_rename.py::test_old_name_is_gone",
+  "grader_tests/test_rename.py::test_callers_still_work"
+]

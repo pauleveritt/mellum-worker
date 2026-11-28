@@ -1,0 +1,5 @@
+[
+  {"item": "Desk lamp", "qty": 4, "price": 19.5, "status": "ok"},
+  {"item": "Chair", "qty": 12, "price": 85, "status": "low | reorder"},
+  {"item": "Monitor arm", "qty": 1, "price": 42.25, "status": "ok"}
+]

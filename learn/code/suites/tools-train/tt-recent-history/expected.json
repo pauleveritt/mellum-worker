@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_history.py::test_newest_first_with_dedupe",
+  "grader_tests/test_history.py::test_capacity_drops_oldest_and_readd_at_full_keeps_everyone",
+  "grader_tests/test_history.py::test_recent_is_a_copy_and_capacity_is_checked",
+  "grader_tests/test_history.py::test_shell_last_command"
+]

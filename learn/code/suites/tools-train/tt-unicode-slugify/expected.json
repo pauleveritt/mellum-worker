@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_slug.py::test_slugify_strips_accents_and_compat_forms",
+  "grader_tests/test_slug.py::test_safe_filename_uses_slugs_for_unicode",
+  "grader_tests/test_slug.py::test_safe_filename_keeps_ascii_behaviour"
+]
