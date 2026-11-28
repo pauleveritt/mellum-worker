@@ -11,7 +11,7 @@ from pathlib import Path
 FT = Path(__file__).resolve().parents[1]
 REPO = FT.parents[1]
 STATE = FT / "out" / "status-state.json"
-LOG = FT / "out" / "r1d-sft-v1.log"
+LOG = FT / "out" / (json.loads(STATE.read_text()).get("log", "none") if STATE.is_file() else "none")
 STEPS = [
     ("Calls that parse: llama.cpp returns a structured tool call when one is due", "next"),
     ("Calls that are right: faulty calls per 100, tool choice, valid arguments", "later"),
@@ -33,15 +33,14 @@ def state():
 
 
 def training():
-    if not LOG.is_file() or (STATE.is_file() and json.loads(STATE.read_text()).get("log") != str(LOG.name)):
+    if not LOG.is_file() :
         return ["No training running."]
     if not LOG.is_file():
         return ["No training log yet."]
     text = LOG.read_text(errors="ignore")
     rows = [m.groups() for m in TRAIN.finditer(text)]
     evals = [json.loads(line.split("[eval] ", 1)[1]) for line in text.splitlines() if line.startswith("[eval] ")]
-    out = ["- **Job:** supervised training of DeepSeek-R1-Distill-Qwen-1.5B on 800 examples (LoRA + the nine new "
-           "tool-token rows only)."]
+    out = ["- **Job:** supervised training of DeepSeek-R1-Distill-Qwen-1.5B (LoRA + only the new token rows), log `" + LOG.name + "`."]
     if "TRAINING DONE" in text:
         out.append("- **State:** finished.")
     elif "Traceback" in text:
