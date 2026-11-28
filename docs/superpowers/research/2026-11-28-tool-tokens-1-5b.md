@@ -49,6 +49,23 @@ expected) before the fix.
 
 ## Log
 
+- 2026-11-28: first trained 1.5B (`adapters_r1d_sft_v2`, 1,400 examples of `data_sft_v2`, 350 updates, 162 min,
+  18.7 GB peak). Validation loss 3.05 to 0.90; marker rate 0/39 at step 0, 39/39 from update 50 on (one dip to
+  14/39 at update 300, back to 39/39 at 350). `r1d/fuse.py` folds the LoRA and the row deltas into plain weights;
+  the fused model picks the same next token as the wrapped one at 99.2% of 500 positions (the rest is bfloat16
+  rounding of the folded weights).
+- 2026-11-28: a serving bug, fixed in two places. llama-server returned HTTP 500 on the first call: it leaves
+  control tokens out of the text its tool-call parser reads, and the converter types every `<｜...｜>` token as
+  control, so `<｜tool▁sep｜>` vanished and the call read `functionbash`. The model had emitted the right token
+  (151669). `add_tokens.py` now adds the nine markers as non-special (like `<think>`; token ids unchanged, so the
+  training stands), and `r1d/gguf_markers.py` sets them to user-defined in the GGUF after conversion. Both shown
+  red first.
+- 2026-11-28: proof step 1, a probe (10 one-line requests, 3 tools, temperature 0.6, llama-server `--jinja`):
+  parsed tool calls base 0/10 with thinking on and 0/10 off (about 1,040 tokens of prose per request; the stock
+  template has no off switch); trained 10/10 on (687 completion tokens in all) and 10/10 off (234). The format is
+  learnt and the switch is obeyed. The arguments show weak judgement (`mkdir -p` for "create hello.py", a made-up
+  path), which is what the harness screens measure next. n=10 is a lead.
+
 - 2026-11-28: Mellum switch-training timing test (8 examples, LoRA on 16 layers, 6-bit base): one update at
   20.5 GB in 0.5 min, the next at 92 GB peak (swapping on a 48 GB Mac) and 15 min. A long example does not fit
   Mellum in one pass; the earlier Mellum tunes used 2,048-token chunks. Mellum's switch set is capped at 8,192

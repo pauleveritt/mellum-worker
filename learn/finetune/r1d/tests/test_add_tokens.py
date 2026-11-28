@@ -81,3 +81,21 @@ def test_the_thinking_switch_tokens_follow_the_tool_markers():
     new_json, _ = add_to_tokenizer(tok_json, cfg, NEW_TOKENS, start=151665)
     new = Tokenizer.from_str(json.dumps(new_json))
     assert [new.encode(t, add_special_tokens=False).ids for t in THINK_TOKENS] == [[151674], [151675]]
+
+
+def test_tool_markers_are_plain_added_tokens_so_llama_server_parses_them():
+    """llama.cpp drops control (special) tokens from the text its tool-call parser reads; a call then arrives as
+    `functionbash` with the separator gone. Like `<think>`, and like DeepSeek's own tokenizer, the markers are
+    non-special added tokens. The switch tokens stay special: they are only ever in the prompt."""
+    from add_tokens import NEW_TOKENS, THINK_TOKENS
+    tok_json = json.loads((HF / "tokenizer.json").read_text())
+    cfg = json.loads((HF / "tokenizer_config.json").read_text())
+    new_json, new_cfg = add_to_tokenizer(tok_json, cfg, NEW_TOKENS, start=151665)
+    added = {t["content"]: t["special"] for t in new_json["added_tokens"]}
+    decoder = {v["content"]: v["special"] for v in new_cfg["added_tokens_decoder"].values()}
+    for table in (added, decoder):
+        assert [table[t] for t in TOOL_TOKENS] == [False] * 9
+        assert [table[t] for t in THINK_TOKENS] == [True, True]
+    new = Tokenizer.from_str(json.dumps(new_json))
+    assert new.encode(SAMPLE, add_special_tokens=False).ids == tokenizers()[1].encode(SAMPLE, add_special_tokens=False).ids
+    assert new.decode(new.encode(SAMPLE, add_special_tokens=False).ids, skip_special_tokens=True).count("<｜tool▁sep｜>") == 1

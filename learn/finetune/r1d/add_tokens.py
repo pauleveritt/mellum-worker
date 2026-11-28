@@ -2,7 +2,7 @@
 
 The distill's chat template already writes `<｜tool▁calls▁begin｜>` and friends, but its tokenizer has no such
 tokens: each marker is split into several pieces, and the model was never taught to emit them. Its embedding
-matrices have 271 spare rows (ids 151665-151935), so the markers become special tokens in those rows with no
+matrices have 271 spare rows (ids 151665-151935), so the markers become added tokens in those rows with no
 resize. Each new row (input embedding and output head, which are not tied) starts as the mean of the rows of the
 pieces the marker used to split into; every existing row is left exactly as it was.
 
@@ -36,8 +36,10 @@ def add_to_tokenizer(tok_json, cfg, tokens, start):
     for i, content in enumerate(tokens):
         tid = start + i
         assert tid not in taken, f"id {tid} is already used"
+        # tool markers are plain added tokens, like <think> and DeepSeek's own: llama.cpp drops special tokens
+        # from the text its tool-call parser reads. The switch tokens only ever sit in the prompt.
         entry = {"content": content, "single_word": False, "lstrip": False, "rstrip": False,
-                 "normalized": False, "special": True}
+                 "normalized": False, "special": content not in TOOL_TOKENS}
         tok_json["added_tokens"].append({"id": tid, **entry})
         cfg.setdefault("added_tokens_decoder", {})[str(tid)] = entry
     return tok_json, cfg
