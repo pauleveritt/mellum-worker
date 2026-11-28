@@ -5,7 +5,7 @@ cycle: 1
 lifecycle: active
 ---
 
-# Teaching a 1.5B model tool calling through new tokens — plan
+# Teaching a 1.5B model tool calling through new tokens: plan
 
 **Goal:** prove that tool calling can be added to a model that has none, by adding the tool-call markers as
 real tokens and training only what they need. Model: DeepSeek-R1-Distill-Qwen-1.5B (no tool calling; its
