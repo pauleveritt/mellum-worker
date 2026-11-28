@@ -24,3 +24,10 @@ Build output:
 
 Train set: median 7,619 tokens, 90th percentile 12,181, longest 19,577; 3,058 rows end in a tool call, 150 in
 a final answer; 2,865 come from the medium suite.
+
+## Superseded (2026-11-28)
+
+Do not train on this set. Its tool results were cut to 400 + 200 characters, which the harness does not do at
+inference, so 31% of examples (987 of 3,173) show the model acting on a result it saw only in part (median 1,280
+characters hidden) while copying a teacher who saw it whole. Most rows (2,865) are AgentClinic, now held out
+(ADR 0010). Kept for the record; the training run on it was stopped at update 22 of 200. See `r1d/DISTILL.md`.

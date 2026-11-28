@@ -16,3 +16,4 @@ Format: `NNNN-short-title.md` with **Status**, **Context**, **Decision**, **Cons
 | [0007](0007-speculative-decoding-baseline.md) | N-gram speculation is the baseline a trained draft head must beat | Accepted |
 | [0008](0008-the-small-model-thesis.md) | The goal: prove a small model becomes powerful when fine-tuned and harnessed properly | Accepted |
 | [0009](0009-small-model-pathologies-in-the-harness.md) | Small-model pathologies are removed by Pi extensions first, data second; train and serve the same shape | Accepted |
+| [0010](0010-the-target-is-tool-calling.md) | The target is tool calling, added to a model that lacks it, by a method that works on any model | Accepted |
