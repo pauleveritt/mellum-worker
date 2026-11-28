@@ -548,11 +548,13 @@ def pi_argv(
     session_id: str | None = None,
     session_dir: Path | None = None,
     extras: list[Path] = (),
-    context_files: bool = False,
+    context_files: bool = False, thinking: str | None = None,
 ) -> list[str]:
     # The default run is cold: --no-context-files drops the workspace's own AGENTS.md too.
     # context_files=True keeps it (warm), so a run can measure what the suite's AGENTS.md is worth.
     flags = [f for f in FLAGS if f != "--no-context-files"] if context_files else FLAGS
+    if thinking:
+        flags = [*flags, "--thinking", thinking]
     session = (
         ["--session-id", session_id, "--session-dir", str(session_dir)]
         if session_id and session_dir
@@ -622,7 +624,7 @@ def run_suite(
     single_prompt: bool = False,
     specs: str | None = None,
     extras: list[Path] = (),
-    context_files: bool = False,
+    context_files: bool = False, thinking: str | None = None,
     mediate: bool = False,
     acceptance: dict[int, Path] | None = None,
     verify_max: int = 5,
@@ -705,7 +707,7 @@ def run_suite(
             pi_binary, run / "profile", recorder, provider, model, prompt_text,
             extension=settings["extension"],
             session_id=session_id, session_dir=sessions, extras=extras,
-            context_files=context_files,
+            context_files=context_files, thinking=thinking,
         )
         try:
             # No stdin: Pi with -p appends piped stdin to its prompt.
@@ -1091,7 +1093,7 @@ def _run_sessions(
     stall: float | None = None,
     remedies: list[str] = (),
     extras: list[Path] = (),
-    context_files: bool = False,
+    context_files: bool = False, thinking: str | None = None,
     mediate: bool = False,
     acceptance: dict[int, Path] | None = None,
     verify_max: int = 5,
@@ -1102,7 +1104,7 @@ def _run_sessions(
                             deadline=deadline, arm=arm,
                             single_prompt=single_prompt, specs=specs,
                             profile=profile, stall=stall, extras=extras,
-                            context_files=context_files, mediate=mediate,
+                            context_files=context_files, thinking=thinking, mediate=mediate,
                             acceptance=acceptance, verify_max=verify_max)
         acceptance_file = run_dir / "acceptance.json"
         acceptance_result = (json.loads(acceptance_file.read_text())
@@ -1190,7 +1192,7 @@ def run_suites(
     stall: float | None = None,
     remedies: list[str] = (),
     extras: list[Path] = (),
-    context_files: bool = False,
+    context_files: bool = False, thinking: str | None = None,
     mediate: bool = False,
     acceptance: dict[int, Path] | None = None,
     verify_max: int = 5,
@@ -1220,7 +1222,7 @@ def run_suites(
             suite, runs_dir=runs_dir, pi_binary=pi_binary,
             repeat=repeat, grade_run=grade_run, deadline=deadline, arm=arm,
             single_prompt=single_prompt, specs=specs, profile=profile, stall=stall,
-            remedies=remedies, extras=extras, context_files=context_files,
+            remedies=remedies, extras=extras, context_files=context_files, thinking=thinking,
             mediate=mediate, acceptance=acceptance, verify_max=verify_max,
         )
         sessions_passed += _print_task(suite, results, repeat)
@@ -1288,6 +1290,8 @@ def build_parser() -> argparse.ArgumentParser:
                           "(guard/repeat-loops) or preset:<name>")
     run.add_argument("--extension", type=Path, action="append", default=[], metavar="PATH",
                      help="a Pi extension of your own to load (repeatable)")
+    run.add_argument("--thinking", choices=["off", "minimal", "low", "medium", "high", "xhigh", "max"], default=None,
+                     help="the thinking level passed to Pi (default: Pi's own)")
     run.add_argument("--stall", type=float, default=None, metavar="SECONDS",
                      help="end a session as stalled when one tool call has run this long "
                           "with no result (a foreground server); off by default")
@@ -1354,7 +1358,7 @@ def main(argv: list[str] | None = None) -> int:
                    repeat=args.repeat, deadline=args.deadline, arm=args.arm,
                    single_prompt=args.single_prompt, specs=args.specs,
                    profile=args.profile, stall=args.stall,
-                   remedies=remedies, extras=extras, context_files=args.context_files,
+                   remedies=remedies, extras=extras, context_files=args.context_files, thinking=args.thinking,
                    mediate=args.mediate, acceptance=acceptance, verify_max=args.verify_max)
         return 0
 
@@ -1370,14 +1374,14 @@ def main(argv: list[str] | None = None) -> int:
         print(shlex.join(pi_argv(args.pi_binary, args.profile, RECORDER, provider,
                                  model, prompt,
                                  extension=settings["extension"], extras=extras,
-                                 context_files=args.context_files)))
+                                 context_files=args.context_files, thinking=args.thinking)))
         return 0
     results = _run_sessions(
         suite, runs_dir=args.runs_dir, pi_binary=args.pi_binary,
         repeat=args.repeat, grade_run=args.grade, deadline=args.deadline,
         arm=args.arm, single_prompt=args.single_prompt, specs=args.specs,
         profile=args.profile, stall=args.stall,
-        remedies=remedies, extras=extras, context_files=args.context_files,
+        remedies=remedies, extras=extras, context_files=args.context_files, thinking=args.thinking,
         mediate=args.mediate, acceptance=acceptance, verify_max=args.verify_max,
     )
     _print_task(suite, results, args.repeat)

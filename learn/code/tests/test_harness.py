@@ -1358,3 +1358,9 @@ def test_mediate_reruns_the_phase_until_the_acceptance_test_passes(tmp_path):
     assert records[0]["attempts"] >= 2
     # the worker sees a copy it can read and run
     assert (run_dir / "workspace" / "acceptance" / "test_phase1.py").is_file()
+
+
+def test_a_thinking_level_is_passed_to_pi_and_left_out_when_unset():
+    off = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", "go", thinking="off")
+    assert off[off.index("--thinking") + 1] == "off"
+    assert "--thinking" not in harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", "go")
