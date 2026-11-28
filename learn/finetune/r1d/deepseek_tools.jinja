@@ -2,9 +2,10 @@
     Based on llama.cpp's llama-cpp-deepseek-r1.jinja (same tools preamble and call syntax, so llama.cpp's
     DeepSeek R1 parser reads the calls), fixed so a turn with text keeps its calls, string arguments are not
     JSON-encoded twice, and each run of tool results opens its own block. -#}
+{%- macro text(c) -%}{%- if c is string -%}{{- c -}}{%- elif c -%}{%- for part in c -%}{%- if part['type'] == 'text' -%}{{- part['text'] -}}{%- endif -%}{%- endfor -%}{%- endif -%}{%- endmacro -%}
 {{- bos_token -}}
 {%- set ns = namespace(system='', in_outputs=false) -%}
-{%- for m in messages if m['role'] == 'system' -%}{%- set ns.system = ns.system + m['content'] -%}{%- endfor -%}
+{%- for m in messages if m['role'] == 'system' -%}{%- set ns.system = ns.system + text(m['content']) -%}{%- endfor -%}
 {%- if tools -%}
 {{- "You can call any of the following function tools to satisfy the user's requests: " + (tools | map(attribute='function') | list | tojson) + "\n\nExample function tool call syntax:\n\n<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>function<｜tool▁sep｜>example_function_name\n```json\n{\"arg1\": \"some_value\"}\n```<｜tool▁call▁end｜><｜tool▁calls▁end｜>\n\n" -}}
 {%- endif -%}
@@ -12,9 +13,9 @@
 {%- for m in messages -%}
 {%- if m['role'] != 'tool' and ns.in_outputs -%}{{- '<｜tool▁outputs▁end｜>' -}}{%- set ns.in_outputs = false -%}{%- endif -%}
 {%- if m['role'] == 'user' -%}
-{{- '<｜User｜>' + m['content'] -}}
+{{- '<｜User｜>' + text(m['content']) -}}
 {%- elif m['role'] == 'assistant' -%}
-{%- set content = m['content'] or '' -%}
+{%- set content = text(m['content']) -%}
 {%- if '</think>' in content -%}{%- set content = content.split('</think>')[-1] | trim -%}{%- endif -%}
 {{- '<｜Assistant｜>' + content -}}
 {%- if m['tool_calls'] -%}
@@ -29,7 +30,7 @@
 {{- '<｜end▁of▁sentence｜>' -}}
 {%- elif m['role'] == 'tool' -%}
 {%- if not ns.in_outputs -%}{{- '<｜tool▁outputs▁begin｜>' -}}{%- set ns.in_outputs = true -%}{%- endif -%}
-{{- '<｜tool▁output▁begin｜>' + m['content'] + '<｜tool▁output▁end｜>' -}}
+{{- '<｜tool▁output▁begin｜>' + text(m['content']) + '<｜tool▁output▁end｜>' -}}
 {%- endif -%}
 {%- endfor -%}
 {%- if ns.in_outputs -%}{{- '<｜tool▁outputs▁end｜>' -}}{%- endif -%}

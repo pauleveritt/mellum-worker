@@ -42,3 +42,11 @@ def test_tools_preamble_then_system_and_thinking_is_dropped_from_history():
 
 def test_no_tools_no_preamble():
     assert render([{"role": "user", "content": "hi"}], tools=None) == "<BOS><｜User｜>hi"
+
+
+def test_content_given_as_text_parts_renders_like_a_string():
+    parts = [{"type": "text", "text": "Fix "}, {"type": "text", "text": "it."}]
+    assert render([{"role": "system", "content": parts}, {"role": "user", "content": parts},
+                   {"role": "tool", "content": parts}], tools=None) == render(
+        [{"role": "system", "content": "Fix it."}, {"role": "user", "content": "Fix it."},
+         {"role": "tool", "content": "Fix it."}], tools=None)
