@@ -1,0 +1,34 @@
+{#- DeepSeek-R1-Distill-Qwen chat turns with Qwen/Hermes tool calls.
+    <tool_call> and </tool_call> are single tokens in this tokenizer (from the Qwen2.5 base); DeepSeek's own
+    tool tokens are not in its vocabulary. llama.cpp parses this format with --jinja. -#}
+{{- bos_token -}}
+{%- set sys = namespace(text='') -%}
+{%- for m in messages if m['role'] == 'system' -%}{%- set sys.text = sys.text + m['content'] -%}{%- endfor -%}
+{%- if tools -%}
+{%- set sys.text = sys.text + '\n\n# Tools\n\nYou may call one or more functions to help with the task. The functions are listed inside <tools></tools>:\n<tools>' -%}
+{%- for t in tools -%}{%- set sys.text = sys.text + '\n' + (t | tojson) -%}{%- endfor -%}
+{%- set sys.text = sys.text + '\n</tools>\n\nTo call a function, write a JSON object with its name and arguments inside <tool_call></tool_call> tags:\n<tool_call>\n{"name": <function-name>, "arguments": <arguments-object>}\n</tool_call>' -%}
+{%- endif -%}
+{{- sys.text -}}
+{%- set ns = namespace(in_tool=false) -%}
+{%- for m in messages -%}
+{%- if m['role'] == 'user' -%}
+{%- set ns.in_tool = false -%}
+{{- '<｜User｜>' + m['content'] -}}
+{%- elif m['role'] == 'assistant' -%}
+{%- if ns.in_tool -%}{%- set ns.in_tool = false -%}{%- endif -%}
+{%- set content = m['content'] or '' -%}
+{%- if '</think>' in content -%}{%- set content = content.split('</think>')[-1] | trim -%}{%- endif -%}
+{{- '<｜Assistant｜>' + content -}}
+{%- for tc in m['tool_calls'] or [] -%}
+{%- set f = tc['function'] if tc['function'] is defined else tc -%}
+{%- set args = f['arguments'] -%}
+{{- '\n<tool_call>\n{"name": "' + f['name'] + '", "arguments": ' + (args if args is string else (args | tojson)) + '}\n</tool_call>' -}}
+{%- endfor -%}
+{{- '<｜end▁of▁sentence｜>' -}}
+{%- elif m['role'] == 'tool' -%}
+{%- if not ns.in_tool -%}{{- '<｜User｜>' -}}{%- set ns.in_tool = true -%}{%- else -%}{{- '\n' -}}{%- endif -%}
+{{- '<tool_response>\n' + m['content'] + '\n</tool_response>' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}{{- '<｜Assistant｜><think>\n' -}}{%- endif -%}
