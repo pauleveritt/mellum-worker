@@ -10,12 +10,13 @@ from pathlib import Path
 
 FT = Path(__file__).resolve().parents[1]
 REPO = FT.parents[1]
+STATE = FT / "out" / "status-state.json"
 LOG = FT / "out" / "r1d-sft-v1.log"
 STEPS = [
-    ("Tool calls in a parseable format (supervised training on the new tokens)", "in progress"),
-    ("Passes Easy runs at all", "next"),
-    ("Preference training on its own runs lifts Easy and Medium", "later"),
-    ("Preregistered comparison against Mellum 12B base on Medium (n >= 10, with cost)", "later"),
+    ("Calls that parse: llama.cpp returns a structured tool call when one is due", "next"),
+    ("Calls that are right: faulty calls per 100, tool choice, valid arguments", "later"),
+    ("BFCL (well-known tool-calling benchmark, held out from training)", "later"),
+    ("End to end: the Easy screen against the untrained model", "later"),
 ]
 TRAIN = re.compile(r"\[train\] update (\d+)/(\d+): loss ([\d.]+) \| ([\d.]+) min, ~(\d+) min left, peak ([\d.]+) GB")
 
@@ -24,7 +25,16 @@ def sh(*cmd):
     return subprocess.run(cmd, capture_output=True, text=True, cwd=REPO).stdout.strip()
 
 
+def state():
+    if not STATE.is_file():
+        return []
+    st = json.loads(STATE.read_text())
+    return [f"- **Now:** {st.get('now', '')}"] + [f"- {x}" for x in st.get("notes", [])]
+
+
 def training():
+    if not LOG.is_file() or (STATE.is_file() and json.loads(STATE.read_text()).get("log") != str(LOG.name)):
+        return ["No training running."]
     if not LOG.is_file():
         return ["No training log yet."]
     text = LOG.read_text(errors="ignore")
@@ -71,16 +81,17 @@ def jobs():
 def main():
     now = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")
     lines = [f"# Small-model status", "", f"Updated {now}. Refreshed every 10 minutes.", "",
-             "**Goal:** prove a small model becomes powerful when fine-tuned and harnessed properly "
-             "([ADR 0008](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/adr/0008-the-small-model-thesis.md)).",
+             "**Target:** good tool calling, added to a model that lacks it, by a method that works on any model "
+             "([ADR 0010](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/adr/0010-the-target-is-tool-calling.md)).",
              "", "## Running now", ""] + [f"- {j}" for j in jobs()]
-    lines += ["", "## Current job", ""] + training()
+    lines += ["", "## Current phase", ""] + state() + ["", "## Training", ""] + training()
     lines += ["", "## The proof, step by step", "", "| Step | Status |", "|---|---|"]
     lines += [f"| {i}. {s} | {st} |" for i, (s, st) in enumerate(STEPS, 1)]
     lines += ["", "## Already shown", "",
               "- DeepSeek's nine tool markers are real single tokens in the 1.5B (spare rows 151665-151673), "
               "proven in the tokenizer, transformers and llama.cpp.",
               "- Smoke run, 40 examples: marker hit rate 0/10 before, 10/10 after 10 updates.",
+              "- The lab Mellum (vLLM) works as the teacher through the harness, in the student's harness shape.",
               "- Tsunami (Mellum 12B tune) is uploaded to Hugging Face, private.",
               "", "## Latest commits", "", "```", sh("git", "log", "--oneline", "-8"), "```",
               "", "Record: [research note](https://github.com/andrevanzuydam/mellum-worker/blob/main/docs/superpowers/research/2026-11-28-tool-tokens-1-5b.md)"
