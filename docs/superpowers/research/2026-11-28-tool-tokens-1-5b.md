@@ -49,6 +49,12 @@ expected) before the fix.
 
 ## Log
 
+- 2026-11-28: supervised set `learn/finetune/r1d/data_sft_v1` built (736825b6): 3,208 train / 369 valid
+  examples (held out by run), 25.4M tokens, one per assistant step of a passing phase, failed calls skipped.
+  3,058 end in a tool call. Median 7,619 tokens, longest 19,577. Its SOURCE.md has the command and output.
+  While building it, real payloads turned out to send some content as a list of text parts; the template
+  now accepts both (test shown red first).
+
 - 2026-11-28: the GPU was cleared for this work by stopping a Tsunami evaluation on the Python training-task
   suite after 2 of 9 tasks (0/6 passed; base scored 5/27 on the whole suite, mix120 2/27). It was a scorecard
   fill-in, not a held-out test, and Tsunami's training was already finished.
