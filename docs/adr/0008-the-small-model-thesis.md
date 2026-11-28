@@ -25,6 +25,11 @@ showed tidier tool calls but no proven pass-rate gain (0003, 0004). A 1.5B model
   3. on-policy preference training on its own runs (0002) lifts Easy and Medium;
   4. a preregistered comparison against Mellum 12B base on Medium, at n of 10 or more, with cost.
 
+- The small model is also the testbed: a concept (new tokens, a draft head, a concept head, a harness remedy)
+  is tried on the 1.5B first because it costs a fraction of the GPU, then carried to larger models (Mellum
+  12B) if it holds. A result that transfers is re-measured on the larger model, never assumed: earlier levers
+  proved tier-dependent (a wash on easy, a real win on medium).
+
 ## Consequences
 
 Work that doesn't move a step gets deferred. A step that fails is a learning, recorded as an ADR, not hidden.
