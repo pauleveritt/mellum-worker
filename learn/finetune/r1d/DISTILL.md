@@ -30,11 +30,12 @@ The AgentClinic family (`easy`, `medium`, `hard`, and Satyrn's `agentclinic-*`),
 
 | Date | Run folder | Tasks | Repeats | Shape | Result |
 |---|---|---|---|---|---|
-| 2026-11-28 | `runs/2026-11-28-teacher-v2` | 24 tools-train + 12 py-features-train + 6 satyrn-train (speed-probe removed before its sessions started) | 3 | as above, 4 parallel, deadline 1,200 s | running |
+| 2026-11-28 | `runs/2026-11-28-teacher-v2` | 24 tools-train + 12 py-features-train + 6 satyrn-train (speed-probe removed before its sessions started) | 3 | as above, 4 parallel, deadline 1,200 s | 126 sessions run, 46 passed: tools-train 42/72, Satyrn 3/18, py-features-train 1/39 (the teacher lacks the new APIs); 05:08 |
 | 2026-11-28 | `runs/2026-11-28-teacher-smoke` | py3.14-zstd-bytes | 1 | as above | plumbing check: 19 requests, 17 calls, 2 errors; task failed (API unknown to the teacher) |
 
 ## Data sets built from it
 
 | Set | Status | Notes |
 |---|---|---|
+| `data_sft_v2` | current | from teacher-v2, both thinking modes, 5,104 train / 734 valid; see its SOURCE.md |
 | `data_sft_v1` | **superseded** | tool results cut to 400 + 200 characters, unlike inference: 31% of examples act on a result seen only in part; also mostly AgentClinic (2,865 of 3,208), now held out |
