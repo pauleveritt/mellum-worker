@@ -30,4 +30,13 @@ then matches inference.
 
 ## Evidence
 
-To come. Token split: research note `docs/superpowers/research/2026-11-28-tool-tokens-1-5b.md`.
+Mellum's untrained switch (2026-11-28, lab vLLM, `enable_thinking: false` from its own template):
+- single requests, 10 prompts where a call is due: no thinking in 10/10, a call in 10/10, 248 tokens against
+  2,986 with thinking on (12 times fewer), one weaker tool choice (`read` where `grep` fitted);
+- a whole harness run (`tt-word-freq`, `--thinking off`; Pi sent `chat_template_kwargs: {enable_thinking:
+  false}` correctly): no thinking on any turn, but it collapsed into a loop: 448 tool calls, 248 errors, one
+  malformed `python -c` command repeated 264 times; stopped by hand. The same task passed 3/3 with thinking on
+  in about 2 minutes each (teacher batch v2).
+So the switch exists and is obeyed, but Mellum can't work in the off mode: it was never trained to. A trained
+off mode is needed, as decided above. The `guard/repeat-loops` remedy, not in that run's shape, would have
+stopped the loop at 5 repeats; it belongs in the small-model shape (0009). Token split: research note `docs/superpowers/research/2026-11-28-tool-tokens-1-5b.md`.
