@@ -71,3 +71,13 @@ def test_transformers_sees_the_same_ids_the_gguf_converter_will(tmp_path):
         assert vocab[t["content"]] == t["id"], t["content"]
     assert [vocab[t] for t in TOOL_TOKENS] == list(range(151665, 151674))
     assert new.eos_token_id == old.eos_token_id and new.bos_token_id == old.bos_token_id
+
+
+def test_the_thinking_switch_tokens_follow_the_tool_markers():
+    from add_tokens import NEW_TOKENS, THINK_TOKENS
+    assert NEW_TOKENS == TOOL_TOKENS + THINK_TOKENS and THINK_TOKENS == ["<｜think▁on｜>", "<｜think▁off｜>"]
+    tok_json = json.loads((HF / "tokenizer.json").read_text())
+    cfg = json.loads((HF / "tokenizer_config.json").read_text())
+    new_json, _ = add_to_tokenizer(tok_json, cfg, NEW_TOKENS, start=151665)
+    new = Tokenizer.from_str(json.dumps(new_json))
+    assert [new.encode(t, add_special_tokens=False).ids for t in THINK_TOKENS] == [[151674], [151675]]

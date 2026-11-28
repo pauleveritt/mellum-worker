@@ -22,7 +22,7 @@ import mlx.nn as nn
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE.parent))
-START, N_NEW, MARKER = 151665, 9, 151665  # MARKER = <｜tool▁calls▁begin｜>
+START, N_NEW, MARKER = 151665, 11, 151665  # 9 tool markers + 2 thinking-switch tokens; MARKER = <｜tool▁calls▁begin｜>
 LORA_KEYS = ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj",
              "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"]
 

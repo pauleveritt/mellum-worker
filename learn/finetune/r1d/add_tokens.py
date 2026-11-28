@@ -18,6 +18,8 @@ import numpy as np
 TOOL_TOKENS = ["<｜tool▁calls▁begin｜>", "<｜tool▁calls▁end｜>", "<｜tool▁call▁begin｜>", "<｜tool▁call▁end｜>",
                "<｜tool▁sep｜>", "<｜tool▁outputs▁begin｜>", "<｜tool▁outputs▁end｜>", "<｜tool▁output▁begin｜>",
                "<｜tool▁output▁end｜>"]
+THINK_TOKENS = ["<｜think▁on｜>", "<｜think▁off｜>"]  # the thinking switch (ADR 0012)
+NEW_TOKENS = TOOL_TOKENS + THINK_TOKENS
 START = 151665
 TEMPLATE = Path(__file__).parent / "deepseek_tools.jinja"
 
@@ -59,14 +61,14 @@ def main(src, out):
     tok_json = json.loads((src / "tokenizer.json").read_text())
     cfg = json.loads((src / "tokenizer_config.json").read_text())
     old = Tokenizer.from_str(json.dumps(tok_json))
-    pieces = {START + i: old.encode(t, add_special_tokens=False).ids for i, t in enumerate(TOOL_TOKENS)}
-    new_json, new_cfg = add_to_tokenizer(tok_json, cfg, TOOL_TOKENS, START)
+    pieces = {START + i: old.encode(t, add_special_tokens=False).ids for i, t in enumerate(NEW_TOKENS)}
+    new_json, new_cfg = add_to_tokenizer(tok_json, cfg, NEW_TOKENS, START)
     if TEMPLATE.is_file():
         new_cfg["chat_template"] = TEMPLATE.read_text()
     shutil.copytree(src, out, ignore=shutil.ignore_patterns(".cache", "*.safetensors", "figures"))
     (out / "tokenizer.json").write_text(json.dumps(new_json, ensure_ascii=False, indent=2))
     (out / "tokenizer_config.json").write_text(json.dumps(new_cfg, ensure_ascii=False, indent=2))
-    report = {"tokens": {t: {"id": START + i, "was": pieces[START + i]} for i, t in enumerate(TOOL_TOKENS)}}
+    report = {"tokens": {t: {"id": START + i, "was": pieces[START + i]} for i, t in enumerate(NEW_TOKENS)}}
     for f in sorted(src.glob("*.safetensors")):
         w = mx.load(str(f))
         for name in ("model.embed_tokens.weight", "lm_head.weight"):

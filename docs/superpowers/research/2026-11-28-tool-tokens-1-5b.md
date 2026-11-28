@@ -49,6 +49,12 @@ expected) before the fix.
 
 ## Log
 
+- 2026-11-28: thinking switch added (ADR 0012). Two more tokens, `<｜think▁on｜>` and `<｜think▁off｜>`, at 151674
+  and 151675; the template names the mode at the start of each generated turn, and `enable_thinking: false` (what
+  Pi sends for `--thinking off`) gives an empty thinking block. The builder writes every teacher step in both
+  modes. Rebuilt as `hf-tooltokens-v2`; llama.cpp reads all 11 new tokens as single tokens and switches mode
+  from `chat_template_kwargs`. Mellum's own untrained switch was obeyed but looped without thinking (ADR 0012).
+
 - 2026-11-28: supervised set `learn/finetune/r1d/data_sft_v1` built (736825b6): 3,208 train / 369 valid
   examples (held out by run), 25.4M tokens, one per assistant step of a passing phase, failed calls skipped.
   3,058 end in a tool call. Median 7,619 tokens, longest 19,577. Its SOURCE.md has the command and output.

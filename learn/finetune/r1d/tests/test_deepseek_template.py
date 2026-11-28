@@ -30,7 +30,7 @@ def test_tool_results_close_before_the_next_turn_and_reopen_after():
                   {"role": "tool", "content": "r3"}], gen=True)
     assert ("<｜tool▁outputs▁begin｜><｜tool▁output▁begin｜>r1<｜tool▁output▁end｜><｜tool▁output▁begin｜>r2"
             "<｜tool▁output▁end｜><｜tool▁outputs▁end｜><｜Assistant｜>") in out
-    assert out.endswith("<｜tool▁output▁begin｜>r3<｜tool▁output▁end｜><｜tool▁outputs▁end｜><｜Assistant｜><think>\n")
+    assert out.endswith("<｜tool▁output▁begin｜>r3<｜tool▁output▁end｜><｜tool▁outputs▁end｜><｜Assistant｜><｜think▁on｜><think>\n")
 
 
 def test_tools_preamble_then_system_and_thinking_is_dropped_from_history():
@@ -50,3 +50,19 @@ def test_content_given_as_text_parts_renders_like_a_string():
                    {"role": "tool", "content": parts}], tools=None) == render(
         [{"role": "system", "content": "Fix it."}, {"role": "user", "content": "Fix it."},
          {"role": "tool", "content": "Fix it."}], tools=None)
+
+
+def render_gen(messages, **kw):
+    env = jinja2.Environment()
+    env.filters["tojson"] = lambda v: json.dumps(v, ensure_ascii=False)
+    return env.from_string(T.read_text()).render(messages=messages, tools=None, add_generation_prompt=True,
+                                                 bos_token="<BOS>", **kw)
+
+
+def test_thinking_on_is_the_default_and_names_its_mode():
+    assert render_gen([{"role": "user", "content": "hi"}]).endswith("<｜Assistant｜><｜think▁on｜><think>\n")
+
+
+def test_thinking_off_closes_an_empty_thinking_block():
+    out = render_gen([{"role": "user", "content": "hi"}], enable_thinking=False)
+    assert out.endswith("<｜Assistant｜><｜think▁off｜><think>\n\n</think>\n\n")

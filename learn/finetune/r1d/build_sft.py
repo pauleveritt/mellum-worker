@@ -37,23 +37,29 @@ def held_out(suite):
     return suite in ("easy", "medium", "hard") or "agentclinic" in suite or suite in EVAL_TASKS
 
 
-def render(messages, tools, gen=False):
-    return _tpl.render(messages=messages, tools=tools, add_generation_prompt=gen, bos_token=BOS)
+def render(messages, tools, gen=False, thinking=True):
+    return _tpl.render(messages=messages, tools=tools, add_generation_prompt=gen, bos_token=BOS,
+                       enable_thinking=thinking)
 
 
-def examples(msgs, scored, tools, failed):
-    """[{step, prompt, completion}] for each scored assistant index not in `failed`."""
+def examples(msgs, scored, tools, failed, modes=("on", "off")):
+    """[{step, mode, prompt, completion}] for each scored assistant index not in `failed`, once per thinking mode.
+
+    `on`: the prompt opens thinking and the completion is the step's thinking, `</think>`, then its text and calls.
+    `off`: the prompt closes an empty thinking block and the completion is the same text and calls (ADR 0012)."""
     out = []
     for i in scored:
         if i in failed:
             continue
-        prompt = render(msgs[:i], tools, gen=True)
         plain = {k: v for k, v in msgs[i].items() if k != "reasoning_content"}
         before, whole = render(msgs[:i], tools), render(msgs[:i] + [plain], tools)
         assert whole.startswith(before + "<｜Assistant｜>"), "template is not prefix-stable"
         tail = whole[len(before) + len("<｜Assistant｜>"):]
         thinking = (msgs[i].get("reasoning_content") or "").strip()
-        out.append({"step": i, "prompt": prompt, "completion": f"{thinking}\n</think>\n\n{tail}"})
+        for mode in modes:
+            prompt = render(msgs[:i], tools, gen=True, thinking=mode == "on")
+            completion = f"{thinking}\n</think>\n\n{tail}" if mode == "on" else tail
+            out.append({"step": i, "mode": mode, "prompt": prompt, "completion": completion})
     return out
 
 
@@ -138,8 +144,8 @@ def main():
                         why["over-budget"] += 1
                         continue
                     rows[split].append({"prompt": ex["prompt"], "completion": ex["completion"], "tokens": n,
-                                        "phase": f"{run.get('suite')}:p{p}", "passed": bool(outcome.get(p)),
-                                        "src": f"{Path(f).parent.name}#p{p}#{ex['step']}"})
+                                        "phase": f"{run.get('suite')}:p{p}", "passed": bool(outcome.get(p)), "mode": ex["mode"],
+                                        "src": f"{Path(f).parent.name}#p{p}#{ex['step']}#{ex['mode']}"})
                     why["ok"] += 1
     print("examples:", dict(why))
     for split, r in rows.items():
