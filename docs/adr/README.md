@@ -19,3 +19,4 @@ Format: `NNNN-short-title.md` with **Status**, **Context**, **Decision**, **Cons
 | [0010](0010-the-target-is-tool-calling.md) | The target is tool calling, added to a model that lacks it, by a method that works on any model | Accepted |
 | [0011](0011-graders-match-whole-test-ids.md) | Graders match whole test ids; a parametrized test passes only when every case does | Accepted |
 | [0012](0012-a-trained-thinking-switch.md) | Thinking on and off is a trained switch, a control token, not a template trick | Proposed |
+| [0013](0013-mixture-of-experts-for-the-small-model.md) | A mixture-of-experts effect for the small model: options recorded, deferred | Deferred |
