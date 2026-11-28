@@ -33,6 +33,16 @@ def completion_loss(model, ids, n_prompt):
     return nn.losses.cross_entropy(model.lm_head(h), ids[n_prompt:]).mean()
 
 
+def pick_examples(rows, seed, start, count):
+    """rows shuffled with `seed` (as random.seed + random.shuffle), then [start:start+count] (count 0: to the end).
+
+    A resumed run (--start-example) takes exactly the examples an earlier run with the same seed did not."""
+    import random
+    rows = list(rows)
+    random.Random(seed).shuffle(rows)
+    return rows[start:start + count] if count else rows[start:]
+
+
 def marker_hits(logits, targets, marker=MARKER):
     """(positions where the model ranks `marker` first, positions whose target is `marker`)."""
     at = targets == marker
@@ -65,6 +75,8 @@ def main():
     ap.add_argument("--lora-layers", type=int, default=0, help="LoRA on the last N layers (0: all)")
     ap.add_argument("--lora-keys", choices=["all-linear", "default"], default="all-linear",
                     help="all-linear: attention and MLP projections (dense models); default: mlx-lm's choice (MoE models)")
+    ap.add_argument("--resume", default="", help="adapters.safetensors to start from (optimizer state starts fresh)")
+    ap.add_argument("--start-example", type=int, default=0, help="skip this many shuffled examples (what an earlier run used)")
     ap.add_argument("--marker", default="<｜tool▁calls▁begin｜>", help="the token that starts a tool call, for the hit rate")
     a = ap.parse_args()
     out = Path(a.out)
@@ -85,6 +97,9 @@ def main():
     if a.new_rows:
         model.model.embed_tokens = RowDeltaEmbedding(model.model.embed_tokens, START, a.new_rows)
         model.lm_head = RowDeltaHead(model.lm_head, START, a.new_rows)
+    if a.resume:
+        model.load_weights(a.resume, strict=False)
+        print(f"resumed from {a.resume}", flush=True)
     marker = tok.token_to_id(a.marker)
     assert marker is not None, f"{a.marker} is not a single token in this tokenizer"
     grad_checkpoint(model.model.layers[0])
@@ -97,9 +112,7 @@ def main():
         return mx.array(p + c), len(p)
 
     train, valid = read_pairs(a.data, "train"), read_pairs(a.data, "valid")
-    random.shuffle(train)
-    if a.examples:
-        train = train[:a.examples]
+    train = pick_examples(train, a.seed, a.start_example, a.examples)
     valid = random.Random(1).sample(valid, min(a.eval_n, len(valid)))
     # the marker check needs examples that start a call
     print(f"train {len(train)} examples, {sum(r['tokens'] for r in train):,} tokens; eval {len(valid)}", flush=True)

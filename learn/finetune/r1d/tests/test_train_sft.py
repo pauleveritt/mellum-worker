@@ -7,7 +7,7 @@ import mlx.nn as nn
 from mlx_lm.models.qwen2 import Model, ModelArgs
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from train_sft import completion_loss, marker_hits  # noqa: E402
+from train_sft import completion_loss, marker_hits, pick_examples  # noqa: E402
 
 mx.random.seed(0)
 ARGS = ModelArgs(model_type="qwen2", hidden_size=16, num_hidden_layers=1, intermediate_size=32, num_attention_heads=2,
@@ -27,3 +27,14 @@ def test_marker_hits_counts_marker_targets_the_model_ranks_first():
     logits = logits.at[1, 17].add(5.0).at[3, 2].add(5.0)
     targets = mx.array([3, 17, 9, 17])  # markers (id 17) at positions 1 and 3; only position 1 is ranked first
     assert marker_hits(logits, targets, marker=17) == (1, 2)
+
+
+def test_a_resumed_run_takes_exactly_the_examples_the_first_run_skipped():
+    import random
+    rows = [{"i": i} for i in range(50)]
+    first = pick_examples(rows, seed=0, start=0, count=20)
+    rest = pick_examples(rows, seed=0, start=20, count=0)
+    ref = list(rows); random.seed(0); random.shuffle(ref)  # what the first v2 run did
+    assert first == ref[:20] and rest == ref[20:]
+    assert len(rest) == 30 and not {r["i"] for r in first} & {r["i"] for r in rest}
+    assert rows == [{"i": i} for i in range(50)]  # the caller's list is not shuffled in place
