@@ -58,3 +58,20 @@ def test_each_step_gives_both_modes_and_off_drops_only_the_thinking():
     assert off["completion"] == "Done.<｜end▁of▁sentence｜>"
     assert on["completion"].endswith(off["completion"])
     assert on["prompt"].removesuffix("<｜think▁on｜><think>\n") == off["prompt"].removesuffix("<｜think▁off｜><think>\n\n</think>\n\n")
+
+
+MELLUM_TEMPLATE = Path.home() / "projects/mellum-worker/.models/Mellum2.1-12B-A2.5B-Thinking-6bit/chat_template.jinja"
+
+
+def test_mellum_format_both_modes_match_its_own_template():
+    from build_sft import Format
+    fmt = Format.load("mellum", MELLUM_TEMPLATE)
+    on2, off2, on4, off4 = examples(MSGS, [2, 4], TOOLS, failed=set(), fmt=fmt)
+    assert on2["prompt"].endswith("<|im_start|>assistant\n")
+    assert on2["completion"] == ('<think>\nLook first.\n</think>\n\n<tool_call>\n{"name": "read", "arguments": {"path": "a.py"}}'
+                                 '\n</tool_call><|im_end|>\n')
+    assert off2["prompt"].endswith("<|im_start|>assistant\n<think>\n\n</think>\n\n")
+    assert off2["completion"] == '<tool_call>\n{"name": "read", "arguments": {"path": "a.py"}}\n</tool_call><|im_end|>\n'
+    assert "Look first." in on4["prompt"]       # on: earlier thinking stays in history, as Mellum sees it
+    assert "Look first." not in off4["prompt"]  # off: no thinking was ever produced
+    assert off4["completion"] == "Done.<|im_end|>\n"

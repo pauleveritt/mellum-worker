@@ -21,13 +21,6 @@ import jinja2
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-TEMPLATE = (HERE / "deepseek_tools.jinja").read_text()
-BOS = "<｜begin▁of▁sentence｜>"
-_env = jinja2.Environment()
-_env.filters["tojson"] = lambda v: json.dumps(v, ensure_ascii=False)
-_tpl = _env.from_string(TEMPLATE)
-
-
 EVAL_TASKS = {d.name for d in (HERE.parents[1] / "code" / "suites" / "py-features").iterdir() if d.is_dir()}
 
 
@@ -37,28 +30,66 @@ def held_out(suite):
     return suite in ("easy", "medium", "hard") or "agentclinic" in suite or suite in EVAL_TASKS
 
 
+class Format:
+    """How one model's chat template writes a turn, so the same builder serves any model.
+
+    `opener` is what the generation prompt ends with when thinking is on; `history_thinking` says whether earlier
+    turns keep their thinking in this template (DeepSeek drops it, Mellum keeps it within a run); `think_open` is
+    the part of the thinking wrapper that the completion has to write itself."""
+
+    def __init__(self, name, template, bos, opener, history_thinking, think_open):
+        env = jinja2.Environment()
+        env.filters["tojson"] = lambda v: json.dumps(v, ensure_ascii=False)
+        self.name, self.tpl, self.bos, self.opener = name, env.from_string(template), bos, opener
+        self.history_thinking, self.think_open = history_thinking, think_open
+
+    @classmethod
+    def load(cls, name, template_path=None):
+        if name == "deepseek":
+            return cls(name, (HERE / "deepseek_tools.jinja").read_text(), "<｜begin▁of▁sentence｜>",
+                       "<｜Assistant｜>", False, "")
+        if name == "mellum":
+            return cls(name, Path(template_path).read_text(), "", "<|im_start|>assistant\n", True, "<think>\n")
+        raise ValueError(name)
+
+    def render(self, messages, tools, gen=False, thinking=True):
+        return self.tpl.render(messages=messages, tools=tools, add_generation_prompt=gen, bos_token=self.bos,
+                               enable_thinking=thinking)
+
+
+DEEPSEEK = Format.load("deepseek")
+BOS = DEEPSEEK.bos
+
+
 def render(messages, tools, gen=False, thinking=True):
-    return _tpl.render(messages=messages, tools=tools, add_generation_prompt=gen, bos_token=BOS,
-                       enable_thinking=thinking)
+    return DEEPSEEK.render(messages, tools, gen, thinking)
 
 
-def examples(msgs, scored, tools, failed, modes=("on", "off")):
+def examples(msgs, scored, tools, failed, modes=("on", "off"), fmt=DEEPSEEK):
     """[{step, mode, prompt, completion}] for each scored assistant index not in `failed`, once per thinking mode.
 
     `on`: the prompt opens thinking and the completion is the step's thinking, `</think>`, then its text and calls.
-    `off`: the prompt closes an empty thinking block and the completion is the same text and calls (ADR 0012)."""
+    `off`: the prompt closes an empty thinking block and the completion is the same text and calls (ADR 0012);
+    earlier turns carry no thinking, since none was produced in that mode."""
     out = []
+    bare = [{k: v for k, v in m.items() if k != "reasoning_content"} for m in msgs]
     for i in scored:
         if i in failed:
             continue
-        plain = {k: v for k, v in msgs[i].items() if k != "reasoning_content"}
-        before, whole = render(msgs[:i], tools), render(msgs[:i] + [plain], tools)
-        assert whole.startswith(before + "<｜Assistant｜>"), "template is not prefix-stable"
-        tail = whole[len(before) + len("<｜Assistant｜>"):]
         thinking = (msgs[i].get("reasoning_content") or "").strip()
         for mode in modes:
-            prompt = render(msgs[:i], tools, gen=True, thinking=mode == "on")
-            completion = f"{thinking}\n</think>\n\n{tail}" if mode == "on" else tail
+            hist = msgs if (mode == "on" and fmt.history_thinking) else bare
+            before = fmt.render(hist[:i], tools, gen=True)  # ends with the turn opener (and, for DeepSeek, its mode)
+            whole = fmt.render(hist[:i] + [bare[i]], tools)
+            head = fmt.render(hist[:i], tools)
+            assert whole.startswith(head + fmt.opener), "template is not prefix-stable"
+            tail = whole[len(head) + len(fmt.opener):]
+            if mode == "on":
+                prompt = before
+                completion = f"{fmt.think_open}{thinking}\n</think>\n\n{tail}"
+            else:
+                prompt = fmt.render(hist[:i], tools, gen=True, thinking=False)
+                completion = tail
             out.append({"step": i, "mode": mode, "prompt": prompt, "completion": completion})
     return out
 
@@ -80,6 +111,9 @@ def main():
     ap.add_argument("--source-all-phases", action="append", default=[])
     ap.add_argument("--exclude", type=int, action="append", default=[1])
     ap.add_argument("--tokenizer", required=True)
+    ap.add_argument("--format", choices=["deepseek", "mellum"], default="deepseek",
+                    help="whose chat template the examples are written in")
+    ap.add_argument("--template", help="the chat template file (needed for --format mellum)")
     ap.add_argument("--budget", type=int, default=24576, help="max tokens per example; longer ones are dropped")
     ap.add_argument("--valid-every", type=int, default=10, help="every Nth run goes to validation")
     ap.add_argument("--cap", choices=["none", "head-tail"], default="none",
@@ -95,6 +129,7 @@ def main():
     if out.exists():
         raise SystemExit(f"{out} exists: build into a new folder")
     tok = Tokenizer.from_file(str(Path(args.tokenizer).expanduser() / "tokenizer.json"))
+    fmt = Format.load(args.format, args.template)
 
     def cap(text):
         if args.cap == "none":
@@ -138,7 +173,7 @@ def main():
                 act_of = {ast[-j]: n_acts - j for j in range(1, len(ast) + 1)}
                 failed = {i for i in scored if any(_bad_call(e) for e in (seg.get("errs") or {}).get(act_of[i], []))}
                 why["failed-step-skipped"] += len(failed)
-                for ex in examples(msgs, scored, seg["payload"].get("tools"), failed):
+                for ex in examples(msgs, scored, seg["payload"].get("tools"), failed, fmt=fmt):
                     n = len(tok.encode(ex["prompt"] + ex["completion"], add_special_tokens=False).ids)
                     if n > args.budget:
                         why["over-budget"] += 1

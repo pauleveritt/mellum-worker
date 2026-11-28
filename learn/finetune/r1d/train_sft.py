@@ -61,6 +61,11 @@ def main():
     ap.add_argument("--eval-every", type=int, default=50, help="in updates")
     ap.add_argument("--eval-n", type=int, default=40)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--new-rows", type=int, default=N_NEW, help="trainable new-token rows from id 151665 (0: none, e.g. Mellum)")
+    ap.add_argument("--lora-layers", type=int, default=0, help="LoRA on the last N layers (0: all)")
+    ap.add_argument("--lora-keys", choices=["all-linear", "default"], default="all-linear",
+                    help="all-linear: attention and MLP projections (dense models); default: mlx-lm's choice (MoE models)")
+    ap.add_argument("--marker", default="<｜tool▁calls▁begin｜>", help="the token that starts a tool call, for the hit rate")
     a = ap.parse_args()
     out = Path(a.out)
     if out.exists():
@@ -72,10 +77,16 @@ def main():
     model, _ = load(str(model_dir))
     tok = Tokenizer.from_file(str(model_dir / "tokenizer.json"))
     model.freeze()
-    linear_to_lora_layers(model, len(model.model.layers),
-                          {"rank": a.rank, "scale": a.scale, "dropout": 0.0, "keys": LORA_KEYS})
-    model.model.embed_tokens = RowDeltaEmbedding(model.model.embed_tokens, START, N_NEW)
-    model.lm_head = RowDeltaHead(model.lm_head, START, N_NEW)
+    lora = {"rank": a.rank, "scale": a.scale, "dropout": 0.0}
+    if a.lora_keys == "all-linear":
+        lora["keys"] = LORA_KEYS
+    n_layers = a.lora_layers or len(model.model.layers)
+    linear_to_lora_layers(model, n_layers, lora)
+    if a.new_rows:
+        model.model.embed_tokens = RowDeltaEmbedding(model.model.embed_tokens, START, a.new_rows)
+        model.lm_head = RowDeltaHead(model.lm_head, START, a.new_rows)
+    marker = tok.token_to_id(a.marker)
+    assert marker is not None, f"{a.marker} is not a single token in this tokenizer"
     grad_checkpoint(model.model.layers[0])
     n_train = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
     print(f"trainable parameters: {n_train:,}", flush=True)
@@ -101,7 +112,7 @@ def main():
             logits = model.lm_head(h)
             targets = ids[n_p:]
             losses.append(nn.losses.cross_entropy(logits, targets).mean().item())
-            h1, t1 = marker_hits(logits, targets)
+            h1, t1 = marker_hits(logits, targets, marker)
             hit, total = hit + h1, total + t1
         rec = {"update": step, "val_loss": round(sum(losses) / len(losses), 5),
                "marker_hits": hit, "marker_positions": total, "marker_rate": round(hit / max(total, 1), 4)}
@@ -138,9 +149,8 @@ def main():
             (out / "log.json").write_text(json.dumps(log, indent=1))
     save("adapters.safetensors")
     (out / "adapter_config.json").write_text(json.dumps({
-        "fine_tune_type": "lora", "num_layers": len(model.model.layers),
-        "lora_parameters": {"rank": a.rank, "scale": a.scale, "dropout": 0.0, "keys": LORA_KEYS},
-        "new_rows": {"start": START, "n": N_NEW}}, indent=1))
+        "fine_tune_type": "lora", "num_layers": n_layers, "lora_parameters": lora,
+        "new_rows": {"start": START, "n": a.new_rows}}, indent=1))
     (out / "log.json").write_text(json.dumps(log, indent=1))
     print("=== TRAINING DONE", flush=True)
 
