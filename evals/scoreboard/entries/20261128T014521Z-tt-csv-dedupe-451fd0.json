@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T014521Z-tt-csv-dedupe-451fd0",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "lab/mellum",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "tt-csv-dedupe",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 12,
+  "tool_errors": 0,
+  "turns": 13,
+  "version": "07147a92",
+  "wall": 61.023,
+  "weights": null
+}

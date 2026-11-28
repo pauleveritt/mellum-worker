@@ -1,0 +1,5 @@
+{
+  "app": {"name": "reporter", "workers": 2},
+  "db": {"host": "localhost", "port": 5432, "options": {"timeout": 30, "ssl": false}},
+  "logging": {"level": "info", "handlers": ["console"]}
+}

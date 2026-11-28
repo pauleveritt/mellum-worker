@@ -1,0 +1,104 @@
+{
+  "commit": "6264a2b8477d74fec0adac6c9846ec60f5fd0bbc",
+  "run": {
+    "rungs": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "ladder_repeat": "3",
+    "suites": "all",
+    "suite_repeat": "3",
+    "label": "baseline"
+  },
+  "pins": {
+    "BASELINE_GPU_NAME": "NVIDIA RTX A6000",
+    "BASELINE_GPU_MEMORY_MIB": "49140",
+    "BASELINE_GPU_COUNT": "1",
+    "BASELINE_GPU_VAST_NAME": "RTX_A6000",
+    "BASELINE_MIN_DRIVER_MAJOR": "580",
+    "BASELINE_VLLM_VERSION": "0.32.0",
+    "BASELINE_VLLM_IMAGE": "vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34",
+    "BASELINE_MODEL_REPO": "JetBrains/Mellum2.1-12B-A2.5B-Thinking",
+    "BASELINE_MODEL_REVISION": "92ddae9fc7665e9f801d141d2e5a6b2caf2460c4",
+    "BASELINE_SERVED_NAME": "Mellum2.1-12B-A2.5B-Thinking",
+    "BASELINE_DTYPE": "bfloat16",
+    "BASELINE_MAX_MODEL_LEN": "131072",
+    "BASELINE_GPU_MEMORY_UTILIZATION": "0.90",
+    "BASELINE_SEED": "0",
+    "BASELINE_REASONING_PARSER": "qwen3",
+    "BASELINE_TOOL_CALL_PARSER": "hermes",
+    "BASELINE_PORT": "8000",
+    "BASELINE_NODE_VERSION": "22.19.0",
+    "BASELINE_NODE_SHA256_darwin_arm64": "c59006db713c770d6ec63ae16cb3edc11f49ee093b5c415d667bb4f436c6526d",
+    "BASELINE_NODE_SHA256_darwin_x64": "3cfed4795cd97277559763c5f56e711852d2cc2420bda1cea30c8aa9ac77ce0c",
+    "BASELINE_NODE_SHA256_linux_arm64": "0b2d9f564b6594222a62c82e1df2efe119dd4a4aff29644f4dd325bf360b6bcc",
+    "BASELINE_NODE_SHA256_linux_x64": "c0649af18e6a24f6fe5535a3e86b341dd49a8e71117c8b68bde973ef834f16f2",
+    "BASELINE_NODE_SHA256_win_arm64": "e4a7336010d58ff35b53d9dd5869095c56089c70913cf22508cf8183593e56b2",
+    "BASELINE_NODE_SHA256_win_x64": "ea3fad0e67a991d8477d8c01344b56e69c676ccb733f065b22436994b1253f86",
+    "BASELINE_PI_VERSION": "1.3.0",
+    "BASELINE_VASTAI_VERSION": "1.9.1",
+    "BASELINE_LADDER_RUNGS": "1 2 3 4 5 6 7 8 9 10 11 12",
+    "BASELINE_LADDER_REPEAT": "3",
+    "BASELINE_LADDER_DEADLINE": "600",
+    "BASELINE_SUITES": "all",
+    "BASELINE_SUITE_REPEAT": "3",
+    "BASELINE_SUITE_DEADLINE": "2700",
+    "BASELINE_SCREEN_RUNGS": "1 6",
+    "BASELINE_SCREEN_SUITES": "easy"
+  },
+  "server": {
+    "version": "0.32.0",
+    "models": [
+      {
+        "id": "Mellum2.1-12B-A2.5B-Thinking",
+        "root": "JetBrains/Mellum2.1-12B-A2.5B-Thinking",
+        "max_model_len": 131072
+      }
+    ]
+  },
+  "gpu": [
+    {
+      "name": "NVIDIA RTX A6000",
+      "memory_mib": 49140,
+      "driver": "595.104.02"
+    }
+  ],
+  "client": {
+    "os": "Darwin 27.0.0 arm64",
+    "node": "v22.19.0",
+    "pi": "1.3.0",
+    "uv": "uv 0.13.1 (Homebrew 2026-10-14 aarch64-apple-darwin)"
+  },
+  "suites_run": {
+    "commit": "bd416f0b501be3a75fd62416139f19809c334108",
+    "started": "2026-10-28T18:30:54Z",
+    "stall": "120",
+    "server": {
+      "version": "0.32.0",
+      "models": [
+        {
+          "id": "Mellum2.1-12B-A2.5B-Thinking",
+          "root": "JetBrains/Mellum2.1-12B-A2.5B-Thinking",
+          "max_model_len": 131072
+        }
+      ]
+    },
+    "gpu": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "memory_mib": 49140,
+        "driver": "595.104.02"
+      }
+    ]
+  }
+}

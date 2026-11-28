@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_app.py::test_importing_app_does_not_load_plugins",
+  "grader_tests/test_app.py::test_run_loads_plugins_on_first_use"
+]

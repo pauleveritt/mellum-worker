@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 SUITES = ("easy", "medium", "hard")
-ARMS = ("bare", "worker", "no-prompt", "no-nudge", "no-loop")
+ARMS = ("vanilla", "bare", "worker", "strip-thinking")
 COLUMNS = ("Passes", "Turns", "Failed checks", "Tool errors", "Context",
            "Wall", "Output tokens", "Nudges")
 

@@ -1,0 +1,1 @@
+export.py updated; test_export_appends_totals_row now passes with output: "1,2\n3,4\nTOTAL,4,6" when called with totals=True.

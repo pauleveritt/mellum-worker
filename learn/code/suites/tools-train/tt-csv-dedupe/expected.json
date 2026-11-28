@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_cleaner.py::test_one_row_per_id_in_first_seen_order",
+  "grader_tests/test_cleaner.py::test_keeps_the_newest_even_when_it_comes_first",
+  "grader_tests/test_cleaner.py::test_other_columns_are_preserved"
+]

@@ -1,0 +1,15 @@
+{
+  "allow": [
+    "*.py",
+    "**/*.py",
+    "tests/**"
+  ],
+  "ignore": [
+    ".venv/**",
+    "__pycache__/**",
+    "*.pyc",
+    ".pytest_cache/**",
+    "grader_tests/**",
+    "uv.lock"
+  ]
+}

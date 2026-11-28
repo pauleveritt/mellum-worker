@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_errors.py::test_bad_lines_raise_record_error",
+  "grader_tests/test_errors.py::test_importer_skips_bad_lines_and_reports_line_numbers",
+  "grader_tests/test_errors.py::test_single_adjustment_surfaces_the_error"
+]

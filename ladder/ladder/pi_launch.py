@@ -24,6 +24,18 @@ def resolve_pi(executable: str) -> dict:
     return {"executable": path, "version": version}
 
 
+def same_venv_python(reported: str, python: Path) -> bool:
+    """Whether the interpreter reported sys.executable as the venv's own python.
+
+    The venv's directory is compared with symlinks resolved (macOS reaches its
+    temp dir through /var -> /private/var, and Python 3.15 reports the real
+    path), but not the interpreter link itself, which points out of the venv.
+    """
+    reported_path = Path(reported)
+    return (reported_path.name == python.name
+            and reported_path.parent.resolve() == python.parent.resolve())
+
+
 def workspace_preflight(
     ws: Path, fixture: str, parent_env: dict[str, str]
 ) -> tuple[dict[str, str], dict]:
@@ -77,7 +89,7 @@ def workspace_preflight(
                     f"workspace preflight: fixture imports failed: {proc.stderr.strip()}"
                 )
             identity = json.loads(proc.stdout)
-            if Path(identity["executable"]).absolute() != python.absolute():
+            if not same_venv_python(identity["executable"], python):
                 raise RuntimeError(
                     "workspace preflight: Python executable differs from fixture environment"
                 )

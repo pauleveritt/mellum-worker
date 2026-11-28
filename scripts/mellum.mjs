@@ -18,8 +18,8 @@
  * last prints the newest run under the current directory (Mode or Worker, same files as learn,
  * or only --file) as a Markdown table, or the record as JSON; exit 1 when there is none.
  *
- * MELLUM_CHECK_FIXTURES=<dir> (tests) reads <dir>/v1-models.json, admin-models.json and
- * global-settings.json in place of the three GETs.
+ * MELLUM_CHECK_FIXTURES=<dir> (tests) reads <dir>/health.json, props.json and
+ * v1-models.json in place of the three GETs.
  */
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
@@ -40,8 +40,7 @@ function codeRoot() {
 	const mirror = join(tmpdir(), `mellum-worker-${version}`);
 	const files = [
 		"package.json",
-		"templates/omlx-model-settings.json",
-		"templates/pi/models.omlx.json",
+		"templates/llama-model-settings.json",
 		...readdirSync(join(PKG, "extensions"))
 			.filter((f) => f.endsWith(".ts"))
 			.map((f) => `extensions/${f}`),
@@ -84,7 +83,7 @@ async function check(opts) {
 	const m = await import(pathToFileURL(join(codeRoot(), "extensions/mellum-check.ts")).href);
 	const fixtures = process.env.MELLUM_CHECK_FIXTURES;
 	const fromFixture = async (url) => {
-		const name = url.endsWith("/admin/api/models") ? "admin-models.json" : url.endsWith("/admin/api/global-settings") ? "global-settings.json" : "v1-models.json";
+		const name = url.endsWith("/health") ? "health.json" : url.endsWith("/props") ? "props.json" : "v1-models.json";
 		try {
 			return { ok: true, value: JSON.parse(readFileSync(join(fixtures, name), "utf8")) };
 		} catch (e) {

@@ -1,0 +1,11 @@
+[
+  "prompt/name-the-layout",
+  "prompt/python-developer",
+  "guard/foreground-server",
+  "prompt/verify-the-spec",
+  "guard/no-live-server",
+  "guard/repeat-loops",
+  "guard/outside-workspace",
+  "guard/exists",
+  "nudge/redirect-followed"
+]

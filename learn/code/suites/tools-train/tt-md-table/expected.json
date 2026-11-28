@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_mdtable.py::test_numbers_right_text_left_with_padding",
+  "grader_tests/test_mdtable.py::test_columns_from_every_row_and_missing_cells_empty",
+  "grader_tests/test_mdtable.py::test_explicit_center_alignment_and_pipe_escape"
+]

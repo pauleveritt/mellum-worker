@@ -1,0 +1,23 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-02",
+  "id": "20261102T154732Z-easy-7a99ef",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 4,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/add-project-facts",
+    "context/narrow-tools",
+    "guard/foreground-server",
+    "guard/outside-workspace",
+    "guard/repeat-loops",
+    "nudge/nudge-empty-turn"
+  ],
+  "suite": "easy",
+  "tool_calls": 21,
+  "turns": 22,
+  "version": "5bba9fec",
+  "wall": 45.723
+}

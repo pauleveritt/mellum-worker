@@ -1,0 +1,40 @@
+{
+  "suite": "easy",
+  "arm": "strip-thinking",
+  "single_prompt": false,
+  "specs": null,
+  "strip_thinking": true,
+  "machine": "Apple M3, 8 GiB",
+  "deadline": 2700.0,
+  "stall": 120.0,
+  "stalled": {
+    "seconds": 120.4,
+    "limit": 120.0,
+    "command": "find / -name \"test_*.py\" -type f 2>/dev/null"
+  },
+  "passed": true,
+  "tests_passed": true,
+  "quality_ok": true,
+  "contaminated": false,
+  "failed_checks": 0,
+  "checks_ran": true,
+  "missing_checks": [],
+  "check_groups": {
+    "test_phase1_home.py": {
+      "missing": 0,
+      "total": 4
+    }
+  },
+  "requests": 37,
+  "turns": 37,
+  "tool_calls": 36,
+  "tool_errors": 3,
+  "context": 8928,
+  "output_tokens": 14070,
+  "wall": 276.836,
+  "nudges": 0,
+  "empty_finals": 0,
+  "guard_blocks": 0,
+  "leaked": [],
+  "out_of_layout": []
+}

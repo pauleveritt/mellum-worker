@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_storage.py::test_creates_missing_parent_directories",
+  "grader_tests/test_storage.py::test_dotdot_that_stays_inside_is_allowed",
+  "grader_tests/test_storage.py::test_rejects_escape_by_dotdot_and_absolute_path",
+  "grader_tests/test_storage.py::test_rejects_escape_through_a_symlink"
+]

@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_snapshot.py::test_dicts_become_the_builtin_frozen_dict_at_every_depth",
+  "grader_tests/test_snapshot.py::test_snapshots_are_hashable_and_equal"
+]

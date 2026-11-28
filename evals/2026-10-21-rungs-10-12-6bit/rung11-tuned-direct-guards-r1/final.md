@@ -1,0 +1,1 @@
+The `/report` endpoint has been added to `app.py`, querying the `tickets` table to compute the required totals. The tests `tests/test_phase6.py` now pass successfully.

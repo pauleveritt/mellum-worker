@@ -1,0 +1,8 @@
+# py3.14-frozen-config-of-3.15
+
+A small Python project.
+
+- Test command: uv run python -m pytest tests
+- Run Python commands with uv run.
+- Keep changes scoped to the task; do not weaken existing tests.
+- Before reporting completion, run the test command and report its result.

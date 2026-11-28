@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_config.py::test_valid_dict_with_defaults",
+  "grader_tests/test_config.py::test_wrong_types_name_the_field",
+  "grader_tests/test_config.py::test_missing_required_field_is_named",
+  "grader_tests/test_config.py::test_unknown_key_is_named"
+]

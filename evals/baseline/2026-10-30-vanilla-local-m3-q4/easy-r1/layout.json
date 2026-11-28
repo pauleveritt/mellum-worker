@@ -1,0 +1,17 @@
+{
+  "created": [
+    "app.py",
+    "main.py",
+    "templates/base.html",
+    "templates/home.html"
+  ],
+  "modified": [
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "out_of_layout": [
+    "main.py",
+    "pyproject.toml",
+    "uv.lock"
+  ]
+}

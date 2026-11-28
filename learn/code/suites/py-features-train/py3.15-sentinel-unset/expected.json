@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_contacts.py::test_unset_is_a_builtin_sentinel",
+  "grader_tests/test_contacts.py::test_update_keeps_replaces_and_clears"
+]

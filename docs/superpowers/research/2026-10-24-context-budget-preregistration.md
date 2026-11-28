@@ -103,7 +103,7 @@ inherits whatever the passes say.
 **Re-baseline, owed by this task.** At the settled window, `bare` and
 `worker` on easy at n = 3, recorded as the new easy baseline rows. The old
 rows stay as the 50k record and are labelled so; nothing in
-`docs/ladder/` is touched.
+`evals/` is touched.
 
 **What is conjecture.** That three sessions of one task settle anything. Easy
 is a single prompt, so `2/3` against `3/3` is one session, and the arm's

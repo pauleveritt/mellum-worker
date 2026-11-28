@@ -1,0 +1,4 @@
+{
+  "allow": ["app.py", "tests/**", "health.txt"],
+  "ignore": [".venv/**", "__pycache__/**", "*.pyc", "*.log", "nohup.out", ".git/**", ".pytest_cache/**", "grader_tests/**", "uv.lock", "pyproject.toml"]
+}

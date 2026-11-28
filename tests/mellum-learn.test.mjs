@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import test from "node:test";
 import { readProjectFacts } from "../extensions/mellum-facts.ts";
-import { formatMerge, formatReport, learn, learnFromTexts, mergeSuggestion, modeRunsFile, readRecords, recordFiles } from "../extensions/mellum-learn.ts";
+import { formatMerge, formatReport, isUnder, learn, learnFromTexts, mergeSuggestion, modeRunsFile, readRecords, recordFiles } from "../extensions/mellum-learn.ts";
 
 const FIX = join(resolve(import.meta.dirname, ".."), "tests/fixtures/learn");
 const text = (name) => readFileSync(join(FIX, name), "utf8");
@@ -289,7 +289,7 @@ test("formatMerge: conflicts, what is missing, or nothing to add", () => {
 });
 
 test("recordFiles: MELLUM_MODE_RUNS (0 or empty: none, ~ expanded) or the default", () => {
-	assert.deepEqual(recordFiles({}, "/h"), ["/h/.pi/agent/mellum-mode-runs.jsonl"]);
+	assert.deepEqual(recordFiles({}, "/h"), [join("/h", ".pi", "agent", "mellum-mode-runs.jsonl")]);
 	assert.deepEqual(recordFiles({ MELLUM_MODE_RUNS: "0" }, "/h"), []);
 	assert.deepEqual(recordFiles({ MELLUM_MODE_RUNS: "" }, "/h"), []);
 	assert.deepEqual(recordFiles({ MELLUM_MODE_RUNS: "~/r.jsonl" }, "/h"), ["/h/r.jsonl"]);
@@ -305,7 +305,7 @@ test("learnFromTexts: sums the skipped counts over every file; a missing file is
 
 // A ## Mellum section whose bullets total 590 characters: 10 short of the facts cap.
 const NEAR_CAP = `## Mellum\n\n- Note: ${"x".repeat(584)}\n`;
-const factsOf = (md) => readProjectFacts("/p", { read: (f) => (f === "/p/AGENTS.md" ? md : undefined) }, {});
+const factsOf = (md) => readProjectFacts("/p", { read: (f) => (f === join("/p", "AGENTS.md") ? md : undefined) }, {});
 
 test("mergeSuggestion: chars is the merged section's bullet total, counted as readProjectFacts counts it", () => {
 	const m = mergeSuggestion("# P\n\n## Mellum\n\n- Write only: src/\n", [TC, DN]);
@@ -420,4 +420,13 @@ test("the README's learn example is the real output on its fixture", () => {
 	const r = learnFromTexts([text("patterns/bent-project.jsonl")], { cwd: "/home/user/proj", n: 10 });
 	const m = mergeSuggestion(undefined, r.suggestion);
 	assert.equal(shown, formatReport(r, "/home/user/proj", m.added) + formatMerge(m, r.suggestion) + "\n");
+});
+
+// On Windows a run's cwd is a backslash path, and a fixture or record may mix in "/".
+test("isUnder matches Windows paths with either separator", { skip: process.platform !== "win32" }, () => {
+	assert.equal(isUnder(String.raw`C:\p\proj`, String.raw`C:\p\proj`), true);
+	assert.equal(isUnder(String.raw`C:\p\proj\sub`, String.raw`C:\p\proj`), true);
+	assert.equal(isUnder(String.raw`C:\p\proj/sub`, String.raw`C:\p\proj\ `.trim()), true);
+	assert.equal(isUnder(String.raw`C:\p\proj-2`, String.raw`C:\p\proj`), false);
+	assert.equal(isUnder(String.raw`C:\p`, String.raw`C:\p\proj`), false);
 });

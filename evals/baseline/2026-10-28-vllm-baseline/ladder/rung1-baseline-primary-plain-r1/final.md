@@ -1,0 +1,1 @@
+The cart total now correctly multiplies price by quantity. The fix has been applied to `calculator.js` and all tests pass.

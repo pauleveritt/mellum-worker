@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_paging.py::test_first_page_starts_at_the_first_product",
+  "grader_tests/test_paging.py::test_last_partial_page_is_counted_and_filled",
+  "grader_tests/test_paging.py::test_every_product_appears_exactly_once",
+  "grader_tests/test_paging.py::test_exact_multiple_has_no_empty_trailing_page"
+]

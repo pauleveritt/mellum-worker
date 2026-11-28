@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T015558Z-tt-log-summary-bed36a",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "lab/mellum",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "tt-log-summary",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 20,
+  "tool_errors": 5,
+  "turns": 21,
+  "version": "07147a92",
+  "wall": 112.904,
+  "weights": null
+}

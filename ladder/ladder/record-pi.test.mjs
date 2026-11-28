@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import * as recorder from './record-pi.js';
+import * as recorder from '../../extensions/mellum-recorder.ts';
 
 function capture(options = {}) {
   assert.equal(typeof recorder.installRecorder, 'function', 'observational recorder is missing');

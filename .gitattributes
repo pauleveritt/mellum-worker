@@ -1,0 +1,6 @@
+# Check text files out with LF on every OS. The docs, fixtures, lessons and their parsers
+# expect "\n"; with git's core.autocrlf on (the Windows default) they would get "\r\n".
+* text=auto eol=lf
+# Windows batch files keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf

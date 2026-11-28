@@ -1,0 +1,5 @@
+{
+  "defaultProvider": "vllm",
+  "defaultModel": "Mellum2.1-12B-A2.5B-Thinking",
+  "quietStartup": true
+}

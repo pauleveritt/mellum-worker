@@ -1,0 +1,26 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-27",
+  "id": "20261127T200506Z-medium-3f0c08",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 5,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "medium",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 191,
+  "tool_errors": 46,
+  "turns": 195,
+  "version": "990c5ff0",
+  "wall": 1753.108,
+  "weights": "tools2 (round 2)"
+}

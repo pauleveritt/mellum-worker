@@ -1,0 +1,1 @@
+The cart total calculation has been updated to multiply the price by the quantity. The tests pass successfully.

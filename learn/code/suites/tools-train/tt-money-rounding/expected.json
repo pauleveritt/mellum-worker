@@ -1,0 +1,6 @@
+[
+  "grader_tests/test_money.py::test_line_total_rounds_half_up_as_decimal",
+  "grader_tests/test_money.py::test_vat_rounds_half_up_as_decimal",
+  "grader_tests/test_money.py::test_invoice_adds_up_exactly",
+  "grader_tests/test_money.py::test_subtotal_is_decimal"
+]

@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T013245Z-py3.14-zstd-bytes-a2e717",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 3,
+  "model": "lab/mellum",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "py3.14-zstd-bytes",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 17,
+  "tool_errors": 2,
+  "turns": 19,
+  "version": "07147a92",
+  "wall": 28.511,
+  "weights": null
+}

@@ -1,0 +1,26 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-26",
+  "id": "20261126T084324Z-py3.14-annotations-return-1cf162",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "py3.14-annotations-return",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 15,
+  "tool_errors": 1,
+  "turns": 16,
+  "version": "990c5ff0",
+  "wall": 192.724,
+  "weights": "Mellum2.1 base"
+}

@@ -1,54 +1,6 @@
 {
   "object": "list",
   "data": [
-    {
-      "id": "Mellum2.1-12B-A2.5B-Thinking-6bit",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": 56000
-    },
-    {
-      "id": "Ornith-1.5-9B-MLX-8bit",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": 262144
-    },
-    {
-      "id": "Qwen3.8-27B-MLX-8bit",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": 262144
-    },
-    {
-      "id": "Qwen3.8-27B-py3.15-MLX-8bit",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": 262144
-    },
-    {
-      "id": "gemma-4-12B-it-MLX-8bit",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": 80000
-    },
-    {
-      "id": "swe-pi-m23-mix4s100-think-ae10k-init800-20260917-bulat-step-500-mellum-MLX-8bit",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": 131072
-    },
-    {
-      "id": "MarkItDown",
-      "object": "model",
-      "created": 1791739029,
-      "owned_by": "omlx",
-      "max_model_len": null
-    }
+    { "id": "Mellum2.1-12B-A2.5B-Thinking" }
   ]
 }

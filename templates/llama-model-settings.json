@@ -1,0 +1,6 @@
+{
+  "modelId": "Mellum2.1-12B-A2.5B-Thinking",
+  "nCtxMin": 50000,
+  "provider": "llamacpp",
+  "baseUrlDefault": "http://127.0.0.1:8001/v1"
+}

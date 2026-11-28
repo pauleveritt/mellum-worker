@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_inventory.py::test_existing_sort_flag_still_works",
+  "grader_tests/test_inventory.py::test_limit_applies_after_sorting",
+  "grader_tests/test_inventory.py::test_json_format_with_int_quantities"
+]

@@ -1,0 +1,12 @@
+# DoRA on Mellum2-12B-A2.5B (4-bit). Small-model regime: all attention
+# projections (not just q/v), moderate rank, gentle LR.
+grad_checkpoint: true
+lora_parameters:
+  rank: 32
+  scale: 2.0            # alpha 64 / rank 32
+  dropout: 0.0
+  keys:
+    - "self_attn.q_proj"
+    - "self_attn.k_proj"
+    - "self_attn.v_proj"
+    - "self_attn.o_proj"

@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T014233Z-tt-cli-limit-format-b548ac",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "lab/mellum",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "tt-cli-limit-format",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 27,
+  "tool_errors": 7,
+  "turns": 28,
+  "version": "07147a92",
+  "wall": 110.547,
+  "weights": null
+}

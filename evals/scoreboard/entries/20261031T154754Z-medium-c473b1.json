@@ -1,0 +1,15 @@
+{
+  "arm": "bare",
+  "date": "2026-10-31",
+  "id": "20261031T154754Z-medium-c473b1",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 18,
+  "model": "A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0",
+  "passed": false,
+  "stack": [],
+  "suite": "medium",
+  "tool_calls": 9,
+  "turns": 9,
+  "version": "\u2014",
+  "wall": 26.195
+}

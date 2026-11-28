@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_loader.py::test_ints_bools_and_lists_are_typed",
+  "grader_tests/test_loader.py::test_invalid_boolean_raises",
+  "grader_tests/test_loader.py::test_default_schema_from_schema_module"
+]

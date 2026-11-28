@@ -1,0 +1,5 @@
+[
+  "grader_tests/test_wordfreq.py::test_ignores_case_and_punctuation_between_words",
+  "grader_tests/test_wordfreq.py::test_keeps_apostrophes_inside_words",
+  "grader_tests/test_wordfreq.py::test_command_prints_top_n_with_alphabetical_ties"
+]

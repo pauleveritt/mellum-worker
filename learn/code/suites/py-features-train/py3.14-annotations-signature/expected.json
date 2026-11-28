@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_inspectors.py::test_undefined_names_are_described_not_evaluated",
+  "grader_tests/test_inspectors.py::test_unannotated_parameters_are_left_out"
+]

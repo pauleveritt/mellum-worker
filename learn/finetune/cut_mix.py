@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Cut a raw pair set (build_dpo_phases.py output) to a fixed mix.
+
+    cut_mix.py --raw data_dpo_raw_v2 --per-phase 20 --steps 60 --out data_dpo_<name>
+
+- phase pairs: `--per-phase` for each listed phase, round-robin over distinct rejected runs, so no one losing
+  run dominates;
+- step pairs (`...:step`): `--steps` sampled at random;
+- training-task pairs (`py3.*:p1`): each task's pass-against-fail pairs, capped and round-robin like a phase;
+- pathology, shell and idiom pairs (`...:outside`, `...:unused`, `...:shell`, `...:idiom`): all kept, there are few.
+
+`--no-knowledge` cuts a tools-first set: no idiom pairs and no training-task pass-against-fail pairs, so a tune
+can show a tool-calling gain before any new Python knowledge is added. The tool pairs those runs gave (step,
+shell, outside, unused) stay in.
+
+Validation is copied unchanged. Seeded (0), so the same raw set always cuts the same way.
+"""
+import argparse
+import os
+import random
+import sys
+from collections import defaultdict
+
+from pairs_io import read_pairs, write_pairs
+
+PHASES = ["medium:p2", "medium:p3", "medium:p4"]
+PATHOLOGIES = ("outside", "unused", "shell", "reread", "cleanup", "idiom")
+KNOWLEDGE = ("idiom",)
+TASK_PREFIX = "py3."  # py-features-train tasks: each task's pass-against-fail pairs, capped like a phase
+
+
+def cut(rows, per_phase=20, phases=PHASES, steps=60, seed=0, knowledge=True):
+    rng = random.Random(seed)
+    out = []
+    if not knowledge:
+        rows = [r for r in rows if r["phase"].rsplit(":", 1)[-1] not in KNOWLEDGE]
+    tasks = [] if not knowledge else sorted({r["phase"] for r in rows if r["phase"].startswith(TASK_PREFIX) and r["phase"].count(":") == 1})
+    for p in list(phases) + tasks:
+        by_loser = defaultdict(list)
+        for r in rows:
+            if r["phase"] == p:
+                by_loser[r["src"][1]].append(r)
+        queues = [by_loser[k][:] for k in sorted(by_loser)]
+        for q in queues:
+            rng.shuffle(q)
+        rng.shuffle(queues)
+        picked = []
+        while len(picked) < per_phase and any(queues):
+            for q in queues:
+                if q and len(picked) < per_phase:
+                    picked.append(q.pop())
+        out += picked
+    step_rows = [r for r in rows if r["phase"].endswith(":step")]
+    out += rng.sample(step_rows, min(steps, len(step_rows)))
+    out += [r for r in rows if r["phase"].rsplit(":", 1)[-1] in PATHOLOGIES]
+    rng.shuffle(out)
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--raw", required=True)
+    ap.add_argument("--per-phase", type=int, default=20)
+    ap.add_argument("--steps", type=int, default=60)
+    ap.add_argument("--no-knowledge", action="store_true", help="tools-first: drop idiom and training-task pairs")
+    ap.add_argument("--out", required=True)
+    a = ap.parse_args()
+    if os.path.exists(a.out):
+        sys.exit(f"{a.out} already exists; cut into a new versioned folder instead of overwriting it")
+    train = cut(read_pairs(a.raw, "train"), a.per_phase, PHASES, a.steps, knowledge=not a.no_knowledge)
+    os.makedirs(a.out)
+    write_pairs(a.out, "train", train)
+    write_pairs(a.out, "valid", read_pairs(a.raw, "valid"))
+    counts = defaultdict(int)
+    for r in train:
+        counts[r["phase"].rsplit(":", 1)[-1] if r["phase"].count(":") > 1 else r["phase"]] += 1
+    print(f"train {len(train)} {dict(counts)} -> {a.out}")
+
+
+if __name__ == "__main__":
+    main()

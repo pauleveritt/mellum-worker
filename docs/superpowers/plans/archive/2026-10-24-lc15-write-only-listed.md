@@ -72,7 +72,7 @@ overnight (delegated 2026-10-24):
 ## Acceptance
 
 `npm test`, `learn/code/tests` and `docs-caps` pass; `qualify --suite easy`
-still passes; the page's numbers appear in the run record; no `docs/ladder/`
+still passes; the page's numbers appear in the run record; no `evals/`
 link on the page.
 
 ## Result

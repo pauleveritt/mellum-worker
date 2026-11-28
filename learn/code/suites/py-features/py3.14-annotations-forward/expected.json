@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_describe.py::test_undefined_names_are_described_not_evaluated",
+  "grader_tests/test_describe.py::test_plain_class"
+]

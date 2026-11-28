@@ -25,12 +25,12 @@ Both from `ladder/` at the commit that adds this file, Pi 1.1.0
 `--profile baseline`, `--deadline 600`, rungs 6–9, `--repeat 3`: 12 runs
 each.
 
-- **A21** (`docs/ladder/ablation-a21-light-section-roadmap/`):
+- **A21** (`evals/2026-10-13-ablation-a21-light-section-roadmap/`):
   `--facts-section light --roadmap one-file`. `AGENTS.md`'s section is
   `ladder/run_ladder.py` `LIGHT_SECTION`; `specs/` holds only
   `roadmap.md`, the four phase specs verbatim; the task is
   `Implement Phase N of specs/roadmap.md`.
-- **A21 control** (`docs/ladder/ablation-a21-control/`): no variant flags,
+- **A21 control** (`evals/2026-10-13-ablation-a21-control/`): no variant flags,
   so A19's fixture (three bullets including `Write only:`; one spec file
   per phase; task `Implement specs/phase-N-….md`).
 

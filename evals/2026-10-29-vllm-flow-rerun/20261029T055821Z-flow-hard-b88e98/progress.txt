@@ -1,0 +1,31 @@
+  decomposed into 7 phase(s): Phase 1 — Home Page | Phase 2 — Complaints Board | Phase 3 — Add Complaint | Phase 4 — Resolve and Reopen | Phase 5 — Archive & Audit | Phase 6 — Reporting over the database | Phase 7 — Visits report
+========== PHASE 1/7: Phase 1 — Home Page ==========
+  phase 1: tests PASS
+========== PHASE 2/7: Phase 2 — Complaints Board ==========
+  phase 2: tests PASS
+========== PHASE 3/7: Phase 3 — Add Complaint ==========
+  phase 3: tests PASS
+========== PHASE 4/7: Phase 4 — Resolve and Reopen ==========
+  phase 4: tests PASS
+========== PHASE 5/7: Phase 5 — Archive & Audit ==========
+  phase 5 round 1/6: no pass — retrying
+  phase 5 round 2/6: no pass — retrying
+  phase 5 round 3/6: no pass — retrying
+  phase 5 round 4/6: no pass — retrying
+  phase 5 round 5/6: no pass — retrying
+  phase 5 round 6/6: no pass — retrying
+  phase 5: still FAIL after 6 round(s) — continuing
+========== PHASE 6/7: Phase 6 — Reporting over the database ==========
+  phase 6 round 1/6: no pass — retrying
+  phase 6: tests PASS
+========== PHASE 7/7: Phase 7 — Visits report ==========
+  phase 7 round 1/6: no pass — retrying
+  phase 7: app did not compile — reverted to last checkpoint
+  phase 7 round 2/6: no pass — retrying
+  phase 7 round 3/6: no pass — retrying
+  phase 7 round 4/6: no pass — retrying
+  phase 7 round 5/6: no pass — retrying
+  phase 7 round 6/6: no pass — retrying
+  phase 7: still FAIL after 6 round(s) — continuing
+  restored fixture data before grading: data.db
+hard: visible=FAIL hidden=30/34 (partial) TODO.md=yes

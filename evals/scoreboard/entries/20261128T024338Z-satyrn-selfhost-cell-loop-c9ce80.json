@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T024338Z-satyrn-selfhost-cell-loop-c9ce80",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 22,
+  "model": "lab/mellum",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "satyrn-selfhost-cell-loop",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 66,
+  "tool_errors": 9,
+  "turns": 69,
+  "version": "07147a92",
+  "wall": 725.951,
+  "weights": null
+}

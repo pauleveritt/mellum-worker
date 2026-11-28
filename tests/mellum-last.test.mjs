@@ -69,6 +69,13 @@ test("formatLast shows dashes for an older record without the newer fields", () 
 	assert.equal(row(md, "Server"), "| Server | — |");
 });
 
+test("formatLast reports llama.cpp server liveness (no match key) instead of differs", () => {
+	const up = formatLast({ ...NEW, server: { up: true, nCtx: 50176 } });
+	assert.equal(row(up, "Server"), "| Server | up, ctx 50,176 |");
+	const down = formatLast({ ...NEW, server: { up: false } });
+	assert.equal(row(down, "Server"), "| Server | down |");
+});
+
 test("formatLast escapes pipes and newlines in cells, marks file-changing commands, and adds Missing", () => {
 	const md = formatLast({
 		...NEW,

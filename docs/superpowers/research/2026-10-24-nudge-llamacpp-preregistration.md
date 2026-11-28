@@ -2,11 +2,11 @@
 
 Date: 2026-10-24, written before the run. The first arm of the Lessons re-base:
 the track's evidence moves to the backend Getting Started teaches, and the
-oMLX citations are retired from the pages, not from `docs/ladder/`.
+oMLX citations are retired from the pages, not from `evals/`.
 
 **What is measured.** The shipped worker against itself with the nudge turned
 off, on the suites the Getting Started track teaches. Not a comparison with
-oMLX: those numbers stay in `docs/ladder/` as their own backend's record and
+oMLX: those numbers stay in `evals/` as their own backend's record and
 are no longer cited by a lesson.
 
 - Backend: `llama-server` 0.7.0 (build 11669), Mellum 2.1 `Q4_K_M`,

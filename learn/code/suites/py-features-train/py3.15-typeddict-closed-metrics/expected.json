@@ -1,0 +1,4 @@
+[
+  "grader_tests/test_metrics.py::test_sample_is_closed",
+  "grader_tests/test_metrics.py::test_counters_allow_int_extras"
+]

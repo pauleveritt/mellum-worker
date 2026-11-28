@@ -1,0 +1,17 @@
+[
+  {
+    "pid": 85084,
+    "pgid": null,
+    "command": "python app.py"
+  },
+  {
+    "pid": 85085,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -B -c from multiprocessing.resource_tracker import main;main(4)"
+  },
+  {
+    "pid": 85086,
+    "pgid": null,
+    "command": "/Users/mac/projects/mellum-worker/.venv/bin/python -B -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=5, pipe_handle=7) --multiprocessing-fork"
+  }
+]

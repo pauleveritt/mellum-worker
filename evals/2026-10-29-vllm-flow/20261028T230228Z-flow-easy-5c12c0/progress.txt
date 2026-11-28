@@ -1,0 +1,8 @@
+  decomposed into 1 phase(s): Implement Phase 1 — Home Page.
+========== PHASE 1/1: Implement Phase 1 — Home Page. ==========
+  phase 1 round 1/6: no pass — retrying
+  phase 1 round 2/6: no pass — retrying
+  phase 1 round 3/6: no pass — retrying
+  phase 1 round 4/6: no pass — retrying
+  phase 1: tests PASS
+easy: visible=PASS hidden=4/4 (PASS) TODO.md=yes

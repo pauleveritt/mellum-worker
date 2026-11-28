@@ -1,0 +1,4 @@
+{
+  "db": {"port": 6432, "options": {"ssl": true}},
+  "logging": {"handlers": ["file"]}
+}
