@@ -1,0 +1,26 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-26",
+  "id": "20261126T125816Z-py3.15-sentinel-unset-c30582",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 1,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "py3.15-sentinel-unset",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 22,
+  "tool_errors": 1,
+  "turns": 23,
+  "version": "990c5ff0",
+  "wall": 235.341,
+  "weights": "mix120 (DPO)"
+}

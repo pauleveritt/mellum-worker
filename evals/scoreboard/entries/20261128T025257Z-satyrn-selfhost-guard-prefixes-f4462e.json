@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T025257Z-satyrn-selfhost-guard-prefixes-f4462e",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 83,
+  "model": "lab/mellum",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "satyrn-selfhost-guard-prefixes",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 58,
+  "tool_errors": 25,
+  "turns": 59,
+  "version": "07147a92",
+  "wall": 703.566,
+  "weights": null
+}

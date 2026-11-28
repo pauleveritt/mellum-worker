@@ -1,0 +1,26 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-27",
+  "id": "20261127T071800Z-py3.14-finally-fix-037025",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "llamacpp/Mellum2.1-12B-A2.5B-Thinking",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "py3.14-finally-fix",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 20,
+  "tool_errors": 2,
+  "turns": 21,
+  "version": "990c5ff0",
+  "wall": 144.02,
+  "weights": "Tsunami (tools update 15)"
+}

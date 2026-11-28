@@ -20,3 +20,4 @@ Format: `NNNN-short-title.md` with **Status**, **Context**, **Decision**, **Cons
 | [0011](0011-graders-match-whole-test-ids.md) | Graders match whole test ids; a parametrized test passes only when every case does | Accepted |
 | [0012](0012-a-trained-thinking-switch.md) | Thinking on and off is a trained switch, a control token, not a template trick | Proposed |
 | [0013](0013-mixture-of-experts-for-the-small-model.md) | A mixture-of-experts effect for the small model: options recorded, deferred | Deferred |
+| [0014](0014-records-carry-prompt-tools-and-weights.md) | Run records carry the prompt, the tools and the weights the model was actually served | Accepted |

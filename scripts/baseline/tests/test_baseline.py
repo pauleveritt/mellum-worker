@@ -270,3 +270,16 @@ def test_a_lesson_command_never_runs_against_a_dead_tunnel():
 def test_ensure_serving_gives_up_when_the_reopened_tunnel_still_has_no_model():
     with pytest.raises(baseline.BaselineError, match="no model"):
         baseline.ensure_serving("http://x/v1", reopen=lambda: None, serving=lambda url: False)
+
+
+def test_manifest_surfaces_list_each_distinct_prompt_and_tool_set_with_its_runs(tmp_path):
+    import json
+    a = {"system_prompt": "P", "system_prompt_sha256": "p1", "tools": [{"n": 1}], "tools_sha256": "t1"}
+    b = {"system_prompt": "Q", "system_prompt_sha256": "q1", "tools": [{"n": 1}], "tools_sha256": "t1"}
+    for name, rec in [("rung1-r1", a), ("rung2-r1", a), ("rung3-r1", b), ("rung4-r1", {"rung": 4})]:
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "run.json").write_text(json.dumps(rec))
+    surfaces = baseline.manifest_surfaces(tmp_path)
+    assert [s["runs"] for s in surfaces] == [["rung1-r1", "rung2-r1"], ["rung3-r1"]]
+    assert surfaces[0]["system_prompt"] == "P" and surfaces[0]["tools"] == [{"n": 1}]
+    assert surfaces[1]["system_prompt_sha256"] == "q1"

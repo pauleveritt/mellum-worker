@@ -6,6 +6,18 @@ Versions match git tags; pin one in both install lines.
 
 ### Added
 
+- **Run records carry the system prompt, the tool schemas and the served weights.** The ladder's and the
+  harness's `run.json`, and the eval `manifest.json`, now hold the exact `system_prompt` and `tools` the model
+  was sent (with sha256s and the thinking switch), so another harness or test can reuse them without this
+  repository's source. The harness also records what the server says it is serving, down to the weights file
+  on llama.cpp. `learn/code/surface_probe.py` sends any manifest's prompt and tools to any model and names each
+  faulty call (ADR 0014).
+
+- **The scoreboard tells tunes and thinking modes apart.** Every llama.cpp tune shares one served name, so
+  entries now carry `weights`, `thinking`, `tool_errors` and a `surface` id, and the board groups on them. Each
+  distinct prompt and tool set is stored once in `evals/scoreboard/surfaces/`. Runs from 10 to 28 November with
+  a certain model label were added; `scoreboard.py record --weights` labels older runs.
+
 - **A `nudge/redirect-followed` remedy unit.** When a command's output shows 200 where a redirect (3xx)
   was expected, it appends a note: the test client followed the redirect, so assert it with
   `follow_redirects=False` or read `response.history`, and fix the test, not the route. Two of three

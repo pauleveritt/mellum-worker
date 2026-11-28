@@ -1,0 +1,12 @@
+[
+ "List the Python files in this project.",
+ "Show me what is in README.md.",
+ "Run the test suite with pytest.",
+ "Create hello.py that prints hello.",
+ "What does src/app.py contain?",
+ "Check which Python version is installed.",
+ "Read pyproject.toml and tell me the dependencies.",
+ "Write a .gitignore that ignores __pycache__.",
+ "Find every TODO in the code.",
+ "Count the lines in main.py."
+]

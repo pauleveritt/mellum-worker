@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T023559Z-py3.15-sentinel-unknown-f0856b",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 1,
+  "model": "lab/mellum",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "py3.15-sentinel-unknown",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 13,
+  "tool_errors": 1,
+  "turns": 16,
+  "version": "07147a92",
+  "wall": 51.899,
+  "weights": null
+}

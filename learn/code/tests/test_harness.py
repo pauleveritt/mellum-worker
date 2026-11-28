@@ -1364,3 +1364,59 @@ def test_a_thinking_level_is_passed_to_pi_and_left_out_when_unset():
     off = harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", "go", thinking="off")
     assert off[off.index("--thinking") + 1] == "off"
     assert "--thinking" not in harness.pi_argv("pi", PROFILE, Path("rec.mjs"), "p", "m", "go")
+
+
+def test_run_record_carries_the_prompt_and_tools_the_model_was_sent(tmp_path):
+    """run.json names the remedies; it also carries their resolved result, so another harness can reuse it."""
+    tools = [{"type": "function", "function": {"name": "bash", "parameters": {"type": "object"}}}]
+    req = {"type": "provider_request", "payload": {"tools": tools, "messages": [
+        {"role": "system", "content": "You are a worker."}, {"role": "user", "content": "go"}]}}
+    (tmp_path / "trace.jsonl").write_text(json.dumps({"type": "agent_start"}) + "\n" + json.dumps(req) + "\n")
+    s = harness.surface_record(tmp_path)
+    assert s["system_prompt"] == "You are a worker." and s["tools"] == tools and s["surface_requests"] == 1
+    assert len(s["system_prompt_sha256"]) == 64 and len(s["tools_sha256"]) == 64
+    assert harness.surface_record(tmp_path / "missing")["system_prompt"] is None
+
+
+def _serve(routes):
+    """A real local HTTP server answering GET paths from `routes`; returns (base_url, stop)."""
+    import http.server
+    import threading
+
+    class H(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = routes.get(self.path)
+            self.send_response(200 if body is not None else 404)
+            self.end_headers()
+            if body is not None:
+                self.wfile.write(json.dumps(body).encode())
+
+        def log_message(self, *a):
+            pass
+
+    srv = http.server.HTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return f"http://127.0.0.1:{srv.server_port}/v1", srv.shutdown
+
+
+def test_served_model_names_the_weights_the_server_actually_loaded():
+    """Every fine-tune is served under one alias; the record must name the weights file, or tunes blend together."""
+    base, stop = _serve({"/v1/models": {"data": [{"id": "Mellum2.1-12B-A2.5B-Thinking"}]},
+                         "/props": {"model_path": "/models/tools-u15-Q4_K_M.gguf", "chat_template": "{{x}}",
+                                    "default_generation_settings": {"n_ctx": 32768}}})
+    try:
+        s = harness.served_model(base)
+    finally:
+        stop()
+    assert s["models"] == ["Mellum2.1-12B-A2.5B-Thinking"]
+    assert s["model_path"] == "/models/tools-u15-Q4_K_M.gguf" and s["n_ctx"] == 32768
+    assert len(s["chat_template_sha256"]) == 64
+
+
+def test_served_model_on_a_server_without_props_or_unreachable_is_partial_not_an_error():
+    base, stop = _serve({"/v1/models": {"data": [{"id": "mellum"}]}})
+    try:
+        assert harness.served_model(base) == {"base_url": base, "models": ["mellum"]}
+    finally:
+        stop()
+    assert harness.served_model("http://127.0.0.1:9/v1") == {"base_url": "http://127.0.0.1:9/v1"}

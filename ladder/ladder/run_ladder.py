@@ -25,6 +25,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 from uuid import uuid4
 
+from .surface import request_surface
 from .omlx_profiles import PROFILES, AdminClient, check_effective_params, profile
 from .pi_launch import resolve_pi, workspace_preflight
 from .pi_profile import (
@@ -974,6 +975,7 @@ def run_once(
         "baseline_lines": lines,
         "check": asdict(rung.check(ws, FIXTURES / rung.fixture)),
         "score": score(events, paths, lines).as_row(),
+        **request_surface(events),
         "diff_stat": git(ws, "diff", "--cached", "--stat"),
         "files_created": [
             p

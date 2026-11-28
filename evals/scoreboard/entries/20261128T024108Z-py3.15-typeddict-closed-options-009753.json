@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T024108Z-py3.15-typeddict-closed-options-009753",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 2,
+  "model": "lab/mellum",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "py3.15-typeddict-closed-options",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 16,
+  "tool_errors": 1,
+  "turns": 20,
+  "version": "07147a92",
+  "wall": 90.085,
+  "weights": null
+}

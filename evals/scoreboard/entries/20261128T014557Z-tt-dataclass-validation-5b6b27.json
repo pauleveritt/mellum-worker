@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T014557Z-tt-dataclass-validation-5b6b27",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 1,
+  "model": "lab/mellum",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "tt-dataclass-validation",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 17,
+  "tool_errors": 4,
+  "turns": 18,
+  "version": "07147a92",
+  "wall": 205.161,
+  "weights": null
+}

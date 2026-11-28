@@ -14,6 +14,7 @@ CLI
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -96,11 +97,52 @@ def _date_from(run_dir: Path, rid: str) -> str:
         return ""
 
 
-def entry_from_run(run_dir, model: str | None = None) -> dict:
+def board_surface(rec: dict, run_dir: Path) -> dict | None:
+    """The run's prompt and tools as the board stores them: the run's own workspace path becomes {workspace},
+    so runs that differ only in where they ran share one file. run.json keeps the exact text sent."""
+    if not rec.get("tools_sha256"):
+        return None
+    prompt = rec.get("system_prompt")
+    if prompt is not None:
+        prompt = prompt.replace(str(Path(run_dir).resolve() / "workspace"), "{workspace}")
+        prompt = prompt.replace(str(Path(run_dir) / "workspace"), "{workspace}")
+    return {"system_prompt": prompt,
+            "system_prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest() if prompt is not None else None,
+            "tools": rec.get("tools"), "tools_sha256": rec["tools_sha256"], "workspace_placeholder": "{workspace}"}
+
+
+def surface_id(surface: dict | None) -> str | None:
+    """A short id for a stored (system prompt, tool set), or None for a run recorded before runs kept it."""
+    if not surface:
+        return None
+    return hashlib.sha256(f"{surface['system_prompt_sha256']}:{surface['tools_sha256']}".encode()).hexdigest()[:16]
+
+
+def thinking_label(rec: dict) -> str | None:
+    kwargs = rec.get("chat_template_kwargs") or {}
+    if "enable_thinking" not in kwargs:
+        return None
+    return "on" if kwargs["enable_thinking"] else "off"
+
+
+def run_record(run_dir: Path) -> dict:
+    """run.json, with the prompt and tools filled from trace.jsonl for a run recorded before run.json kept them."""
+    rec = json.loads((run_dir / "run.json").read_text())
+    trace = run_dir / "trace.jsonl"
+    if "tools_sha256" not in rec and trace.is_file():
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ladder"))
+        from ladder.surface import request_surface
+        rows = [json.loads(line) for line in trace.read_text().splitlines() if line.strip()]
+        if any(r.get("type") == "provider_request" for r in rows):
+            rec.update(request_surface(rows))
+    return rec
+
+
+def entry_from_run(run_dir, model: str | None = None, weights: str | None = None) -> dict:
     """Read a harness run dir into a flat scoreboard entry. ``model`` overrides a run that
     predates run.json carrying it (older runs have no model field)."""
     run_dir = Path(run_dir)
-    rec = json.loads((run_dir / "run.json").read_text())
+    rec = run_record(run_dir)
     rid = run_dir.name
     # An explicit --model override wins (so a vast batch can stamp A6000/<quant> even though
     # run.json carries the profile's generic model id); else run.json, else model.txt.
@@ -122,10 +164,15 @@ def entry_from_run(run_dir, model: str | None = None) -> dict:
         "wall": rec.get("wall"),
         "missing": len(rec.get("missing_checks") or []),
         "machine": rec.get("machine"),
+        "thinking": thinking_label(rec),
+        "tool_errors": rec.get("tool_errors"),
+        "surface": surface_id(board_surface(rec, run_dir)),
+        # the weights actually served: every tune shares one served name, so this is what tells them apart
+        "weights": weights or (os.path.basename((rec.get("served") or {}).get("model_path") or "") or None),  # the prompt and tools: <board>/surfaces/<surface>.json
     }
 
 
-def record(run_dirs, board, model: str | None = None) -> list[Path]:
+def record(run_dirs, board, model: str | None = None, weights: str | None = None) -> list[Path]:
     """Write one entry file per run under ``<board>/entries/``; re-recording a run overwrites
     its own file (idempotent), and no shared file is touched (merge-friendly)."""
     board = Path(board)
@@ -135,7 +182,14 @@ def record(run_dirs, board, model: str | None = None) -> list[Path]:
     for d in run_dirs:
         if not (Path(d) / "run.json").is_file():
             continue  # a run that never graded (stalled before scoring) is not a scoreboard entry
-        e = entry_from_run(d, model=model)
+        e = entry_from_run(d, model=model, weights=weights)
+        if e["surface"]:
+            surface = board_surface(run_record(Path(d)), Path(d))
+            surfaces = board / "surfaces"
+            surfaces.mkdir(exist_ok=True)
+            spath = surfaces / f"{e['surface']}.json"
+            if not spath.exists():  # content-addressed: each prompt and tool set is stored once
+                spath.write_text(json.dumps(surface, indent=2) + "\n")
         path = entries / f"{e['id']}.json"
         path.write_text(json.dumps(e, indent=2, sort_keys=True) + "\n")
         written.append(path)
@@ -158,11 +212,17 @@ def load_entries(board) -> list[dict]:
     return out
 
 
+def model_key(e: dict) -> str | None:
+    """The model as the board groups it: the served name, plus the weights and thinking mode when known."""
+    extra = [x for x in (e.get("weights"), e.get("thinking") and f"thinking {e['thinking']}") if x]
+    return f"{e.get('model')} ({', '.join(extra)})" if extra else e.get("model")
+
+
 def leaderboard(entries) -> dict:
     """Group by (suite, model, stack-names); the record is the fewest-turn pass, then least wall."""
     groups: dict[tuple, list[dict]] = {}
     for e in entries:
-        key = (e.get("suite"), e.get("model"), tuple(e.get("stack") or ()))
+        key = (e.get("suite"), model_key(e), tuple(e.get("stack") or ()))
         groups.setdefault(key, []).append(e)
     board = {}
     for key, runs in groups.items():
@@ -207,6 +267,10 @@ def _model_md(model) -> str:
     return f"`{model}`" if model else "n/a"
 
 
+def _weights_md(weights) -> str:
+    return f" ({weights})" if weights else ""
+
+
 def _stack_md(stack) -> str:
     """The stack for the page: the base in plain words (Baseline Worker), remedy units as code
     chips (uniform, and the glossary skips code), or vanilla Pi for no stack."""
@@ -220,7 +284,7 @@ def _record_rows(entries) -> list[str]:
     with the old, ranked by pass rate, then fewest turns, then least wall."""
     vgroups: dict[tuple, list[dict]] = {}
     for e in entries:
-        key = (e.get("model"), tuple(e.get("stack") or ()), (e.get("version") or "n/a").replace("—", "n/a"))
+        key = (model_key(e), tuple(e.get("stack") or ()), (e.get("version") or "n/a").replace("—", "n/a"))
         vgroups.setdefault(key, []).append(e)
     rows = []
     for (model, stack, ver), runs in vgroups.items():
@@ -240,8 +304,10 @@ def _run_rows(entries) -> list[str]:
     for e in sorted(entries, key=lambda e: (e.get("date") or "", e.get("id") or ""), reverse=True):
         res = "pass" if e.get("passed") else "fail"
         out.append(
-            f"| {e.get('date') or 'n/a'} | {_model_md(e.get('model'))} | {_stack_md(e.get('stack'))} | "
-            f"{res} | {e.get('turns')} | {_fmt_wall(e.get('wall'))} | `{e.get('id')}` |"
+            f"| {e.get('date') or 'n/a'} | {_model_md(e.get('model'))}{_weights_md(e.get('weights'))} | "
+            f"{_stack_md(e.get('stack'))} | {e.get('thinking') or '-'} | {res} | {e.get('turns')} | "
+            f"{'-' if e.get('tool_errors') is None else e.get('tool_errors')} | {_fmt_wall(e.get('wall'))} | "
+            f"`{e.get('id')}` |"
         )
     return out
 
@@ -302,8 +368,8 @@ def render_page(entries) -> str:
             lines += ["No runs recorded yet.", ""]
             continue
         lines += [
-            "| date | model | stack | result | turns | wall | run |",
-            "|---|---|---|---|---|---|---|",
+            "| date | model | stack | thinking | result | turns | tool errors | wall | run |",
+            "|---|---|---|---|---|---|---|---|---|",
             *_run_rows(sub),
         ]
     return "\n".join(lines) + "\n"
@@ -333,6 +399,8 @@ def main(argv=None) -> int:
     r.add_argument("run_dirs", nargs="+")
     r.add_argument("--board", default=str(DEFAULT_BOARD))
     r.add_argument("--model", default=None, help="model id for runs whose run.json lacks one")
+    r.add_argument("--weights", default=None,
+                   help="the weights a run served, for runs recorded before run.json kept them (e.g. a tune name)")
     c = sub.add_parser("consolidate", help="regenerate the published page from entries")
     c.add_argument("--board", default=str(DEFAULT_BOARD))
     c.add_argument("--page", default=str(DEFAULT_PAGE))
@@ -341,7 +409,7 @@ def main(argv=None) -> int:
     s.add_argument("--suite", default=None)
     args = ap.parse_args(argv)
     if args.cmd == "record":
-        written = record(args.run_dirs, args.board, model=args.model)
+        written = record(args.run_dirs, args.board, model=args.model, weights=args.weights)
         print(f"recorded {len(written)} run(s) -> {Path(args.board) / 'entries'}")
     elif args.cmd == "consolidate":
         page = consolidate(args.board, args.page)

@@ -10,7 +10,7 @@ Every Mellum worker run ever measured, split by tier.
 
 ## Overview
 
-226 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
+533 runs recorded. Within a tier, **Records** rank by pass rate first, then by the fastest pass, fewest turns, then least wall, because a shorter pass is the better pass. A code change to an extension is a new **version** of the same stack, so an improvement shows as a new row that can beat the old one.
 
 ## Top 5
 
@@ -18,19 +18,19 @@ The five best stacks per tier, ranked by pass rate, then fewest turns, then leas
 
 ### Easy
 
-154 runs, 86 passed.
+185 runs, 110 passed.
 
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 6/6 | 14 | 46s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 6/6 | 14 | 51s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 3/3 | 16 | 82s |
 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | `a2227186` | 6/6 | 17 | 76s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `6d37c90f` | 3/3 | 19 | 85s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | `2d12c19f` | 1/1 | 21 | 64s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | `f966018c` | 1/1 | 21 | 67s |
-| `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `6d37c90f` | 6/6 | 22 | 81s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 3/3 | 18 | 86s |
 
 ### Medium
 
-65 runs, 24 passed.
+84 runs, 31 passed.
 
 | model | stack | version | pass | best turns | best wall |
 |---|---|---|---|---|---|
@@ -48,241 +48,1291 @@ The five best stacks per tier, ranked by pass rate, then fewest turns, then leas
 |---|---|---|---|---|---|
 | `Mellum2.1-12B-A2.5B-Thinking` | `flow` · `think-tags` | `37e6e4cd` | 0/1 | n/a | n/a |
 
+### Py3.14-annotations-forward
+
+5 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.14-annotations-return
+
+12 runs, 4 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 2/3 | 16 | 193s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 2/3 | 17 | 141s |
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.14-annotations-signature
+
+12 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.14-finally-fix
+
+5 runs, 5 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 17 | 78s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 21 | 144s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 22 | 83s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 22 | 90s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 27 | 589s |
+
+### Py3.14-frozen-config-of-3.15
+
+5 runs, 4 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 13 | 86s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 13 | 110s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 14 | 98s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 16 | 103s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.14-sentinel-of-3.15
+
+5 runs, 5 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 15 | 62s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 16 | 50s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 16 | 129s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 21 | 67s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 44 | 142s |
+
+### Py3.14-tstring-html
+
+11 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/2 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.14-tstring-shell
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.14-tstring-sql
+
+5 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.14-zstd-archive
+
+5 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 21 | 154s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 34 | 200s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.14-zstd-bytes
+
+10 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 2/3 | 41 | 147s |
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/4 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-frozendict-config
+
+5 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.15-frozendict-freeze
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-frozendict-headers
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-lazy-import
+
+5 runs, 1 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/1 | 42 | 233s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.15-lazy-import-plugins
+
+9 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 1/3 | 11 | 89s |
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 1/3 | 74 | 151s |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-sentinel-default
+
+5 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.15-sentinel-unknown
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-sentinel-unset
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-typeddict-closed
+
+5 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Tsunami (tools update 15), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools (final update), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (tools2 (round 2), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/1 | n/a | n/a |
+
+### Py3.15-typeddict-closed-metrics
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Py3.15-typeddict-closed-options
+
+9 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (Mellum2.1 base, thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+| `llamacpp/Mellum2.1-12B-A2.5B-Thinking (mix120 (DPO), thinking on)` | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | `990c5ff0` | 0/3 | n/a | n/a |
+
+### Satyrn-format_number
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 8 | 12s |
+
+### Satyrn-selfhost-cell-loop
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Satyrn-selfhost-docs-linter
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Satyrn-selfhost-guard-prefixes
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Satyrn-selfhost-review-script
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Satyrn-selfhost-run-record-gate
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Tt-cli-limit-format
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 28 | 111s |
+
+### Tt-config-env-override
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 15 | 24s |
+
+### Tt-config-merge
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 13 | 56s |
+
+### Tt-csv-dedupe
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 13 | 61s |
+
+### Tt-dataclass-validation
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Tt-event-bus
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 21 | 98s |
+
+### Tt-failing-test-helper
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 13 | 41s |
+
+### Tt-import-cycle
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Tt-ini-schema
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Tt-log-summary
+
+3 runs, 1 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 1/3 | 21 | 113s |
+
+### Tt-lookup-cache
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 15 | 70s |
+
+### Tt-md-table
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Tt-money-rounding
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 16 | 86s |
+
+### Tt-pagination-off-by-one
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 11 | 36s |
+
+### Tt-recent-history
+
+3 runs, 1 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 1/3 | 27 | 63s |
+
+### Tt-rename-across-modules
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 24 | 56s |
+
+### Tt-retry-backoff
+
+3 runs, 1 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 1/3 | 36 | 84s |
+
+### Tt-safe-writer
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 15 | 68s |
+
+### Tt-split-module
+
+3 runs, 0 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 0/3 | n/a | n/a |
+
+### Tt-swallowed-exceptions
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 27 | 94s |
+
+### Tt-timezone-report
+
+3 runs, 3 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 3/3 | 18 | 54s |
+
+### Tt-token-bucket
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 21 | 57s |
+
+### Tt-unicode-slugify
+
+3 runs, 2 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 2/3 | 24 | 155s |
+
+### Tt-word-freq
+
+3 runs, 1 passed.
+
+| model | stack | version | pass | best turns | best wall |
+|---|---|---|---|---|---|
+| `lab/mellum (thinking on)` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | `07147a92` | 1/3 | 20 | 121s |
+
 ## Full records
 
 Every run, newest first.
 
 ### Easy
 
-| date | model | stack | result | turns | wall | run |
-|---|---|---|---|---|---|---|
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | fail | 40 | 387s | `20261110T070217Z-easy-14f2da` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 45 | 389s | `20261110T065543Z-easy-80f4b3` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 24 | 90s | `20261110T065410Z-easy-617a94` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 18 | 106s | `20261110T065221Z-easy-5c02d6` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | pass | 25 | 167s | `20261110T064931Z-easy-c65cf0` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | fail | 19 | 78s | `20261110T064807Z-easy-6c73fb` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 19 | 85s | `20261103T153234Z-easy-f9761c` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 24 | 146s | `20261103T135146Z-easy-911e69` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 38 | 133s | `20261103T134929Z-easy-53779c` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | pass | 22 | 64s | `20261103T134502Z-easy-4b65cc` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | fail | 30 | 98s | `20261103T134020Z-easy-49026f` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | fail | 15 | 61s | `20261103T133615Z-easy-e8b32e` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | fail | 11 | 34s | `20261103T133537Z-easy-ef195d` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | fail | 32 | 92s | `20261103T133401Z-easy-f18226` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | pass | 30 | 127s | `20261103T133151Z-easy-7a63ce` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | pass | 22 | 572s | `20261103T132146Z-easy-3baed1` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | fail | 11 | 33s | `20261103T132109Z-easy-8fd60c` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | fail | 28 | 59s | `20261103T132006Z-easy-7be520` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 15 | 61s | `20261103T122548Z-easy-14bd62` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 19 | 76s | `20261103T122429Z-easy-3884f7` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 18 | 44s | `20261103T122341Z-easy-745bb4` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 17 | 43s | `20261103T121953Z-easy-b9684e` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 12 | 40s | `20261103T121910Z-easy-ffabd5` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 41 | 145s | `20261103T121341Z-easy-0933b0` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | pass | 28 | 115s | `20261103T121141Z-easy-81e381` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | pass | 22 | 82s | `20261103T121016Z-easy-3801ab` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 12 | 34s | `20261103T120637Z-easy-d0587f` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | pass | 19 | 55s | `20261103T120237Z-easy-750d0b` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 19 | 58s | `20261103T115836Z-easy-ef0aa9` |
-| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 22 | 84s | `20261103T115407Z-easy-20af58` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | fail | 66 | 578s | `20261102T182002Z-easy-3b3820` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 22 | 75s | `20261102T181845Z-easy-03f21d` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 14 | 61s | `20261102T181740Z-easy-d3c521` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 17 | 90s | `20261102T181607Z-easy-e075d0` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 18 | 115s | `20261102T181409Z-easy-49c241` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 23 | 96s | `20261102T181228Z-easy-6d7fcd` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 44 | 187s | `20261102T175736Z-easy-79283e` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 25 | 91s | `20261102T175600Z-easy-99a562` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 23 | 83s | `20261102T175434Z-easy-ca0641` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 25 | 100s | `20261102T175251Z-easy-01fe60` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 35 | 175s | `20261102T174953Z-easy-a48c2a` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 22 | 81s | `20261102T174828Z-easy-410996` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 36 | 157s | `20261102T171328Z-easy-8f7d17` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 23 | 100s | `20261102T171144Z-easy-95018a` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 18 | 90s | `20261102T171011Z-easy-07d255` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 19 | 51s | `20261102T170916Z-easy-6a4e69` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | pass | 13 | 50s | `20261102T170823Z-easy-c435ac` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | fail | 24 | 39s | `20261102T170739Z-easy-c05e80` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 19 | 61s | `20261102T165803Z-easy-0c061a` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | fail | 13 | 84s | `20261102T165636Z-easy-2a928f` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 28 | 90s | `20261102T164631Z-easy-3b1d13` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 15 | 73s | `20261102T164514Z-easy-8d8e28` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | fail | 14 | 44s | `20261102T163504Z-easy-9f259f` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 17 | 77s | `20261102T163343Z-easy-46379a` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 14 | 59s | `20261102T162554Z-easy-704f8e` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 19 | 84s | `20261102T162427Z-easy-5fdfb6` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | pass | 20 | 143s | `20261102T162200Z-easy-c41ba1` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | pass | 47 | 237s | `20261102T161213Z-easy-c41246` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | pass | 12 | 52s | `20261102T161116Z-easy-a22726` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | fail | 12 | 84s | `20261102T160948Z-easy-42a4ff` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | pass | 15 | 95s | `20261102T160324Z-easy-0a3ec6` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | pass | 24 | 94s | `20261102T160146Z-easy-746528` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | fail | 43 | 199s | `20261102T155823Z-easy-a4ce88` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | fail | 23 | 94s | `20261102T154855Z-easy-099974` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | fail | 19 | 31s | `20261102T154821Z-easy-e361aa` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | fail | 22 | 46s | `20261102T154732Z-easy-7a99ef` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | fail | 20 | 54s | `20261102T154519Z-easy-990749` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, server-guard arm | fail | 45 | 541s | `20261102T151749Z-easy-0b2db6` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 31 | 592s | `20261102T150727Z-easy-9dfcdc` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 64 | 486s | `20261102T145918Z-easy-6760a0` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 53 | 300s | `20261102T145414Z-easy-f7ed4b` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 78 | 262s | `20261031T223709Z-easy-8e5012` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 71 | 249s | `20261031T223257Z-easy-5760b9` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | pass | 62 | 229s | `20261031T222905Z-easy-30ca85` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 27 | 116s | `20261031T220809Z-easy-ebf6d9` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 25 | 100s | `20261031T220624Z-easy-495b50` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 57 | 211s | `20261031T220249Z-easy-8b6aea` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 34 | 122s | `20261031T211232Z-easy-fd845e` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 76 | 232s | `20261031T210837Z-easy-29b98a` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 35 | 214s | `20261031T210459Z-easy-7cc4d4` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 20 | 48s | `20261031T210408Z-easy-ba5399` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 11 | 21s | `20261031T210144Z-easy-e2e1a5` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 17 | 54s | `20261031T205845Z-easy-525755` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 24 | 87s | `20261031T185258Z-easy-68465c` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 35 | 207s | `20261031T184926Z-easy-c2618b` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 24 | 157s | `20261031T184646Z-easy-760b91` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 29 | 114s | `20261031T184447Z-easy-56638f` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 11 | 29s | `20261031T184415Z-easy-ad2ebc` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 20 | 79s | `20261031T184052Z-easy-54c8cc` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | fail | 47 | 217s | `20261031T165657Z-easy-afac3c` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 34 | 207s | `20261031T165325Z-easy-e75180` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 50 | 277s | `20261031T164843Z-easy-4f9385` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | pass | 25 | 130s | `20261031T164628Z-easy-c70ea1` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | fail | 10 | 38s | `20261031T164547Z-easy-ab9981` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | pass | 17 | 71s | `20261031T164431Z-easy-f7ea9a` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | fail | 36 | 258s | `20261031T154333Z-easy-fd9e63` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | pass | 27 | 125s | `20261031T154124Z-easy-73981e` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | pass | 39 | 178s | `20261031T153822Z-easy-abbe87` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | pass | 16 | 67s | `20261031T153512Z-easy-7934be` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 44 | 335s | `20261031T152934Z-easy-be784b` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 10 | 25s | `20261031T152705Z-easy-aa645b` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 45 | 149s | `20261031T145820Z-easy-17cd17` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 58 | 210s | `20261031T145446Z-easy-b2030c` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 56 | 221s | `20261031T145102Z-easy-bcba4c` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 16 | 41s | `20261031T143926Z-easy-d690c7` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 17 | 48s | `20261031T143834Z-easy-a44a49` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 19 | 79s | `20261031T143710Z-easy-381a84` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 27 | 115s | `20261031T124850Z-easy-832194` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 21 | 61s | `20261031T124746Z-easy-289b78` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 27 | 175s | `20261031T124447Z-easy-4dc48c` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | fail | 14 | 31s | `20261031T124211Z-easy-4bacc4` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | pass | 25 | 71s | `20261031T123856Z-easy-c727cb` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | pass | 14 | 41s | `20261031T123609Z-easy-7a3848` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | pass | 43 | 214s | `20261031T121941Z-easy-9e702e` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | pass | 50 | 196s | `20261031T121620Z-easy-e1b892` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | pass | 30 | 143s | `20261031T121355Z-easy-102df8` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | fail | 40 | 117s | `20261031T121155Z-easy-870d1b` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | fail | 17 | 99s | `20261031T121011Z-easy-1b4972` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 40 | 241s | `20261031T112023Z-easy-c08943` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 46 | 176s | `20261031T111723Z-easy-f419da` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 28 | 102s | `20261031T111536Z-easy-f70700` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 30 | 212s | `20261031T111201Z-easy-f9e734` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 39 | 177s | `20261031T110859Z-easy-0a4660` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 42 | 234s | `20261031T101620Z-easy-818f52` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 29 | 119s | `20261031T101418Z-easy-9629c5` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 49 | 165s | `20261031T101129Z-easy-ee63b0` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | pass | 42 | 208s | `20261031T100757Z-easy-6be5bf` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 25 | 104s | `20261031T100608Z-easy-576a01` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 17 | 76s | `20261031T080429Z-easy-de64c0` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 18 | 58s | `20261031T080329Z-easy-74a7db` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 19 | 79s | `20261031T080205Z-easy-d162fe` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 19 | 77s | `20261031T075921Z-easy-380468` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 20 | 67s | `20261031T075811Z-easy-5fbdc8` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 99 | 539s | `20261031T074907Z-easy-ec96b0` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 188 | 1253s | `20261031T071251Z-easy-b27fce` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | pass | 102 | 622s | `20261031T070226Z-easy-3979a3` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 156 | 1147s | `20261031T064314Z-easy-1890ec` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | fail | 21 | 59s | `20261031T063452Z-easy-5e5cab` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | fail | 129 | 900s | `20261031T061949Z-easy-001917` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | fail | 18 | 48s | `20261031T061657Z-easy-ace708` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 17 | 47s | `easy-r2` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 23 | 76s | `easy-r1` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 16 | 63s | `easy-r0` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 296 | 1799s | `20261030T214708Z-easy-e872d0` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | pass | 125 | 702s | `20261030T213521Z-easy-11b28f` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 35 | 143s | `20261030T213053Z-easy-c38475` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 20 | 55s | `20261030T211912Z-easy-a986a4` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | fail | 17 | 46s | `20261030T211824Z-easy-964200` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | pass | 21 | 77s | `20261030T211703Z-easy-b1a126` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | pass | 21 | 67s | `20261030T205503Z-easy-2bd316` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | pass | 21 | 64s | `20261030T204944Z-easy-dea973` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | pass | 9 | 46s | `20261030T203042Z-easy-411fa7` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | fail | 19 | 56s | `20261030T202942Z-easy-0eb2b4` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | fail | 38 | 97s | `20261030T202801Z-easy-7924a7` |
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `r1d/r1d-sft-v2b` (sft-v2b-Q8_0.gguf (1,400 examples)) | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `guard/repeat-loops` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | off | fail | 358 | 325 | 619s | `20261128T060649Z-easy-ebf438` |
+| 2026-11-28 | `r1d/r1d-sft-v2b` (sft-v2b-Q8_0.gguf (1,400 examples)) | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 10 | 1 | 19s | `20261128T060649Z-easy-6d20fa` |
+| 2026-11-28 | `r1d/r1d-sft-v2b` (sft-v2b-Q8_0.gguf (1,400 examples)) | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `guard/repeat-loops` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 8 | 0 | 107s | `20261128T060649Z-easy-1ea93d` |
+| 2026-11-28 | `r1d/r1d-sft-v2b` (sft-v2b-Q8_0.gguf (1,400 examples)) | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | off | fail | 103 | 92 | 95s | `20261128T060429Z-easy-1ccf81` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 14 | 0 | 51s | `20261127T184116Z-easy-d5ebd4` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 21 | 0 | 105s | `20261127T183928Z-easy-4a94da` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 17 | 1 | 89s | `20261127T183756Z-easy-4e9269` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 23 | 2 | 138s | `20261127T183505Z-easy-78879a` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 28 | 3 | 98s | `20261127T183324Z-easy-885800` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 33 | 3 | 139s | `20261127T183100Z-easy-61a105` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 14 | 0 | 46s | `20261127T083551Z-easy-b068f1` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 36 | 8 | 142s | `20261127T083326Z-easy-85b5dc` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 26 | 0 | 137s | `20261127T083105Z-easy-ee8e5f` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 33 | 4 | 135s | `20261127T071338Z-easy-bc3a28` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 25 | 2 | 152s | `20261127T071103Z-easy-436ac3` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 28 | 2 | 109s | `20261127T070910Z-easy-bc4251` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 16 | 0 | 82s | `20261127T052912Z-easy-50a8bf` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 30 | 3 | 592s | `20261127T051908Z-easy-8600ea` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 25 | 2 | 137s | `20261127T051647Z-easy-9324a3` |
+| 2026-11-25 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 18 | 1 | 90s | `20261125T235057Z-easy-6efcdc` |
+| 2026-11-25 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 23 | 3 | 112s | `20261125T234902Z-easy-38ffcb` |
+| 2026-11-25 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 21 | 3 | 154s | `20261125T234624Z-easy-abb5bc` |
+| 2026-11-24 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 26 | 2 | 146s | `20261124T223046Z-easy-149a36` |
+| 2026-11-24 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 18 | 2 | 86s | `20261124T222917Z-easy-06823d` |
+| 2026-11-24 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 27 | 2 | 339s | `20261124T222335Z-easy-b1a7db` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 18 | 1 | 75s | `20261110T223133Z-easy-5cebc1` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 27 | 4 | 571s | `20261110T222129Z-easy-50c7a1` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 32 | 8 | 102s | `20261110T221124Z-easy-bfa66a` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 19 | 3 | 79s | `20261110T220120Z-easy-586fb9` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 19 | 1 | 74s | `20261110T220004Z-easy-138734` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 22 | 3 | 112s | `20261110T215809Z-easy-82e2d5` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | - | fail | 40 | - | 387s | `20261110T070217Z-easy-14f2da` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | - | pass | 45 | - | 389s | `20261110T065543Z-easy-80f4b3` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | - | pass | 24 | - | 90s | `20261110T065410Z-easy-617a94` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | - | pass | 18 | - | 106s | `20261110T065221Z-easy-5c02d6` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | - | pass | 25 | - | 167s | `20261110T064931Z-easy-c65cf0` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | - | fail | 19 | - | 78s | `20261110T064807Z-easy-6c73fb` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 19 | - | 85s | `20261103T153234Z-easy-f9761c` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 24 | - | 146s | `20261103T135146Z-easy-911e69` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 38 | - | 133s | `20261103T134929Z-easy-53779c` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | - | pass | 22 | - | 64s | `20261103T134502Z-easy-4b65cc` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | - | fail | 30 | - | 98s | `20261103T134020Z-easy-49026f` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `prompt/name-the-layout` · `prompt/verify-the-spec` | - | fail | 15 | - | 61s | `20261103T133615Z-easy-e8b32e` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | - | fail | 11 | - | 34s | `20261103T133537Z-easy-ef195d` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | - | fail | 32 | - | 92s | `20261103T133401Z-easy-f18226` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `nonblock` | - | pass | 30 | - | 127s | `20261103T133151Z-easy-7a63ce` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | - | pass | 22 | - | 572s | `20261103T132146Z-easy-3baed1` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | - | fail | 11 | - | 33s | `20261103T132109Z-easy-8fd60c` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/foreground-server` | - | fail | 28 | - | 59s | `20261103T132006Z-easy-7be520` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 15 | - | 61s | `20261103T122548Z-easy-14bd62` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 19 | - | 76s | `20261103T122429Z-easy-3884f7` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 18 | - | 44s | `20261103T122341Z-easy-745bb4` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 17 | - | 43s | `20261103T121953Z-easy-b9684e` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 12 | - | 40s | `20261103T121910Z-easy-ffabd5` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 41 | - | 145s | `20261103T121341Z-easy-0933b0` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | pass | 28 | - | 115s | `20261103T121141Z-easy-81e381` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | pass | 22 | - | 82s | `20261103T121016Z-easy-3801ab` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | fail | 12 | - | 34s | `20261103T120637Z-easy-d0587f` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | pass | 19 | - | 55s | `20261103T120237Z-easy-750d0b` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | fail | 19 | - | 58s | `20261103T115836Z-easy-ef0aa9` |
+| 2026-11-03 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | fail | 22 | - | 84s | `20261103T115407Z-easy-20af58` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | fail | 66 | - | 578s | `20261102T182002Z-easy-3b3820` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 22 | - | 75s | `20261102T181845Z-easy-03f21d` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 14 | - | 61s | `20261102T181740Z-easy-d3c521` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 17 | - | 90s | `20261102T181607Z-easy-e075d0` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 18 | - | 115s | `20261102T181409Z-easy-49c241` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `acceptance` · `verify` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 23 | - | 96s | `20261102T181228Z-easy-6d7fcd` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 44 | - | 187s | `20261102T175736Z-easy-79283e` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 25 | - | 91s | `20261102T175600Z-easy-99a562` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 23 | - | 83s | `20261102T175434Z-easy-ca0641` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 25 | - | 100s | `20261102T175251Z-easy-01fe60` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 35 | - | 175s | `20261102T174953Z-easy-a48c2a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 22 | - | 81s | `20261102T174828Z-easy-410996` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 36 | - | 157s | `20261102T171328Z-easy-8f7d17` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 23 | - | 100s | `20261102T171144Z-easy-95018a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 18 | - | 90s | `20261102T171011Z-easy-07d255` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 19 | - | 51s | `20261102T170916Z-easy-6a4e69` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 13 | - | 50s | `20261102T170823Z-easy-c435ac` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` | - | fail | 24 | - | 39s | `20261102T170739Z-easy-c05e80` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 19 | - | 61s | `20261102T165803Z-easy-0c061a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | fail | 13 | - | 84s | `20261102T165636Z-easy-2a928f` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 28 | - | 90s | `20261102T164631Z-easy-3b1d13` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 15 | - | 73s | `20261102T164514Z-easy-8d8e28` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | fail | 14 | - | 44s | `20261102T163504Z-easy-9f259f` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 17 | - | 77s | `20261102T163343Z-easy-46379a` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 14 | - | 59s | `20261102T162554Z-easy-704f8e` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 19 | - | 84s | `20261102T162427Z-easy-5fdfb6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` · `prompt/python-developer` | - | pass | 20 | - | 143s | `20261102T162200Z-easy-c41ba1` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | - | pass | 47 | - | 237s | `20261102T161213Z-easy-c41246` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | - | pass | 12 | - | 52s | `20261102T161116Z-easy-a22726` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/repeat-loops` · `prompt/name-the-layout` | - | fail | 12 | - | 84s | `20261102T160948Z-easy-42a4ff` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | - | pass | 15 | - | 95s | `20261102T160324Z-easy-0a3ec6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | - | pass | 24 | - | 94s | `20261102T160146Z-easy-746528` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `prompt/name-the-layout` | - | fail | 43 | - | 199s | `20261102T155823Z-easy-a4ce88` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | - | fail | 23 | - | 94s | `20261102T154855Z-easy-099974` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | - | fail | 19 | - | 31s | `20261102T154821Z-easy-e361aa` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `context/add-project-facts` · `context/narrow-tools` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `nudge/nudge-empty-turn` | - | fail | 22 | - | 46s | `20261102T154732Z-easy-7a99ef` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm | - | fail | 20 | - | 54s | `20261102T154519Z-easy-990749` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, server-guard arm | - | fail | 45 | - | 541s | `20261102T151749Z-easy-0b2db6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 31 | - | 592s | `20261102T150727Z-easy-9dfcdc` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 64 | - | 486s | `20261102T145918Z-easy-6760a0` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 53 | - | 300s | `20261102T145414Z-easy-f7ed4b` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | - | pass | 78 | - | 262s | `20261031T223709Z-easy-8e5012` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | - | pass | 71 | - | 249s | `20261031T223257Z-easy-5760b9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/narrow-tools` · `context/repair-think-tags` · `context/trim-tool-output` · `guard/foreground-server` · `guard/outside-workspace` · `guard/repeat-loops` · `guard/whole-file-rewrite` | - | pass | 62 | - | 229s | `20261031T222905Z-easy-30ca85` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 27 | - | 116s | `20261031T220809Z-easy-ebf6d9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 25 | - | 100s | `20261031T220624Z-easy-495b50` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 57 | - | 211s | `20261031T220249Z-easy-8b6aea` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | pass | 34 | - | 122s | `20261031T211232Z-easy-fd845e` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | pass | 76 | - | 232s | `20261031T210837Z-easy-29b98a` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 35 | - | 214s | `20261031T210459Z-easy-7cc4d4` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 20 | - | 48s | `20261031T210408Z-easy-ba5399` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 11 | - | 21s | `20261031T210144Z-easy-e2e1a5` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 17 | - | 54s | `20261031T205845Z-easy-525755` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | pass | 24 | - | 87s | `20261031T185258Z-easy-68465c` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 35 | - | 207s | `20261031T184926Z-easy-c2618b` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 24 | - | 157s | `20261031T184646Z-easy-760b91` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 29 | - | 114s | `20261031T184447Z-easy-56638f` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 11 | - | 29s | `20261031T184415Z-easy-ad2ebc` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 20 | - | 79s | `20261031T184052Z-easy-54c8cc` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | - | fail | 47 | - | 217s | `20261031T165657Z-easy-afac3c` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | - | pass | 34 | - | 207s | `20261031T165325Z-easy-e75180` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | - | pass | 50 | - | 277s | `20261031T164843Z-easy-4f9385` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | - | pass | 25 | - | 130s | `20261031T164628Z-easy-c70ea1` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | - | fail | 10 | - | 38s | `20261031T164547Z-easy-ab9981` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | - | pass | 17 | - | 71s | `20261031T164431Z-easy-f7ea9a` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | - | fail | 36 | - | 258s | `20261031T154333Z-easy-fd9e63` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | - | pass | 27 | - | 125s | `20261031T154124Z-easy-73981e` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | - | pass | 39 | - | 178s | `20261031T153822Z-easy-abbe87` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | - | pass | 16 | - | 67s | `20261031T153512Z-easy-7934be` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | - | fail | 44 | - | 335s | `20261031T152934Z-easy-be784b` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | - | fail | 10 | - | 25s | `20261031T152705Z-easy-aa645b` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 45 | - | 149s | `20261031T145820Z-easy-17cd17` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 58 | - | 210s | `20261031T145446Z-easy-b2030c` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | pass | 56 | - | 221s | `20261031T145102Z-easy-bcba4c` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 16 | - | 41s | `20261031T143926Z-easy-d690c7` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 17 | - | 48s | `20261031T143834Z-easy-a44a49` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 19 | - | 79s | `20261031T143710Z-easy-381a84` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 27 | - | 115s | `20261031T124850Z-easy-832194` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 21 | - | 61s | `20261031T124746Z-easy-289b78` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 27 | - | 175s | `20261031T124447Z-easy-4dc48c` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | - | fail | 14 | - | 31s | `20261031T124211Z-easy-4bacc4` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | - | pass | 25 | - | 71s | `20261031T123856Z-easy-c727cb` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | vanilla Pi | - | pass | 14 | - | 41s | `20261031T123609Z-easy-7a3848` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | - | pass | 43 | - | 214s | `20261031T121941Z-easy-9e702e` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | - | pass | 50 | - | 196s | `20261031T121620Z-easy-e1b892` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | - | pass | 30 | - | 143s | `20261031T121355Z-easy-102df8` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | - | fail | 40 | - | 117s | `20261031T121155Z-easy-870d1b` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `acceptance` · `verify` · `nonblock` | - | fail | 17 | - | 99s | `20261031T121011Z-easy-1b4972` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 40 | - | 241s | `20261031T112023Z-easy-c08943` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 46 | - | 176s | `20261031T111723Z-easy-f419da` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 28 | - | 102s | `20261031T111536Z-easy-f70700` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 30 | - | 212s | `20261031T111201Z-easy-f9e734` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 39 | - | 177s | `20261031T110859Z-easy-0a4660` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 42 | - | 234s | `20261031T101620Z-easy-818f52` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 29 | - | 119s | `20261031T101418Z-easy-9629c5` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 49 | - | 165s | `20261031T101129Z-easy-ee63b0` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | pass | 42 | - | 208s | `20261031T100757Z-easy-6be5bf` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 25 | - | 104s | `20261031T100608Z-easy-576a01` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 17 | - | 76s | `20261031T080429Z-easy-de64c0` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 18 | - | 58s | `20261031T080329Z-easy-74a7db` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 19 | - | 79s | `20261031T080205Z-easy-d162fe` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 19 | - | 77s | `20261031T075921Z-easy-380468` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 20 | - | 67s | `20261031T075811Z-easy-5fbdc8` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 99 | - | 539s | `20261031T074907Z-easy-ec96b0` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | fail | 188 | - | 1253s | `20261031T071251Z-easy-b27fce` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | pass | 102 | - | 622s | `20261031T070226Z-easy-3979a3` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | fail | 156 | - | 1147s | `20261031T064314Z-easy-1890ec` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | - | fail | 21 | - | 59s | `20261031T063452Z-easy-5e5cab` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | - | fail | 129 | - | 900s | `20261031T061949Z-easy-001917` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` | - | fail | 18 | - | 48s | `20261031T061657Z-easy-ace708` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 17 | - | 47s | `easy-r2` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 23 | - | 76s | `easy-r1` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 16 | - | 63s | `easy-r0` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | fail | 296 | - | 1799s | `20261030T214708Z-easy-e872d0` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | pass | 125 | - | 702s | `20261030T213521Z-easy-11b28f` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | fail | 35 | - | 143s | `20261030T213053Z-easy-c38475` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | fail | 20 | - | 55s | `20261030T211912Z-easy-a986a4` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | fail | 17 | - | 46s | `20261030T211824Z-easy-964200` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | pass | 21 | - | 77s | `20261030T211703Z-easy-b1a126` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `nonblock` · `quality` · `verify` | - | pass | 21 | - | 67s | `20261030T205503Z-easy-2bd316` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `quality` · `verify` | - | pass | 21 | - | 64s | `20261030T204944Z-easy-dea973` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | - | pass | 9 | - | 46s | `20261030T203042Z-easy-411fa7` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | - | fail | 19 | - | 56s | `20261030T202942Z-easy-0eb2b4` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `check/check-code-quality` | - | fail | 38 | - | 97s | `20261030T202801Z-easy-7924a7` |
 
 ### Medium
 
-| date | model | stack | result | turns | wall | run |
-|---|---|---|---|---|---|---|
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/trim-tool-output` | pass | 55 | 337s | `20261110T014652Z-medium-366612` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/trim-tool-output` | pass | 229 | 1800s | `20261110T011648Z-medium-c499ff` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/trim-tool-output` | pass | 47 | 329s | `20261110T011115Z-medium-979040` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/repair-think-tags` | fail | 69 | 802s | `20261110T005748Z-medium-e81751` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/repair-think-tags` | pass | 48 | 298s | `20261110T005246Z-medium-0f6607` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/repair-think-tags` | pass | 85 | 646s | `20261110T004155Z-medium-458948` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/outside-workspace` | pass | 89 | 927s | `20261110T002623Z-medium-6174f4` |
-| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/outside-workspace` | fail | 67 | 299s | `20261110T002120Z-medium-b3ffc8` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `guard/exists` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | fail | 260 | 2675s | `rung13-tuned-direct-guards-r3` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `guard/exists` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | fail | 309 | 2761s | `rung13-tuned-direct-guards-r2` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `guard/exists` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | fail | 202 | 2651s | `rung13-tuned-direct-guards-r1` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/outside-workspace` | fail | 21 | 103s | `20261109T235115Z-medium-9b43e2` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/repeat-loops` | fail | 62 | 357s | `20261109T232108Z-medium-24832e` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/repeat-loops` | pass | 148 | 1550s | `20261109T225513Z-medium-e1e3e4` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/repeat-loops` | fail | 15 | 32s | `20261109T222507Z-medium-18f322` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/turn-cap` · `prompt/think-briefly` | fail | 92 | 327s | `20261109T215503Z-medium-ebdf09` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/turn-cap` · `prompt/think-briefly` | pass | 37 | 259s | `20261109T215041Z-medium-f72b2b` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/turn-cap` · `prompt/think-briefly` | pass | 64 | 551s | `20261109T214125Z-medium-19b9ba` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/no-live-server` | fail | 67 | 358s | `20261109T213523Z-medium-eb1916` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/no-live-server` | pass | 104 | 684s | `20261109T212354Z-medium-d6dadc` |
-| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/no-live-server` | pass | 67 | 462s | `20261109T211606Z-medium-37ff95` |
-| 2026-11-09 | `Mellum2.1-12B-A2.5B-Thinking` | `flow` · `think-tags` | fail | 65 | 2467s | `20261109T144628Z-flow-medium-0d6fb6` |
-| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | pass | 91 | 1283s | `20261102T182331Z-medium-b4682d` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 46 | 265s | `20261031T222316Z-medium-25b0c9` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 74 | 294s | `20261031T221819Z-medium-d3286c` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 69 | 484s | `20261031T221009Z-medium-560ee1` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | fail | 82 | 402s | `20261031T215543Z-medium-2bbe0b` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 79 | 310s | `20261031T214829Z-medium-37c465` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 69 | 247s | `20261031T214218Z-medium-01af08` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 58 | 417s | `20261031T213316Z-medium-c3253e` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 76 | 667s | `20261031T212004Z-medium-0388b0` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 45 | 322s | `20261031T211439Z-medium-029554` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 66 | 446s | `20261031T195545Z-medium-aaf88b` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 58 | 285s | `20261031T195055Z-medium-1ed570` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | pass | 80 | 547s | `20261031T194144Z-medium-a0c445` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 83 | 651s | `20261031T192846Z-medium-3a09b6` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 224 | 1801s | `20261031T185839Z-medium-9341e3` |
-| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 43 | 126s | `20261031T185428Z-medium-0d2440` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 98 | 882s | `20261031T181934Z-medium-2caf88` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 73 | 612s | `20261031T180916Z-medium-564187` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 73 | 585s | `20261031T175925Z-medium-4405de` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 58 | 513s | `20261031T174955Z-medium-81753b` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | pass | 47 | 347s | `20261031T174402Z-medium-043395` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | fail | 70 | 463s | `20261031T173616Z-medium-2ad673` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | fail | 56 | 569s | `20261031T172641Z-medium-c269cd` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | fail | 36 | 240s | `20261031T172037Z-medium-e7141e` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | pass | 111 | 1193s | `20261031T170039Z-medium-70a118` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | fail | 79 | 363s | `20261031T163355Z-medium-497f22` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | fail | 70 | 318s | `20261031T162831Z-medium-d8b479` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | pass | 52 | 269s | `20261031T162359Z-medium-75675e` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 44 | 278s | `20261031T161917Z-medium-34e9e6` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 105 | 1606s | `20261031T155024Z-medium-582869` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | fail | 9 | 26s | `20261031T154754Z-medium-c473b1` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 76 | 364s | `20261031T151831Z-medium-e068ec` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 85 | 380s | `20261031T151204Z-medium-f56b19` |
-| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | fail | 93 | 546s | `20261031T150255Z-medium-90bb94` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | pass | 102 | 1460s | `20261031T134320Z-medium-5d5e38` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | pass | 51 | 471s | `20261031T133525Z-medium-5e01e9` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | pass | 76 | 489s | `20261031T132711Z-medium-673535` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 194 | 1483s | `20261031T093813Z-medium-297f01` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 267 | 3001s | `20261031T084807Z-medium-c0ea2a` |
-| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | fail | 157 | 1372s | `20261031T082511Z-medium-74b050` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 103 | 899s | `medium-r2` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | pass | 71 | 522s | `medium-r1` |
-| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | fail | 45 | 303s | `medium-r0` |
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 47 | 0 | 514s | `20261127T210516Z-medium-dc1ccd` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 172 | 33 | 1793s | `20261127T203511Z-medium-fa7fff` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 195 | 46 | 1753s | `20261127T200506Z-medium-3f0c08` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 202 | 44 | 1788s | `20261127T193502Z-medium-1c3210` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 89 | 12 | 1077s | `20261127T191700Z-medium-2ab025` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 71 | 4 | 664s | `20261127T190552Z-medium-0b0ffa` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 136 | 35 | 1739s | `20261127T092011Z-medium-cbb40d` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 93 | 8 | 797s | `20261127T090649Z-medium-4a2041` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 115 | 19 | 1352s | `20261127T083645Z-medium-7a0788` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 54 | 3 | 493s | `20261127T082022Z-medium-2b04d6` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 114 | 22 | 1063s | `20261127T080234Z-medium-50be24` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 83 | 10 | 938s | `20261127T074651Z-medium-954f5c` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 90 | 20 | 1779s | `20261127T063549Z-medium-cf8376` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 172 | 41 | 1798s | `20261127T060545Z-medium-89a0b2` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 97 | 11 | 795s | `20261127T055227Z-medium-228f22` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 65 | 4 | 614s | `20261126T082758Z-medium-8bf18a` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 125 | 26 | 959s | `20261126T081154Z-medium-36bc98` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 170 | 40 | 1762s | `20261126T074149Z-medium-7bd37c` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 79 | 9 | 506s | `20261110T213656Z-medium-84a06e` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/trim-tool-output` | - | pass | 55 | - | 337s | `20261110T014652Z-medium-366612` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/trim-tool-output` | - | pass | 229 | - | 1800s | `20261110T011648Z-medium-c499ff` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/trim-tool-output` | - | pass | 47 | - | 329s | `20261110T011115Z-medium-979040` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/repair-think-tags` | - | fail | 69 | - | 802s | `20261110T005748Z-medium-e81751` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/repair-think-tags` | - | pass | 48 | - | 298s | `20261110T005246Z-medium-0f6607` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `context/repair-think-tags` | - | pass | 85 | - | 646s | `20261110T004155Z-medium-458948` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/outside-workspace` | - | pass | 89 | - | 927s | `20261110T002623Z-medium-6174f4` |
+| 2026-11-10 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/outside-workspace` | - | fail | 67 | - | 299s | `20261110T002120Z-medium-b3ffc8` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `guard/exists` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | fail | 260 | - | 2675s | `rung13-tuned-direct-guards-r3` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `guard/exists` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | fail | 309 | - | 2761s | `rung13-tuned-direct-guards-r2` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `guard/exists` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | fail | 202 | - | 2651s | `rung13-tuned-direct-guards-r1` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/outside-workspace` | - | fail | 21 | - | 103s | `20261109T235115Z-medium-9b43e2` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/repeat-loops` | - | fail | 62 | - | 357s | `20261109T232108Z-medium-24832e` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/repeat-loops` | - | pass | 148 | - | 1550s | `20261109T225513Z-medium-e1e3e4` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/repeat-loops` | - | fail | 15 | - | 32s | `20261109T222507Z-medium-18f322` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/turn-cap` · `prompt/think-briefly` | - | fail | 92 | - | 327s | `20261109T215503Z-medium-ebdf09` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/turn-cap` · `prompt/think-briefly` | - | pass | 37 | - | 259s | `20261109T215041Z-medium-f72b2b` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/turn-cap` · `prompt/think-briefly` | - | pass | 64 | - | 551s | `20261109T214125Z-medium-19b9ba` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/no-live-server` | - | fail | 67 | - | 358s | `20261109T213523Z-medium-eb1916` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/no-live-server` | - | pass | 104 | - | 684s | `20261109T212354Z-medium-d6dadc` |
+| 2026-11-09 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker · `guard/no-live-server` | - | pass | 67 | - | 462s | `20261109T211606Z-medium-37ff95` |
+| 2026-11-09 | `Mellum2.1-12B-A2.5B-Thinking` | `flow` · `think-tags` | - | fail | 65 | - | 2467s | `20261109T144628Z-flow-medium-0d6fb6` |
+| 2026-11-02 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker, vanilla arm · `guard/foreground-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | - | pass | 91 | - | 1283s | `20261102T182331Z-medium-b4682d` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 46 | - | 265s | `20261031T222316Z-medium-25b0c9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 74 | - | 294s | `20261031T221819Z-medium-d3286c` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 69 | - | 484s | `20261031T221009Z-medium-560ee1` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | Baseline Worker | - | fail | 82 | - | 402s | `20261031T215543Z-medium-2bbe0b` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 79 | - | 310s | `20261031T214829Z-medium-37c465` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 69 | - | 247s | `20261031T214218Z-medium-01af08` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 58 | - | 417s | `20261031T213316Z-medium-c3253e` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 76 | - | 667s | `20261031T212004Z-medium-0388b0` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 45 | - | 322s | `20261031T211439Z-medium-029554` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 66 | - | 446s | `20261031T195545Z-medium-aaf88b` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 58 | - | 285s | `20261031T195055Z-medium-1ed570` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | pass | 80 | - | 547s | `20261031T194144Z-medium-a0c445` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 83 | - | 651s | `20261031T192846Z-medium-3a09b6` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 224 | - | 1801s | `20261031T185839Z-medium-9341e3` |
+| 2026-10-31 | `M3Max/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 43 | - | 126s | `20261031T185428Z-medium-0d2440` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 98 | - | 882s | `20261031T181934Z-medium-2caf88` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 73 | - | 612s | `20261031T180916Z-medium-564187` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 73 | - | 585s | `20261031T175925Z-medium-4405de` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | - | pass | 58 | - | 513s | `20261031T174955Z-medium-81753b` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | - | pass | 47 | - | 347s | `20261031T174402Z-medium-043395` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | Baseline Worker | - | fail | 70 | - | 463s | `20261031T173616Z-medium-2ad673` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | - | fail | 56 | - | 569s | `20261031T172641Z-medium-c269cd` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | - | fail | 36 | - | 240s | `20261031T172037Z-medium-e7141e` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-BF16` | vanilla Pi | - | pass | 111 | - | 1193s | `20261031T170039Z-medium-70a118` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | - | fail | 79 | - | 363s | `20261031T163355Z-medium-497f22` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | - | fail | 70 | - | 318s | `20261031T162831Z-medium-d8b479` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | Baseline Worker | - | pass | 52 | - | 269s | `20261031T162359Z-medium-75675e` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | - | fail | 44 | - | 278s | `20261031T161917Z-medium-34e9e6` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | - | fail | 105 | - | 1606s | `20261031T155024Z-medium-582869` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q8_0` | vanilla Pi | - | fail | 9 | - | 26s | `20261031T154754Z-medium-c473b1` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 76 | - | 364s | `20261031T151831Z-medium-e068ec` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 85 | - | 380s | `20261031T151204Z-medium-f56b19` |
+| 2026-10-31 | `A6000/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | Baseline Worker | - | fail | 93 | - | 546s | `20261031T150255Z-medium-90bb94` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | - | pass | 102 | - | 1460s | `20261031T134320Z-medium-5d5e38` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | - | pass | 51 | - | 471s | `20261031T133525Z-medium-5e01e9` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` | `acceptance` · `verify` · `nonblock` | - | pass | 76 | - | 489s | `20261031T132711Z-medium-673535` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | fail | 194 | - | 1483s | `20261031T093813Z-medium-297f01` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | fail | 267 | - | 3001s | `20261031T084807Z-medium-c0ea2a` |
+| 2026-10-31 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | `acceptance` · `verify` · `nonblock` | - | fail | 157 | - | 1372s | `20261031T082511Z-medium-74b050` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 103 | - | 899s | `medium-r2` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | pass | 71 | - | 522s | `medium-r1` |
+| 2026-10-30 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M` | vanilla Pi | - | fail | 45 | - | 303s | `medium-r0` |
 
 ### Hard
 
-| date | model | stack | result | turns | wall | run |
-|---|---|---|---|---|---|---|
-| 2026-11-09 | `Mellum2.1-12B-A2.5B-Thinking` | `flow` · `think-tags` | fail | 128 | 12811s | `20261109T174235Z-flow-hard-31ffb1` |
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-09 | `Mellum2.1-12B-A2.5B-Thinking` | `flow` · `think-tags` | - | fail | 128 | - | 12811s | `20261109T174235Z-flow-hard-31ffb1` |
+
+### Py3.14-annotations-forward
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 0 | 70s | `20261127T184214Z-py3.14-annotations-forward-2aa7d6` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 20 | 3 | 116s | `20261127T071601Z-py3.14-annotations-forward-534e0b` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 17 | 0 | 110s | `20261127T053045Z-py3.14-annotations-forward-1662e5` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 0 | 128s | `20261126T071756Z-py3.14-annotations-forward-465793` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 14 | 0 | 65s | `20261126T064355Z-py3.14-annotations-forward-3201b5` |
+
+### Py3.14-annotations-return
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 14 | 2 | 64s | `20261128T022041Z-py3.14-annotations-return-578787` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 10 | 1 | 124s | `20261128T022035Z-py3.14-annotations-return-8a5adb` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 14 | 1 | 58s | `20261128T021935Z-py3.14-annotations-return-04865a` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 107s | `20261128T003740Z-py3.14-annotations-return-6e20e7` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 11 | 0 | 115s | `20261128T003542Z-py3.14-annotations-return-f6245f` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 13 | 0 | 64s | `20261128T003434Z-py3.14-annotations-return-087d67` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 22 | 3 | 202s | `20261126T111224Z-py3.14-annotations-return-f7ef23` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 17 | 1 | 141s | `20261126T111001Z-py3.14-annotations-return-63e8d3` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 24 | 3 | 187s | `20261126T110651Z-py3.14-annotations-return-2bbd94` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 14 | 0 | 74s | `20261126T084639Z-py3.14-annotations-return-dc6c1c` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 16 | 1 | 193s | `20261126T084324Z-py3.14-annotations-return-1cf162` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 23 | 4 | 274s | `20261126T083847Z-py3.14-annotations-return-9b240a` |
+
+### Py3.14-annotations-signature
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 65 | 15 | 378s | `20261128T022242Z-py3.14-annotations-signature-381f84` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 97 | 37 | 427s | `20261128T022146Z-py3.14-annotations-signature-cf06a0` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 22 | 1 | 138s | `20261128T022129Z-py3.14-annotations-signature-1fa240` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 18 | 1 | 113s | `20261128T004516Z-py3.14-annotations-signature-4d6ad4` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 12 | 0 | 90s | `20261128T004344Z-py3.14-annotations-signature-4ebb72` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 27 | 6 | 253s | `20261128T003929Z-py3.14-annotations-signature-d910da` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 32 | 8 | 417s | `20261126T112605Z-py3.14-annotations-signature-5fd3c9` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 27 | 3 | 240s | `20261126T112203Z-py3.14-annotations-signature-aa34b3` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 1 | 373s | `20261126T111548Z-py3.14-annotations-signature-bf8461` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 40 | 7 | 404s | `20261126T085419Z-py3.14-annotations-signature-d1aadd` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 5 | 284s | `20261126T084932Z-py3.14-annotations-signature-6c8ea2` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 13 | 0 | 95s | `20261126T084755Z-py3.14-annotations-signature-cfade2` |
+
+### Py3.14-finally-fix
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 17 | 0 | 78s | `20261127T184326Z-py3.14-finally-fix-218cac` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 21 | 2 | 144s | `20261127T071800Z-py3.14-finally-fix-037025` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 22 | 3 | 83s | `20261127T053238Z-py3.14-finally-fix-9bcb6f` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 22 | 1 | 90s | `20261126T072007Z-py3.14-finally-fix-f7b24c` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 27 | 2 | 589s | `20261126T064503Z-py3.14-finally-fix-516a7d` |
+
+### Py3.14-frozen-config-of-3.15
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 16 | 1 | 103s | `20261127T184447Z-py3.14-frozen-config-of-3.15-7f7d9e` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 13 | 0 | 110s | `20261127T072026Z-py3.14-frozen-config-of-3.15-30e9c0` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 13 | 0 | 86s | `20261127T053403Z-py3.14-frozen-config-of-3.15-c3697d` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 14 | 1 | 98s | `20261126T072139Z-py3.14-frozen-config-of-3.15-35cc7e` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 13 | 0 | 62s | `20261126T065505Z-py3.14-frozen-config-of-3.15-e84546` |
+
+### Py3.14-sentinel-of-3.15
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 21 | 2 | 67s | `20261127T184632Z-py3.14-sentinel-of-3.15-7b66be` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 16 | 2 | 129s | `20261127T072218Z-py3.14-sentinel-of-3.15-7c34ce` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 15 | 0 | 62s | `20261127T053531Z-py3.14-sentinel-of-3.15-ff585f` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 16 | 0 | 50s | `20261126T072319Z-py3.14-sentinel-of-3.15-2c89b3` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 44 | 16 | 142s | `20261126T065609Z-py3.14-sentinel-of-3.15-1f7fd4` |
+
+### Py3.14-tstring-html
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 30 | 6 | 111s | `20261128T022710Z-py3.14-tstring-html-d4ceb5` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 77 | 20 | 226s | `20261128T022353Z-py3.14-tstring-html-dbec27` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 28 | 5 | 199s | `20261128T022349Z-py3.14-tstring-html-934af8` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 63 | 9 | 451s | `20261128T004931Z-py3.14-tstring-html-c81294` |
+| 2026-11-28 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 28 | 1 | 133s | `20261128T004715Z-py3.14-tstring-html-6c5948` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 49 | 8 | 593s | `20261126T114513Z-py3.14-tstring-html-49d199` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 3 | 165s | `20261126T114225Z-py3.14-tstring-html-bc25c3` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 37 | 5 | 558s | `20261126T113305Z-py3.14-tstring-html-bb18ec` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 34 | 3 | 575s | `20261126T091131Z-py3.14-tstring-html-d9c42f` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 46 | 12 | 357s | `20261126T090531Z-py3.14-tstring-html-02f918` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 31 | 2 | 263s | `20261126T090106Z-py3.14-tstring-html-e46bd2` |
+
+### Py3.14-tstring-shell
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 30 | 5 | 101s | `20261128T022859Z-py3.14-tstring-shell-fa7ef8` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 2 | 0 | 3s | `20261128T022855Z-py3.14-tstring-shell-a7bb52` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 93 | 37 | 857s | `20261128T022740Z-py3.14-tstring-shell-ead705` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 27 | 2 | 176s | `20261126T120654Z-py3.14-tstring-shell-dd1098` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 27 | 4 | 208s | `20261126T120324Z-py3.14-tstring-shell-940b75` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 38 | 3 | 485s | `20261126T115516Z-py3.14-tstring-shell-cdcf8b` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 28 | 5 | 308s | `20261126T093459Z-py3.14-tstring-shell-201248` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 3 | 200s | `20261126T093137Z-py3.14-tstring-shell-c77bba` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 48 | 8 | 600s | `20261126T092134Z-py3.14-tstring-shell-d72376` |
+
+### Py3.14-tstring-sql
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 17 | 1 | 113s | `20261127T184741Z-py3.14-tstring-sql-e1ca34` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 28 | 2 | 256s | `20261127T072428Z-py3.14-tstring-sql-da1e5e` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 24 | 2 | 227s | `20261127T053635Z-py3.14-tstring-sql-642108` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 25 | 2 | 105s | `20261126T072412Z-py3.14-tstring-sql-ba55e2` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 28 | 5 | 166s | `20261126T065834Z-py3.14-tstring-sql-c028e9` |
+
+### Py3.14-zstd-archive
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 39 | 7 | 215s | `20261127T184936Z-py3.14-zstd-archive-964b55` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 34 | 6 | 200s | `20261127T072846Z-py3.14-zstd-archive-ce1f0e` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 29 | 4 | 260s | `20261127T054025Z-py3.14-zstd-archive-19871a` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 21 | 3 | 154s | `20261126T072559Z-py3.14-zstd-archive-06ead4` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 5 | 133s | `20261126T070123Z-py3.14-zstd-archive-5b5f8e` |
+
+### Py3.14-zstd-bytes
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 13 | 1 | 33s | `20261128T022956Z-py3.14-zstd-bytes-31d3b4` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 24 | 2 | 53s | `20261128T022902Z-py3.14-zstd-bytes-a2568c` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 29 | 7 | 62s | `20261128T022902Z-py3.14-zstd-bytes-60ce11` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 19 | 2 | 29s | `20261128T013245Z-py3.14-zstd-bytes-a2e717` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 3 | 75s | `20261126T122108Z-py3.14-zstd-bytes-449b48` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 2 | 69s | `20261126T121956Z-py3.14-zstd-bytes-eb11ca` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 21 | 2 | 545s | `20261126T120953Z-py3.14-zstd-bytes-0ebb67` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 1 | 77s | `20261126T094611Z-py3.14-zstd-bytes-2fdcd9` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 43 | 11 | 208s | `20261126T094240Z-py3.14-zstd-bytes-4fac2a` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 41 | 7 | 147s | `20261126T094010Z-py3.14-zstd-bytes-4d2c15` |
+
+### Py3.15-frozendict-config
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 29 | 4 | 261s | `20261127T185313Z-py3.15-frozendict-config-292889` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 29 | 6 | 250s | `20261127T073208Z-py3.15-frozendict-config-61f3a3` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 21 | 1 | 158s | `20261127T054447Z-py3.15-frozendict-config-49a0d1` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 20 | 4 | 144s | `20261126T072836Z-py3.15-frozendict-config-2d01e0` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 30 | 5 | 155s | `20261126T070339Z-py3.15-frozendict-config-37b41f` |
+
+### Py3.15-frozendict-freeze
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 23 | 2 | 123s | `20261128T023042Z-py3.15-frozendict-freeze-0ffc48` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 9 | 1 | 22s | `20261128T023031Z-py3.15-frozendict-freeze-836788` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 13 | 1 | 58s | `20261128T023005Z-py3.15-frozendict-freeze-3f2733` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 34 | 5 | 238s | `20261126T122517Z-py3.15-frozendict-freeze-9e7593` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 0 | 86s | `20261126T122349Z-py3.15-frozendict-freeze-1c3917` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 19 | 1 | 82s | `20261126T122225Z-py3.15-frozendict-freeze-37aa5a` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 61 | 19 | 427s | `20261126T100212Z-py3.15-frozendict-freeze-b7d375` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 18 | 0 | 271s | `20261126T095736Z-py3.15-frozendict-freeze-d2eec0` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 2 | 202s | `20261126T094731Z-py3.15-frozendict-freeze-b63635` |
+
+### Py3.15-frozendict-headers
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 28 | 4 | 118s | `20261128T023215Z-py3.15-frozendict-headers-ed723a` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 107 | 16 | 193s | `20261128T023105Z-py3.15-frozendict-headers-672d71` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 30 | 0 | 79s | `20261128T023054Z-py3.15-frozendict-headers-3845e6` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 19 | 2 | 115s | `20261126T123441Z-py3.15-frozendict-headers-42351e` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 26 | 4 | 138s | `20261126T123220Z-py3.15-frozendict-headers-4d09cc` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 3 | 180s | `20261126T122918Z-py3.15-frozendict-headers-0df1da` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 11 | 0 | 42s | `20261126T102527Z-py3.15-frozendict-headers-cb5a24` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 13 | 2 | 36s | `20261126T101524Z-py3.15-frozendict-headers-65f36e` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 32 | 10 | 359s | `20261126T100923Z-py3.15-frozendict-headers-d35945` |
+
+### Py3.15-lazy-import
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 2 | 170s | `20261127T185735Z-py3.15-lazy-import-0957a5` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 34 | 6 | 309s | `20261127T073621Z-py3.15-lazy-import-849cbb` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 12 | 0 | 92s | `20261127T054727Z-py3.15-lazy-import-b0c7ca` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 42 | 7 | 233s | `20261126T073103Z-py3.15-lazy-import-1e5da8` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 55 | 16 | 323s | `20261126T070621Z-py3.15-lazy-import-22a9a2` |
+
+### Py3.15-lazy-import-plugins
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 16 | 0 | 50s | `20261128T023420Z-py3.15-lazy-import-plugins-0976b2` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 74 | 20 | 151s | `20261128T023414Z-py3.15-lazy-import-plugins-8e7743` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 27 | 7 | 142s | `20261128T023247Z-py3.15-lazy-import-plugins-5e1c87` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 14 | 0 | 91s | `20261126T124335Z-py3.15-lazy-import-plugins-ffa89c` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 21 | 1 | 261s | `20261126T123912Z-py3.15-lazy-import-plugins-41ed6b` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 150s | `20261126T123639Z-py3.15-lazy-import-plugins-8c1397` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | pass | 11 | 0 | 89s | `20261126T103723Z-py3.15-lazy-import-plugins-905094` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 28 | 6 | 111s | `20261126T103529Z-py3.15-lazy-import-plugins-9fcf3c` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 30 | 4 | 555s | `20261126T102611Z-py3.15-lazy-import-plugins-8b9e66` |
+
+### Py3.15-sentinel-default
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 26 | 4 | 141s | `20261127T190028Z-py3.15-sentinel-default-a11248` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 17 | 0 | 194s | `20261127T074133Z-py3.15-sentinel-default-9ec711` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 0 | 96s | `20261127T054901Z-py3.15-sentinel-default-eb2bb4` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 34 | 4 | 275s | `20261126T073459Z-py3.15-sentinel-default-c39a2d` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 25 | 5 | 186s | `20261126T071147Z-py3.15-sentinel-default-caefb4` |
+
+### Py3.15-sentinel-unknown
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 52s | `20261128T023559Z-py3.15-sentinel-unknown-f0856b` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 38 | 6 | 134s | `20261128T023512Z-py3.15-sentinel-unknown-51a6a3` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 15 | 2 | 47s | `20261128T023511Z-py3.15-sentinel-unknown-bb8add` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 14 | 1 | 120s | `20261126T125105Z-py3.15-sentinel-unknown-78e25b` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 36 | 6 | 246s | `20261126T124656Z-py3.15-sentinel-unknown-ea0218` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 1 | 105s | `20261126T124509Z-py3.15-sentinel-unknown-0d43a3` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 71s | `20261126T104112Z-py3.15-sentinel-unknown-50badf` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 0 | 72s | `20261126T103958Z-py3.15-sentinel-unknown-78c5ed` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 9 | 0 | 61s | `20261126T103854Z-py3.15-sentinel-unknown-76f239` |
+
+### Py3.15-sentinel-unset
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 22 | 2 | 79s | `20261128T023728Z-py3.15-sentinel-unset-467966` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 19 | 3 | 101s | `20261128T023653Z-py3.15-sentinel-unset-d4c073` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 20 | 2 | 185s | `20261128T023647Z-py3.15-sentinel-unset-df659c` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 29 | 5 | 231s | `20261126T130214Z-py3.15-sentinel-unset-2d1995` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 1 | 235s | `20261126T125816Z-py3.15-sentinel-unset-c30582` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 30 | 1 | 306s | `20261126T125307Z-py3.15-sentinel-unset-63a0d2` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 105s | `20261126T104706Z-py3.15-sentinel-unset-5f2d7b` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 3 | 107s | `20261126T104516Z-py3.15-sentinel-unset-29f348` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 36 | 7 | 169s | `20261126T104225Z-py3.15-sentinel-unset-4bda32` |
+
+### Py3.15-typeddict-closed
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools2 (round 2)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 21 | 2 | 179s | `20261127T190252Z-py3.15-typeddict-closed-250380` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Tsunami (tools update 15)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 0 | 120s | `20261127T074449Z-py3.15-typeddict-closed-05ee27` |
+| 2026-11-27 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (tools (final update)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 13 | 0 | 106s | `20261127T055039Z-py3.15-typeddict-closed-b9ac1b` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 0 | 100s | `20261126T073938Z-py3.15-typeddict-closed-f9ea35` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 18 | 1 | 169s | `20261126T071457Z-py3.15-typeddict-closed-19f8e5` |
+
+### Py3.15-typeddict-closed-metrics
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 23 | 1 | 89s | `20261128T023953Z-py3.15-typeddict-closed-metrics-3d4501` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 45 | 11 | 288s | `20261128T023849Z-py3.15-typeddict-closed-metrics-fe3335` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 15 | 2 | 78s | `20261128T023836Z-py3.15-typeddict-closed-metrics-404d0c` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 19 | 1 | 201s | `20261126T131222Z-py3.15-typeddict-closed-metrics-3ba0a9` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 2 | 158s | `20261126T130941Z-py3.15-typeddict-closed-metrics-293aea` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 22 | 0 | 210s | `20261126T130608Z-py3.15-typeddict-closed-metrics-bf155a` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 19 | 3 | 230s | `20261126T105249Z-py3.15-typeddict-closed-metrics-379a8e` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 15 | 0 | 162s | `20261126T105004Z-py3.15-typeddict-closed-metrics-e43ddb` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 12 | 1 | 68s | `20261126T104853Z-py3.15-typeddict-closed-metrics-f43d8a` |
+
+### Py3.15-typeddict-closed-options
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 29 | 3 | 178s | `20261128T024124Z-py3.15-typeddict-closed-options-3ba8a8` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 20 | 1 | 90s | `20261128T024108Z-py3.15-typeddict-closed-options-009753` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 17 | 2 | 70s | `20261128T023956Z-py3.15-typeddict-closed-options-63299f` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 2 | 314s | `20261126T132242Z-py3.15-typeddict-closed-options-0fb572` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 4 | 289s | `20261126T131749Z-py3.15-typeddict-closed-options-4995af` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (mix120 (DPO)) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 121s | `20261126T131546Z-py3.15-typeddict-closed-options-b9c472` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 159s | `20261126T110403Z-py3.15-typeddict-closed-options-063bea` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 23 | 3 | 241s | `20261126T105959Z-py3.15-typeddict-closed-options-372a04` |
+| 2026-11-26 | `llamacpp/Mellum2.1-12B-A2.5B-Thinking` (Mellum2.1 base) | Baseline Worker, vanilla arm · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/verify-the-spec` | on | fail | 29 | 2 | 196s | `20261126T105641Z-py3.15-typeddict-closed-options-c9ec11` |
+
+### Satyrn-format_number
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 8 | 0 | 12s | `20261128T024229Z-satyrn-format_number-a64971` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 8 | 1 | 13s | `20261128T024215Z-satyrn-format_number-41b605` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 10 | 0 | 14s | `20261128T024200Z-satyrn-format_number-8be2f5` |
+
+### Satyrn-selfhost-cell-loop
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 69 | 9 | 726s | `20261128T024338Z-satyrn-selfhost-cell-loop-c9ce80` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 21 | 2 | 197s | `20261128T024241Z-satyrn-selfhost-cell-loop-8a1f80` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 43 | 5 | 301s | `20261128T024239Z-satyrn-selfhost-cell-loop-047792` |
+
+### Satyrn-selfhost-docs-linter
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 38 | 10 | 233s | `20261128T024744Z-satyrn-selfhost-docs-linter-83aee4` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 76 | 12 | 489s | `20261128T024602Z-satyrn-selfhost-docs-linter-f85faa` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 123 | 22 | 510s | `20261128T024424Z-satyrn-selfhost-docs-linter-0c510d` |
+
+### Satyrn-selfhost-guard-prefixes
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 15 | 3 | 154s | `20261128T025413Z-satyrn-selfhost-guard-prefixes-4fa30b` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 59 | 25 | 704s | `20261128T025257Z-satyrn-selfhost-guard-prefixes-f4462e` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 14 | 3 | 164s | `20261128T025140Z-satyrn-selfhost-guard-prefixes-fcb3c9` |
+
+### Satyrn-selfhost-review-script
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 55 | 21 | 211s | `20261128T025650Z-satyrn-selfhost-review-script-56aeef` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 88 | 36 | 417s | `20261128T025547Z-satyrn-selfhost-review-script-8396b6` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 104 | 32 | 674s | `20261128T025427Z-satyrn-selfhost-review-script-197456` |
+
+### Satyrn-selfhost-run-record-gate
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 49 | 5 | 266s | `20261128T030344Z-satyrn-selfhost-run-record-gate-ff968f` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 6 | 0 | 54s | `20261128T030247Z-satyrn-selfhost-run-record-gate-013409` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 65 | 9 | 464s | `20261128T030024Z-satyrn-selfhost-run-record-gate-a06d45` |
+
+### Tt-cli-limit-format
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 28 | 7 | 111s | `20261128T014233Z-tt-cli-limit-format-b548ac` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 51 | 9 | 232s | `20261128T014233Z-tt-cli-limit-format-a1c826` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 29 | 2 | 119s | `20261128T014233Z-tt-cli-limit-format-3830bb` |
+
+### Tt-config-env-override
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 1 | 24s | `20261128T014425Z-tt-config-env-override-2779a0` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 0 | 37s | `20261128T014407Z-tt-config-env-override-7d63ac` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 33 | 7 | 89s | `20261128T014233Z-tt-config-env-override-3160ac` |
+
+### Tt-config-merge
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 13 | 0 | 56s | `20261128T014451Z-tt-config-merge-0a9b72` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 0 | 62s | `20261128T014446Z-tt-config-merge-dbe14d` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 0 | 46s | `20261128T014434Z-tt-config-merge-cac01f` |
+
+### Tt-csv-dedupe
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 3 | 0 | 7s | `20261128T014549Z-tt-csv-dedupe-141d76` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 28 | 3 | 97s | `20261128T014549Z-tt-csv-dedupe-04a8f8` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 13 | 0 | 61s | `20261128T014521Z-tt-csv-dedupe-451fd0` |
+
+### Tt-dataclass-validation
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 86 | 28 | 449s | `20261128T014626Z-tt-dataclass-validation-cc1fb7` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 31 | 10 | 125s | `20261128T014624Z-tt-dataclass-validation-9dc40c` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 18 | 4 | 205s | `20261128T014557Z-tt-dataclass-validation-5b6b27` |
+
+### Tt-event-bus
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 35 | 6 | 124s | `20261128T014830Z-tt-event-bus-0cd573` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 21 | 3 | 98s | `20261128T014830Z-tt-event-bus-00795a` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 33 | 3 | 60s | `20261128T014728Z-tt-event-bus-e2dcc2` |
+
+### Tt-failing-test-helper
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 16 | 1 | 44s | `20261128T015036Z-tt-failing-test-helper-4f1f7d` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 13 | 1 | 41s | `20261128T015009Z-tt-failing-test-helper-b467f0` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 1 | 70s | `20261128T014927Z-tt-failing-test-helper-142968` |
+
+### Tt-import-cycle
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 18 | 1 | 68s | `20261128T015121Z-tt-import-cycle-dbe565` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 25 | 2 | 149s | `20261128T015052Z-tt-import-cycle-8fb530` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 13 | 0 | 78s | `20261128T015038Z-tt-import-cycle-d82e94` |
+
+### Tt-ini-schema
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 11 | 0 | 45s | `20261128T015323Z-tt-ini-schema-66fe84` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 55 | 23 | 227s | `20261128T015231Z-tt-ini-schema-f4b559` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 37 | 4 | 238s | `20261128T015158Z-tt-ini-schema-172996` |
+
+### Tt-log-summary
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 21 | 5 | 113s | `20261128T015558Z-tt-log-summary-bed36a` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 26 | 6 | 167s | `20261128T015410Z-tt-log-summary-db8b7d` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 62 | 17 | 825s | `20261128T015357Z-tt-log-summary-37e425` |
+
+### Tt-lookup-cache
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 18 | 0 | 84s | `20261128T015732Z-tt-lookup-cache-f8c74b` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 34 | 4 | 111s | `20261128T015658Z-tt-lookup-cache-87f73d` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 0 | 70s | `20261128T015620Z-tt-lookup-cache-439087` |
+
+### Tt-md-table
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 6 | 0 | 136s | `20261128T015858Z-tt-md-table-4a998a` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 26 | 2 | 201s | `20261128T015851Z-tt-md-table-2244a2` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 34 | 3 | 224s | `20261128T015752Z-tt-md-table-b0e60f` |
+
+### Tt-money-rounding
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 21 | 1 | 59s | `20261128T020138Z-tt-money-rounding-38273c` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 16 | 0 | 86s | `20261128T020126Z-tt-money-rounding-da1bda` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 7 | 0 | 8s | `20261128T020115Z-tt-money-rounding-2a4cd2` |
+
+### Tt-pagination-off-by-one
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 11 | 0 | 36s | `20261128T020249Z-tt-pagination-off-by-one-f45a26` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 5 | 0 | 9s | `20261128T020239Z-tt-pagination-off-by-one-829c2c` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 0 | 37s | `20261128T020214Z-tt-pagination-off-by-one-58ff0f` |
+
+### Tt-recent-history
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 27 | 5 | 63s | `20261128T020326Z-tt-recent-history-c2b900` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 99 | 21 | 446s | `20261128T020254Z-tt-recent-history-b5ea15` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 29 | 6 | 86s | `20261128T020253Z-tt-recent-history-12e1ee` |
+
+### Tt-rename-across-modules
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 35 | 2 | 71s | `20261128T020519Z-tt-rename-across-modules-cbf2c7` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 24 | 3 | 56s | `20261128T020431Z-tt-rename-across-modules-f4bac2` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 31 | 0 | 56s | `20261128T020421Z-tt-rename-across-modules-81dd4f` |
+
+### Tt-retry-backoff
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 36 | 6 | 84s | `20261128T020707Z-tt-retry-backoff-7030ee` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 44 | 14 | 136s | `20261128T020632Z-tt-retry-backoff-b4cb7b` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 45 | 20 | 97s | `20261128T020528Z-tt-retry-backoff-f85efc` |
+
+### Tt-safe-writer
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 11 | 1 | 75s | `20261128T020850Z-tt-safe-writer-46d987` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 15 | 3 | 68s | `20261128T020833Z-tt-safe-writer-d9dffc` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 39 | 15 | 235s | `20261128T020743Z-tt-safe-writer-ea8ce6` |
+
+### Tt-split-module
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 15 | 1 | 80s | `20261128T021021Z-tt-split-module-2185f4` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 62s | `20261128T021007Z-tt-split-module-ee87c2` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 23 | 1 | 87s | `20261128T020943Z-tt-split-module-a2cedc` |
+
+### Tt-swallowed-exceptions
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 16 | 1 | 66s | `20261128T021140Z-tt-swallowed-exceptions-e09651` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 46 | 7 | 254s | `20261128T021111Z-tt-swallowed-exceptions-5c6bc8` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 27 | 4 | 94s | `20261128T021111Z-tt-swallowed-exceptions-25f298` |
+
+### Tt-timezone-report
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 18 | 0 | 54s | `20261128T021247Z-tt-timezone-report-907213` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 19 | 2 | 58s | `20261128T021246Z-tt-timezone-report-9d1e22` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 47 | 11 | 117s | `20261128T021143Z-tt-timezone-report-e27828` |
+
+### Tt-token-bucket
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 36 | 3 | 605s | `20261128T021346Z-tt-token-bucket-302c09` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 34 | 7 | 143s | `20261128T021343Z-tt-token-bucket-bed65a` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 21 | 2 | 57s | `20261128T021341Z-tt-token-bucket-055cf8` |
+
+### Tt-unicode-slugify
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 38 | 9 | 205s | `20261128T021608Z-tt-unicode-slugify-1e5b32` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 24 | 6 | 155s | `20261128T021528Z-tt-unicode-slugify-17f658` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 47 | 11 | 110s | `20261128T021440Z-tt-unicode-slugify-975c79` |
+
+### Tt-word-freq
+
+| date | model | stack | thinking | result | turns | tool errors | wall | run |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | pass | 20 | 3 | 121s | `20261128T021839Z-tt-word-freq-e614c5` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 7 | 0 | 32s | `20261128T021805Z-tt-word-freq-ae9195` |
+| 2026-11-28 | `lab/mellum` | Baseline Worker, vanilla arm · `context/narrow-tools` · `context/trim-tool-output` · `guard/foreground-server` · `guard/no-live-server` · `prompt/name-the-layout` · `prompt/python-developer` · `prompt/think-briefly` · `prompt/verify-the-spec` | on | fail | 44 | 16 | 296s | `20261128T021631Z-tt-word-freq-32989b` |

@@ -434,6 +434,23 @@ def run_plan(p: dict[str, str], screen: bool) -> dict:
             "stall": p["BASELINE_SUITE_STALL"]}
 
 
+def manifest_surfaces(ladder_dir: Path) -> list[dict]:
+    """Each distinct (system prompt, tool set) the ladder's runs sent the model, with the runs that sent it.
+
+    The rung records carry them (ladder/surface.py); the manifest gathers them so a reader, or another harness,
+    has the exact prompt and tool schemas without this repository's source."""
+    keys = ("system_prompt", "system_prompt_sha256", "tools", "tools_sha256")
+    surfaces: dict[tuple, dict] = {}
+    for record_file in sorted(Path(ladder_dir).glob("*/run.json")):
+        record = json.loads(record_file.read_text())
+        if "tools_sha256" not in record:
+            continue
+        key = (record.get("system_prompt_sha256"), record["tools_sha256"])
+        entry = surfaces.setdefault(key, {**{k: record.get(k) for k in keys}, "runs": []})
+        entry["runs"].append(record_file.parent.name)
+    return list(surfaces.values())
+
+
 def latest_run(label: str) -> Path:
     runs = sorted((ROOT / "runs").glob(f"{label}-*"), key=lambda d: d.name)
     runs = [d for d in runs if (d / "manifest.json").is_file() and (d / "ladder").is_dir()]
@@ -498,6 +515,8 @@ def cmd_run(screen: bool = False, suites_only: bool = False) -> None:
          "--repeat", plan["ladder_repeat"], "--deadline", p["BASELINE_LADDER_DEADLINE"],
          *rungs, "--out", str(out / "ladder")],
         cwd=ROOT / "ladder", env=env, check=True)
+    manifest["surfaces"] = manifest_surfaces(out / "ladder")
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     run_suites_part(p, plan, out, profile, pi, env)
 
 

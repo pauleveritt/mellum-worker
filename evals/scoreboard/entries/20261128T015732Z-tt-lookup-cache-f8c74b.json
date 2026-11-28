@@ -1,0 +1,29 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T015732Z-tt-lookup-cache-f8c74b",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 0,
+  "model": "lab/mellum",
+  "passed": true,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "tt-lookup-cache",
+  "surface": "6d84685ef23dab53",
+  "thinking": "on",
+  "tool_calls": 16,
+  "tool_errors": 0,
+  "turns": 18,
+  "version": "07147a92",
+  "wall": 83.951,
+  "weights": null
+}

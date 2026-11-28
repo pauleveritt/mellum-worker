@@ -36,5 +36,8 @@ or CI step can run it on every push to the default branch.
 `id`, `date`, `suite`, `model`, `arm`, `stack` (the remedy units and `mellum-*` extensions it
 used), `version` (a stable hash of the extensions' `sha256`, so an edited extension is a new
 version that can *beat* the old one rather than blend into it), `passed`, `turns`, `tool_calls`,
-`wall`, `missing`, `machine`. The raw trace, stdout and workspace never come here — only the
+`wall`, `missing`, `machine`, `thinking` (on/off, when the run sent the switch), `tool_errors`,
+`weights` (the weights file the server reported, or `--weights` for older runs: every llama.cpp tune shares one
+served name) and `surface` (the id of its prompt and tools in `surfaces/<surface>.json`, stored once, with the
+run's workspace path as `{workspace}`). The raw trace, stdout and workspace never come here — only the
 scored summary.

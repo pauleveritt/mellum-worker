@@ -1529,3 +1529,26 @@ def test_run_once_hands_primary_mode_the_run_model(monkeypatch, tmp_path):
                         plain=True, model="vllm/m")
     pi_calls = [a for a in launched if "--model" in a]
     assert pi_calls and all(a[a.index("--model") + 1] == "vllm/m" for a in pi_calls)
+
+
+def test_run_record_carries_the_prompt_and_tools_the_model_was_sent(monkeypatch, tmp_path):
+    """run.json carries the resolved system prompt and tool schemas, not only the extensions that built them."""
+    import json
+    import subprocess as sp
+
+    from ladder import run_ladder
+    from ladder.rungs import CheckResult, Rung
+
+    tools = [{"type": "function", "function": {"name": "read", "parameters": {"type": "object"}}}]
+    events = [{"type": "provider_request", "payload": {"tools": tools, "messages": [
+        {"role": "system", "content": "You are a worker."}, {"role": "user", "content": "fix it"}]}}]
+    monkeypatch.setattr(run_ladder.subprocess, "run",
+                        lambda args, **kw: sp.CompletedProcess(args, 0, stdout="", stderr=""))
+    monkeypatch.setattr(run_ladder, "prepare_workspace", lambda rung, scratch, **kw: scratch)
+    monkeypatch.setattr(run_ladder, "baseline_index", lambda ws: (set(), {}))
+    monkeypatch.setattr(run_ladder, "load_trace", lambda trace: (events, []))
+    rung = Rung(1, "calculator", "fix it", ["true"], lambda ws, base: CheckResult(False, True))
+    run_ladder.run_once(rung, "direct", "baseline", 1, tmp_path / "out", 5, {}, False)
+    record = json.loads((tmp_path / "out" / "rung1-baseline-direct-r1" / "run.json").read_text())
+    assert record["system_prompt"] == "You are a worker." and record["tools"] == tools
+    assert record["distinct_system_prompts"] == 1

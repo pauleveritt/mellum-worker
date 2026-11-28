@@ -29,6 +29,9 @@ from pathlib import Path
 
 from grading import passed_tests
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ladder"))
+from ladder.surface import request_surface  # noqa: E402  (one reader for both run records)
+
 CODE = Path(__file__).resolve().parent
 RUNS = Path(tempfile.gettempdir()) / "mellum-eval-runs"
 SUITES = CODE / "suites"
@@ -123,6 +126,39 @@ def profile_pin(profile_dir: Path) -> tuple[str, str]:
     providers = json.loads((Path(profile_dir) / "models.json").read_text())["providers"]
     provider = next(iter(providers))
     return provider, providers[provider]["models"][0]["id"]
+
+
+def served_model(base_url: str, timeout: float = 3.0) -> dict:
+    """What the server says it is serving: model ids, and for llama.cpp the weights file, context and template.
+
+    Every fine-tune is served under the same alias, so the profile's model id alone cannot tell them apart."""
+    import urllib.request
+
+    def get(url):
+        try:
+            with urllib.request.urlopen(url, timeout=timeout) as r:
+                return json.load(r)
+        except Exception:
+            return None
+
+    out: dict = {"base_url": base_url}
+    models = get(base_url.rstrip("/") + "/models")
+    if isinstance(models, dict) and isinstance(models.get("data"), list):
+        out["models"] = [m.get("id") for m in models["data"]]
+    root = base_url.rstrip("/")
+    root = root[:-3] if root.endswith("/v1") else root
+    props = get(root + "/props")
+    if isinstance(props, dict) and props.get("model_path"):
+        out["model_path"] = props["model_path"]
+        out["n_ctx"] = (props.get("default_generation_settings") or {}).get("n_ctx")
+        if props.get("chat_template"):
+            out["chat_template_sha256"] = hashlib.sha256(props["chat_template"].encode()).hexdigest()
+    return out
+
+
+def profile_base_url(profile_dir: Path) -> str | None:
+    providers = json.loads((Path(profile_dir) / "models.json").read_text())["providers"]
+    return providers[next(iter(providers))].get("baseUrl")
 
 
 def new_run(runs_dir: Path, name: str) -> Path:
@@ -680,6 +716,8 @@ def run_suite(
     # Record the pinned model so run.json (assembled later, out of this scope) and the
     # scoreboard can name which model produced the run.
     (run / "model.txt").write_text(f"{provider}/{model}\n")
+    if base_url := profile_base_url(profile):
+        (run / "served.json").write_text(json.dumps(served_model(base_url), indent=2) + "\n")
     session_id = str(uuid.uuid4())
     settings = arm_settings(arm)
     env = {
@@ -940,6 +978,14 @@ def _trace_time(value):
 SERVER_REFUSAL = "starts a server in the foreground"
 
 
+def surface_record(run: Path) -> dict:
+    """The system prompt and tool schemas the run's first request carried, with hashes (empty without a trace)."""
+    trace = Path(run) / "trace.jsonl"
+    rows = ([json.loads(line) for line in trace.read_text().splitlines() if line.strip()]
+            if trace.is_file() else [])
+    return request_surface(rows)
+
+
 def report(run: Path) -> dict:
     rows = [
         json.loads(line)
@@ -1126,10 +1172,12 @@ def _run_sessions(
         if layout_file.is_file():
             metrics["out_of_layout"] = json.loads(layout_file.read_text())["out_of_layout"]
         model_file = run_dir / "model.txt"
+        served_file = run_dir / "served.json"
         record = {
             "suite": suite.name,
             "arm": arm,
             "model": model_file.read_text().strip() if model_file.is_file() else None,
+            "served": json.loads(served_file.read_text()) if served_file.is_file() else None,
             "remedies": list(remedies),
             "extensions": extension_record(list(extras)),
             "single_prompt": single_prompt,
@@ -1151,6 +1199,7 @@ def _run_sessions(
             "missing_checks": missing,
             "check_groups": check_groups(suite.expected, missing),
             "record_failures": over,
+            **surface_record(run_dir),
             **{key: value for key, value in metrics.items()
                if key != "final_reply"},
         }

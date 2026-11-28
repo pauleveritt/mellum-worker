@@ -1,0 +1,30 @@
+{
+  "arm": "vanilla",
+  "date": "2026-11-28",
+  "id": "20261128T060649Z-easy-ebf438",
+  "machine": "Apple M3 Max, 48 GiB",
+  "missing": 4,
+  "model": "r1d/r1d-sft-v2b",
+  "passed": false,
+  "stack": [
+    "arm:vanilla",
+    "context/narrow-tools",
+    "context/trim-tool-output",
+    "guard/foreground-server",
+    "guard/no-live-server",
+    "guard/repeat-loops",
+    "prompt/name-the-layout",
+    "prompt/python-developer",
+    "prompt/think-briefly",
+    "prompt/verify-the-spec"
+  ],
+  "suite": "easy",
+  "surface": "6d84685ef23dab53",
+  "thinking": "off",
+  "tool_calls": 355,
+  "tool_errors": 325,
+  "turns": 358,
+  "version": "e133f8a9",
+  "wall": 619.301,
+  "weights": "sft-v2b-Q8_0.gguf (1,400 examples)"
+}
