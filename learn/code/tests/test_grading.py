@@ -27,3 +27,12 @@ def test_a_parametrized_test_passes_only_when_every_case_passed():
 
 def test_a_listed_case_id_is_matched_exactly():
     assert passed_tests(OUT, ["grader_tests/test_a.py::test_cases[1]"]) == {"grader_tests/test_a.py::test_cases[1]"}
+
+
+def test_ids_with_spaces_are_read_whole():
+    out = ("PASSED grader_tests/test_b.py::test_p[a b]\n"
+           "FAILED grader_tests/test_b.py::test_p[c d] - AssertionError: x - y\n"
+           "PASSED grader_tests/test_b.py::test_q[one two]\n")
+    assert passed_tests(out, ["grader_tests/test_b.py::test_p", "grader_tests/test_b.py::test_q",
+                              "grader_tests/test_b.py::test_p[a b]"]) == {
+        "grader_tests/test_b.py::test_q", "grader_tests/test_b.py::test_p[a b]"}

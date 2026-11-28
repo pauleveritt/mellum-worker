@@ -12,7 +12,7 @@ jobs=()
 for dir in suites/tools-train suites/py-features-train suites-local/satyrn-train; do
   for t in $(ls "$CODE/$dir"); do
     [ -f "$CODE/$dir/$t/expected.json" ] || continue
-    [ "$t" = "satyrn-selfhost-preflight-quiet" ] && continue  # its known-good fix fails its own check
+    case "$t" in satyrn-selfhost-preflight-quiet|satyrn-selfhost-speed-probe) continue;; esac  # known-good fix fails its own check
     for k in $(seq 1 "$REPEATS"); do jobs+=("$dir $t $k"); done
   done
 done

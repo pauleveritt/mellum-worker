@@ -16,11 +16,15 @@ and `source_paths`. The harness suite gets:
 grader passes every expected test on base + known-good, and fails on base + known-broken.
 """
 import argparse
+import sys
 import json
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "code"))
+from grading import passed_tests  # noqa: E402
 
 IGNORE = [".venv/**", "__pycache__/**", "*.pyc", "*.log", "*.db", ".git/**",
           ".pytest_cache/**", "grader_tests/**"]
@@ -52,7 +56,7 @@ def convert_task(task: Path, out_root: Path) -> Path:
 
 def passed_ids(output: str, expected: set[str]) -> set[str]:
     """Expected ids reported PASSED, matched whole as the harness does (ids may hold spaces)."""
-    return {tid for tid in expected if f"PASSED {tid}" in output}
+    return passed_tests(output, expected)
 
 
 def grade(workspace: Path, suite: Path) -> set[str]:

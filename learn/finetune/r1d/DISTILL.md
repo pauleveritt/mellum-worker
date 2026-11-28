@@ -23,14 +23,14 @@ The AgentClinic family (`easy`, `medium`, `hard`, and Satyrn's `agentclinic-*`),
 | Source | Tasks | Notes |
 |---|---|---|
 | `suites/py-features-train` | 12 | Python 3.14/3.15 features; the teacher lacks some APIs, so many runs fail but their successful calls still count |
-| Satyrn self-host + `format_number` | 7 | converted into the git-ignored `learn/code/suites-local/satyrn-train` (no Satyrn content in this repo) with `uv run --no-project python ../finetune/satyrn_suites.py --tasks <satyrn-evals>/src/satyrn_evals/tasks --out suites-local/satyrn-train --only format_number --only selfhost-... --check`; `selfhost-preflight-quiet` left out (its known-good fix fails its own check) |
+| Satyrn self-host + `format_number` | 6 | converted into the git-ignored `learn/code/suites-local/satyrn-train` (no Satyrn content in this repo) with `uv run --no-project python ../finetune/satyrn_suites.py --tasks <satyrn-evals>/src/satyrn_evals/tasks --out suites-local/satyrn-train --only format_number --only selfhost-... --check`; `selfhost-preflight-quiet` and `selfhost-speed-probe` left out: their known-good fixes fail their own check (speed-probe's failure was hidden by the old substring grader, ADR 0011) |
 | `suites/tools-train` | 24 | varied tool use in small stdlib projects, never AgentClinic; each proven by `py_features.py --root suites/tools-train check` (reference green, workaround red, base red) |
 
 ## Teacher batches
 
 | Date | Run folder | Tasks | Repeats | Shape | Result |
 |---|---|---|---|---|---|
-| 2026-11-28 | `runs/2026-11-28-teacher-v2` | 24 tools-train + 12 py-features-train + 7 satyrn-train | 3 | as above, 4 parallel, deadline 1,200 s | running |
+| 2026-11-28 | `runs/2026-11-28-teacher-v2` | 24 tools-train + 12 py-features-train + 6 satyrn-train (speed-probe removed before its sessions started) | 3 | as above, 4 parallel, deadline 1,200 s | running |
 | 2026-11-28 | `runs/2026-11-28-teacher-smoke` | py3.14-zstd-bytes | 1 | as above | plumbing check: 19 requests, 17 calls, 2 errors; task failed (API unknown to the teacher) |
 
 ## Data sets built from it

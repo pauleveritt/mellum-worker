@@ -6,7 +6,8 @@ without its case suffix passes only if it has at least one case and every one of
 """
 import re
 
-LINE = re.compile(r"^(PASSED|FAILED|ERROR|XFAIL|XPASS|SKIPPED) (\S+)", re.M)
+# the id runs to the end of the line, or to " - " where pytest appends a failure message; ids may hold spaces
+LINE = re.compile(r"^(PASSED|FAILED|ERROR|XFAIL|XPASS|SKIPPED) (.+?)(?: - .*)?$", re.M)
 
 
 def passed_tests(output, expected):
