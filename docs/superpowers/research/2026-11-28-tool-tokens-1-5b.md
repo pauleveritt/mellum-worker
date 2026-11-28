@@ -55,6 +55,14 @@ expected) before the fix.
   While building it, real payloads turned out to send some content as a list of text parts; the template
   now accepts both (test shown red first).
 
+- 2026-11-28: where the completion tokens go in `data_sft_v1` (train): 1,575,265 in all, of which thinking is
+  1,252,885 (80%). 3,160 tool calls. JSON arguments cost +17% over the raw values for `write`, +19% for `bash`,
+  about 0 for `edit`; the call markers, `function` and the code fence are 9 fixed tokens per call (about 2% of
+  completion tokens); the tools preamble plus system prompt is 1,397 tokens, once per conversation and cached.
+  So the template is not where the tokens go; thinking is. Two levers follow: shorter thinking, and capping
+  tool results in the harness the way the training prompts were capped (400 + 200 characters), which Pi does
+  not do at inference. JSON escaping inside written code is a correctness risk for a small model; judge it on
+  the faulty-call types after training before changing the format.
 - 2026-11-28: the GPU was cleared for this work by stopping a Tsunami evaluation on the Python training-task
   suite after 2 of 9 tasks (0/6 passed; base scored 5/27 on the whole suite, mix120 2/27). It was a scorecard
   fill-in, not a held-out test, and Tsunami's training was already finished.
